@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: bcfips-1.0.0.jar cpkixfips-1.0.0.jar eddsa-0.2.0.jar org.e
+ clipse.jgit-5.2.1.20181226042-r.jar
+Main-Class: com.swirlds.regression.RegressionMain
+

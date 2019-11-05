@@ -1,0 +1,310 @@
+[NOTE001]        Notes on Regression
+[SETUP001]       Instructions for kicking off Regression suite from CLI
+[SETUP002]       Setting up AwsRegression to run under intellij
+[SETUP003]       Important Region setup information
+[INFO0001]       Current nightly Regression Schedule
+[CONFIG001]      Regression Setup json details:
+[CONFIG002]      Experiment Setup json details
+
+                ***[NOTE001] Notes on Regression ***
+The Java Regression Suite (JRS) runs either locally or remotely, the instructions here cover running regression on a remote machine.
+Instructions for running locally will follow in a later release of the document.
+
+The JRS relies on two types of json files. Regression setup json, and experiment setup json. (Details about available options
+can be found in [CONFIG001] AND [CONFIG002] respectively.
+
+The regression setup holds information on keys, AWS config, AWS Access Key, and which experiments to run, along with some
+minor things to help the test runner keep track of their information.
+
+The experiment setup gives specific information on the setup of the experiment and how to tell if it passed. This includes:
+duration of the test, settings, restart, reconnect, freeze, what jar to use, options for the jar, which validator(s) to use
+
+***** DO NOT USE existing aws regression, or experiment jsons. Copy them and name them with your name before running *****
+
+
+                ***[SETUP001] Instructions for kicking off Regression from CLI:***
+
+*************************************************************************************
+*    Regression will run on whatever branch you currently have checked out.
+*    Please make sure you have the latest code from Develop before running a test
+*************************************************************************************
+
+1) cd regression
+2) Create AWS keypair and download the private key to sdk/testing
+    a) https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+        i) "Retrieving the Public Key for Your Key Pair on Linux" section on creating the public key
+    b) you pem and pub key must be named the same i.e. my-key.pem and my-key.pub
+    c) chmod 600 both key files
+3) cd configs
+4) cp AwsRegressionCfgTemplate.json AwsRegressionCfg<YOUR NAME HERE>.json
+5) cp testFcm1KCfg.json testFcm1KCfg<YOUR NAME HERE>.json"
+6) edit the new AwsRegressionCfg<YOU NAME HERE>.json
+    a) Change "name" to the name of the branch you are currently working on
+    b) Change “instanceKey”: to keypair name used
+    c) Change “keyLocation” : to base file name (no .pem)
+    d) Confirm: 
+          i) Change “channel”: to regression-test
+         ii) Change region in regionList from us-west-1, to another region such as
+                { "region":"us-east-2", "numberOfNodes":4}
+        iii) Confirm “experiments” has your test listed.
+         iv) Confirm "instanceKey" is the name you chose when setting up in Amazon.
+          v) Confirm "keyLocation" is the base name of the key you chose to use.
+7) edit the new testFcm1KCfg<YOUR NAME HERE>.json file
+    a) change name to the name of the experiment you are attempting to run
+            Ex.: FCLL-Streaming-8500TPS-1MC-5MT-5MU; reconnect; dynamic freeze;
+        i) make sure you name is include in the test name so it is clear who's test it is
+                in the regression-test slack channel
+    b) change as appropriate  
+8) edit regression.sh
+    a) change AwsRegressionCfg.json to AwsRegressionCfg<YOUR NAME HERE>.json
+9) ./regression.sh
+
+
+                *** [SETUP002] Setting up AwsRegression to run under intellij ***
+
+1)  Create new application
+      a) Run -> edit configurations
+      b) '+'
+      c) Click Application
+2)  Name: AwsRegression<YOUR NAME HERE>
+3)  Main Class: com.swirlds.regression.RegressionMain
+4)  VM options: -Dlog4j.configurationFile=log4j2-jrs.xml -Dspring.output.ansi.enabled=ALWAYS
+5)  Program arguments: configs\AwsRegressionCfg<YOUR)NAME>.json
+6)  Working Directory: <PATH TO REGRESSION FOLDER>
+      Ex.: H:\Swirlds\git\platform-swirlds\regression\ OR /Users/cesar/Documents/swirlds/platform-swirlds/regression/
+7)  Environment variables: aws_access_key_id=<AMAZON ACCESS KEY>;aws_secret_access_key=<SECRET ACCESS KEY>
+      a) Go to: http://aws.amazon.com/
+      b) Go to your AWS console home (click the AWS logo)
+      c) Account menu in the upper-right (has your name on it)
+      d) sub-menu: Security Credentials
+      e) go to Access keys for CLI, SDK, API access section
+      f) click "create access key" button
+      g) record the secret key as they will NEVER tell you again.
+8)  Use classpath of module: "regression"
+9)  check "include dependencies with "Provided" scope
+10) Logs Tab:
+    a) add log4j2-jrs
+    b) add swirlds
+
+
+                *** [SETUP003] Important Region setup information ***
+
+Regions for each run of AWS are set up in the AwsRegression...json configurations. All nightly Regressions use "us-west-1".
+    ***** NO OTHER TESTS should use region us-west-1 ******
+
+Available regions for the AMI: `ATF-U18.04-ORCJ10-PSQL10.7-BADGERIZE-V4` are:
+    *********************************************************************
+    * KEY:
+    *     A = AVAILABLE;
+    *     N/A = NOT CURRENTLY AVAILABLE BUT CAN EASILY BE ADDED;
+    *     DISABLED = AWS DOESN'T ALLOW USE FOR OUR IAM;
+    *     OFF LIMITS = NIGHTLY REGRESSION USE ONLY
+    *********************************************************************
+    A)          us-east-1       US East (N. Virginia)           ami-08c281f3c4db47152
+    A)          us-east-2       US East (Ohio)                  ami-06ae64c0de00fba9e
+    OFF LIMITS) us-west-1       US West (N. California)         ami-0e1608a218da77ace
+    A)          us-west-2       US West (Oregon)                ami-04c8fd104dbbf9494
+    A)          ca-central-1    Canada (Central)                ami-0a96e9146fad88635
+    A)          eu-central-1    EU (Frankfurt)                  ami-0cd841c1dc01fe5ca
+    N/A)        eu-west-1       EU (Ireland)
+    N/A)        eu-west-2       EU (London)
+    N/A)        eu-west-3       EU (Paris)
+    N/A)        eu-north-1      EU (Stockholm)
+    DISABLED)   ap-east-1       Asia Pacific (Hong Kong)
+    A)          ap-northeast-1  Asia Pacific (Tokyo)            ami-034a30ddc2b18d575
+    A)          ap-northeast-2  Asia Pacific (Seoul)            ami-0c3fefd395cde4d61
+    DISABLED)   ap-northeast-3  Asia Pacific (Osaka-Local)
+    N/A)        ap-southeast-1  Asia Pacific (Singapore)
+    A)          ap-southeast-2  Asia Pacific (Sydney)           ami-0a2bd2b2be24d47a5
+    N/A)        ap-south-1      Asia Pacific (Mumbai)
+    A)          sa-east-1       South America (São Paulo)       ami-026c56e9a2cef3686
+
+
+                *** [INFO0001] Current nightly Regression Schedule ***
+
+Dump of current crontab: ***** All times are UTC *****
+04  5 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfg_Freeze.json
+04  6 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfgStats.json
+04  7 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfgReconnect.json
+04  8 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfgRestart.json
+04  9 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfgFCM.json
+04 11 * * * cd /home/ubuntu/git/regression/platform-swirlds/sdk; sudo ./regression_nightly.sh AwsRegressionCfgFCM3M.json
+
+
+                *** [CONFIG001] Regression Setup json details ***
+    SEE: AwsRegressionCfgTemplate.json for example of entire json
+
+db: configuration object for storing stats in database for cross comparison (currently not working)
+    type: currently only "postgresql" is available
+    login: "login that the regression and nodes should use"
+    port: port db is listening on
+    database: database to use
+    <OPTIONAL>adddress: DEFAULT: "localhost", ip address of database if it is not local
+    *************************************
+    * EX:
+    *    "db": {
+    *        "type": "postgresql",
+    *        "login": "dbregression",
+    *        "address": "localhost",
+    *        "port": "5432",
+    *        "database": "stats"
+    *    },
+    *************************************
+log: location to put log files. (currently always puts them in sdk directory) (not working)
+    uri: relative directory from working directory of regression jar
+    *************************************
+    * EX:
+    *    "log": {
+    *        "uri":"testing/logs/"
+    *    }
+    *************************************
+result: location to place results for regression
+    uri: relative directory from working directory of regression jar
+    *************************************
+    * EX:
+    *     "result": {
+    *        "uri":"testing/results"
+    *    }
+    *************************************
+<MUTUAL EXCLUSION>cloud: Default: null - information on cloud being used for this regression. Null is running local test
+        *** NOTE: if this is null, "local" must be set ***
+    service:"aws" (currently the only option)
+    securityGroup: security group to use to open ports in firewall
+             "SwirldsSecGroup" (this option assures proper ports are open)
+    securityGroupID: aws id for the security group
+             "sg-7214c20b" (aws id for SwirldsSecGroup)
+    instanceName: Name of instance to be used for each node
+              "ATF-U18.04-ORCJ10-PSQL10.7-BADGERIZE-V4" (current aws instance used for all regression)
+    instanceID: aws id for the instance - *** Slated for removal in the future ***
+             "ami-0e1608a218da77ace" (aws instance id for ATF-U18.04-ORCJ10-PSQL10.7-BADGERIZE-V4 in us-west-1)
+    instanceType": aws instance to run each node on
+             "m4.10xlarge", (current instance all nightly regressions are run against)
+    instanceKey": Name of key given to AWS when key was created
+    keyLocation": location of key relative to the working directory, along with basename of key file.
+    login": Aws user to run nodes under
+            "ubuntu", current default user for the AWS instance: ATF-U18.04-ORCJ10-PSQL10.7-BADGERIZE-V4
+            "ec2": default user aws setup up on non-ubuntu linux distributions
+    regionList": Array of regions regression is to be run under.
+            *** Unless for specific reasons suggest running in one region ***
+            region: aws region code for the region to run nodes in
+            numberOfNodes: how many nodes to run in this region
+    *********************************************************************
+    * EX:
+    *    "cloud":{
+    *        "service":"aws",
+    *        "securityGroup":"SwirldsSecGroup",
+    *        "securityGroupID":"sg-7214c20b",
+    *        "instanceName": "ATF-U18.04-ORCJ10-PSQL10.7-BADGERIZE-V4",
+    *        "instanceID": "ami-0e1608a218da77ace",
+    *        "instanceType": "m4.10xlarge",
+    *        "instanceKey": "ATF-Key",
+    *        "keyLocation":"./testing/my-key",
+    *        "login": "ubuntu",
+    *        "regionList":[
+    *            { "region":"us-west-1", "numberOfNodes":4}
+    *        ]
+    *    },
+    *********************************************************************
+<MUTUAL EXCLUSION>local: Default: null Indicates the nodes should be run locally.
+    *** If this is null "cloud" must be set
+    numberOfNodes: number of node to run
+    *************************************
+    * EX:
+    *     "local":{
+    *        "numberOfNodes" : 4
+    *      },
+    *************************************
+experiments: list of json configs for the experiments to be run in this regression
+    each value in the list should be a URI relative to the working directory
+    *********************************************
+    * EX:
+    *     "experiments": [
+    *         "testing/configs/testReconnectCfg.json"
+    *     ],
+    *********************************************
+slack: Information on the slack channel to post results on
+    token: the slack token needed to post throught their API.
+        ** Audit has asked this be removed from git, if you can't find
+        it in an example, please contact Lazar or Ron for the information **
+    channel: channel to post results in Please use "regression-test" for tests.
+        ** If you don't have access contact Ron or Lazar **
+    <OPTIONAL> notifyOn: under what condition should slack notify.
+        Default is ERROR, other options are WARNING and ALL
+    <OPTIONAL> notifyChannel: should the notification be to the whole channel (@here)
+    <OPTIONAL> notifyUserIds: a list of slack user IDs to notify
+    *************************************
+    * EX:
+    *    "slack":{
+    *        "token": "<TOP SECRET>"
+    *        "channel": "regression-test"
+    *        "notifyOn": "ERROR"
+    *        "notifyChannel": true
+    *        "notifyUserIds": ["slack user ID 1", "slack user ID 2"]
+    *    },
+    *************************************
+name: Name of the regression tests being run EX.: "663-restart-validation", "FCLL-restart", "FCLL-with-blobs"
+<OPTIONAL> eventFilesWriters: Default = 0: number of stream servers to be run for this regression (should not be more than # of nodes)
+    EX: "eventFilesWriters": 4,
+<OPTIONAL> uploadToSharePoint: Default = true: whether or not to upload results to sharepoint
+    EX: "uploadToSharePoint": false
+
+
+                *** [CONFIG002] Experiment Setup json details ***
+validator: type of validation to run at the end of the experiment
+    List of currently available Validators:
+        STANDARD, RESTART, RECONNECT, PLATFORM_CSV, FCM_CSV, FCFS_CSV, PLATFORM_TESTING_DEMO
+name: descriptive name of the experiment
+description: human readable description of experiment
+duration: duration in seconds the experiment should run for
+settings: list of settings to be used by nodes during experiment
+    NOTE: enableEventStreaming should NOT be set here, as it is set programatically based on the regression settings json
+    name: name of setting
+    value: value to be set
+    *************************************************************
+    * EX:
+    *     "settings": [
+    *        {"name":"saveStatePeriod", "value": "30" },
+    *        {"name":"showInternalStats", "value": "1" },
+    *        {"name":"csvFileName", "value":"PlatformTesting" },
+    *        {"name":"csvAppend", "value":"true"}
+    *    ],
+    *************************************************************
+app: configuration for the app to be run by the node, and the parameters it needs
+    jar: jar file to run (jar file you would put in config.txt)
+    parameterList: array of parameters (comma seperated list in config.txt after the jar file)
+    *************************************************************
+    * EX 1:
+    *    "app": {
+    *        "jar": "PlatformTestingDemo.jar",
+    *        "parameterList": ["FileOnly.json"]
+    *    },
+    *************************************************************
+    * EX 2:
+    *    "app": {
+    *        "jar": "StatsSigningDemo.jar",
+    *        "parameterList": ["1, 3000, 0, 100, -1, 50000"]
+    *    },
+    *************************************************************
+resultFiles: Array of log files to download and check. Currently downloads all log files by default. So may be deprecated in future.
+    *************************************
+    * EX:
+    *    "resultFiles": [
+    *        "swirlds.log"
+    *    ],
+    *************************************
+<OPTIONAL> restart: Default = false: Do the nodes of this test need to be restarted?
+<OPTIONAL> restartTiming: Default = 0: Number of seconds after test starts to restart all nodes
+<OPTIONAL> freeze: Default = false: Activate dynamic freeze?
+<OPTIONAL> freezeTiming: Default = 0: number of seconds after test start to freeze
+<OPTIONAL> freezeIterations: Default = 1: number of times to freeze during test
+<OPTIONAL> AppConfig postFreezeApp: Default = null: app details for the find app run after the freeze (see "app" for details)
+    *************************************************************
+    * EX:
+    *    "postFreezeApp": {
+    *          "jar": "PlatformTestingDemo.jar",
+    *          "parameterList": ["FCM1K.json"]
+    *    },
+    *************************************************************
+<OPTIONAL> reconnect: Default = false: Does this test need to reconnect a node?
+<OPTIONAL> reconnectTiming: Default = 0: When to shut down the node and reconnect
+<OPTIONAL> log4j2File: Default = "log4j2-regression.xml": log file to use for nodes being run.

@@ -1,0 +1,35 @@
+{
+  "name":"restart",
+  "description" : "platform testing demo - restart",
+  "duration": 180,
+  "settings": [
+  //{"name": "", "value": "" },
+	{"name": "useTLS", "value": "1" },
+	{"name": "throttle7extra", "value": "0.02" },
+	{"name": "verifyEventSigs", "value": "1" },
+	{"name": "multiSocketNumber", "value": "1" },
+	{"name": "multiSocketTransferBytesPerSocket", "value": "1460" },
+	{"name":"saveStatePeriod", "value": "30" },
+	{"name":"numConnections", "value": "1000" },
+	{"name":"throttle7", "value": "1" },
+	{"name":"throttle7threshold", "value": "1.5" },
+	{"name":"useRSA", "value": "1" },
+	{"name":"lockLogThreadDump", "value": "0" },
+	{"name":"lockLogTimeout", "value": "4000" },
+	{"name":"lockLogBlockTimeout", "value": "4000" },
+	{"name":"showInternalStats", "value": "1" },
+	{"name":"csvFileName", "value":"PlatformTesting" },
+	{"name":"csvAppend", "value":"true"}
+  ],
+  "restartConfig":{
+    "restartTiming": 2
+  },
+  "app": {
+	"jar": "PlatformTestingDemo.jar",
+	"parameterList": ["FCM1K.json"]
+  },
+  "resultFiles": [
+	"swirlds.log"
+  ],
+  "validator": ["RESTART"]
+}

@@ -1,0 +1,118 @@
+2019-03-14 15:49:50.642 STARTUP    618 main Browser main() started
+2019-03-14 15:49:50.660 STARTUP    636 main About to run startPlatforms()
+2019-03-14 15:49:50.665 STARTUP    641 main About do crypto instantiation
+2019-03-14 15:49:50.670 STARTUP    646 main About start loading keys
+2019-03-14 15:49:51.534 STARTUP   1510 main Done loading keys
+2019-03-14 15:49:51.535 STARTUP   1511 main About to start creating Crypto objects
+2019-03-14 15:49:52.363 STARTUP   2339 main Done creating Crypto objects
+2019-03-14 15:49:52.363 STARTUP   2339 main Done with crypto instantiation
+2019-03-14 15:49:52.365 STARTUP   2341 main Starting platforms
+2019-03-14 15:49:52.556 STARTUP   2532 main Done with starting platforms
+2019-03-14 15:49:52.575 STARTUP   2551 <     platformRun  3  3> Initializing FCMapStatsDemoMain
+2019-03-14 15:49:52.590 STARTUP   2566 main Browser main() finished
+2019-03-14 15:49:53.491 STARTUP   3467 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:49:53.506 STARTUP   3482 <       stateHash  3   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:49:53.583 STARTUP   3559 <       stateHash  3   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:49:53.583 STARTUP   3559 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:50:55.019 SOCKET_EXCEPTIONS  64995 <    syncListener  3  1> 3 didn't receive anything from 1 for 5005 ms. Disconnecting...
+2019-03-14 15:50:55.029 SOCKET_EXCEPTIONS  65005 <    syncListener  3  0> 3 didn't receive anything from 0 for 5006 ms. Disconnecting...
+2019-03-14 15:50:55.033 SOCKET_EXCEPTIONS  65009 <    syncListener  3  2> 3 didn't receive anything from 2 for 5006 ms. Disconnecting...
+2019-03-14 15:50:55.127 SOCKET_EXCEPTIONS  65103 <      syncCaller  3  1> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 3 listening for 1:
+java.net.SocketTimeoutException: Read timed out
+	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:50:55.159 SOCKET_EXCEPTIONS  65135 <      syncCaller  3  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 3 listening for 2:
+java.net.SocketTimeoutException: Read timed out
+	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:51:50.737 SOCKET_EXCEPTIONS 120713 sync_server_4 3 got new connection from 2, disconnecting old one
+2019-03-14 15:51:50.756 SOCKET_EXCEPTIONS 120732 sync_server_5 3 got new connection from 0, disconnecting old one
+2019-03-14 15:51:50.786 RECONNECT 120762 <tp caller events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:51:50.796 SOCKET_EXCEPTIONS 120772 sync_server_5 3 got new connection from 1, disconnecting old one
+2019-03-14 15:51:50.833 RECONNECT 120809 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:51:50.834 RECONNECT 120810 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:51:50.835 RECONNECT 120811 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:51:50.836 RECONNECT 120812 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:51:50.836 RECONNECT 120812 <tp  lstnr events  3  0> 3 received commEventDiscarded from 0 
+2019-03-14 15:51:50.841 RECONNECT 120817 <tp caller events  3  1> 3 received commEventDiscarded from 2 
+2019-03-14 15:51:50.849 RECONNECT 120825 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2019-03-14 15:51:50.849 RECONNECT 120825 <       stateHash  3   > stateHashSign() interrupted
+2019-03-14 15:51:50.849 RECONNECT 120825 <      threadCurr  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:51:50.849 RECONNECT 120825 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 0, 2]
+2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 will start reconnect with 1
+2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 sent commStateRequest to 1
+2019-03-14 15:51:50.867 RECONNECT 120843 <      syncCaller  3  0> 3 got commStateAck from 1
+2019-03-14 15:52:04.089 RECONNECT 134065 <      syncCaller  3  0> 3 got SignedState from 1
+2019-03-14 15:52:04.089 RECONNECT 134065 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 1802
+2019-03-14 15:52:04.094 RECONNECT 134070 <      syncCaller  3  0> signed state events:
+[(3,3838), (1,8026), (2,8000), (2,8001), (0,8000), (0,8001), (1,8027), (2,8002), (0,8002), (0,8003), (2,8003), (2,8004), (1,8028), (2,8005), (2,8006), (0,8004), (0,8005), (1,8029), (2,8007), (1,8030), (2,8008), (1,8031), (0,8006), (1,8032), (2,8009), (0,8007), (0,8008), (2,8010), (1,8033), (1,8034), (2,8011), (1,8035), (1,8036), (0,8009), (0,8010), (1,8037), (2,8012), (0,8011), (0,8012), (2,8013)]
+2019-03-14 15:52:04.094 RECONNECT 134070 <      syncCaller  3  0> About to start recalculating the hash of the received state
+2019-03-14 15:52:04.095 RECONNECT 134071 <      syncCaller  3  0> About to start validating signatures of the received state
+2019-03-14 15:52:04.096 RECONNECT 134072 <      syncCaller  3  0> State is valid, will load it
+2019-03-14 15:52:04.096 STARTUP 134072 <      syncCaller  3  0> lateseq after restart is [8012, 8037, 8013, 3838]
+2019-03-14 15:52:04.101 RECONNECT 134077 <tp  lstnr events  3  0> 3 received commEventDiscarded from 1 
+2019-03-14 15:52:04.103 RECONNECT 134079 <tp  lstnr events  3  0> 3 received commEventDiscarded from 0 
+2019-03-14 15:52:04.104 RECONNECT 134080 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2019-03-14 15:52:04.104 RECONNECT 134080 <       stateHash  3   > stateHashSign() interrupted
+2019-03-14 15:52:04.104 RECONNECT 134080 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:52:04.151 RECONNECT 134127 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 0]
+2019-03-14 15:52:04.151 RECONNECT 134127 <      syncCaller  3  0> 3 will start reconnect with 1
+2019-03-14 15:52:04.152 RECONNECT 134128 <      syncCaller  3  0> 3 sent commStateRequest to 1
+2019-03-14 15:52:04.152 RECONNECT 134128 <      syncCaller  3  0> 3 got commStateAck from 1
+2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> 3 got SignedState from 1
+2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 1978
+2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> signed state events:
+[(3,3838), (2,8843), (0,8842), (2,8844), (2,8845), (2,8846), (0,8843), (2,8847), (0,8844), (2,8848), (0,8845), (2,8849), (0,8846), (2,8850), (1,8848), (1,8849), (1,8850), (0,8847), (0,8848), (2,8851), (0,8849), (2,8852), (2,8853), (0,8850), (2,8854), (0,8851), (2,8855), (1,8851), (1,8852), (0,8852), (2,8856), (0,8853), (0,8854), (2,8857), (2,8858), (0,8855), (1,8853), (1,8854), (2,8859), (0,8856), (1,8855), (0,8857), (2,8860), (2,8861), (0,8858), (2,8862), (1,8856), (1,8857), (0,8859), (2,8863), (1,8858), (2,8864), (0,8860), (2,8865), (0,8861), (2,8866), (1,8859), (0,8862), (2,8867), (2,8868), (0,8863), (0,8864), (2,8869), (1,8860), (1,8861), (0,8865), (1,8862)]
+2019-03-14 15:52:07.515 RECONNECT 137491 <      syncCaller  3  0> About to start recalculating the hash of the received state
+2019-03-14 15:52:07.515 RECONNECT 137491 <      syncCaller  3  0> About to start validating signatures of the received state
+2019-03-14 15:52:07.516 RECONNECT 137492 <      syncCaller  3  0> State is valid, will load it
+2019-03-14 15:52:07.516 STARTUP 137492 <      syncCaller  3  0> lateseq after restart is [8865, 8862, 8869, 3838]
+2019-03-14 15:52:07.532 RECONNECT 137508 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:52:07.533 RECONNECT 137509 <tp  lstnr events  3  1> 3 received commEventDiscarded from 2 
+2019-03-14 15:52:07.533 RECONNECT 137509 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2019-03-14 15:52:07.533 RECONNECT 137509 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:52:07.533 RECONNECT 137509 <       stateHash  3   > stateHashSign() interrupted
+2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 2]
+2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 will start reconnect with 1
+2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 sent commStateRequest to 1
+2019-03-14 15:52:07.585 RECONNECT 137561 <      syncCaller  3  0> 3 got commStateAck from 1
+2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> 3 got SignedState from 1
+2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 2028
+2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> signed state events:
+[(3,3838), (1,9084), (0,9097), (0,9098), (1,9085), (2,9097), (2,9098), (0,9099), (0,9100), (0,9101), (1,9086), (0,9102), (2,9099), (1,9087), (1,9088), (0,9103), (1,9089), (2,9100), (2,9101), (0,9104), (0,9105), (1,9090), (0,9106), (0,9107), (2,9102), (1,9091), (1,9092), (2,9103), (1,9093), (0,9108), (0,9109), (0,9110), (1,9094), (1,9095), (2,9104), (2,9105), (0,9111), (0,9112), (2,9106), (1,9096), (0,9113), (0,9114)]
+2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> About to start recalculating the hash of the received state
+2019-03-14 15:52:08.472 RECONNECT 138448 <      syncCaller  3  0> About to start validating signatures of the received state
+2019-03-14 15:52:08.472 RECONNECT 138448 <      syncCaller  3  0> State is valid, will load it
+2019-03-14 15:52:08.474 STARTUP 138450 <      syncCaller  3  0> lateseq after restart is [9114, 9096, 9106, 3838]
+2019-03-14 15:53:50.324 STARTUP 240300 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

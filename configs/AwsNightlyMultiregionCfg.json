@@ -1,0 +1,74 @@
+{
+  "name":"regression-suite-MultiRegion",
+  "result": {
+	"uri":"results"
+  },
+  "cloud":{
+	"service":"aws",
+	"securityGroup":"SwirldsSecGroup",
+	"securityGroupID":"sg-7214c20b",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceType": "M410xlarge",
+	"instanceKey": "Multiregion-Key",
+	"keyLocation":"./keys/my-key",
+	"login": "ubuntu",
+	"regionList":[
+	  { "region":"us-west-2",    "numberOfNodes":2}, // Oregon
+	  { "region":"us-east-1",    "numberOfNodes":3}, // N. Virginia
+	  { "region":"us-east-2",    "numberOfNodes":1}, // Ohio
+	  { "region":"ca-central-1", "numberOfNodes":1}, // canada
+	  { "region":"ap-northeast-1",    "numberOfNodes":1}, // Tokyo
+	  { "region":"eu-west-2",    "numberOfNodes":1}, // London
+	  { "region":"eu-central-1", "numberOfNodes":4}  // Frankfurt
+	]
+  },
+  "eventFilesWriters": 4,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testSigningDemoCfg.json" // failed multi-region
+  ,
+	"configs/testSigningDemo4KCfg.json"
+  ,
+	"configs/testRestartCfg.json"
+  ,
+	"configs/testRestartFCLLCfg.json"
+  ,
+	"configs/testRestartBlobCfg.json" // bad stats
+  ,
+	"configs/testFcmFreezeCfg.json"
+  ,
+	"configs/testFcmFreezeFCLLCfg.json"
+  ,
+	"configs/testFcmFreezeBlobCfg.json" // failed multi-region
+  ,
+	"configs/testFcmCfg.json" // failed multi-region
+  ,
+	"configs/testFcm3MCfg.json" //failed multi- region
+  ,
+	"configs/testFcm1KFCLLCfg.json" //had an exception where node 1 couldn't connect to node 7 for more than 5 seconds.
+  ,
+	"configs/testFcmMultisizeBlobCfg.json"
+  ,
+	"configs/testFcm10MBx10KBlobCfg.json" // failed in multi-region
+  ,
+	"configs/testFcm4kx100KBlobCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack":{
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"channel": "regression",
+	// "notifyOn" options: ALL, WARNING, ERROR
+	"notifyOn": "ERROR",
+	"notifyChannel": false,
+	"notifyUserIds": ["UA4T7UJQJ", "UA5K2LZ1D"]
+  },
+  "uploadToSharePoint": true
+}

@@ -1,0 +1,54 @@
+2019-03-14 15:49:50.656 STARTUP    648 main Browser main() started
+2019-03-14 15:49:50.673 STARTUP    665 main About to run startPlatforms()
+2019-03-14 15:49:50.678 STARTUP    670 main About do crypto instantiation
+2019-03-14 15:49:50.683 STARTUP    675 main About start loading keys
+2019-03-14 15:49:51.592 STARTUP   1584 main Done loading keys
+2019-03-14 15:49:51.593 STARTUP   1585 main About to start creating Crypto objects
+2019-03-14 15:49:52.461 STARTUP   2453 main Done creating Crypto objects
+2019-03-14 15:49:52.462 STARTUP   2454 main Done with crypto instantiation
+2019-03-14 15:49:52.464 STARTUP   2456 main Starting platforms
+2019-03-14 15:49:52.669 STARTUP   2661 main Done with starting platforms
+2019-03-14 15:49:52.689 STARTUP   2681 <     platformRun  1  1> Initializing FCMapStatsDemoMain
+2019-03-14 15:49:52.708 STARTUP   2700 main Browser main() finished
+2019-03-14 15:49:53.543 STARTUP   3535 <       stateHash  1   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:49:53.556 STARTUP   3548 <       stateHash  1   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:49:53.633 STARTUP   3625 <       stateHash  1   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:49:53.633 STARTUP   3625 <       stateHash  1   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:50:55.061 SOCKET_EXCEPTIONS  65053 <    syncListener  1  3> 1 didn't receive anything from 3 for 5006 ms. Disconnecting...
+2019-03-14 15:51:50.687 SOCKET_EXCEPTIONS 120679 sync_server_4 1 got new connection from 3, disconnecting old one
+2019-03-14 15:51:50.756 INVALID_EVENT_ERROR 120748 <tp  lstnr events  1  3> 1 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.768 RECONNECT 120760 <    syncListener  1  3> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8021>, <node1: 8050>, <node2: 8023>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.815 RECONNECT 120807 <      syncCaller  1  1> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8024>, <node1: 8052>, <node2: 8026>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.815 INVALID_EVENT_ERROR 120807 <tp  lstnr events  1  3> 1 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.816 RECONNECT 120808 <      syncCaller  1  1> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8024>, <node1: 8052>, <node2: 8026>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.816 INVALID_EVENT_ERROR 120808 <tp  lstnr events  1  3> 1 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.817 RECONNECT 120809 <      syncCaller  1  1> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8024>, <node1: 8052>, <node2: 8026>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.817 INVALID_EVENT_ERROR 120809 <tp  lstnr events  1  3> 1 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.818 RECONNECT 120810 <      syncCaller  1  1> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8024>, <node1: 8052>, <node2: 8026>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.818 INVALID_EVENT_ERROR 120810 <tp  lstnr events  1  3> 1 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.848 RECONNECT 120840 <    syncListener  1  3> 1 got commStateRequest from 3
+2019-03-14 15:51:50.848 RECONNECT 120840 <    syncListener  1  3> 1 started sending SignedState to 3
+2019-03-14 15:52:04.071 RECONNECT 134063 <    syncListener  1  3> 1 done sending SignedState to 3
+2019-03-14 15:52:04.083 RECONNECT 134075 <    syncListener  1  3> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8013. 
+ selfCounts: [<node0: 8882>, <node1: 8876>, <node2: 8885>, <node3: 3838>] 
+ otherCounts: [<node0: 8012>, <node1: 8037>, <node2: 8013>, <node3: 3838>]
+2019-03-14 15:52:04.133 RECONNECT 134125 <    syncListener  1  3> 1 got commStateRequest from 3
+2019-03-14 15:52:04.133 RECONNECT 134125 <    syncListener  1  3> 1 started sending SignedState to 3
+2019-03-14 15:52:07.496 RECONNECT 137488 <    syncListener  1  3> 1 done sending SignedState to 3
+2019-03-14 15:52:07.513 RECONNECT 137505 <    syncListener  1  3> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8866. 
+ selfCounts: [<node0: 9128>, <node1: 9107>, <node2: 9117>, <node3: 3838>] 
+ otherCounts: [<node0: 8865>, <node1: 8862>, <node2: 8869>, <node3: 3838>]
+2019-03-14 15:52:07.566 RECONNECT 137558 <    syncListener  1  3> 1 got commStateRequest from 3
+2019-03-14 15:52:07.566 RECONNECT 137558 <    syncListener  1  3> 1 started sending SignedState to 3
+2019-03-14 15:52:08.452 RECONNECT 138444 <    syncListener  1  3> 1 done sending SignedState to 3
+2019-03-14 15:53:50.299 STARTUP 240291 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

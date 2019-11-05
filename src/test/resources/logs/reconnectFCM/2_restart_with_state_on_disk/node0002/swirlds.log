@@ -1,0 +1,51 @@
+2019-03-14 15:45:46.471 STARTUP    662 main Browser main() started
+2019-03-14 15:45:46.489 STARTUP    680 main About to run startPlatforms()
+2019-03-14 15:45:46.494 STARTUP    685 main About do crypto instantiation
+2019-03-14 15:45:46.499 STARTUP    690 main About start loading keys
+2019-03-14 15:45:47.356 STARTUP   1547 main Done loading keys
+2019-03-14 15:45:47.356 STARTUP   1547 main About to start creating Crypto objects
+2019-03-14 15:45:48.144 STARTUP   2335 main Done creating Crypto objects
+2019-03-14 15:45:48.144 STARTUP   2335 main Done with crypto instantiation
+2019-03-14 15:45:48.146 STARTUP   2337 main Starting platforms
+2019-03-14 15:45:48.335 STARTUP   2526 main Done with starting platforms
+2019-03-14 15:45:48.359 STARTUP   2550 <     platformRun  2  2> Initializing FCMapStatsDemoMain
+2019-03-14 15:45:48.370 STARTUP   2561 main Browser main() finished
+2019-03-14 15:45:49.288 STARTUP   3479 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:45:49.306 STARTUP   3497 <       stateHash  2   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:45:49.397 STARTUP   3588 <       stateHash  2   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:45:49.397 STARTUP   3588 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:46:46.267 SOCKET_EXCEPTIONS  60458 <    syncListener  2  3> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 2 listening for 3: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:844)
+2019-03-14 15:46:46.263 SOCKET_EXCEPTIONS  60454 <      syncCaller  2  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:210) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:46:46.267 SOCKET_EXCEPTIONS  60458 <      syncCaller  2  1> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+java.net.SocketException: Socket Closed
+	at java.net.AbstractPlainSocketImpl.setOption(AbstractPlainSocketImpl.java:249) ~[?:?]
+	at java.net.Socket.setSoTimeout(Socket.java:1141) ~[?:?]
+	at sun.security.ssl.BaseSSLSocketImpl.setSoTimeout(BaseSSLSocketImpl.java:633) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.setSoTimeout(SSLSocketImpl.java:2538) ~[?:?]
+	at com.swirlds.platform.SyncUtils.sync(SyncUtils.java:579) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCaller.callRequestSync(SyncCaller.java:228) [platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCaller.run(SyncCaller.java:82) [platform-0.0.1-SNAPSHOT.jar:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:47:50.195 SOCKET_EXCEPTIONS 124386 sync_server_3 2 got new connection from 3, disconnecting old one
+2019-03-14 15:49:47.147 STARTUP 241338 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

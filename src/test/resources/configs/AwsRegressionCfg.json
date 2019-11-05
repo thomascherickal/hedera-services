@@ -1,0 +1,34 @@
+{
+  "name":"663-restart-validation",
+  "result": {
+	"uri":"testing/results"
+  },
+  "cloud":{
+	"service":"aws",
+	"securityGroup":"SwirldsSecGroup",
+	"securityGroupID":"sg-7214c20b",
+	"instanceName": "ATF-U18.04-ORCJ10-PSQL10.6-BADGERIZE-V2",
+	"instanceID": "ami-0e79284688125a3a3",
+	"instanceType": "m4.10xlarge",
+	"instanceKey": "ATF-Key",
+	"keyLocation":"H:\\Swirlds\\git\\platform-swirlds\\sdk\\testing\\my-key",
+	"login": "ubuntu",
+	"regionList":[
+	  { "region":"us-west-1", "numberOfNodes":4}
+	]
+  },
+  "eventFilesWriters": 2,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"testing/configs/testRestartCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  }
+}

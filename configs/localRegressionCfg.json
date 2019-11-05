@@ -1,0 +1,29 @@
+{
+  "name":"663-restart-validation",
+  "result": {
+	"uri":"results"
+  },
+  "local":{
+	"numberOfNodes" : 4
+  },
+//  "eventFilesWriters": 2,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testFcmFreezeCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack":{
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"channel": "regression-test"
+  },
+
+  "uploadToSharePoint": false
+}

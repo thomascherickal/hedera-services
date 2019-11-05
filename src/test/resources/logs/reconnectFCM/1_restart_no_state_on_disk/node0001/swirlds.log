@@ -1,0 +1,41 @@
+2019-03-14 15:41:42.994 STARTUP    869 main Browser main() started
+2019-03-14 15:41:43.027 STARTUP    902 main About to run startPlatforms()
+2019-03-14 15:41:43.033 STARTUP    908 main About do crypto instantiation
+2019-03-14 15:41:43.043 STARTUP    918 main About start loading keys
+2019-03-14 15:41:43.935 STARTUP   1810 main Done loading keys
+2019-03-14 15:41:43.935 STARTUP   1810 main About to start creating Crypto objects
+2019-03-14 15:41:45.155 STARTUP   3030 main Done creating Crypto objects
+2019-03-14 15:41:45.156 STARTUP   3031 main Done with crypto instantiation
+2019-03-14 15:41:45.158 STARTUP   3033 main Starting platforms
+2019-03-14 15:41:45.401 STARTUP   3276 main Done with starting platforms
+2019-03-14 15:41:45.423 STARTUP   3298 <     platformRun  1  1> Initializing FCMapStatsDemoMain
+2019-03-14 15:41:45.458 STARTUP   3333 main Browser main() finished
+2019-03-14 15:41:46.498 STARTUP   4373 <       stateHash  1   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:41:46.514 STARTUP   4389 <       stateHash  1   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:41:46.603 STARTUP   4478 <       stateHash  1   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:41:46.603 STARTUP   4478 <       stateHash  1   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:42:42.472 SOCKET_EXCEPTIONS  60347 <    syncListener  1  3> SyncListener.sync SocketException (so incrementing interruptedRecSyncsPerSecond) while 1 listening for 3: java.net.SocketException: Connection reset
+|   java.base/java.net.SocketInputStream.read(SocketInputStream.java:210)
+|   java.base/java.net.SocketInputStream.read(SocketInputStream.java:141)
+|   java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425)
+|   java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65)
+|   java.base/sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918)
+|   java.base/sun.security.ssl.AppInputStream.read(AppInputStream.java:144)
+|   java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:252)
+|   java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:271)
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:270)
+|   com.swirlds.platform.SyncUtils.readUnknownEvents(SyncUtils.java:443)
+|   com.swirlds.platform.SyncUtils$3.syncCall(SyncUtils.java:893)
+|   com.swirlds.platform.SyncCallable.call(SyncCallable.java:60)
+|   java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+|   java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135)
+|   java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+|   java.base/java.lang.Thread.run(Thread.java:844)
+2019-03-14 15:43:46.003 SOCKET_EXCEPTIONS 123878 sync_server_3 1 got new connection from 3, disconnecting old one
+2019-03-14 15:43:46.128 RECONNECT 124003 <    syncListener  1  3> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 0. 
+ selfCounts: [<node0: 8100>, <node1: 8095>, <node2: 8132>, <node3: 3783>] 
+ otherCounts: [<node0: -1>, <node1: -1>, <node2: -1>, <node3: -1>]
+2019-03-14 15:43:58.040 RECONNECT 135915 <    syncListener  1  3> node1 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8087. 
+ selfCounts: [<node0: 8837>, <node1: 8846>, <node2: 8874>, <node3: 3783>] 
+ otherCounts: [<node0: 8086>, <node1: 8079>, <node2: 8116>, <node3: 3783>]
+2019-03-14 15:45:43.334 STARTUP 241209 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

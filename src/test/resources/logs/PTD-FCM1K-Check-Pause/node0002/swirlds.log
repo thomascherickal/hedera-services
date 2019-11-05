@@ -1,0 +1,75 @@
+2019-06-21 12:50:46.783 STARTUP 1 main Browser main() started
+2019-06-21 12:50:47.515 STARTUP 1 main About to run startPlatforms()
+2019-06-21 12:50:47.525 STARTUP 1 main About do crypto instantiation
+2019-06-21 12:50:47.602 STARTUP 1 main About start loading keys
+2019-06-21 12:50:49.577 STARTUP 1 main Done loading keys
+2019-06-21 12:50:49.578 STARTUP 1 main About to start creating Crypto objects
+2019-06-21 12:50:50.451 STARTUP 1 main Done creating Crypto objects
+2019-06-21 12:50:50.451 STARTUP 1 main Done with crypto instantiation
+2019-06-21 12:50:50.460 STARTUP 1 main Starting platforms
+2019-06-21 12:50:50.582 STARTUP 1 main Done with starting platforms
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -Xmx100g
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -Xms20g
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -XX:+UnlockExperimentalVMOptions
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -XX:+UseZGC
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -XX:ConcGCThreads=14
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2019-06-21 12:50:50.742 STARTUP 33 <     platformRun  2  2> Parsing JSON FCM1K.json
+2019-06-21 12:50:50.814 DEMO_INFO 33 <     platformRun  2  2>  insertSeq         = true
+2019-06-21 12:50:50.814 DEMO_INFO 33 <     platformRun  2  2>  appendSig         = true
+2019-06-21 12:50:50.814 DEMO_INFO 33 <     platformRun  2  2>  variedSize        = false
+2019-06-21 12:50:50.814 DEMO_INFO 33 <     platformRun  2  2>  payloadByteSize   = 100
+2019-06-21 12:50:50.814 DEMO_INFO 33 <     platformRun  2  2>  maxByteSize       = 100
+2019-06-21 12:50:50.815 DEMO_INFO 33 <     platformRun  2  2>  type              = TYPE_RANDOM_BYTES
+2019-06-21 12:50:50.815 DEMO_INFO 33 <     platformRun  2  2> Size distribution  = [100]
+2019-06-21 12:50:50.815 DEMO_INFO 33 <     platformRun  2  2> Type distribution  = [TYPE_FCM_TEST]
+2019-06-21 12:50:50.815 DEMO_INFO 33 <     platformRun  2  2> Ratio distribution = [100.0]
+2019-06-21 12:50:50.821 DEMO_INFO 33 <     platformRun  2  2> Goal is TRANS_PER_SECOND_PER_NODE targe 2500.0
+2019-06-21 12:50:50.947 STARTUP 1 main Browser main() finished
+2019-06-21 12:50:50.975 STARTUP 33 <     platformRun  2  2> PlatformTestingDemo: Public Key -> hex('0x32843619628AA0BA5A69418BD3AA2CED79DA9275497F692DBA80211BB10BE6E9')
+2019-06-21 12:50:50.978 DEMO_INFO 33 <     platformRun  2  2> This test will generate sequential FCM payload:
+2019-06-21 12:50:50.990 STARTUP 33 <     platformRun  2  2> Adv Crypto Subsystem: CryptoFactory initializing
+2019-06-21 12:50:51.005 STARTUP 33 <     platformRun  2  2> Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-06-21 12:50:51.045 STARTUP 33 <     platformRun  2  2> Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-06-21 12:50:51.045 STARTUP 33 <     platformRun  2  2> Adv Crypto Subsystem: CryptoFactory startup complete
+2019-06-21 12:50:51.061 STARTUP 47 <      appMainRun  2   > **********************************************
+2019-06-21 12:50:51.061 STARTUP 47 <      appMainRun  2   > *                                            *
+2019-06-21 12:50:51.061 STARTUP 47 <      appMainRun  2   > *                                            *
+2019-06-21 12:50:51.061 STARTUP 47 <      appMainRun  2   > *       Please config csvFileName            *
+2019-06-21 12:50:51.061 STARTUP 47 <      appMainRun  2   > *       in Settings.txt to generate          *
+2019-06-21 12:50:51.062 STARTUP 47 <      appMainRun  2   > *       csv files for platform stats         *
+2019-06-21 12:50:51.062 STARTUP 47 <      appMainRun  2   > *                                            *
+2019-06-21 12:50:51.062 STARTUP 47 <      appMainRun  2   > *                                            *
+2019-06-21 12:50:51.062 STARTUP 47 <      appMainRun  2   > **********************************************
+2019-06-21 12:50:51.064 DEMO_INFO 47 <      appMainRun  2   > Node 2 starts transactions ........
+2019-06-21 12:50:51.134 STARTUP 47 <      appMainRun  2   > PlatformTestingDemo: Signed Message { publicKey = '0x32843619628AA0BA5A69418BD3AA2CED79DA9275497F692DBA80211BB10BE6E9', privateKey ='0x73506E15B3D32202962FB17B0519779A272C4ADEA7682A2A1D9AB7E727F6FC5732843619628AA0BA5A69418BD3AA2CED79DA9275497F692DBA80211BB10BE6E9', signature = '0x42B2CC2FBEA2D64183046676221421E47B071E68EC544199C95718EB5C25EDF0736113C99426BF003012507DBC3805AC4C8B217FC04700DF67A23AD817175402', message = '0x1A680A0E0802100220A08D0628904E30904E2A560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' }
+2019-06-21 12:50:51.249 STARTUP 68 sync_server_1 Platform Status Change ACTIVE 
+2019-06-21 12:50:51.724 DEMO_INFO 47 <      appMainRun  2   > Pause started
+2019-06-21 12:50:54.034 DEMO_INFO 47 <      appMainRun  2   > Pause stopped
+2019-06-21 12:50:55.321 DEMO_INFO 47 <      appMainRun  2   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2019-06-21 12:50:55.322 DEMO_INFO 47 <      appMainRun  2   > Stop generating transactions 
+2019-06-21 12:50:55.619 DEMO_INFO 35 <      threadCons  2   > collectedStartPauseMsg 1
+2019-06-21 12:50:55.624 DEMO_INFO 35 <      threadCons  2   > collectedStartPauseMsg 2
+2019-06-21 12:50:55.625 DEMO_INFO 35 <      threadCons  2   > collectedStartPauseMsg 3
+2019-06-21 12:50:55.723 DEMO_INFO 35 <      threadCons  2   > collectedStartPauseMsg 4
+2019-06-21 12:50:57.064 DEMO_INFO 49 checkThread_node2 Start checking stage ....
+2019-06-21 12:50:57.064 DEMO_INFO 49 checkThread_node2  FCMap size 0
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2  expectedMap size 0
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Checking FCM results OK
+
+
+
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Node 2 transactionSubmitted 10000
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Node 2 Total Recv Transaction 10000
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Node 2 Total Recv FCM Transaction 10000
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Node 2 Total Recv File Transaction 0
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Node 2 Total totalTranAmountFromPrevRun 0
+2019-06-21 12:50:57.065 DEMO_INFO 49 checkThread_node2 Wait all nodes to get stop pause message
+2019-06-21 12:50:57.312 DEMO_INFO 35 <      threadCons  2   > collectedStopPauseMsg 1
+2019-06-21 12:50:57.312 DEMO_INFO 35 <      threadCons  2   > collectedStopPauseMsg 2
+2019-06-21 12:50:57.413 DEMO_INFO 35 <      threadCons  2   > collectedStopPauseMsg 3
+2019-06-21 12:50:57.414 DEMO_INFO 35 <      threadCons  2   > collectedStopPauseMsg 4
+2019-06-21 12:51:02.066 DEMO_INFO 49 checkThread_node2 All node finished submitting all transactions
+2019-06-21 12:51:02.067 DEMO_INFO 49 checkThread_node2 TEST SUCCESS: Quit checking
+2019-06-21 12:51:02.067 DEMO_INFO 49 checkThread_node2 Removing FCMAP and FCFS checking logs
+2019-06-21 12:51:32.069 STARTUP 43 Thread-7 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

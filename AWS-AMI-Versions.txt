@@ -1,0 +1,2 @@
+ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11
+  Copy of ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10 with aws-cli installed. This AMI is needed to get the saved state from S3.

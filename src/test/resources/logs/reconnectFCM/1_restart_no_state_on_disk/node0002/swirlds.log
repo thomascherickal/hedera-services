@@ -1,0 +1,53 @@
+2019-03-14 15:41:42.921 STARTUP    806 main Browser main() started
+2019-03-14 15:41:42.950 STARTUP    835 main About to run startPlatforms()
+2019-03-14 15:41:42.957 STARTUP    842 main About do crypto instantiation
+2019-03-14 15:41:42.966 STARTUP    851 main About start loading keys
+2019-03-14 15:41:43.849 STARTUP   1734 main Done loading keys
+2019-03-14 15:41:43.850 STARTUP   1735 main About to start creating Crypto objects
+2019-03-14 15:41:44.638 STARTUP   2523 main Done creating Crypto objects
+2019-03-14 15:41:44.638 STARTUP   2523 main Done with crypto instantiation
+2019-03-14 15:41:44.641 STARTUP   2526 main Starting platforms
+2019-03-14 15:41:44.870 STARTUP   2755 main Done with starting platforms
+2019-03-14 15:41:44.893 STARTUP   2778 <     platformRun  2  2> Initializing FCMapStatsDemoMain
+2019-03-14 15:41:44.923 STARTUP   2808 main Browser main() finished
+2019-03-14 15:41:46.509 STARTUP   4394 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:41:46.531 STARTUP   4416 <       stateHash  2   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:41:46.624 STARTUP   4509 <       stateHash  2   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:41:46.624 STARTUP   4509 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:42:42.478 SOCKET_EXCEPTIONS  60363 <    syncListener  2  3> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 2 listening for 3: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:844)
+2019-03-14 15:42:42.477 SOCKET_EXCEPTIONS  60362 <      syncCaller  2  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:210) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:43:46.012 SOCKET_EXCEPTIONS 123897 sync_server_3 2 got new connection from 3, disconnecting old one
+2019-03-14 15:43:46.155 RECONNECT 124040 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 0. 
+ selfCounts: [<node0: 8104>, <node1: 8097>, <node2: 8136>, <node3: 3783>] 
+ otherCounts: [<node0: -1>, <node1: -1>, <node2: -1>, <node3: -1>]
+2019-03-14 15:43:46.160 RECONNECT 124045 <    syncListener  2  3> 2 got commStateRequest from 3
+2019-03-14 15:43:46.160 RECONNECT 124045 <    syncListener  2  3> 2 started sending SignedState to 3
+2019-03-14 15:43:58.039 RECONNECT 135924 <    syncListener  2  3> 2 done sending SignedState to 3
+2019-03-14 15:43:58.050 RECONNECT 135935 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8087. 
+ selfCounts: [<node0: 8837>, <node1: 8844>, <node2: 8876>, <node3: 3783>] 
+ otherCounts: [<node0: 8086>, <node1: 8079>, <node2: 8116>, <node3: 3783>]
+2019-03-14 15:43:58.093 RECONNECT 135978 <    syncListener  2  3> 2 got commStateRequest from 3
+2019-03-14 15:43:58.094 RECONNECT 135979 <    syncListener  2  3> 2 started sending SignedState to 3
+2019-03-14 15:44:00.901 RECONNECT 138786 <    syncListener  2  3> 2 done sending SignedState to 3
+2019-03-14 15:45:43.352 STARTUP 241237 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

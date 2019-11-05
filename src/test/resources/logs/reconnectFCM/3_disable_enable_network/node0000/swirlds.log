@@ -1,0 +1,45 @@
+2019-03-14 15:49:50.633 STARTUP    635 main Browser main() started
+2019-03-14 15:49:50.650 STARTUP    652 main About to run startPlatforms()
+2019-03-14 15:49:50.654 STARTUP    656 main About do crypto instantiation
+2019-03-14 15:49:50.659 STARTUP    661 main About start loading keys
+2019-03-14 15:49:51.492 STARTUP   1494 main Done loading keys
+2019-03-14 15:49:51.493 STARTUP   1495 main About to start creating Crypto objects
+2019-03-14 15:49:52.440 STARTUP   2442 main Done creating Crypto objects
+2019-03-14 15:49:52.440 STARTUP   2442 main Done with crypto instantiation
+2019-03-14 15:49:52.442 STARTUP   2444 main Starting platforms
+2019-03-14 15:49:52.632 STARTUP   2634 main Done with starting platforms
+2019-03-14 15:49:52.653 STARTUP   2655 <     platformRun  0  0> Initializing FCMapStatsDemoMain
+2019-03-14 15:49:52.667 STARTUP   2669 main Browser main() finished
+2019-03-14 15:49:53.499 STARTUP   3501 <       stateHash  0   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:49:53.516 STARTUP   3518 <       stateHash  0   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:49:53.611 STARTUP   3613 <       stateHash  0   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:49:53.611 STARTUP   3613 <       stateHash  0   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:50:55.085 SOCKET_EXCEPTIONS  65087 <    syncListener  0  3> 0 didn't receive anything from 3 for 5006 ms. Disconnecting...
+2019-03-14 15:50:55.154 SOCKET_EXCEPTIONS  65156 <      syncCaller  0  1> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 0 listening for 3:
+java.net.SocketTimeoutException: Read timed out
+	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
+	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-03-14 15:51:50.799 INVALID_EVENT_ERROR 120801 <tp caller events  0  3> 0 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
+2019-03-14 15:51:50.808 RECONNECT 120810 <      syncCaller  0  0> node0 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
+ selfCounts: [<node0: 8022>, <node1: 8047>, <node2: 8022>, <node3: 3838>] 
+ otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
+2019-03-14 15:51:50.959 SOCKET_EXCEPTIONS 120961 sync_server_2 0 got new connection from 3, disconnecting old one
+2019-03-14 15:52:04.075 RECONNECT 134077 <    syncListener  0  3> node0 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8013. 
+ selfCounts: [<node0: 8883>, <node1: 8875>, <node2: 8885>, <node3: 3838>] 
+ otherCounts: [<node0: 8012>, <node1: 8037>, <node2: 8013>, <node3: 3838>]
+2019-03-14 15:53:50.351 STARTUP 240353 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

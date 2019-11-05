@@ -1,0 +1,25 @@
+Reading the settings from the file:        /home/ubuntu/remoteExperiment/settings.txt
+Reading the configuration from the file:   /home/ubuntu/remoteExperiment/config.txt
+Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx
+This computer has an internal IP address:  172.31.13.130
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.google.protobuf.UnsafeUtil (file:/home/ubuntu/remoteExperiment/data/lib/protobuf-java-3.5.1.jar) to field java.nio.Buffer.address
+WARNING: Please consider reporting this to the maintainers of com.google.protobuf.UnsafeUtil
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/219
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/526
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/845
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1175
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1487
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1807
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2142
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2454
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2774
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3102
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3406
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3724
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4056
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4356
+Could not load libOpenCL.so, error libOpenCL.so: cannot open shared object file: No such file or directory

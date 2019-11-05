@@ -1,0 +1,9 @@
+###############################################################################################
+# Swirlds configuration file, for automatically running multiple instances
+###############################################################################################
+swirld, 123
+app, StatsSigningDemo.jar, 1, 3000, 0, 100, -1, 50000
+address, StatsSigningDemo0, StatsSigningDemo0, 1, 172.31.10.155, 40124, 13.57.228.254, 40124
+address, StatsSigningDemo1, StatsSigningDemo1, 1, 172.31.15.137, 40125, 54.183.177.213, 40125
+address, StatsSigningDemo2, StatsSigningDemo2, 1, 172.31.4.8, 40126, 13.57.202.143, 40126
+address, StatsSigningDemo3, StatsSigningDemo3, 1, 172.31.6.11, 40127, 54.193.23.18, 40127

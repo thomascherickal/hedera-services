@@ -1,0 +1,70 @@
+2019-03-14 15:41:43.262 STARTUP   1015 main Browser main() started
+2019-03-14 15:41:43.315 STARTUP   1068 main About to run startPlatforms()
+2019-03-14 15:41:43.321 STARTUP   1074 main About do crypto instantiation
+2019-03-14 15:41:43.334 STARTUP   1087 main About start loading keys
+2019-03-14 15:41:44.325 STARTUP   2078 main Done loading keys
+2019-03-14 15:41:44.325 STARTUP   2078 main About to start creating Crypto objects
+2019-03-14 15:41:45.267 STARTUP   3020 main Done creating Crypto objects
+2019-03-14 15:41:45.267 STARTUP   3020 main Done with crypto instantiation
+2019-03-14 15:41:45.270 STARTUP   3023 main Starting platforms
+2019-03-14 15:41:45.633 STARTUP   3386 main Done with starting platforms
+2019-03-14 15:41:45.656 STARTUP   3409 <     platformRun  3  3> Initializing FCMapStatsDemoMain
+2019-03-14 15:41:45.713 STARTUP   3466 main Browser main() finished
+2019-03-14 15:41:46.494 STARTUP   4247 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:41:46.513 STARTUP   4266 <       stateHash  3   > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:41:46.597 STARTUP   4350 <       stateHash  3   > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:41:46.598 STARTUP   4351 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:42:42.075 STARTUP  59828 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+2019-03-14 15:43:43.923 STARTUP    646 main Browser main() started
+2019-03-14 15:43:43.940 STARTUP    663 main About to run startPlatforms()
+2019-03-14 15:43:43.944 STARTUP    667 main About do crypto instantiation
+2019-03-14 15:43:43.949 STARTUP    672 main About start loading keys
+2019-03-14 15:43:44.789 STARTUP   1512 main Done loading keys
+2019-03-14 15:43:44.790 STARTUP   1513 main About to start creating Crypto objects
+2019-03-14 15:43:45.586 STARTUP   2309 main Done creating Crypto objects
+2019-03-14 15:43:45.587 STARTUP   2310 main Done with crypto instantiation
+2019-03-14 15:43:45.589 STARTUP   2312 main Starting platforms
+2019-03-14 15:43:45.790 STARTUP   2513 main Done with starting platforms
+2019-03-14 15:43:45.809 STARTUP   2532 <     platformRun  3  3> Initializing FCMapStatsDemoMain
+2019-03-14 15:43:45.830 STARTUP   2553 main Browser main() finished
+2019-03-14 15:43:46.136 RECONNECT   2859 <tp caller events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:43:46.142 RECONNECT   2865 <tp caller events  3  0> 3 received commEventDiscarded from 0 
+2019-03-14 15:43:46.154 RECONNECT   2877 <tp caller events  3  1> 3 received commEventDiscarded from 2 
+2019-03-14 15:43:46.155 RECONNECT   2878 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2019-03-14 15:43:46.155 RECONNECT   2878 <      threadCurr  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:43:46.155 RECONNECT   2878 <       stateHash  3   > stateHashSign() interrupted
+2019-03-14 15:43:46.155 RECONNECT   2878 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:43:46.157 RECONNECT   2880 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [2, 1, 0]
+2019-03-14 15:43:46.158 RECONNECT   2881 <      syncCaller  3  0> 3 will start reconnect with 2
+2019-03-14 15:43:46.158 RECONNECT   2881 <      syncCaller  3  0> 3 sent commStateRequest to 2
+2019-03-14 15:43:46.162 RECONNECT   2885 <      syncCaller  3  0> 3 got commStateAck from 2
+2019-03-14 15:43:46.175 STARTUP   2898 <      syncCaller  3  0> Adv Crypto Subsystem: CryptoFactory initializing
+2019-03-14 15:43:46.187 STARTUP   2910 <      syncCaller  3  0> Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-03-14 15:43:46.282 STARTUP   3005 <      syncCaller  3  0> Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-03-14 15:43:46.282 STARTUP   3005 <      syncCaller  3  0> Adv Crypto Subsystem: CryptoFactory startup complete
+2019-03-14 15:43:58.036 RECONNECT  14759 <      syncCaller  3  0> 3 got SignedState from 2
+2019-03-14 15:43:58.036 RECONNECT  14759 <      syncCaller  3  0> 3 finished reconnect with 2, got SignedState for round 1810
+2019-03-14 15:43:58.041 RECONNECT  14764 <      syncCaller  3  0> signed state events:
+[(3,3783), (2,8104), (1,8067), (1,8068), (0,8074), (0,8075), (2,8105), (2,8106), (1,8069), (0,8076), (2,8107), (1,8070), (1,8071), (0,8077), (2,8108), (1,8072), (1,8073), (0,8078), (0,8079), (2,8109), (2,8110), (1,8074), (0,8080), (2,8111), (1,8075), (1,8076), (0,8081), (0,8082), (2,8112), (2,8113), (1,8077), (1,8078), (0,8083), (0,8084), (2,8114), (1,8079), (0,8085), (2,8115), (2,8116), (0,8086)]
+2019-03-14 15:43:58.041 RECONNECT  14764 <      syncCaller  3  0> About to start recalculating the hash of the received state
+2019-03-14 15:43:58.042 RECONNECT  14765 <      syncCaller  3  0> About to start validating signatures of the received state
+2019-03-14 15:43:58.044 RECONNECT  14767 <      syncCaller  3  0> State is valid, will load it
+2019-03-14 15:43:58.045 STARTUP  14768 <      syncCaller  3  0> lateseq after restart is [8086, 8079, 8116, 3783]
+2019-03-14 15:43:58.047 RECONNECT  14770 <tp caller events  3  1> 3 received commEventDiscarded from 1 
+2019-03-14 15:43:58.048 RECONNECT  14771 <tp caller events  3  1> 3 received commEventDiscarded from 2 
+2019-03-14 15:43:58.049 RECONNECT  14772 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2019-03-14 15:43:58.049 RECONNECT  14772 <       stateHash  3   > stateHashSign() interrupted
+2019-03-14 15:43:58.049 RECONNECT  14772 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2019-03-14 15:43:58.091 RECONNECT  14814 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [2, 1]
+2019-03-14 15:43:58.091 RECONNECT  14814 <      syncCaller  3  0> 3 will start reconnect with 2
+2019-03-14 15:43:58.091 RECONNECT  14814 <      syncCaller  3  0> 3 sent commStateRequest to 2
+2019-03-14 15:43:58.092 RECONNECT  14815 <      syncCaller  3  0> 3 got commStateAck from 2
+2019-03-14 15:44:00.899 RECONNECT  17622 <      syncCaller  3  0> 3 got SignedState from 2
+2019-03-14 15:44:00.901 RECONNECT  17624 <      syncCaller  3  0> 3 finished reconnect with 2, got SignedState for round 1971
+2019-03-14 15:44:00.904 RECONNECT  17627 <      syncCaller  3  0> signed state events:
+[(3,3783), (2,8843), (0,8806), (2,8844), (1,8815), (0,8807), (0,8808), (0,8809), (1,8816), (1,8817), (0,8810), (2,8845), (2,8846), (1,8818), (1,8819), (0,8811), (2,8847), (2,8848), (1,8820), (0,8812), (2,8849), (1,8821), (2,8850), (0,8813), (2,8851), (0,8814), (0,8815), (2,8852), (1,8822), (1,8823), (2,8853), (1,8824), (0,8816), (2,8854), (0,8817), (2,8855), (2,8856), (1,8825), (1,8826), (1,8827), (0,8818), (0,8819)]
+2019-03-14 15:44:00.904 RECONNECT  17627 <      syncCaller  3  0> About to start recalculating the hash of the received state
+2019-03-14 15:44:00.905 RECONNECT  17628 <      syncCaller  3  0> About to start validating signatures of the received state
+2019-03-14 15:44:00.919 RECONNECT  17642 <      syncCaller  3  0> State is valid, will load it
+2019-03-14 15:44:00.919 STARTUP  17642 <      syncCaller  3  0> lateseq after restart is [8819, 8827, 8856, 3783]
+2019-03-14 15:45:43.392 STARTUP 120115 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
