@@ -1,0 +1,39 @@
+{
+  "name":"FCM1Mx6-Stream",
+  "result": {
+	"uri":"results"
+  },
+  "cloud":{
+	"service":"aws",
+	"securityGroup":"SwirldsSecGroup",
+	"securityGroupID":"sg-7214c20b",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V8",
+	"instanceID": "ami-01ca0dc7972e1d22a",
+	"instanceType": "m4.10xlarge",
+	"instanceKey": "ATF-Key",
+	"keyLocation":"./keys/my-key",
+	"login": "ubuntu",
+	"regionList":[
+	  { "region":"us-east-1", "numberOfNodes":4}
+	]
+  },
+  "eventFilesWriters": 4,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testFcm3MCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+
+  "slack":{
+    "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+    "channel": "regression"
+  }
+}

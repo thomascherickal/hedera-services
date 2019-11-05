@@ -1,0 +1,23 @@
+{
+  "name":"663-restart-validation",
+  "result": {
+	"uri":"testing/results"
+  },
+  "local":{
+	"numberOfNodes" : 4
+  },
+  "eventFilesWriters": 2,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testRestartCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  }
+}

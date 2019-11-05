@@ -1,0 +1,24 @@
+{
+    "payloadConfig" :{
+        "distribution" :{
+            "sizeDistribution" : [ 100 ],
+            "ratioDistribution": [ 100 ],
+            "typeDistribution" : [ "TYPE_FILE_READ"]
+        }
+    },
+    "submitConfig" :{
+        "_comment0" : [ "0,  BYTES_PER_SECOND_PER_NODE",
+                        "1,  TRANS_PER_SECOND_PER_NODE",
+                        "2,  EVENTS_PER_SECOND_WHOLE_NETWORK",         "hard to control and achieve",
+                        "3,  ROUNDS_PER_SECOND_WHOLE_NETWORK",
+                        "4,  TRANS_PER_EVENT_WHOLE_NETWORK",           "more like low bound",
+                        "5,  C2C_LATENCY" ],
+
+        "systemMetric"  : "TRANS_PER_SECOND_PER_NODE",
+        "metricThreshold" : 2
+    },
+
+    "filePayloadConfig" :{
+
+    }    
+}

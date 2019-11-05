@@ -1,0 +1,477 @@
+2019-04-16 12:55:02.274 STARTUP 1 main Browser main() started
+2019-04-16 12:55:02.691 STARTUP 1 main About to run startPlatforms()
+2019-04-16 12:55:02.767 STARTUP 1 main About do crypto instantiation
+2019-04-16 12:55:02.806 STARTUP 1 main About start loading keys
+2019-04-16 12:55:04.633 STARTUP 1 main Done loading keys
+2019-04-16 12:55:04.633 STARTUP 1 main About to start creating Crypto objects
+2019-04-16 12:55:05.454 STARTUP 1 main Done creating Crypto objects
+2019-04-16 12:55:05.454 STARTUP 1 main Done with crypto instantiation
+2019-04-16 12:55:05.457 STARTUP 1 main Starting platforms
+2019-04-16 12:55:05.605 STARTUP 1 main Done with starting platforms
+2019-04-16 12:55:05.903 STARTUP 32 <     platformRun  3  3> Parsing JSON FCM1K.json
+2019-04-16 12:55:05.997 STARTUP 1 main Browser main() finished
+2019-04-16 12:55:06.008 DEMO_INFO 32 <     platformRun  3  3>  insertSeq         = true
+2019-04-16 12:55:06.009 DEMO_INFO 32 <     platformRun  3  3>  appendSig         = true
+2019-04-16 12:55:06.009 DEMO_INFO 32 <     platformRun  3  3>  variedSize        = false
+2019-04-16 12:55:06.009 DEMO_INFO 32 <     platformRun  3  3>  payloadByteSize   = 100
+2019-04-16 12:55:06.010 DEMO_INFO 32 <     platformRun  3  3>  maxByteSize       = 100
+2019-04-16 12:55:06.010 DEMO_INFO 32 <     platformRun  3  3>  type              = TYPE_RANDOM_BYTES
+2019-04-16 12:55:06.010 DEMO_INFO 32 <     platformRun  3  3> Size distribution  = [100]
+2019-04-16 12:55:06.011 DEMO_INFO 32 <     platformRun  3  3> Type distribution  = [TYPE_FCM_TEST]
+2019-04-16 12:55:06.011 DEMO_INFO 32 <     platformRun  3  3> Ratio distribution = [100.0]
+2019-04-16 12:55:06.017 DEMO_INFO 32 <     platformRun  3  3> Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2019-04-16 12:55:06.095 STARTUP 32 <     platformRun  3  3> PlatformTestingDemo: Public Key -> hex('0x78C4CE390802C42D6C8BDF351D3DCD1870ABB831D81EEA7F09C3A7D8BCC39DE0')
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> This test will generate sequential FCM payload:
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> This test will generate FCM payload type TYPE_FCM_CREATE for 100000 times
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> This test will generate FCM payload type TYPE_FCM_UPDATE for 400000 times
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> This test will generate FCM payload type TYPE_FCM_TRANSFER for 400000 times
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> This test will generate FCM payload type TYPE_FCM_DELETE for 100000 times
+2019-04-16 12:55:06.096 DEMO_INFO 32 <     platformRun  3  3> Set nextFileDirSeq 0 
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > **********************************************
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *                                            *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *                                            *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *       Please config csvFileName            *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *       in Settings.txt to generate          *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *       csv files for platform stats         *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *                                            *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > *                                            *
+2019-04-16 12:55:06.110 STARTUP 41 <      appMainRun  3   > **********************************************
+2019-04-16 12:55:06.111 DEMO_INFO 41 <      appMainRun  3   > Node 3 starts transactions ........
+2019-04-16 12:55:06.179 STARTUP 41 <      appMainRun  3   > PlatformTestingDemo: Signed Message { publicKey = '0x78C4CE390802C42D6C8BDF351D3DCD1870ABB831D81EEA7F09C3A7D8BCC39DE0', privateKey ='0xB1BAB4E03373F0DA8D71EF3E480B5AEECECF91CF07F8AEF5E45DB8168F7066D078C4CE390802C42D6C8BDF351D3DCD1870ABB831D81EEA7F09C3A7D8BCC39DE0', signature = '0x76A1793F40EF397B1D359F3232FEEE9D5A835FC315977DC9FFBBF7D6FAB7DD11DE7192C595F9CB03C48D06D9ACF1BE568C9016010E8986D8E49019754E78C908', message = '0x1A680A0E0803100320A08D0628904E30904E2A560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' }
+2019-04-16 12:55:06.307 STARTUP 67 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CryptoFactory initializing
+2019-04-16 12:55:06.335 STARTUP 67 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-04-16 12:55:06.365 STARTUP 67 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-04-16 12:55:06.366 STARTUP 67 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-04-16 12:55:06.898 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 10000 create 10000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:08.489 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 20000 create 20000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:11.093 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 30000 create 30000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:13.607 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 40000 create 40000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:16.021 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 50000 create 50000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:18.506 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 60000 create 60000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:21.036 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 70000 create 70000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:23.528 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 80000 create 80000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:26.139 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 90000 create 90000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:28.524 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 100000 create 100000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:31.119 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 110000 create 110000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:33.573 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 120000 create 120000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:36.087 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 130000 create 130000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:38.656 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 140000 create 140000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:41.113 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 150000 create 150000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:43.681 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 160000 create 160000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:45.951 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 170000 create 170000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:48.623 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 180000 create 180000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:50.922 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 190000 create 190000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:53.505 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 200000 create 200000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:56.132 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 210000 create 210000 update 0 delete 0 transfer 0 
+2019-04-16 12:55:58.552 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 220000 create 220000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:01.022 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 230000 create 230000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:03.532 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 240000 create 240000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:05.993 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 250000 create 250000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:08.503 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 260000 create 260000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:10.993 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 270000 create 270000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:13.543 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 280000 create 280000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:16.117 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 290000 create 290000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:18.528 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 300000 create 300000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:21.062 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 310000 create 310000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:23.579 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 320000 create 320000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:26.091 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 330000 create 330000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:28.556 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 340000 create 340000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:31.083 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 350000 create 350000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:33.569 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 360000 create 360000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:36.050 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 370000 create 370000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:38.491 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 380000 create 380000 update 0 delete 0 transfer 0 
+2019-04-16 12:56:41.085 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 390000 create 389385 update 615 delete 0 transfer 0 
+2019-04-16 12:56:43.660 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 400000 create 394372 update 5628 delete 0 transfer 0 
+2019-04-16 12:56:45.989 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 410000 create 399335 update 10665 delete 0 transfer 0 
+2019-04-16 12:56:48.483 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 420000 create 400000 update 20000 delete 0 transfer 0 
+2019-04-16 12:56:51.017 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 430000 create 400000 update 30000 delete 0 transfer 0 
+2019-04-16 12:56:53.559 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 440000 create 400000 update 40000 delete 0 transfer 0 
+2019-04-16 12:56:55.970 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 450000 create 400000 update 50000 delete 0 transfer 0 
+2019-04-16 12:56:58.526 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 460000 create 400000 update 60000 delete 0 transfer 0 
+2019-04-16 12:57:01.084 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 470000 create 400000 update 70000 delete 0 transfer 0 
+2019-04-16 12:57:03.693 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 480000 create 400000 update 80000 delete 0 transfer 0 
+2019-04-16 12:57:06.164 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 490000 create 400000 update 90000 delete 0 transfer 0 
+2019-04-16 12:57:08.571 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 500000 create 400000 update 100000 delete 0 transfer 0 
+2019-04-16 12:57:11.075 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 510000 create 400000 update 110000 delete 0 transfer 0 
+2019-04-16 12:57:13.543 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 520000 create 400000 update 120000 delete 0 transfer 0 
+2019-04-16 12:57:15.996 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 530000 create 400000 update 130000 delete 0 transfer 0 
+2019-04-16 12:57:18.503 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 540000 create 400000 update 140000 delete 0 transfer 0 
+2019-04-16 12:57:21.012 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 550000 create 400000 update 150000 delete 0 transfer 0 
+2019-04-16 12:57:23.578 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 560000 create 400000 update 160000 delete 0 transfer 0 
+2019-04-16 12:57:26.071 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 570000 create 400000 update 170000 delete 0 transfer 0 
+2019-04-16 12:57:28.591 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 580000 create 400000 update 180000 delete 0 transfer 0 
+2019-04-16 12:57:31.035 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 590000 create 400000 update 190000 delete 0 transfer 0 
+2019-04-16 12:57:33.540 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 600000 create 400000 update 200000 delete 0 transfer 0 
+2019-04-16 12:57:35.934 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 610000 create 400000 update 210000 delete 0 transfer 0 
+2019-04-16 12:57:38.587 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 620000 create 400000 update 220000 delete 0 transfer 0 
+2019-04-16 12:57:41.077 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 630000 create 400000 update 230000 delete 0 transfer 0 
+2019-04-16 12:57:43.603 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 640000 create 400000 update 240000 delete 0 transfer 0 
+2019-04-16 12:57:46.117 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 650000 create 400000 update 250000 delete 0 transfer 0 
+2019-04-16 12:57:48.584 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 660000 create 400000 update 260000 delete 0 transfer 0 
+2019-04-16 12:57:51.033 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 670000 create 400000 update 270000 delete 0 transfer 0 
+2019-04-16 12:57:53.533 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 680000 create 400000 update 280000 delete 0 transfer 0 
+2019-04-16 12:57:55.996 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 690000 create 400000 update 290000 delete 0 transfer 0 
+2019-04-16 12:57:58.579 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 700000 create 400000 update 300000 delete 0 transfer 0 
+2019-04-16 12:58:00.976 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 710000 create 400000 update 310000 delete 0 transfer 0 
+2019-04-16 12:58:03.581 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 720000 create 400000 update 320000 delete 0 transfer 0 
+2019-04-16 12:58:06.007 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 730000 create 400000 update 330000 delete 0 transfer 0 
+2019-04-16 12:58:08.520 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 740000 create 400000 update 340000 delete 0 transfer 0 
+2019-04-16 12:58:11.121 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 750000 create 400000 update 350000 delete 0 transfer 0 
+2019-04-16 12:58:13.629 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 760000 create 400000 update 360000 delete 0 transfer 0 
+2019-04-16 12:58:16.046 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 770000 create 400000 update 370000 delete 0 transfer 0 
+2019-04-16 12:58:18.592 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 780000 create 400000 update 380000 delete 0 transfer 0 
+2019-04-16 12:58:21.048 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 790000 create 400000 update 390000 delete 0 transfer 0 
+2019-04-16 12:58:23.651 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 800000 create 400000 update 400000 delete 0 transfer 0 
+2019-04-16 12:58:26.119 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 810000 create 400000 update 410000 delete 0 transfer 0 
+2019-04-16 12:58:28.693 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 820000 create 400000 update 420000 delete 0 transfer 0 
+2019-04-16 12:58:30.999 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 830000 create 400000 update 430000 delete 0 transfer 0 
+2019-04-16 12:58:33.538 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 840000 create 400000 update 440000 delete 0 transfer 0 
+2019-04-16 12:58:36.147 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 850000 create 400000 update 450000 delete 0 transfer 0 
+2019-04-16 12:58:38.529 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 860000 create 400000 update 460000 delete 0 transfer 0 
+2019-04-16 12:58:41.097 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 870000 create 400000 update 470000 delete 0 transfer 0 
+2019-04-16 12:58:43.648 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 880000 create 400000 update 480000 delete 0 transfer 0 
+2019-04-16 12:58:46.162 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 890000 create 400000 update 490000 delete 0 transfer 0 
+2019-04-16 12:58:48.542 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 900000 create 400000 update 500000 delete 0 transfer 0 
+2019-04-16 12:58:51.085 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 910000 create 400000 update 510000 delete 0 transfer 0 
+2019-04-16 12:58:53.533 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 920000 create 400000 update 520000 delete 0 transfer 0 
+2019-04-16 12:58:56.133 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 930000 create 400000 update 530000 delete 0 transfer 0 
+2019-04-16 12:58:58.656 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 940000 create 400000 update 540000 delete 0 transfer 0 
+2019-04-16 12:59:01.007 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 950000 create 400000 update 550000 delete 0 transfer 0 
+2019-04-16 12:59:03.474 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 960000 create 400000 update 560000 delete 0 transfer 0 
+2019-04-16 12:59:06.261 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 970000 create 400000 update 570000 delete 0 transfer 0 
+2019-04-16 12:59:08.640 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 980000 create 400000 update 580000 delete 0 transfer 0 
+2019-04-16 12:59:11.102 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 990000 create 400000 update 590000 delete 0 transfer 0 
+2019-04-16 12:59:13.631 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1000000 create 400000 update 600000 delete 0 transfer 0 
+2019-04-16 12:59:16.110 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1010000 create 400000 update 610000 delete 0 transfer 0 
+2019-04-16 12:59:18.589 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1020000 create 400000 update 620000 delete 0 transfer 0 
+2019-04-16 12:59:21.005 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1030000 create 400000 update 630000 delete 0 transfer 0 
+2019-04-16 12:59:23.518 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1040000 create 400000 update 640000 delete 0 transfer 0 
+2019-04-16 12:59:26.087 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1050000 create 400000 update 650000 delete 0 transfer 0 
+2019-04-16 12:59:28.656 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1060000 create 400000 update 660000 delete 0 transfer 0 
+2019-04-16 12:59:31.136 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1070000 create 400000 update 670000 delete 0 transfer 0 
+2019-04-16 12:59:33.631 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1080000 create 400000 update 680000 delete 0 transfer 0 
+2019-04-16 12:59:36.135 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1090000 create 400000 update 690000 delete 0 transfer 0 
+2019-04-16 12:59:38.508 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1100000 create 400000 update 700000 delete 0 transfer 0 
+2019-04-16 12:59:41.006 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1110000 create 400000 update 710000 delete 0 transfer 0 
+2019-04-16 12:59:43.753 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1120000 create 400000 update 720000 delete 0 transfer 0 
+2019-04-16 12:59:46.012 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1130000 create 400000 update 730000 delete 0 transfer 0 
+2019-04-16 12:59:48.588 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1140000 create 400000 update 740000 delete 0 transfer 0 
+2019-04-16 12:59:50.992 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1150000 create 400000 update 750000 delete 0 transfer 0 
+2019-04-16 12:59:53.489 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1160000 create 400000 update 760000 delete 0 transfer 0 
+2019-04-16 12:59:56.104 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1170000 create 400000 update 770000 delete 0 transfer 0 
+2019-04-16 12:59:58.574 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1180000 create 400000 update 780000 delete 0 transfer 0 
+2019-04-16 13:00:01.047 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1190000 create 400000 update 790000 delete 0 transfer 0 
+2019-04-16 13:00:03.631 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1200000 create 400000 update 800000 delete 0 transfer 0 
+2019-04-16 13:00:06.167 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1210000 create 400000 update 810000 delete 0 transfer 0 
+2019-04-16 13:00:08.591 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1220000 create 400000 update 820000 delete 0 transfer 0 
+2019-04-16 13:00:11.120 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1230000 create 400000 update 830000 delete 0 transfer 0 
+2019-04-16 13:00:13.678 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1240000 create 400000 update 840000 delete 0 transfer 0 
+2019-04-16 13:00:16.129 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1250000 create 400000 update 850000 delete 0 transfer 0 
+2019-04-16 13:00:18.596 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1260000 create 400000 update 860000 delete 0 transfer 0 
+2019-04-16 13:00:21.117 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1270000 create 400000 update 870000 delete 0 transfer 0 
+2019-04-16 13:00:23.545 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1280000 create 400000 update 880000 delete 0 transfer 0 
+2019-04-16 13:00:26.082 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1290000 create 400000 update 890000 delete 0 transfer 0 
+2019-04-16 13:00:28.478 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1300000 create 400000 update 900000 delete 0 transfer 0 
+2019-04-16 13:00:30.983 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1310000 create 400000 update 910000 delete 0 transfer 0 
+2019-04-16 13:00:33.704 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1320000 create 400000 update 920000 delete 0 transfer 0 
+2019-04-16 13:00:36.238 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1330000 create 400000 update 930000 delete 0 transfer 0 
+2019-04-16 13:00:38.610 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1340000 create 400000 update 940000 delete 0 transfer 0 
+2019-04-16 13:00:41.224 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1350000 create 400000 update 950000 delete 0 transfer 0 
+2019-04-16 13:00:43.651 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1360000 create 400000 update 960000 delete 0 transfer 0 
+2019-04-16 13:00:45.995 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1370000 create 400000 update 970000 delete 0 transfer 0 
+2019-04-16 13:00:48.564 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1380000 create 400000 update 980000 delete 0 transfer 0 
+2019-04-16 13:00:51.094 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1390000 create 400000 update 990000 delete 0 transfer 0 
+2019-04-16 13:00:53.494 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1400000 create 400000 update 1000000 delete 0 transfer 0 
+2019-04-16 13:00:55.979 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1410000 create 400000 update 1010000 delete 0 transfer 0 
+2019-04-16 13:00:58.493 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1420000 create 400000 update 1020000 delete 0 transfer 0 
+2019-04-16 13:01:01.065 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1430000 create 400000 update 1030000 delete 0 transfer 0 
+2019-04-16 13:01:03.625 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1440000 create 400000 update 1040000 delete 0 transfer 0 
+2019-04-16 13:01:06.260 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1450000 create 400000 update 1050000 delete 0 transfer 0 
+2019-04-16 13:01:08.658 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1460000 create 400000 update 1060000 delete 0 transfer 0 
+2019-04-16 13:01:11.085 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1470000 create 400000 update 1070000 delete 0 transfer 0 
+2019-04-16 13:01:13.793 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1480000 create 400000 update 1080000 delete 0 transfer 0 
+2019-04-16 13:01:16.051 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1490000 create 400000 update 1090000 delete 0 transfer 0 
+2019-04-16 13:01:18.669 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1500000 create 400000 update 1100000 delete 0 transfer 0 
+2019-04-16 13:01:21.032 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1510000 create 400000 update 1110000 delete 0 transfer 0 
+2019-04-16 13:01:23.497 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1520000 create 400000 update 1120000 delete 0 transfer 0 
+2019-04-16 13:01:26.251 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1530000 create 400000 update 1130000 delete 0 transfer 0 
+2019-04-16 13:01:28.508 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1540000 create 400000 update 1140000 delete 0 transfer 0 
+2019-04-16 13:01:31.023 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1550000 create 400000 update 1150000 delete 0 transfer 0 
+2019-04-16 13:01:33.597 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1560000 create 400000 update 1160000 delete 0 transfer 0 
+2019-04-16 13:01:36.055 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1570000 create 400000 update 1170000 delete 0 transfer 0 
+2019-04-16 13:01:38.496 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1580000 create 400000 update 1180000 delete 0 transfer 0 
+2019-04-16 13:01:41.162 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1590000 create 400000 update 1190000 delete 0 transfer 0 
+2019-04-16 13:01:43.624 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1600000 create 400000 update 1200000 delete 0 transfer 0 
+2019-04-16 13:01:46.047 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1610000 create 400000 update 1210000 delete 0 transfer 0 
+2019-04-16 13:01:48.648 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1620000 create 400000 update 1220000 delete 0 transfer 0 
+2019-04-16 13:01:51.048 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1630000 create 400000 update 1230000 delete 0 transfer 0 
+2019-04-16 13:01:53.485 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1640000 create 400000 update 1240000 delete 0 transfer 0 
+2019-04-16 13:01:55.969 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1650000 create 400000 update 1250000 delete 0 transfer 0 
+2019-04-16 13:01:58.609 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1660000 create 400000 update 1260000 delete 0 transfer 0 
+2019-04-16 13:02:01.032 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1670000 create 400000 update 1270000 delete 0 transfer 0 
+2019-04-16 13:02:03.586 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1680000 create 400000 update 1280000 delete 0 transfer 0 
+2019-04-16 13:02:06.086 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1690000 create 400000 update 1290000 delete 0 transfer 0 
+2019-04-16 13:02:08.605 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1700000 create 400000 update 1300000 delete 0 transfer 0 
+2019-04-16 13:02:11.144 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1710000 create 400000 update 1310000 delete 0 transfer 0 
+2019-04-16 13:02:13.769 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1720000 create 400000 update 1320000 delete 0 transfer 0 
+2019-04-16 13:02:16.186 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1730000 create 400000 update 1330000 delete 0 transfer 0 
+2019-04-16 13:02:18.667 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1740000 create 400000 update 1340000 delete 0 transfer 0 
+2019-04-16 13:02:21.132 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1750000 create 400000 update 1350000 delete 0 transfer 0 
+2019-04-16 13:02:23.796 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1760000 create 400000 update 1360000 delete 0 transfer 0 
+2019-04-16 13:02:26.019 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1770000 create 400000 update 1370000 delete 0 transfer 0 
+2019-04-16 13:02:28.590 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1780000 create 400000 update 1380000 delete 0 transfer 0 
+2019-04-16 13:02:31.031 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1790000 create 400000 update 1390000 delete 0 transfer 0 
+2019-04-16 13:02:33.517 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1800000 create 400000 update 1400000 delete 0 transfer 0 
+2019-04-16 13:02:35.988 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1810000 create 400000 update 1410000 delete 0 transfer 0 
+2019-04-16 13:02:38.532 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1820000 create 400000 update 1420000 delete 0 transfer 0 
+2019-04-16 13:02:41.199 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1830000 create 400000 update 1430000 delete 0 transfer 0 
+2019-04-16 13:02:43.627 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1840000 create 400000 update 1440000 delete 0 transfer 0 
+2019-04-16 13:02:46.100 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1850000 create 400000 update 1450000 delete 0 transfer 0 
+2019-04-16 13:02:48.616 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1860000 create 400000 update 1460000 delete 0 transfer 0 
+2019-04-16 13:02:51.120 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1870000 create 400000 update 1470000 delete 0 transfer 0 
+2019-04-16 13:02:53.589 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1880000 create 400000 update 1480000 delete 0 transfer 0 
+2019-04-16 13:02:56.088 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1890000 create 400000 update 1490000 delete 0 transfer 0 
+2019-04-16 13:02:58.475 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1900000 create 400000 update 1500000 delete 0 transfer 0 
+2019-04-16 13:03:01.148 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1910000 create 400000 update 1510000 delete 0 transfer 0 
+2019-04-16 13:03:03.567 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1920000 create 400000 update 1520000 delete 0 transfer 0 
+2019-04-16 13:03:06.124 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1930000 create 400000 update 1530000 delete 0 transfer 0 
+2019-04-16 13:03:08.545 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1940000 create 400000 update 1540000 delete 0 transfer 0 
+2019-04-16 13:03:11.074 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1950000 create 400000 update 1550000 delete 0 transfer 0 
+2019-04-16 13:03:13.535 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1960000 create 400000 update 1560000 delete 0 transfer 0 
+2019-04-16 13:03:16.034 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1970000 create 400000 update 1570000 delete 0 transfer 0 
+2019-04-16 13:03:18.577 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1980000 create 400000 update 1580000 delete 0 transfer 0 
+2019-04-16 13:03:21.092 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 1990000 create 400000 update 1589368 delete 0 transfer 632 
+2019-04-16 13:03:23.637 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2000000 create 400000 update 1594350 delete 0 transfer 5650 
+2019-04-16 13:03:26.150 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2010000 create 400000 update 1599329 delete 0 transfer 10671 
+2019-04-16 13:03:28.610 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2020000 create 400000 update 1600000 delete 0 transfer 20000 
+2019-04-16 13:03:31.158 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2030000 create 400000 update 1600000 delete 0 transfer 30000 
+2019-04-16 13:03:33.522 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2040000 create 400000 update 1600000 delete 0 transfer 40000 
+2019-04-16 13:03:35.990 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2050000 create 400000 update 1600000 delete 0 transfer 50000 
+2019-04-16 13:03:38.636 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2060000 create 400000 update 1600000 delete 0 transfer 60000 
+2019-04-16 13:03:41.040 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2070000 create 400000 update 1600000 delete 0 transfer 70000 
+2019-04-16 13:03:43.548 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2080000 create 400000 update 1600000 delete 0 transfer 80000 
+2019-04-16 13:03:46.041 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2090000 create 400000 update 1600000 delete 0 transfer 90000 
+2019-04-16 13:03:48.538 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2100000 create 400000 update 1600000 delete 0 transfer 100000 
+2019-04-16 13:03:51.067 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2110000 create 400000 update 1600000 delete 0 transfer 110000 
+2019-04-16 13:03:53.528 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2120000 create 400000 update 1600000 delete 0 transfer 120000 
+2019-04-16 13:03:56.076 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2130000 create 400000 update 1600000 delete 0 transfer 130000 
+2019-04-16 13:03:58.720 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2140000 create 400000 update 1600000 delete 0 transfer 140000 
+2019-04-16 13:04:01.055 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2150000 create 400000 update 1600000 delete 0 transfer 150000 
+2019-04-16 13:04:03.488 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2160000 create 400000 update 1600000 delete 0 transfer 160000 
+2019-04-16 13:04:06.101 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2170000 create 400000 update 1600000 delete 0 transfer 170000 
+2019-04-16 13:04:08.606 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2180000 create 400000 update 1600000 delete 0 transfer 180000 
+2019-04-16 13:04:11.007 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2190000 create 400000 update 1600000 delete 0 transfer 190000 
+2019-04-16 13:04:13.558 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2200000 create 400000 update 1600000 delete 0 transfer 200000 
+2019-04-16 13:04:16.042 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2210000 create 400000 update 1600000 delete 0 transfer 210000 
+2019-04-16 13:04:18.618 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2220000 create 400000 update 1600000 delete 0 transfer 220000 
+2019-04-16 13:04:21.114 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2230000 create 400000 update 1600000 delete 0 transfer 230000 
+2019-04-16 13:04:23.553 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2240000 create 400000 update 1600000 delete 0 transfer 240000 
+2019-04-16 13:04:25.981 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2250000 create 400000 update 1600000 delete 0 transfer 250000 
+2019-04-16 13:04:28.595 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2260000 create 400000 update 1600000 delete 0 transfer 260000 
+2019-04-16 13:04:31.166 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2270000 create 400000 update 1600000 delete 0 transfer 270000 
+2019-04-16 13:04:33.568 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2280000 create 400000 update 1600000 delete 0 transfer 280000 
+2019-04-16 13:04:36.112 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2290000 create 400000 update 1600000 delete 0 transfer 290000 
+2019-04-16 13:04:38.601 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2300000 create 400000 update 1600000 delete 0 transfer 300000 
+2019-04-16 13:04:40.999 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2310000 create 400000 update 1600000 delete 0 transfer 310000 
+2019-04-16 13:04:43.615 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2320000 create 400000 update 1600000 delete 0 transfer 320000 
+2019-04-16 13:04:45.984 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2330000 create 400000 update 1600000 delete 0 transfer 330000 
+2019-04-16 13:04:48.499 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2340000 create 400000 update 1600000 delete 0 transfer 340000 
+2019-04-16 13:04:51.072 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2350000 create 400000 update 1600000 delete 0 transfer 350000 
+2019-04-16 13:04:53.608 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2360000 create 400000 update 1600000 delete 0 transfer 360000 
+2019-04-16 13:04:56.140 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2370000 create 400000 update 1600000 delete 0 transfer 370000 
+2019-04-16 13:04:58.532 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2380000 create 400000 update 1600000 delete 0 transfer 380000 
+2019-04-16 13:05:01.224 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2390000 create 400000 update 1600000 delete 0 transfer 390000 
+2019-04-16 13:05:03.583 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2400000 create 400000 update 1600000 delete 0 transfer 400000 
+2019-04-16 13:05:06.046 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2410000 create 400000 update 1600000 delete 0 transfer 410000 
+2019-04-16 13:05:08.544 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2420000 create 400000 update 1600000 delete 0 transfer 420000 
+2019-04-16 13:05:11.032 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2430000 create 400000 update 1600000 delete 0 transfer 430000 
+2019-04-16 13:05:13.481 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2440000 create 400000 update 1600000 delete 0 transfer 440000 
+2019-04-16 13:05:16.046 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2450000 create 400000 update 1600000 delete 0 transfer 450000 
+2019-04-16 13:05:18.631 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2460000 create 400000 update 1600000 delete 0 transfer 460000 
+2019-04-16 13:05:21.176 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2470000 create 400000 update 1600000 delete 0 transfer 470000 
+2019-04-16 13:05:23.548 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2480000 create 400000 update 1600000 delete 0 transfer 480000 
+2019-04-16 13:05:26.129 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2490000 create 400000 update 1600000 delete 0 transfer 490000 
+2019-04-16 13:05:28.537 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2500000 create 400000 update 1600000 delete 0 transfer 500000 
+2019-04-16 13:05:31.120 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2510000 create 400000 update 1600000 delete 0 transfer 510000 
+2019-04-16 13:05:33.587 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2520000 create 400000 update 1600000 delete 0 transfer 520000 
+2019-04-16 13:05:36.047 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2530000 create 400000 update 1600000 delete 0 transfer 530000 
+2019-04-16 13:05:38.622 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2540000 create 400000 update 1600000 delete 0 transfer 540000 
+2019-04-16 13:05:41.024 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2550000 create 400000 update 1600000 delete 0 transfer 550000 
+2019-04-16 13:05:43.516 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2560000 create 400000 update 1600000 delete 0 transfer 560000 
+2019-04-16 13:05:46.089 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2570000 create 400000 update 1600000 delete 0 transfer 570000 
+2019-04-16 13:05:48.540 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2580000 create 400000 update 1600000 delete 0 transfer 580000 
+2019-04-16 13:05:51.080 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2590000 create 400000 update 1600000 delete 0 transfer 590000 
+2019-04-16 13:05:53.489 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2600000 create 400000 update 1600000 delete 0 transfer 600000 
+2019-04-16 13:05:56.004 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2610000 create 400000 update 1600000 delete 0 transfer 610000 
+2019-04-16 13:05:58.566 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2620000 create 400000 update 1600000 delete 0 transfer 620000 
+2019-04-16 13:06:01.128 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2630000 create 400000 update 1600000 delete 0 transfer 630000 
+2019-04-16 13:06:03.514 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2640000 create 400000 update 1600000 delete 0 transfer 640000 
+2019-04-16 13:06:06.042 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2650000 create 400000 update 1600000 delete 0 transfer 650000 
+2019-04-16 13:06:08.551 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2660000 create 400000 update 1600000 delete 0 transfer 660000 
+2019-04-16 13:06:11.091 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2670000 create 400000 update 1600000 delete 0 transfer 670000 
+2019-04-16 13:06:13.649 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2680000 create 400000 update 1600000 delete 0 transfer 680000 
+2019-04-16 13:06:16.034 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2690000 create 400000 update 1600000 delete 0 transfer 690000 
+2019-04-16 13:06:18.492 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2700000 create 400000 update 1600000 delete 0 transfer 700000 
+2019-04-16 13:06:21.191 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2710000 create 400000 update 1600000 delete 0 transfer 710000 
+2019-04-16 13:06:23.567 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2720000 create 400000 update 1600000 delete 0 transfer 720000 
+2019-04-16 13:06:26.062 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2730000 create 400000 update 1600000 delete 0 transfer 730000 
+2019-04-16 13:06:28.632 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2740000 create 400000 update 1600000 delete 0 transfer 740000 
+2019-04-16 13:06:31.141 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2750000 create 400000 update 1600000 delete 0 transfer 750000 
+2019-04-16 13:06:33.474 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2760000 create 400000 update 1600000 delete 0 transfer 760000 
+2019-04-16 13:06:36.027 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2770000 create 400000 update 1600000 delete 0 transfer 770000 
+2019-04-16 13:06:38.624 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2780000 create 400000 update 1600000 delete 0 transfer 780000 
+2019-04-16 13:06:41.092 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2790000 create 400000 update 1600000 delete 0 transfer 790000 
+2019-04-16 13:06:43.549 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2800000 create 400000 update 1600000 delete 0 transfer 800000 
+2019-04-16 13:06:45.991 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2810000 create 400000 update 1600000 delete 0 transfer 810000 
+2019-04-16 13:06:48.534 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2820000 create 400000 update 1600000 delete 0 transfer 820000 
+2019-04-16 13:06:51.043 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2830000 create 400000 update 1600000 delete 0 transfer 830000 
+2019-04-16 13:06:53.712 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2840000 create 400000 update 1600000 delete 0 transfer 840000 
+2019-04-16 13:06:56.112 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2850000 create 400000 update 1600000 delete 0 transfer 850000 
+2019-04-16 13:06:58.588 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2860000 create 400000 update 1600000 delete 0 transfer 860000 
+2019-04-16 13:07:01.174 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2870000 create 400000 update 1600000 delete 0 transfer 870000 
+2019-04-16 13:07:03.631 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2880000 create 400000 update 1600000 delete 0 transfer 880000 
+2019-04-16 13:07:06.100 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2890000 create 400000 update 1600000 delete 0 transfer 890000 
+2019-04-16 13:07:08.517 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2900000 create 400000 update 1600000 delete 0 transfer 900000 
+2019-04-16 13:07:11.193 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2910000 create 400000 update 1600000 delete 0 transfer 910000 
+2019-04-16 13:07:13.607 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2920000 create 400000 update 1600000 delete 0 transfer 920000 
+2019-04-16 13:07:16.127 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2930000 create 400000 update 1600000 delete 0 transfer 930000 
+2019-04-16 13:07:18.507 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2940000 create 400000 update 1600000 delete 0 transfer 940000 
+2019-04-16 13:07:21.067 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2950000 create 400000 update 1600000 delete 0 transfer 950000 
+2019-04-16 13:07:23.580 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2960000 create 400000 update 1600000 delete 0 transfer 960000 
+2019-04-16 13:07:26.157 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2970000 create 400000 update 1600000 delete 0 transfer 970000 
+2019-04-16 13:07:28.546 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2980000 create 400000 update 1600000 delete 0 transfer 980000 
+2019-04-16 13:07:30.991 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 2990000 create 400000 update 1600000 delete 0 transfer 990000 
+2019-04-16 13:07:33.722 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3000000 create 400000 update 1600000 delete 0 transfer 1000000 
+2019-04-16 13:07:36.158 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3010000 create 400000 update 1600000 delete 0 transfer 1010000 
+2019-04-16 13:07:38.737 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3020000 create 400000 update 1600000 delete 0 transfer 1020000 
+2019-04-16 13:07:41.060 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3030000 create 400000 update 1600000 delete 0 transfer 1030000 
+2019-04-16 13:07:43.529 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3040000 create 400000 update 1600000 delete 0 transfer 1040000 
+2019-04-16 13:07:46.099 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3050000 create 400000 update 1600000 delete 0 transfer 1050000 
+2019-04-16 13:07:48.524 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3060000 create 400000 update 1600000 delete 0 transfer 1060000 
+2019-04-16 13:07:51.024 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3070000 create 400000 update 1600000 delete 0 transfer 1070000 
+2019-04-16 13:07:53.528 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3080000 create 400000 update 1600000 delete 0 transfer 1080000 
+2019-04-16 13:07:55.970 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3090000 create 400000 update 1600000 delete 0 transfer 1090000 
+2019-04-16 13:07:58.562 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3100000 create 400000 update 1600000 delete 0 transfer 1100000 
+2019-04-16 13:08:01.115 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3110000 create 400000 update 1600000 delete 0 transfer 1110000 
+2019-04-16 13:08:03.574 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3120000 create 400000 update 1600000 delete 0 transfer 1120000 
+2019-04-16 13:08:06.097 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3130000 create 400000 update 1600000 delete 0 transfer 1130000 
+2019-04-16 13:08:08.578 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3140000 create 400000 update 1600000 delete 0 transfer 1140000 
+2019-04-16 13:08:11.070 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3150000 create 400000 update 1600000 delete 0 transfer 1150000 
+2019-04-16 13:08:13.562 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3160000 create 400000 update 1600000 delete 0 transfer 1160000 
+2019-04-16 13:08:16.092 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3170000 create 400000 update 1600000 delete 0 transfer 1170000 
+2019-04-16 13:08:18.523 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3180000 create 400000 update 1600000 delete 0 transfer 1180000 
+2019-04-16 13:08:21.073 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3190000 create 400000 update 1600000 delete 0 transfer 1190000 
+2019-04-16 13:08:23.546 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3200000 create 400000 update 1600000 delete 0 transfer 1200000 
+2019-04-16 13:08:26.050 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3210000 create 400000 update 1600000 delete 0 transfer 1210000 
+2019-04-16 13:08:28.564 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3220000 create 400000 update 1600000 delete 0 transfer 1220000 
+2019-04-16 13:08:31.143 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3230000 create 400000 update 1600000 delete 0 transfer 1230000 
+2019-04-16 13:08:33.546 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3240000 create 400000 update 1600000 delete 0 transfer 1240000 
+2019-04-16 13:08:35.977 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3250000 create 400000 update 1600000 delete 0 transfer 1250000 
+2019-04-16 13:08:38.505 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3260000 create 400000 update 1600000 delete 0 transfer 1260000 
+2019-04-16 13:08:41.063 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3270000 create 400000 update 1600000 delete 0 transfer 1270000 
+2019-04-16 13:08:43.550 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3280000 create 400000 update 1600000 delete 0 transfer 1280000 
+2019-04-16 13:08:46.072 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3290000 create 400000 update 1600000 delete 0 transfer 1290000 
+2019-04-16 13:08:48.580 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3300000 create 400000 update 1600000 delete 0 transfer 1300000 
+2019-04-16 13:08:51.062 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3310000 create 400000 update 1600000 delete 0 transfer 1310000 
+2019-04-16 13:08:53.575 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3320000 create 400000 update 1600000 delete 0 transfer 1320000 
+2019-04-16 13:08:56.051 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3330000 create 400000 update 1600000 delete 0 transfer 1330000 
+2019-04-16 13:08:58.560 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3340000 create 400000 update 1600000 delete 0 transfer 1340000 
+2019-04-16 13:09:01.101 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3350000 create 400000 update 1600000 delete 0 transfer 1350000 
+2019-04-16 13:09:03.633 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3360000 create 400000 update 1600000 delete 0 transfer 1360000 
+2019-04-16 13:09:06.121 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3370000 create 400000 update 1600000 delete 0 transfer 1370000 
+2019-04-16 13:09:08.634 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3380000 create 400000 update 1600000 delete 0 transfer 1380000 
+2019-04-16 13:09:11.060 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3390000 create 400000 update 1600000 delete 0 transfer 1390000 
+2019-04-16 13:09:13.568 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3400000 create 400000 update 1600000 delete 0 transfer 1400000 
+2019-04-16 13:09:16.181 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3410000 create 400000 update 1600000 delete 0 transfer 1410000 
+2019-04-16 13:09:18.637 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3420000 create 400000 update 1600000 delete 0 transfer 1420000 
+2019-04-16 13:09:21.089 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3430000 create 400000 update 1600000 delete 0 transfer 1430000 
+2019-04-16 13:09:23.647 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3440000 create 400000 update 1600000 delete 0 transfer 1440000 
+2019-04-16 13:09:26.072 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3450000 create 400000 update 1600000 delete 0 transfer 1450000 
+2019-04-16 13:09:28.458 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3460000 create 400000 update 1600000 delete 0 transfer 1460000 
+2019-04-16 13:09:31.021 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3470000 create 400000 update 1600000 delete 0 transfer 1470000 
+2019-04-16 13:09:33.633 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3480000 create 400000 update 1600000 delete 0 transfer 1480000 
+2019-04-16 13:09:36.108 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3490000 create 400000 update 1600000 delete 0 transfer 1490000 
+2019-04-16 13:09:38.617 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3500000 create 400000 update 1600000 delete 0 transfer 1500000 
+2019-04-16 13:09:41.130 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3510000 create 400000 update 1600000 delete 0 transfer 1510000 
+2019-04-16 13:09:43.589 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3520000 create 400000 update 1600000 delete 0 transfer 1520000 
+2019-04-16 13:09:46.056 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3530000 create 400000 update 1600000 delete 0 transfer 1530000 
+2019-04-16 13:09:48.510 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3540000 create 400000 update 1600000 delete 0 transfer 1540000 
+2019-04-16 13:09:51.160 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3550000 create 400000 update 1600000 delete 0 transfer 1550000 
+2019-04-16 13:09:53.482 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3560000 create 400000 update 1600000 delete 0 transfer 1560000 
+2019-04-16 13:09:55.961 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3570000 create 400000 update 1600000 delete 0 transfer 1570000 
+2019-04-16 13:09:58.634 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3580000 create 400000 update 1600000 delete 0 transfer 1580000 
+2019-04-16 13:10:01.056 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3590000 create 400000 update 1600000 delete 641 transfer 1589359 
+2019-04-16 13:10:03.523 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3600000 create 400000 update 1600000 delete 5658 transfer 1594342 
+2019-04-16 13:10:06.222 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3610000 create 400000 update 1600000 delete 10685 transfer 1599315 
+2019-04-16 13:10:08.628 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3620000 create 400000 update 1600000 delete 20000 transfer 1600000 
+2019-04-16 13:10:11.053 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3630000 create 400000 update 1600000 delete 30000 transfer 1600000 
+2019-04-16 13:10:13.568 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3640000 create 400000 update 1600000 delete 40000 transfer 1600000 
+2019-04-16 13:10:16.148 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3650000 create 400000 update 1600000 delete 50000 transfer 1600000 
+2019-04-16 13:10:18.562 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3660000 create 400000 update 1600000 delete 60000 transfer 1600000 
+2019-04-16 13:10:21.125 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3670000 create 400000 update 1600000 delete 70000 transfer 1600000 
+2019-04-16 13:10:23.679 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3680000 create 400000 update 1600000 delete 80000 transfer 1600000 
+2019-04-16 13:10:26.106 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3690000 create 400000 update 1600000 delete 90000 transfer 1600000 
+2019-04-16 13:10:28.509 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3700000 create 400000 update 1600000 delete 100000 transfer 1600000 
+2019-04-16 13:10:31.020 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3710000 create 400000 update 1600000 delete 110000 transfer 1600000 
+2019-04-16 13:10:33.583 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3720000 create 400000 update 1600000 delete 120000 transfer 1600000 
+2019-04-16 13:10:36.067 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3730000 create 400000 update 1600000 delete 130000 transfer 1600000 
+2019-04-16 13:10:38.522 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3740000 create 400000 update 1600000 delete 140000 transfer 1600000 
+2019-04-16 13:10:40.978 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3750000 create 400000 update 1600000 delete 150000 transfer 1600000 
+2019-04-16 13:10:43.564 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3760000 create 400000 update 1600000 delete 160000 transfer 1600000 
+2019-04-16 13:10:46.026 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3770000 create 400000 update 1600000 delete 170000 transfer 1600000 
+2019-04-16 13:10:48.485 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3780000 create 400000 update 1600000 delete 180000 transfer 1600000 
+2019-04-16 13:10:51.111 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3790000 create 400000 update 1600000 delete 190000 transfer 1600000 
+2019-04-16 13:10:53.509 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3800000 create 400000 update 1600000 delete 200000 transfer 1600000 
+2019-04-16 13:10:56.018 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3810000 create 400000 update 1600000 delete 210000 transfer 1600000 
+2019-04-16 13:10:58.796 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3820000 create 400000 update 1600000 delete 220000 transfer 1600000 
+2019-04-16 13:11:01.055 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3830000 create 400000 update 1600000 delete 230000 transfer 1600000 
+2019-04-16 13:11:03.534 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3840000 create 400000 update 1600000 delete 240000 transfer 1600000 
+2019-04-16 13:11:06.033 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3850000 create 400000 update 1600000 delete 250000 transfer 1600000 
+2019-04-16 13:11:08.534 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3860000 create 400000 update 1600000 delete 260000 transfer 1600000 
+2019-04-16 13:11:11.055 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3870000 create 400000 update 1600000 delete 270000 transfer 1600000 
+2019-04-16 13:11:13.662 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3880000 create 400000 update 1600000 delete 280000 transfer 1600000 
+2019-04-16 13:11:16.081 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3890000 create 400000 update 1600000 delete 290000 transfer 1600000 
+2019-04-16 13:11:18.474 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3900000 create 400000 update 1600000 delete 300000 transfer 1600000 
+2019-04-16 13:11:21.004 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3910000 create 400000 update 1600000 delete 310000 transfer 1600000 
+2019-04-16 13:11:23.634 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3920000 create 400000 update 1600000 delete 320000 transfer 1600000 
+2019-04-16 13:11:26.145 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3930000 create 400000 update 1600000 delete 330000 transfer 1600000 
+2019-04-16 13:11:28.595 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3940000 create 400000 update 1600000 delete 340000 transfer 1600000 
+2019-04-16 13:11:31.070 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3950000 create 400000 update 1600000 delete 350000 transfer 1600000 
+2019-04-16 13:11:33.578 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3960000 create 400000 update 1600000 delete 360000 transfer 1600000 
+2019-04-16 13:11:36.006 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3970000 create 400000 update 1600000 delete 370000 transfer 1600000 
+2019-04-16 13:11:38.518 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3980000 create 400000 update 1600000 delete 380000 transfer 1600000 
+2019-04-16 13:11:40.701 DEMO_INFO 34 <      threadCons  3   > collectedStartPauseMsg 1
+2019-04-16 13:11:40.800 DEMO_INFO 34 <      threadCons  3   > collectedStartPauseMsg 2
+2019-04-16 13:11:41.314 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 3990000 create 400000 update 1600000 delete 390000 transfer 1600000 
+2019-04-16 13:11:46.110 DEMO_INFO 34 <      threadCons  3   > collectedStartPauseMsg 3
+2019-04-16 13:11:46.321 DEMO_INFO 41 <      appMainRun  3   > Generated enough FCM test for sequential mode, stop generating
+2019-04-16 13:11:46.321 DEMO_INFO 41 <      appMainRun  3   > Stop generating transactions 
+2019-04-16 13:11:46.699 DEMO_INFO 34 <      threadCons  3   > fcmTotalAmount 4000000 create 400000 update 1600000 delete 400000 transfer 1600000 
+2019-04-16 13:11:46.700 DEMO_INFO 34 <      threadCons  3   > collectedStartPauseMsg 4
+2019-04-16 13:11:47.762 DEMO_INFO 34 <      threadCons  3   > collectedStopPauseMsg 1
+2019-04-16 13:11:48.080 DEMO_INFO 34 <      threadCons  3   > collectedStopPauseMsg 2
+2019-04-16 13:11:48.191 DEMO_INFO 43 checkThread_node3 Start checking stage ....
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3 Comparing file system log vs FCFS 
+
+
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3 FileSystem Check OK
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3  FCMap size 0
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3  expectedMap size 0
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3 Checking FCM results OK
+
+
+
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3 Received transactions 4000000 match expected 4000000
+2019-04-16 13:11:48.192 DEMO_INFO 43 checkThread_node3 Wait all nodes to get stop pause message
+2019-04-16 13:11:48.633 DEMO_INFO 34 <      threadCons  3   > collectedStopPauseMsg 3
+2019-04-16 13:11:48.740 DEMO_INFO 34 <      threadCons  3   > collectedStopPauseMsg 4
+2019-04-16 13:11:53.193 DEMO_INFO 43 checkThread_node3 All node finished submitting all transactions
+2019-04-16 13:11:53.196 DEMO_INFO 43 checkThread_node3 TEST SUCCESS: Quit checking
+2019-04-16 13:11:53.196 DEMO_INFO 43 checkThread_node3 Removing FCMAP and FCFS checking logs
+2019-04-16 13:12:22.905 SOCKET_EXCEPTIONS 53 <    syncListener  3  0> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 3 listening for 0: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:844)
+2019-04-16 13:12:23.197 STARTUP 74 Thread-18 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

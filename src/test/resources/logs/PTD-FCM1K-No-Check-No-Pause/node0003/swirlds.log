@@ -1,0 +1,73 @@
+2019-06-21 14:17:30.271 STARTUP 1 main Browser main() started
+2019-06-21 14:17:30.906 STARTUP 1 main About to run startPlatforms()
+2019-06-21 14:17:30.916 STARTUP 1 main About do crypto instantiation
+2019-06-21 14:17:31.407 STARTUP 1 main About start loading keys
+2019-06-21 14:17:34.059 STARTUP 1 main Done loading keys
+2019-06-21 14:17:34.059 STARTUP 1 main About to start creating Crypto objects
+2019-06-21 14:17:35.059 STARTUP 1 main Done creating Crypto objects
+2019-06-21 14:17:35.060 STARTUP 1 main Done with crypto instantiation
+2019-06-21 14:17:35.062 STARTUP 1 main Starting platforms
+2019-06-21 14:17:35.278 STARTUP 1 main Done with starting platforms
+2019-06-21 14:17:35.619 STARTUP 33 <     platformRun  3  3> JVM arg: -Xmx100g
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> JVM arg: -Xms20g
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> JVM arg: -XX:+UnlockExperimentalVMOptions
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> JVM arg: -XX:+UseZGC
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> JVM arg: -XX:ConcGCThreads=14
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2019-06-21 14:17:35.626 STARTUP 33 <     platformRun  3  3> Parsing JSON FCM1K.json
+2019-06-21 14:17:35.721 DEMO_INFO 33 <     platformRun  3  3>  insertSeq         = true
+2019-06-21 14:17:35.721 DEMO_INFO 33 <     platformRun  3  3>  appendSig         = true
+2019-06-21 14:17:35.721 DEMO_INFO 33 <     platformRun  3  3>  variedSize        = false
+2019-06-21 14:17:35.722 DEMO_INFO 33 <     platformRun  3  3>  payloadByteSize   = 100
+2019-06-21 14:17:35.722 DEMO_INFO 33 <     platformRun  3  3>  maxByteSize       = 100
+2019-06-21 14:17:35.722 DEMO_INFO 33 <     platformRun  3  3>  type              = TYPE_RANDOM_BYTES
+2019-06-21 14:17:35.722 DEMO_INFO 33 <     platformRun  3  3> Size distribution  = [100]
+2019-06-21 14:17:35.723 DEMO_INFO 33 <     platformRun  3  3> Type distribution  = [TYPE_FCM_TEST]
+2019-06-21 14:17:35.723 DEMO_INFO 33 <     platformRun  3  3> Ratio distribution = [100.0]
+2019-06-21 14:17:35.728 DEMO_INFO 33 <     platformRun  3  3> Goal is TRANS_PER_SECOND_PER_NODE targe 2500.0
+2019-06-21 14:17:35.882 STARTUP 1 main Browser main() finished
+2019-06-21 14:17:35.949 STARTUP 33 <     platformRun  3  3> PlatformTestingDemo: Public Key -> hex('0x2DEFE3B1A4F2FC28076A48AE2895B43ACBFB47F083B1AD64F08CEF11C82A9196')
+2019-06-21 14:17:35.951 DEMO_INFO 33 <     platformRun  3  3> This test will generate sequential FCM payload:
+2019-06-21 14:17:35.962 STARTUP 33 <     platformRun  3  3> Adv Crypto Subsystem: CryptoFactory initializing
+2019-06-21 14:17:35.983 STARTUP 33 <     platformRun  3  3> Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-06-21 14:17:36.027 STARTUP 33 <     platformRun  3  3> Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-06-21 14:17:36.027 STARTUP 33 <     platformRun  3  3> Adv Crypto Subsystem: CryptoFactory startup complete
+2019-06-21 14:17:36.044 STARTUP 47 <      appMainRun  3   > **********************************************
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *                                            *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *                                            *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *       Please config csvFileName            *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *       in Settings.txt to generate          *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *       csv files for platform stats         *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *                                            *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > *                                            *
+2019-06-21 14:17:36.045 STARTUP 47 <      appMainRun  3   > **********************************************
+2019-06-21 14:17:36.080 DEMO_INFO 47 <      appMainRun  3   > Node 3 starts transactions ........
+2019-06-21 14:17:36.195 STARTUP 47 <      appMainRun  3   > PlatformTestingDemo: Signed Message { publicKey = '0x2DEFE3B1A4F2FC28076A48AE2895B43ACBFB47F083B1AD64F08CEF11C82A9196', privateKey ='0x6FC517CFAEADE9889AE0744EA4C1CAE19FBD0713FEA3819F13A81C934385288B2DEFE3B1A4F2FC28076A48AE2895B43ACBFB47F083B1AD64F08CEF11C82A9196', signature = '0xF4B770020A523FEF1D5ACCC2A1D83F891DCBC3419EB4E00DA028201D5994F731CE9BF68568BCC33F39B25FE34A2DBC4EC1A4F5B0EA7696BF9D2FEE9BD9A4800B', message = '0x1A680A0E0803100320A08D0628904E30904E2A560000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' }
+2019-06-21 14:17:36.291 STARTUP 60 <       heartbeat  3  0> Platform Status Change ACTIVE 
+2019-06-21 14:17:39.295 DEMO_INFO 35 <      threadCons  3   > collectedStartPauseMsg 1
+2019-06-21 14:17:39.299 DEMO_INFO 35 <      threadCons  3   > collectedStartPauseMsg 2
+2019-06-21 14:17:39.389 DEMO_INFO 35 <      threadCons  3   > collectedStartPauseMsg 3
+2019-06-21 14:17:40.321 DEMO_INFO 47 <      appMainRun  3   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2019-06-21 14:17:40.321 DEMO_INFO 47 <      appMainRun  3   > Stop generating transactions 
+2019-06-21 14:17:40.323 DEMO_INFO 47 <      appMainRun  3   > TRANSACTIONS FINISHED
+2019-06-21 14:17:40.837 DEMO_INFO 35 <      threadCons  3   > collectedStartPauseMsg 4
+2019-06-21 14:18:19.970 SOCKET_EXCEPTIONS 59 <    syncListener  3  0> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 3 listening for 0: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:835)
+2019-06-21 14:18:20.431 SOCKET_EXCEPTIONS 61 <    syncListener  3  1> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 3 listening for 1: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:835)
+2019-06-21 14:18:20.646 SOCKET_EXCEPTIONS 63 <    syncListener  3  2> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 3 listening for 2: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:835)
+2019-06-21 14:18:20.647 STARTUP 63 <    syncListener  3  2> Platform Status Change DISCONNECTED 
+2019-06-21 14:18:21.035 STARTUP 43 Thread-7 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

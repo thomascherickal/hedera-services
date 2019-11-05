@@ -1,0 +1,4 @@
+maxOutgoingSyncs, 2
+showInternalStats, 1
+csvFileName, ReconnectStats
+csvAppend, 1

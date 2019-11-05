@@ -1,0 +1,14 @@
+rm: cannot remove ‘*.csv’: No such file or directory
+rm: cannot remove ‘output.log’: No such file or directory
+rm: cannot remove ‘swirlds.log’: No such file or directory
+rm: cannot remove ‘settingsUsed.txt’: No such file or directory
+START --- Test 1: restart a node, no state on disk ---
+aaaa
+aaab
+aaac
+aaad
+Uploading files to all nodes
+Warning: Permanently added '54.85.80.248' (ECDSA) to the list of known hosts.
+Warning: Permanently added '3.91.96.114' (ECDSA) to the list of known hosts.
+Warning: Permanently added '54.174.50.154' (ECDSA) to the list of known hosts.
+Warning: Permanently added '54.86.188.26' (ECDSA) to the list of known hosts.

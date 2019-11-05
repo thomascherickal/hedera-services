@@ -1,0 +1,24 @@
+{
+  "name":"StatsSigningDemo",
+  "description" : "StatsSigningDemo",
+  "duration": 300,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"}
+  ],
+  "app": {
+    "jar": "StatsSigningDemo.jar",
+    "parameterList": ["1, 3000, 0, 100, -1, 50000"]
+  },
+  "startSavedState": {
+    "location": "s3://swirlds-regression/saved-states/StatsSigningDemo/0004-nodes/initial-test",
+    "mainClass": "StatsSigningDemoMain",
+    "swirldName": "123",
+    "round": 163
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "STANDARD" ]
+}

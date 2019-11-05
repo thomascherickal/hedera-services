@@ -1,0 +1,32 @@
+2019-04-19 13:33:21.766 STARTUP 1 main Browser main() started
+2019-04-19 13:33:22.573 STARTUP 1 main About to run startPlatforms()
+2019-04-19 13:33:22.582 STARTUP 1 main About do crypto instantiation
+2019-04-19 13:33:22.690 STARTUP 1 main About start loading keys
+2019-04-19 13:33:24.702 STARTUP 1 main Done loading keys
+2019-04-19 13:33:24.703 STARTUP 1 main About to start creating Crypto objects
+2019-04-19 13:33:25.516 STARTUP 1 main Done creating Crypto objects
+2019-04-19 13:33:25.516 STARTUP 1 main Done with crypto instantiation
+2019-04-19 13:33:25.518 STARTUP 1 main Starting platforms
+2019-04-19 13:33:25.669 STARTUP 1 main Done with starting platforms
+2019-04-19 13:33:26.368 STARTUP 1 main Browser main() finished
+2019-04-19 13:33:26.389 STARTUP 32 <     platformRun  1  1> StatsSigningDemo: Public Key -> hex('0xCA220E3AEA057ED65A713686F490CF0554DE1FC7859AA83F4002D728A263F6C9')
+2019-04-19 13:33:26.394 STARTUP 32 <     platformRun  1  1> StatsSigningDemo: Signed Message { publicKey = '0xCA220E3AEA057ED65A713686F490CF0554DE1FC7859AA83F4002D728A263F6C9', privateKey ='0x8F86364493FFE5C4116247AC037262D45387F59275CAA225D24B80844480F967CA220E3AEA057ED65A713686F490CF0554DE1FC7859AA83F4002D728A263F6C9', signature = '0x34F5F550746C0D45FD6F88E025326AA01E9E4DF4DAF458A0BFA0B132F4515A9C038C448A4D0BF918C345CEFF5C27BAD92EC8747688C6A029872FFD2C1EDF3009', message = '0x50FEA54EF687A98534B22E449E7B806C7126870C2AD633E609FB25C9EFD9C12270617969EDBFE898140926324814B50625B80FA99F69CEC7656E33BF0A4F1ABD482638E2C00D3B31B2087546B90EE08D1042FEC2C5B583279E2B1747F14E85751C3ADED8' }
+2019-04-19 13:33:26.835 STARTUP 64 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CryptoFactory initializing
+2019-04-19 13:33:26.850 STARTUP 64 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-04-19 13:33:26.886 STARTUP 64 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-04-19 13:33:26.886 STARTUP 64 < adv crypto: SignatureIntakeQueue worker > Adv Crypto Subsystem: CryptoFactory startup complete
+2019-04-19 13:34:18.012 SOCKET_EXCEPTIONS 50 <    syncListener  1  0> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 1 listening for 0: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:127)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:85)
+|   java.base/java.lang.Thread.run(Thread.java:844)
+2019-04-19 13:34:18.015 SOCKET_EXCEPTIONS 56 <      syncCaller  1  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 1 listening for 0:
+com.swirlds.platform.SyncUtils$BadIOException: commSyncRequest was sent 344 ms ago, but end of stream was reached  instead of the expected response of either commSyncAck or commSyncNack
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:727) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
+	at java.lang.Thread.run(Thread.java:844) [?:?]
+2019-04-19 13:34:18.885 STARTUP 69 Thread-15 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

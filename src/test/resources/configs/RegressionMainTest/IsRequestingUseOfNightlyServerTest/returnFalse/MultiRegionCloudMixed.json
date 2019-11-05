@@ -1,0 +1,25 @@
+{
+  "service":"aws",
+  "securityGroup":"SwirldsSecGroup",
+  "securityGroupID":"sg-7214c20b",
+  "instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V9",
+  "instanceType": "T2Micro",
+  "instanceKey": "regression-key",
+  "keyLocation":"./testing/my-key",
+  "login": "ubuntu",
+  "regionList":[
+	{
+	  "region": "us-west-2",
+	  "instanceList": [
+		"i-03c90b3fabcd8edd7",
+		"i-050d3f86abcd796f",
+		"i-06abcdfebc6a73d5a",
+		"i-0cabcdbff247a8a09"
+	  ]
+	},
+	{
+	  "region": "us-east-2",
+	  "numberOfNodes": 5
+	}
+  ]
+}

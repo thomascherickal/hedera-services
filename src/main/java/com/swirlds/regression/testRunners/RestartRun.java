@@ -1,0 +1,72 @@
+/*
+ * (c) 2016-2019 Swirlds, Inc.
+ *
+ * This software is the confidential and proprietary information of
+ * Swirlds, Inc. ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the license agreement you entered into
+ * with Swirlds.
+ *
+ * SWIRLDS MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SWIRLDS SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ */
+
+package com.swirlds.regression.testRunners;
+
+import com.swirlds.regression.Experiment;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+import static com.swirlds.regression.RegressionUtilities.MILLIS;
+
+public class RestartRun implements TestRun {
+
+	@Override
+	public void preRun(TestConfig testConfig, Experiment experiment) {
+		// decide the freeze time
+		ZonedDateTime experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0))
+				.plusMinutes(testConfig.getRestartConfig().getRestartTiming());
+		ZonedDateTime freezeTime = experimentTime.plusMinutes(EXPERIMENT_RESTART_DELAY);
+
+		// set the freeze time in the settings
+		experiment.getSettingsFile().setFreezeTime(
+				experimentTime.getHour(),
+				experimentTime.getMinute(),
+				freezeTime.getHour(),
+				freezeTime.getMinute()
+		);
+	}
+
+	@Override
+	public void runTest(TestConfig testConfig, Experiment experiment) {
+		// start all processes
+		experiment.startAllSwirlds();
+
+		// sleep until freeze
+		Duration sleep = Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getRestartConfig().getRestartTiming());
+		log.info(MARKER, "Sleeping until freeze");
+		experiment.sleepThroughExperiment(sleep.toMillis());
+
+		// kill the process during the freeze
+		experiment.stopAllSwirlds();
+
+		log.info(MARKER, "First part of restart test completed.");
+
+		// wait a bit during freeze
+		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
+
+		// start all processes again
+		experiment.startAllSwirlds();
+		long testDuration = testConfig.getDuration() * MILLIS;
+		log.info(MARKER, "kicking off test, duration: {}", testDuration);
+		experiment.sleepThroughExperiment(testDuration);
+		log.info(MARKER, "Second part of {} test completed", "restart");
+	}
+}
