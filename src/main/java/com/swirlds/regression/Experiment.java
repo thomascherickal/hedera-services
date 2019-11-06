@@ -32,6 +32,7 @@ import com.swirlds.regression.validators.StreamingServerValidator;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -64,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -231,6 +233,12 @@ public class Experiment {
 						isProcDown.set(i, !isProcStillRunning);
 					}
 					isTestFinished.set(i, node.isTestFinished());
+					if (this.testConfig.getRunType() == RunType.RECOVER && !isProcStillRunning) {
+						//recover run may have multiple TEST SUCCESS message in logs
+						//so should not use TEST SUCCESS to check if test finished
+						//only use java process
+						return;
+					}
 				}
 				/* we don't want to exit if only a few nodes have reported being finished */
 				if (checkForAllTrue(isTestFinished)) {
@@ -830,5 +838,87 @@ public class Experiment {
 
 	public SettingsBuilder getSettingsFile() {
 		return settingsFile;
+	}
+
+	/**
+	 * Delete multiple signed state saved on disk
+	 */
+	public void deleteSignedState() {
+		//first find out how many signed state saved to disk, parse the result to a number
+		SSHService node0 = sshNodes.get(0);
+		// this return how many signed state (sub-directories) created under /0/123
+		String lsStatesCmd =
+				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123 | wc -l";
+
+		// this returns all sub-directories under /0/123
+		String displayCmd =
+				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123";
+
+		Session.Command cmd = node0.executeCmd(lsStatesCmd);
+		if (cmd.getExitStatus() == 0) {
+			String result = node0.readCommandOutput(cmd).toString();
+			result = result.replace("[", "").replace("]", ""); //remove bracket
+			try {
+				int amountStates = Integer.parseInt(result);
+
+				displaySignedState("BEFORE deleting State");
+				// random generate an amount and delete such amount of signed state
+				// at least leave one of the original signed state
+				int randNum = ((new Random()).nextInt(amountStates - 1)) + 1;
+				log.info(MARKER, "Random delete {} signed state", randNum);
+
+				for (int i = 0; i < randNum; i++) {
+					if (!deleteLastSignedState()) {
+						break;
+					}
+				}
+				displaySignedState("AFTER deleting State");
+
+			} catch (NumberFormatException e) {
+				log.error(ERROR, "Could not parse result of ls command {}", lsStatesCmd, e);
+			}
+		} else {
+			log.error(ERROR, "Exception running ls command {} cmd result {}", lsStatesCmd,
+					node0.readCommandOutput(cmd).toString());
+		}
+	}
+
+	private boolean deleteLastSignedState() {
+		SSHService node0 = sshNodes.get(0);
+
+		// this command returns the last directory under /0/123, which is the round number
+		// of last signed state
+		String findLastStateCmd =
+				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123 | tail -1";
+		Session.Command cmd = node0.executeCmd(findLastStateCmd);
+		if (cmd.getExitStatus() == 0) {
+			String findLastStateRound = node0.readCommandOutput(cmd).toString();
+			findLastStateRound = findLastStateRound.replace("[", "").replace("]", ""); //remove bracket
+
+			for (int i = 0; i < sshNodes.size(); i++) {
+				String rmStatesCmd =
+						"rm -r " + REMOTE_EXPERIMENT_LOCATION + "/data/saved/*/*/123/" + findLastStateRound;
+				cmd = sshNodes.get(i).executeCmd(rmStatesCmd);
+				if (cmd.getExitStatus() != 0) {
+					log.error(ERROR, "Exception running rm state command {}", rmStatesCmd);
+					break;
+				}
+			}
+		} else {
+			log.error(ERROR, "Exception running findLastStateCmd command {} cmd result {}", findLastStateCmd
+					, node0.readCommandOutput(cmd).toString());
+			return false;
+		}
+		return true;
+	}
+
+	public void displaySignedState(String memo) {
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			String displayCmd =
+					"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/*/123";
+			Session.Command cmd = node.executeCmd(displayCmd);
+			log.info(MARKER, "Node [{}] States directories {} {}", i, memo, node.readCommandOutput(cmd).toString());
+		}
 	}
 }

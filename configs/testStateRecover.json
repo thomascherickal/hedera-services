@@ -1,0 +1,24 @@
+{
+  "name":"Test State Recover FCM Short",
+  "description" : "Test State Recover",
+  "duration": 600,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"},
+    {"name":"saveStatePeriod", "value":"15"},
+    {"name":"enableEventStreaming", "value":"true"},
+    {"name":"eventsLogDir", "value":"data/eventStream"}
+  ],
+  "recoverConfig":{
+    "json": "TEST_PAUSE_NOCHECK.json"
+  },  
+  "app": {
+    "jar": "PlatformTestingDemo.jar",
+    "parameterList": ["TEST_STATE_RECOVER.json"]
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+}

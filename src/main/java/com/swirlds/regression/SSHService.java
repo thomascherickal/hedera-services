@@ -99,7 +99,7 @@ public class SSHService {
 		return returnString;
 	}
 
-	private ArrayList<String> readCommandOutput(Session.Command cmd) {
+	public ArrayList<String> readCommandOutput(Session.Command cmd) {
 		ArrayList<String> returnArray = new ArrayList<>();
 		if (cmd == null) {
 			return returnArray;

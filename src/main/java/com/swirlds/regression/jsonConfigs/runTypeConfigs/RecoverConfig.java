@@ -15,29 +15,31 @@
  * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
-package com.swirlds.regression;
+package com.swirlds.regression.jsonConfigs.runTypeConfigs;
 
-import com.swirlds.regression.testRunners.FreezeRun;
-import com.swirlds.regression.testRunners.ReconnectRun;
-import com.swirlds.regression.testRunners.RecoverStateRun;
-import com.swirlds.regression.testRunners.RestartRun;
-import com.swirlds.regression.testRunners.StandardRun;
-import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.jsonConfigs.FileRequirement;
 
-public enum RunType {
-	STANDARD(new StandardRun()),
-	RESTART(new RestartRun()),
-	RECONNECT(new ReconnectRun()),
-	FREEZE(new FreezeRun()),
-	RECOVER(new RecoverStateRun());
+import java.util.LinkedList;
+import java.util.List;
 
-	private final TestRun testRun;
+import static com.swirlds.regression.RegressionUtilities.SDK_DIR;
 
-	RunType(TestRun testRun) {
-		this.testRun = testRun;
+public class RecoverConfig implements FileRequirement {
+
+	private String json;
+
+	public String getJson() {
+		return json;
 	}
 
-	public TestRun getTestRun() {
-		return testRun;
+	public void setJson(String json) {
+		this.json = json;
+	}
+
+	@Override
+	public List<String> getFilesNeeded() {
+		List<String> returnList = new LinkedList<>();
+		returnList.add(SDK_DIR + json);
+		return returnList;
 	}
 }
