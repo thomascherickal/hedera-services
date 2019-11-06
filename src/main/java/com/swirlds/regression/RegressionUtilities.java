@@ -91,6 +91,7 @@ public class RegressionUtilities {
 	public static final String DROP_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
 			"database" +
 			" fcfs;\"";
+	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";
 	static final String DROP_DATABASE_FCFS_KNOWN_RESPONCE = "ERROR:  database \"fcfs\" is being accessed by other " +
 			"users";
