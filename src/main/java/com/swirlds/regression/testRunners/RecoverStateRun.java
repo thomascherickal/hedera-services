@@ -59,14 +59,12 @@ public class RecoverStateRun implements TestRun {
 		settingsBuilder.addSetting("signedStateDisk", "100");
 
 		// delete old states
-		experiment.deleteSignedState();
+		experiment.deleteSignedStates();
 
 		// change config.txt PlatformTestingDemo.jar, TEST_PAUSE_NOCHECK.json
 		oldParams = testConfig.getApp().getParameterList();
-		String newParams = testConfig.getRecoverConfig().getJson();
-		experiment.getTestConfig().getApp().setParameterList(new ArrayList<>() {{
-			add(newParams);
-		}});
+		ArrayList<String> newParams = testConfig.getRecoverConfig().getRecoverApp().getParameterList();
+		experiment.getTestConfig().getApp().setParameterList(newParams);
 
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
@@ -84,7 +82,7 @@ public class RecoverStateRun implements TestRun {
 		// sleep through the rest of the test
 		experiment.sleepThroughExperiment(testDuration);
 
-		experiment.displaySignedState("AFTER recover");
+		experiment.displaySignedStates("AFTER recover");
 
 		// cannot compare recovered event files with original event files since
 		// recovered event files do not have any system transactions

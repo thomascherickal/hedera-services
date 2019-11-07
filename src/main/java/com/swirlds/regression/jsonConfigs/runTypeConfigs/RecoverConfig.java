@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.jsonConfigs.runTypeConfigs;
 
+import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileRequirement;
 
 import java.util.LinkedList;
@@ -26,20 +27,19 @@ import static com.swirlds.regression.RegressionUtilities.SDK_DIR;
 
 public class RecoverConfig implements FileRequirement {
 
-	private String json;
+	/** Application configuration used in recover mode */
+	private AppConfig recoverApp;
 
-	public String getJson() {
-		return json;
+	public AppConfig getRecoverApp() {
+		return recoverApp;
 	}
 
-	public void setJson(String json) {
-		this.json = json;
+	public void setRecoverApp(AppConfig recoverApp) {
+		this.recoverApp = recoverApp;
 	}
 
 	@Override
 	public List<String> getFilesNeeded() {
-		List<String> returnList = new LinkedList<>();
-		returnList.add(SDK_DIR + json);
-		return returnList;
+		return new LinkedList<>(recoverApp.getFilesNeeded());
 	}
 }

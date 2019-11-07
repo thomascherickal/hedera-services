@@ -11,7 +11,10 @@
     {"name":"eventsLogDir", "value":"data/eventStream"}
   ],
   "recoverConfig":{
-    "json": "TEST_PAUSE_NOCHECK.json"
+    "app": {
+      "jar": "PlatformTestingDemo.jar",
+      "parameterList": ["TEST_PAUSE_NOCHECK.json"]
+    }
   },  
   "app": {
     "jar": "PlatformTestingDemo.jar",
