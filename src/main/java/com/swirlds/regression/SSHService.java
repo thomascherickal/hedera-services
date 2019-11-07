@@ -38,13 +38,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static com.swirlds.regression.ConfigBuilder.SWIRLDS_NAME;
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
-import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -735,27 +735,27 @@ public class SSHService {
 	 * List names of signed state directories currently on disk
 	 *
 	 * @param memo
+	 * 		Memo string
 	 */
 	void displaySignedStates(String memo) {
 		String displayCmd =
-				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/*/123";
+				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
 		Session.Command cmd = executeCmd(displayCmd);
 		log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
 	}
 
-	boolean deleteLastSignedState() {
-
-		// this command returns the last directory under /0/123, which is the round number
+	private boolean deleteLastSignedState() {
+		// this command returns the last directory, which is the round number
 		// of last signed state
 		String findLastStateCmd =
-				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123 | tail -1";
+				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + " | tail -1";
 		Session.Command cmd = executeCmd(findLastStateCmd);
 		if (cmd.getExitStatus() == 0) {
 			String findLastStateRound = readCommandOutput(cmd).toString();
 			findLastStateRound = findLastStateRound.replace("[", "").replace("]", ""); //remove bracket
 
 			String rmStatesCmd =
-					"rm -r " + REMOTE_EXPERIMENT_LOCATION + "/data/saved/*/*/123/" + findLastStateRound;
+					"rm -r " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + "/" + findLastStateRound;
 			cmd = executeCmd(rmStatesCmd);
 			if (cmd.getExitStatus() != 0) {
 				log.error(ERROR, "Exception running rm state command {}", rmStatesCmd);
@@ -770,46 +770,37 @@ public class SSHService {
 		return true;
 	}
 
-	/**
-	 * Delete multiple signed state saved on disk
-	 */
-	public void deleteSignedStates() {
-		//first find out how many signed state saved to disk, parse the result to a number
-		// this return how many signed state (sub-directories) created under /0/123
+	int getSignedStatesAmount() {
+		// first find out how many signed state saved to disk, parse the result string to a number
+		// this return how many signed state (sub-directories) created
 		String lsStatesCmd =
-				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123 | wc -l";
-
-		// this returns all sub-directories under /0/123
-		String displayCmd =
-				"ls -tr " + REMOTE_EXPERIMENT_LOCATION + "data/saved/*/0/123";
+				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + " | wc -l";
 
 		Session.Command cmd = executeCmd(lsStatesCmd);
 		if (cmd.getExitStatus() == 0) {
 			String result = readCommandOutput(cmd).toString();
 			result = result.replace("[", "").replace("]", ""); //remove bracket
 			try {
-				int amountStates = Integer.parseInt(result);
-
-				displaySignedStates("BEFORE deleting State");
-				// random generate an amount and delete such amount of signed state
-				// at least leave one of the original signed state
-				int randNum = ((new Random()).nextInt(amountStates - 1)) + 1;
-				log.info(MARKER, "Random delete {} signed state", randNum);
-
-				for (int i = 0; i < randNum; i++) {
-					if (!deleteLastSignedState()) {
-						break;
-					}
-				}
-				displaySignedStates("AFTER deleting State");
-
+				return Integer.parseInt(result);
 			} catch (NumberFormatException e) {
 				log.error(ERROR, "Could not parse result of ls command {}", lsStatesCmd, e);
 			}
-		} else {
-			log.error(ERROR, "Exception running ls command {} cmd result {}", lsStatesCmd,
-					readCommandOutput(cmd).toString());
 		}
+		return 0;
+	}
+
+	/**
+	 * Delete multiple signed state saved on disk
+	 */
+	void deleteSignedStates(int deleteAmount) {
+		displaySignedStates("BEFORE deleting States");
+		log.info(MARKER, "Random delete {} signed states", deleteAmount);
+		for (int i = 0; i < deleteAmount; i++) {
+			if (!deleteLastSignedState()) {
+				break;
+			}
+		}
+		displaySignedStates("AFTER deleting States");
 	}
 
 }

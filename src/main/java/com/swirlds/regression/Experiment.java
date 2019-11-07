@@ -32,7 +32,6 @@ import com.swirlds.regression.validators.StreamingServerValidator;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
-import net.schmizz.sshj.connection.channel.direct.Session;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -840,19 +839,21 @@ public class Experiment {
 		return settingsFile;
 	}
 
+	/**
+	 * Random delete last few saved signed states
+	 */
 	public void deleteSignedStates() {
-		for (SSHService node : sshNodes) {
-			node.deleteSignedStates();
-		}
-	}
+		SSHService node0 = sshNodes.get(0);
+		int savedStatesAmount = node0.getSignedStatesAmount();
 
-	public boolean deleteLastSignedState() {
+		// random generate an amount and delete such amount of signed state
+		// at least leave one of the original signed state
+		int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
+		log.info(MARKER, "Random delete {} signed state", randNum);
+
 		for (SSHService node : sshNodes) {
-			if (!node.deleteLastSignedState()) {
-				return false;
-			}
+			node.deleteSignedStates(randNum);
 		}
-		return true;
 	}
 
 	public void displaySignedStates(String memo) {

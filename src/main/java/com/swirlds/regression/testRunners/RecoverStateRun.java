@@ -63,7 +63,7 @@ public class RecoverStateRun implements TestRun {
 
 		// change config.txt PlatformTestingDemo.jar, TEST_PAUSE_NOCHECK.json
 		oldParams = testConfig.getApp().getParameterList();
-		ArrayList<String> newParams = testConfig.getRecoverConfig().getRecoverApp().getParameterList();
+		ArrayList<String> newParams = testConfig.getRecoverConfig().getApp().getParameterList();
 		experiment.getTestConfig().getApp().setParameterList(newParams);
 
 		// enable recover mode

@@ -23,23 +23,21 @@ import com.swirlds.regression.jsonConfigs.FileRequirement;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.swirlds.regression.RegressionUtilities.SDK_DIR;
-
 public class RecoverConfig implements FileRequirement {
 
 	/** Application configuration used in recover mode */
-	private AppConfig recoverApp;
+	private AppConfig app;
 
-	public AppConfig getRecoverApp() {
-		return recoverApp;
+	public AppConfig getApp() {
+		return app;
 	}
 
-	public void setRecoverApp(AppConfig recoverApp) {
-		this.recoverApp = recoverApp;
+	public void setApp(AppConfig app) {
+		this.app = app;
 	}
 
 	@Override
 	public List<String> getFilesNeeded() {
-		return new LinkedList<>(recoverApp.getFilesNeeded());
+		return new LinkedList<>(app.getFilesNeeded());
 	}
 }

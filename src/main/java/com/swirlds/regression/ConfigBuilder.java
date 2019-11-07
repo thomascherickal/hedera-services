@@ -42,12 +42,14 @@ public class ConfigBuilder {
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
+	public static final String SWIRLDS_NAME = "123";
+
 	private static final String CONFIG_HEADER =
 			"###############################################################################################\n"
 					+ "# Swirlds configuration file, for automatically running multiple instances\n"
 					+
 					"###############################################################################################\n"
-					+ "swirld, 123";
+					+ "swirld, " + SWIRLDS_NAME;
 	private static final String LOCALHOST_DEFAULT_IP = "127.0.0.1";
 	private static final String SEPERATOR = ", ";
 	private static final String CONFIG_PLACEHOLDER = "1";
