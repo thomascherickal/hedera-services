@@ -1,5 +1,5 @@
-module swirlds.regression {
-	requires swirlds.common;
+module com.swirlds.regression {
+	requires com.swirlds.common;
 
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
