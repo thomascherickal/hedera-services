@@ -5,7 +5,7 @@ echo $configFile
 
 cd ..
 git pull
-git submodule update --init --checkout --remote
+git submodule update --init --merge
 mvn -DskipTests clean deploy
 
 cd regression
