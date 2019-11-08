@@ -61,7 +61,7 @@
 		<app.repo>${project.baseUri}/../sdk/data/repos/app/</app.repo>
 		<platform.repo>${project.baseUri}/../sdk/data/repos/platform/</platform.repo>
 		<sdk.dir>${project.basedir}/../sdk/</sdk.dir>
-		<app.name>Regression</app.name>
+		<app.name>regression</app.name>
 		<app.prefix>com.swirlds.regression.</app.prefix>
 	</properties>
 
@@ -294,7 +294,7 @@
 							<artifactId>${project.artifactId}</artifactId>
 							<version>${project.version}</version>
 							<type>${project.packaging}</type>
-							<destFileName>${project.artifactId}.${project.packaging}</destFileName>
+							<destFileName>${app.name}.${project.packaging}</destFileName>
 							<outputDirectory>${project.basedir}</outputDirectory>
 						</artifactItem>
 					</artifactItems>
