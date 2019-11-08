@@ -45,6 +45,8 @@ public class ValidatorFactory {
 				return new PtdValidator(nodeData);
 			case STATS:
 				return new StatsValidator(nodeData);
+			case RECOVER_STATE:
+				return new RecoverStateValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}
