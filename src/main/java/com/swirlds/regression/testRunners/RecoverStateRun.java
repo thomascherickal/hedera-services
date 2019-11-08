@@ -105,7 +105,7 @@ public class RecoverStateRun implements TestRun {
 		experiment.startAllSwirlds();
 
 		// sleep through the rest of the test
-		experiment.sleepThroughExperiment(testDuration);
+		experiment.sleepUntilEnoughFinishMessage(testDuration, 2);
 	}
 
 	@Override

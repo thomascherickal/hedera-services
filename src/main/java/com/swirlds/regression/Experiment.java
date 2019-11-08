@@ -232,12 +232,6 @@ public class Experiment {
 						isProcDown.set(i, !isProcStillRunning);
 					}
 					isTestFinished.set(i, node.isTestFinished());
-					if (this.testConfig.getRunType() == RunType.RECOVER && !isProcStillRunning) {
-						//recover run may have multiple TEST SUCCESS message in logs
-						//so should not use TEST SUCCESS to check if test finished
-						//only use java process
-						return;
-					}
 				}
 				/* we don't want to exit if only a few nodes have reported being finished */
 				if (checkForAllTrue(isTestFinished)) {
@@ -859,6 +853,60 @@ public class Experiment {
 	public void displaySignedStates(String memo) {
 		for (SSHService node : sshNodes) {
 			node.displaySignedStates(memo);
+		}
+	}
+
+	/**
+	 * Sleep until reached the testDuration, or JAVA process or the number of test finished message found
+	 * in logs equal or large than messageAmount
+	 */
+	public void sleepUntilEnoughFinishMessage(long testDuration, int messageAmount) {
+		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
+			ArrayList<Boolean> isProcDown = new ArrayList<>();
+			ArrayList<Boolean> isTestFinished = new ArrayList<>();
+			/* set array lists to appropriate size with default values */
+			for (int i = 0; i < sshNodes.size(); i++) {
+				isProcDown.add(false);
+				isTestFinished.add(false);
+			}
+			/* testDuration is already in milliseconds */
+			/* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
+			long endTime = System.nanoTime() + (testDuration * 1_000_000);
+			log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / 1_000);
+			while (System.nanoTime() < endTime) { // Don't go over set test time
+				try {
+					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
+					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+				} catch (InterruptedException e) {
+					log.error(ERROR, "could not sleep.", e);
+				}
+				/* Check all processes are still running, then check if test has finished */
+				for (int i = 0; i < sshNodes.size(); i++) {
+					SSHService node = sshNodes.get(i);
+					boolean isProcStillRunning = node.checkProcess();
+					/* if this it the first time down, keep running, if down two times in a row, stop */
+					if (!isProcStillRunning && isProcDown.get(i)) {
+						return;
+					} else {
+						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
+						after the first reconnect/restart */
+						isProcDown.set(i, !isProcStillRunning);
+					}
+					isTestFinished.set(i, node.countTestFinishedMsg() == messageAmount);
+				}
+				/* we don't want to exit if only a few nodes have reported being finished */
+				if (checkForAllTrue(isTestFinished)) {
+					return;
+				}
+			}
+		} else {
+			try {
+				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
+				log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
+				Thread.sleep(testDuration);
+			} catch (InterruptedException e) {
+				log.error(ERROR, "could not sleep.", e);
+			}
 		}
 	}
 }
