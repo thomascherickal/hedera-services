@@ -13,7 +13,7 @@
     "restartTiming": 2
   },
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCM1K.json"]
   },
   "resultFiles": [

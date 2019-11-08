@@ -16,7 +16,7 @@
     "reconnectTiming": 180
   },
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMReconnectBlob.json"]
   },
   "resultFiles": [

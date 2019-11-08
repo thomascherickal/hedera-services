@@ -19,24 +19,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<!-- Required Maven Version -->
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- $$BEGIN_PARENT_REMOVE$$ -->
 	<!-- Parent Configuration -->
 	<parent>
-		<artifactId>platform-swirlds</artifactId>
-		<groupId>SwirldsPlatform</groupId>
-		<version>0.0.1-SNAPSHOT</version>
+		<groupId>com.swirlds</groupId>
+		<artifactId>swirlds-platform</artifactId>
+		<version>0.6.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<!-- $$END_PARENT_REMOVE$$ -->
 
 	<!-- Project Configuration -->
-	<groupId>SwirldsPlatform</groupId>
-	<artifactId>regression</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>swirlds-platform-regression</artifactId>
+
 	<packaging>jar</packaging>
 
+	<!-- Project Properties -->
 	<properties>
 		<!-- Maven & Java Configuration -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,18 +65,8 @@
 		<app.prefix>com.swirlds.regression.</app.prefix>
 	</properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-bom -->
-			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-bom</artifactId>
-				<version>1.11.489</version>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
+	<!-- Dependencies -->
 	<dependencies>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/sshd-core -->
@@ -173,9 +163,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>SwirldsPlatform</groupId>
+			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.6.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
@@ -216,6 +206,18 @@
 
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-bom -->
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-bom</artifactId>
+				<version>1.11.489</version>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<!-- Repository Configuration -->
 	<repositories>
 		<repository>
@@ -246,22 +248,6 @@
 		</repository>
 	</repositories>
 
-	<!-- Profiles -->
-	<profiles>
-		<profile>
-			<id>production</id>
-			<activation>
-				<!-- $$BEGIN_PROFILE_REMOVE$$
-				<activeByDefault>true</activeByDefault>
-				$$END_PROFILE_REMOVE$$ -->
-			</activation>
-			<properties>
-				<app.repo>${project.baseUri}/../sdk/data/repos/app/</app.repo>
-				<platform.repo>${project.baseUri}/../sdk/data/repos/platform/</platform.repo>
-				<sdk.dir>${project.basedir}/../sdk/</sdk.dir>
-			</properties>
-		</profile>
-	</profiles>
 
 	<!-- Build Configuration -->
 	<build>
