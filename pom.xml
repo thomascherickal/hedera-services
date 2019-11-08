@@ -32,7 +32,7 @@
 	</parent>
 
 	<!-- Project Configuration -->
-	<artifactId>regression</artifactId>
+	<artifactId>swirlds-platform-regression</artifactId>
 
 	<packaging>jar</packaging>
 
