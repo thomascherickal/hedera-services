@@ -824,4 +824,46 @@ public class SSHService {
 		displaySignedStates("AFTER deleting States");
 	}
 
+	/**
+	 * List event files created during recover mode
+	 */
+	void displayRecoveredEventFiles(String eventDir) {
+		String displayCmd =
+				"ls -tr " + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + eventDir + "*.evts";
+		Session.Command cmd = executeCmd(displayCmd);
+		log.info(MARKER, "Node {}: Event files created during recover are {}", ipAddress, readCommandOutput(cmd).toString());
+	}
+
+	/**
+	 * Generate hash from event files generated during recover mode
+	 *
+	 * @param eventDir
+	 * 		relative path to event files
+	 */
+	int makeSha1sumOfRecoveredEvents(String eventDir) {
+		String prefix = "recovered_";
+		final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+		final String evts_list = baseDir + prefix + EVENT_FILE_LIST;
+		final String sha1Sum_log = baseDir + prefix + EVENT_LIST_FILE;
+		final String finalHashLog = baseDir + prefix + FINAL_EVENT_FILE_HASH;
+		final String evtsSigList = baseDir + prefix + EVENT_SIG_FILE_LIST;
+		final String commandStr = String.format(
+				"cd %s; " +
+						"wc -c *.evts > %s ; " +    //create a list of file name and byte size
+						"sha1sum *.evts > %s; " +  //create a list of hash of individual evts file
+						"ls *.evts_sig > %s;" +
+						"sha1sum %s > %s;",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + eventDir,
+				evts_list, sha1Sum_log, evtsSigList, sha1Sum_log, finalHashLog);
+		final String description =
+				"Create sha1sum of recovered event files on node: " + ipAddress + " dir: " + eventDir;
+		log.trace(MARKER, "Hash creation commandStr = {}", commandStr);
+
+		Session.Command result = execCommand(commandStr, description);
+		if (result != null) {
+			return result.getExitStatus();
+		} else {
+			return -1;
+		}
+	}
 }

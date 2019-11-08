@@ -909,4 +909,17 @@ public class Experiment {
 			}
 		}
 	}
+
+	/**
+	 * Generate hash from event files generated during recover mode
+	 *
+	 * @param eventDir
+	 * 		relative path to event files
+	 */
+	public void makeSha1sumOfRecoveredEvents(String eventDir) {
+		for (SSHService node : sshNodes) {
+			node.displayRecoveredEventFiles(eventDir);
+			node.makeSha1sumOfRecoveredEvents(eventDir);
+		}
+	}
 }

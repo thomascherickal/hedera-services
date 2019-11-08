@@ -29,7 +29,7 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
  * Recover signed state from event stream file
  */
 public class RecoverStateRun implements TestRun {
-	private ArrayList<String> oldParams;
+	private final static String RECOVER_EVENT_DIR = "data/eventStreamRecover/*/";
 
 	@Override
 	public void preRun(TestConfig testConfig, Experiment experiment) {
@@ -62,7 +62,7 @@ public class RecoverStateRun implements TestRun {
 		experiment.deleteSignedStates();
 
 		// change config.txt PlatformTestingDemo.jar, TEST_PAUSE_NOCHECK.json
-		oldParams = testConfig.getApp().getParameterList();
+		ArrayList<String> oldParams = testConfig.getApp().getParameterList();
 		ArrayList<String> newParams = testConfig.getRecoverConfig().getApp().getParameterList();
 		experiment.getTestConfig().getApp().setParameterList(newParams);
 
@@ -84,8 +84,7 @@ public class RecoverStateRun implements TestRun {
 
 		experiment.displaySignedStates("AFTER recover");
 
-		// cannot compare recovered event files with original event files since
-		// recovered event files do not have any system transactions
+		experiment.makeSha1sumOfRecoveredEvents(RECOVER_EVENT_DIR);
 
 		/**************************
 		 Stage 3 resume run
@@ -95,8 +94,8 @@ public class RecoverStateRun implements TestRun {
 
 		settingsBuilder.addSetting("enableStateRecovery", "false");
 
-		// save event to different directory
-		settingsBuilder.addSetting("eventsLogDir", "data/eventStreamResume");
+		// save event to original directory
+		settingsBuilder.addSetting("eventsLogDir", "data/eventStream");
 
 		experiment.sendSettingFileToNodes();
 		experiment.sendConfigToNodes();
