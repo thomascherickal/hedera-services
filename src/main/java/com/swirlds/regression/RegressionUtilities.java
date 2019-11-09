@@ -137,7 +137,7 @@ public class RegressionUtilities {
 	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
 	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
 	static final String OS_RESERVE_MEMORY = "2GB";
-
+	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "1536MB";
 
 	static final String[] NIGHTLY_REGRESSION_SERVER_LIST = {
 			"i-03c90b3fdeed8edd7",

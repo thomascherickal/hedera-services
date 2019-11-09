@@ -70,19 +70,20 @@ public class NodeMemoryTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			// totalmemory, hugepage number, hugepage memory
-			"32GB, 15360, 30720",
-			"64GB, 31744, 63488"
+			// totalmemory, hugepage number, hugepage memory, JVM Memory
+			"32GB, 15360, 30720, 28GB",
+			"64GB, 31744, 63488, 60GB"
 	})
 	@DisplayName("Test Calculations made by constructor are correct")
-	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory) throws NumberFormatException{
+	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory, String jvmMemory) throws NumberFormatException{
 		NodeMemory testNM = new NodeMemory(totalMemory);
 		assertEquals(hugePageNumber, testNM.hugePagesNumber);
-		assertEquals(hugePageKBMemory, (int)testNM.hugePagesMemory.getAdjustedMemoryAmount(MemoryType.KB));
+		assertEquals(hugePageKBMemory, (int)testNM.hugePagesMemory.getAdjustedMemoryAmount(MemoryType.MB));
 		assertEquals(RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS, testNM.postgresMaxPreparedTransaction);
 		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS), testNM.postgresTempBuffers);
 		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM), testNM.postgresWorkMem);
-		/* TODO test JVM Memory, postgres Shared_buffer */
+		assertEquals(new MemoryAllocation(jvmMemory), testNM.jvmMemory);
+		/* TODO test postgres Shared_buffer */
 
 	}
 
