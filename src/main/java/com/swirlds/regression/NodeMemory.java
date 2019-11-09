@@ -31,5 +31,9 @@ public class NodeMemory {
 		postgresTempBuffers = new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS);
     }
 
+    private void CalculateHugePages(){
+
+	}
+
 }
 

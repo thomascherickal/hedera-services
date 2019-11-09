@@ -17,16 +17,13 @@
 
 package com.swirlds.regression;
 
-import com.swirlds.regression.jsonConfigs.RegionList;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static com.swirlds.regression.jsonConfigs.RegionListConfigTest.loadRegionListConfig;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NodeMemoryTest {
@@ -50,7 +47,7 @@ public class NodeMemoryTest {
 		NodeMemory testNM = new NodeMemory(totalMemory);
 		int amount = Integer.valueOf(seperatedMemStr[0]);
 		String size = seperatedMemStr[1];
-		assertEquals(amount, testNM.totalMemory.getMemoryAmount());
+		assertEquals(amount, testNM.totalMemory.getRawMemoryAmount());
 		assertEquals(size, testNM.totalMemory.getMemoryType().getMemoryIdent());
 	}
 

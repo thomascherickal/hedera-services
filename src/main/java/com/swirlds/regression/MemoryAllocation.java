@@ -24,9 +24,23 @@ public class MemoryAllocation {
 		}
 	}
 
-	public int getMemoryAmount() {
+	public int getRawMemoryAmount() {
 		return memoryAmount;
 	}
+
+	public double getAdjustedMemoryAmount(MemoryType requestedMemoryType){
+		double multipler = CalculateMultiplier(requestedMemoryType,this.memoryType);
+
+		return this.memoryAmount * multipler;
+	}
+
+	double CalculateMultiplier(MemoryType requestedMemoryType, MemoryType memoryType) {
+		int requestOrd = requestedMemoryType.ordinal();
+		int currentOrd = memoryType.ordinal();
+		int difference = currentOrd - requestOrd;
+		return Math.pow(1024,Integer.valueOf(difference).doubleValue());
+	}
+
 
 	public void setMemoryAmount(int memoryAmount) {
 		this.memoryAmount = memoryAmount;
