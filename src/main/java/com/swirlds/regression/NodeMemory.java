@@ -9,6 +9,7 @@ public class NodeMemory {
 	MemoryAllocation postgresTempBuffers;
 	MemoryAllocation postgresSharedBuffers;
 	MemoryAllocation jvmMemory;
+	MemoryAllocation osReserve = new MemoryAllocation(RegressionUtilities.OS_RESERVE_MEMORY);
 
 
 	/**
@@ -23,16 +24,27 @@ public class NodeMemory {
 		this.totalMemory = new MemoryAllocation(totalMem);
 
 		SetPostgresDefaultValues();
+		CalculateHugePages();
 	}
 
 	private void SetPostgresDefaultValues() {
 		postgresWorkMem = new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM);
 		postgresMaxPreparedTransaction = RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS;
 		postgresTempBuffers = new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS);
-    }
+	}
 
-    private void CalculateHugePages(){
-
+	private void CalculateHugePages() {
+		MemoryType calculationType = MemoryType.KB; // hugepage sizes are stored in sysctl.conf using KB
+		double workingTotalMemory = totalMemory.getAdjustedMemoryAmount(calculationType);
+		workingTotalMemory -= osReserve.getAdjustedMemoryAmount(calculationType);
+		// huge page number is the number of 2MB chunks to be allocated
+		hugePagesNumber = (int) Math.floor(workingTotalMemory / RegressionUtilities.UBUNTU_HUGE_PAGE_SIZE_DIVISOR);
+		/* using hugePageNumber instead of workingTotalMemory because it's an int. converting it back to Bytes, and the
+		 converting it yo MB for proper sotrage */
+		/* TODO look into just adding Bytes to MemoryType to avoid dividing by MB here. */
+		hugePagesMemory = new MemoryAllocation(
+				hugePagesNumber * RegressionUtilities.UBUNTU_HUGE_PAGE_SIZE_DIVISOR / RegressionUtilities.MB,
+				MemoryType.MB);
 	}
 
 }

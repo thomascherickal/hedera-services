@@ -19,6 +19,7 @@ package com.swirlds.regression;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
@@ -64,6 +65,20 @@ public class NodeMemoryTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			NodeMemory testNM = new NodeMemory(totalMemory);
 		});
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			// totalmemory, hugepage number, hugepage memory
+			"32GB, 15360, 30720",
+			"64GB, 31744, 63488"
+	})
+	@DisplayName("Test Calculations made by constructor are correct")
+	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory) throws NumberFormatException{
+		NodeMemory testNM = new NodeMemory(totalMemory);
+		assertEquals(hugePageNumber, testNM.hugePagesNumber);
+		assertEquals(hugePageKBMemory, (int)testNM.hugePagesMemory.getAdjustedMemoryAmount(MemoryType.KB));
+		/* TODO test JVM Memory, all the postgress presets, postgres Shared_buffer */
 
 	}
 
