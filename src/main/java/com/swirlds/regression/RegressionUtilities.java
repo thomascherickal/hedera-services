@@ -129,6 +129,15 @@ public class RegressionUtilities {
 	// (50 billion)*(times 100 million)
 	static final long TOTAL_STAKES = 50L * 1_000_000_000L * 100L * 1_000_000L;
 
+	/* this section is for dynamic allocation of huge pages and memory of instances */
+
+	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
+	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
+	static final String POSTGRES_DEFAULT_WORK_MEM = "256MB";
+	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
+	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
+
+
 	static final String[] NIGHTLY_REGRESSION_SERVER_LIST = {
 			"i-03c90b3fdeed8edd7",
 			"i-050d3f864b99b796f",
