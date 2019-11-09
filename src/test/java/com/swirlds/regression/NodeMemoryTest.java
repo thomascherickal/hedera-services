@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import org.apache.logging.log4j.core.util.Assert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -78,7 +79,10 @@ public class NodeMemoryTest {
 		NodeMemory testNM = new NodeMemory(totalMemory);
 		assertEquals(hugePageNumber, testNM.hugePagesNumber);
 		assertEquals(hugePageKBMemory, (int)testNM.hugePagesMemory.getAdjustedMemoryAmount(MemoryType.KB));
-		/* TODO test JVM Memory, all the postgress presets, postgres Shared_buffer */
+		assertEquals(RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS, testNM.postgresMaxPreparedTransaction);
+		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS), testNM.postgresTempBuffers);
+		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM), testNM.postgresWorkMem);
+		/* TODO test JVM Memory, postgres Shared_buffer */
 
 	}
 

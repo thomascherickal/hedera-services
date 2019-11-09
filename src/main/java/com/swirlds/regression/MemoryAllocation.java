@@ -1,5 +1,7 @@
 package com.swirlds.regression;
 
+import java.util.Objects;
+
 public class MemoryAllocation {
 
 	private int memoryAmount = 0;
@@ -59,5 +61,18 @@ public class MemoryAllocation {
 		return memoryAmount + memoryType.getMemoryIdent();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		MemoryAllocation that = (MemoryAllocation) o;
+		return memoryAmount == that.memoryAmount &&
+				memoryType == that.memoryType;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(memoryAmount, memoryType);
+	}
 }
 
