@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+
 public abstract class ValidatorTestUtil {
 	public static List<NodeData> loadNodeData(String directory, String csvName, int logVersion) {
 		List<NodeData> nodeData = new ArrayList<>();
@@ -46,6 +48,36 @@ public abstract class ValidatorTestUtil {
 							LogReader.createReader(logVersion, logInput),
 							CsvReader.createReader(csvVersion, csvInput)
 					));
+		}
+		if (nodeData.size() == 0) {
+			throw new RuntimeException("Cannot find log files in: " + directory);
+		}
+		return nodeData;
+	}
+
+	public static List<NodeData> loadNodeDataWithRecoverEventLog(String directory, String csvName, int logVersion) {
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; ; i++) {
+
+			String logFileName = String.format("%s/node%04d/swirlds.log", directory, i);
+			InputStream logInput =
+					ValidatorTestUtil.class.getClassLoader().getResourceAsStream(logFileName);
+			if (logInput == null) {
+				break;
+			}
+
+			int csvVersion = 1;
+			String csvFileName = String.format("%s/node%04d/%s%d.csv", directory, i, csvName, i);
+			InputStream csvInput =
+					ValidatorTestUtil.class.getClassLoader().getResourceAsStream(csvFileName);
+
+			nodeData.add(
+					new NodeData(
+							LogReader.createReader(logVersion, logInput),
+							CsvReader.createReader(csvVersion, csvInput),
+							ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+									String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME))
+			);
 		}
 		if (nodeData.size() == 0) {
 			throw new RuntimeException("Cannot find log files in: " + directory);

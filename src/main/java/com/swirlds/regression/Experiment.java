@@ -95,6 +95,7 @@ import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
@@ -319,9 +320,10 @@ public class Experiment {
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
 				String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
 				InputStream csvInput = getInputStream(csvFilePath);
+				final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
 				if (logInput != null && csvInput != null) {
 					nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
-							csvInput)));
+							csvInput), getInputStream(recoverEventMatchFileName)));
 				}
 			}
 		}

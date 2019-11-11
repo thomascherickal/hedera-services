@@ -1,0 +1,416 @@
+2019-11-11 16:22:12.452 STARTUP 1 main Browser main() started
+2019-11-11 16:22:13.201 STARTUP 1 main About to run startPlatforms()
+2019-11-11 16:22:13.209 STARTUP 1 main About do crypto instantiation
+2019-11-11 16:22:13.318 STARTUP 1 main About start loading keys
+2019-11-11 16:22:15.424 STARTUP 1 main Done loading keys
+2019-11-11 16:22:15.425 STARTUP 1 main About to start creating Crypto objects
+2019-11-11 16:22:16.266 STARTUP 1 main Done creating Crypto objects
+2019-11-11 16:22:16.266 STARTUP 1 main Done with crypto instantiation
+2019-11-11 16:22:16.268 STARTUP 1 main Starting platforms
+2019-11-11 16:22:16.692 STARTUP 1 main BinaryObject: Recovery Starting
+2019-11-11 16:22:16.693 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2019-11-11 16:22:17.666 STARTUP 1 main BinaryObject: Recovery Finished
+2019-11-11 16:22:17.666 STARTUP 1 main Done with starting platforms
+2019-11-11 16:22:17.967 STARTUP 35 <     platformRun  0  0> JVM arg: -Xmx100g
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -Xms8g
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:+UnlockExperimentalVMOptions
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:+UseZGC
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:ConcGCThreads=14
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:+UseLargePages
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -XX:MaxDirectMemorySize=32g
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2019-11-11 16:22:17.968 STARTUP 35 <     platformRun  0  0> Parsing JSON TEST_STATE_RECOVER.json
+2019-11-11 16:22:18.037 STARTUP 1 main Browser main() finished
+2019-11-11 16:22:18.076 DEMO_INFO 35 <     platformRun  0  0>  insertSeq         = true
+2019-11-11 16:22:18.076 DEMO_INFO 35 <     platformRun  0  0>  appendSig         = false
+2019-11-11 16:22:18.076 DEMO_INFO 35 <     platformRun  0  0>  variedSize        = false
+2019-11-11 16:22:18.077 DEMO_INFO 35 <     platformRun  0  0>  payloadByteSize   = 100
+2019-11-11 16:22:18.077 DEMO_INFO 35 <     platformRun  0  0>  maxByteSize       = 100
+2019-11-11 16:22:18.077 DEMO_INFO 35 <     platformRun  0  0>  type              = TYPE_RANDOM_BYTES
+2019-11-11 16:22:18.077 DEMO_INFO 35 <     platformRun  0  0> Size distribution  = [100]
+2019-11-11 16:22:18.077 DEMO_INFO 35 <     platformRun  0  0> Type distribution  = [TYPE_FCM_TEST]
+2019-11-11 16:22:18.078 DEMO_INFO 35 <     platformRun  0  0> Ratio distribution = [100.0]
+2019-11-11 16:22:18.083 DEMO_INFO 35 <     platformRun  0  0> Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2019-11-11 16:22:18.088 DEMO_INFO 35 <     platformRun  0  0> This test will generate sequential FCM payload:
+2019-11-11 16:22:18.088 DEMO_INFO 35 <     platformRun  0  0> Set data account counter as 0
+2019-11-11 16:22:18.088 DEMO_INFO 35 <     platformRun  0  0> Set FCLL account counter as 0
+2019-11-11 16:22:18.088 DEMO_INFO 35 <     platformRun  0  0> Set Blob account counter as 0
+2019-11-11 16:22:18.099 STARTUP 35 <     platformRun  0  0> Adv Crypto Subsystem: CryptoFactory initializing
+2019-11-11 16:22:18.114 STARTUP 35 <     platformRun  0  0> Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-11-11 16:22:18.205 STARTUP 35 <     platformRun  0  0> Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-11-11 16:22:18.205 STARTUP 35 <     platformRun  0  0> Adv Crypto Subsystem: CryptoFactory startup complete
+2019-11-11 16:22:18.215 DEMO_INFO 51 <      appMainRun  0   > Node 0 starts transactions ........
+2019-11-11 16:22:18.472 STARTUP 66 <       heartbeat  0  2> Platform Status Change ACTIVE 
+2019-11-11 16:23:11.020 DEMO_INFO 51 <      appMainRun  0   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2019-11-11 16:23:11.021 DEMO_INFO 51 <      appMainRun  0   > Stop generating transactions 
+2019-11-11 16:23:11.287 DEMO_INFO 40 <      threadCons  0   > collectedStartPauseMsg 1
+2019-11-11 16:23:11.288 DEMO_INFO 40 <      threadCons  0   > collectedStartPauseMsg 2
+2019-11-11 16:23:11.289 DEMO_INFO 40 <      threadCons  0   > collectedStartPauseMsg 3
+2019-11-11 16:23:11.289 DEMO_INFO 40 <      threadCons  0   > collectedStartPauseMsg 4
+2019-11-11 16:23:12.215 DEMO_INFO 52 checkThread_node0 Start checking stage ....
+2019-11-11 16:23:12.216 DEMO_INFO 52 checkThread_node0 All node finished submitting all transactions
+2019-11-11 16:23:13.854 DEMO_INFO 52 checkThread_node0 Platform fslog and map saved
+2019-11-11 16:23:13.969 DEMO_INFO 52 checkThread_node0 Checking FCM results OK
+
+
+
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Node 0 transactionSubmitted 52500
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Node 0 Total Recv Transaction 52500
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Node 0 Total Recv FCM Transaction 52500
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Node 0 Total Recv File Transaction 0
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Node 0 Total totalTranAmountFromPrevRun 0
+2019-11-11 16:23:13.970 DEMO_INFO 52 checkThread_node0 Waiting for all nodes to get stop pause or exit sync message
+2019-11-11 16:23:14.072 DEMO_INFO 40 <      threadCons  0   > collectedStopPauseMsg 1
+2019-11-11 16:23:14.073 DEMO_INFO 40 <      threadCons  0   > collectedStopPauseMsg 2
+2019-11-11 16:23:14.128 DEMO_INFO 40 <      threadCons  0   > collectedStopPauseMsg 3
+2019-11-11 16:23:14.282 DEMO_INFO 40 <      threadCons  0   > collectedStopPauseMsg 4
+2019-11-11 16:23:18.970 DEMO_INFO 52 checkThread_node0 All node finished submitting all transactions
+2019-11-11 16:23:18.971 DEMO_INFO 52 checkThread_node0 TEST SUCCESS: Quit checking
+2019-11-11 16:23:48.971 STARTUP 48 Thread-9 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+2019-11-11 16:24:17.880 STARTUP 1 main Browser main() started
+2019-11-11 16:24:17.903 STARTUP 1 main About to run startPlatforms()
+2019-11-11 16:24:17.909 STARTUP 1 main About do crypto instantiation
+2019-11-11 16:24:17.915 STARTUP 1 main About start loading keys
+2019-11-11 16:24:18.946 STARTUP 1 main Done loading keys
+2019-11-11 16:24:18.946 STARTUP 1 main About to start creating Crypto objects
+2019-11-11 16:24:19.809 STARTUP 1 main Done creating Crypto objects
+2019-11-11 16:24:19.809 STARTUP 1 main Done with crypto instantiation
+2019-11-11 16:24:19.811 STARTUP 1 main Starting platforms
+2019-11-11 16:24:20.046 STARTUP 1 main Adv Crypto Subsystem: CryptoFactory initializing
+2019-11-11 16:24:20.058 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-11-11 16:24:20.142 STARTUP 1 main Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-11-11 16:24:20.142 STARTUP 1 main Adv Crypto Subsystem: CryptoFactory startup complete
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmFCLLCreateAmount 0
+2019-11-11 16:24:20.144 DEMO_INFO 1 main Restore node 0 state fcmFCLLUpdateAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmFCLLDeleteAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmFCLLTransferAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateAmount 0
+2019-11-11 16:24:20.145 DEMO_INFO 1 main Restore node 0 state fcmBlobDeleteAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 55
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2019-11-11 16:24:20.146 DEMO_INFO 1 main Restore node 1 state fcmFCLLCreateAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmFCLLUpdateAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmFCLLDeleteAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmFCLLTransferAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobDeleteAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendAmount 0
+2019-11-11 16:24:20.147 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 1
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 1
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2019-11-11 16:24:20.148 DEMO_INFO 1 main Restore node 2 state fcmFCLLCreateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmFCLLUpdateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmFCLLDeleteAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmFCLLTransferAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobDeleteAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 2
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2019-11-11 16:24:20.149 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 56
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmFCLLCreateAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmFCLLUpdateAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmFCLLDeleteAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmFCLLTransferAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:24:20.150 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore node 3 state fcmBlobDeleteAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendAmount 0
+2019-11-11 16:24:20.151 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 3
+2019-11-11 16:24:20.162 DEMO_INFO 1 main Restore state storage map size 0
+2019-11-11 16:24:20.162 DEMO_INFO 1 main Restore state account map size 0
+2019-11-11 16:24:20.176 DEMO_INFO 1 main Restore state map size 112
+2019-11-11 16:24:20.180 STARTUP 1 main Last known sequence numbers after restart are [0, 1, 1, 2]
+2019-11-11 16:24:20.183 STARTUP 1 main BinaryObject: Recovery Starting
+2019-11-11 16:24:20.183 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2019-11-11 16:24:20.589 STARTUP 1 main BinaryObject: Recovery Finished
+2019-11-11 16:24:20.590 STARTUP 1 main Done with starting platforms
+2019-11-11 16:24:20.595 STARTUP 49 <     platformRun  0  0> Platform 0 has loaded a saved state for round 1. Will freeze until: 2019-11-11T16:24:30.590248
+2019-11-11 16:24:20.627 STARTUP 1 main Browser main() finished
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -Xmx100g
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -Xms8g
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:+UnlockExperimentalVMOptions
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:+UseZGC
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:ConcGCThreads=14
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:+UseLargePages
+2019-11-11 16:24:20.765 STARTUP 49 <     platformRun  0  0> JVM arg: -XX:MaxDirectMemorySize=32g
+2019-11-11 16:24:20.766 STARTUP 49 <     platformRun  0  0> JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2019-11-11 16:24:20.766 STARTUP 49 <     platformRun  0  0> Parsing JSON TEST_PAUSE_NOCHECK.json
+2019-11-11 16:24:20.846 DEMO_INFO 49 <     platformRun  0  0>  insertSeq         = true
+2019-11-11 16:24:20.847 DEMO_INFO 49 <     platformRun  0  0>  appendSig         = false
+2019-11-11 16:24:20.847 DEMO_INFO 49 <     platformRun  0  0>  variedSize        = false
+2019-11-11 16:24:20.847 DEMO_INFO 49 <     platformRun  0  0>  payloadByteSize   = 100
+2019-11-11 16:24:20.847 DEMO_INFO 49 <     platformRun  0  0>  maxByteSize       = 100
+2019-11-11 16:24:20.848 DEMO_INFO 49 <     platformRun  0  0>  type              = TYPE_RANDOM_BYTES
+2019-11-11 16:24:20.848 DEMO_INFO 49 <     platformRun  0  0> Size distribution  = [100]
+2019-11-11 16:24:20.848 DEMO_INFO 49 <     platformRun  0  0> Type distribution  = [TYPE_FCM_TEST]
+2019-11-11 16:24:20.849 DEMO_INFO 49 <     platformRun  0  0> Ratio distribution = [100.0]
+2019-11-11 16:24:20.855 DEMO_INFO 49 <     platformRun  0  0> Goal is TRANS_PER_SECOND_PER_NODE targe 3000.0
+2019-11-11 16:24:20.859 DEMO_INFO 49 <     platformRun  0  0> This test will generate sequential FCM payload:
+2019-11-11 16:24:20.859 DEMO_INFO 49 <     platformRun  0  0> Set data account counter as 0
+2019-11-11 16:24:20.859 DEMO_INFO 49 <     platformRun  0  0> Set FCLL account counter as 0
+2019-11-11 16:24:20.859 DEMO_INFO 49 <     platformRun  0  0> Set Blob account counter as 0
+2019-11-11 16:24:22.874 DEMO_INFO 49 <     platformRun  0  0> LOADED Platform expected family map
+2019-11-11 16:24:22.874 DEMO_INFO 49 <     platformRun  0  0> Set data account counter as 110000
+2019-11-11 16:24:22.874 DEMO_INFO 49 <     platformRun  0  0> Set FCLL account counter as 0
+2019-11-11 16:24:22.874 DEMO_INFO 49 <     platformRun  0  0> Set Blob account counter as 0
+2019-11-11 16:24:22.891 EVENT_PARSER 49 <     platformRun  0  0> Last timestamp from loaded state is 2019-11-11T16:22:18.678433053Z
+2019-11-11 16:24:22.893 EVENT_PARSER 63 streamEventParser Loading event file from path data/eventStream/events_0 
+2019-11-11 16:24:22.894 EVENT_PARSER 63 streamEventParser Processing file /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_22_18.611618Z.evts
+2019-11-11 16:24:22.897 EVENT_PARSER 63 streamEventParser From file fileName /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_22_18.611618Z.evts read prevFileHash = 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2019-11-11 16:24:23.914 EVENT_PARSER 63 streamEventParser contentHash from digest eeb578800e1a585f0259787ceccefac112cd624a4226a1e1e428a53c5d720fdce1a15cba31cd4e742d173ebdfa71c519
+2019-11-11 16:24:23.940 EVENT_PARSER 63 streamEventParser contentHash from file read eeb578800e1a585f0259787ceccefac112cd624a4226a1e1e428a53c5d720fdce1a15cba31cd4e742d173ebdfa71c519
+2019-11-11 16:24:23.940 EVENT_PARSER 63 streamEventParser Processing file /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_22_30.001869Z.evts
+2019-11-11 16:24:23.941 EVENT_PARSER 63 streamEventParser From file fileName /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_22_30.001869Z.evts read prevFileHash = f547856b46416bf48cdfe1617a5ef3a7044fb679dd73d48fb53f466e3dfbecc9b1a18aba7a7e25040a505b9962e0029c
+2019-11-11 16:24:26.597 EVENT_PARSER 63 streamEventParser Processing file /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_23_00.016868Z.evts
+2019-11-11 16:24:26.598 EVENT_PARSER 63 streamEventParser From file fileName /home/ubuntu/remoteExperiment/data/eventStream/events_0/2019-11-11T16_23_00.016868Z.evts read prevFileHash = 9a2345492b566d2aae8df31385425f1da0915390e515e74998b05dc3d74b4a575a4adbf64f1ef6005ceb9910628628eb
+2019-11-11 16:24:27.628 EVENT_PARSER 63 streamEventParser Add the last recovered event [(id,seq) for self/selfP/otherP:(0,2251)/(-,-)/(-,-),#trans:0,gen:3168,time:2019-11-11T16:23:15.050360Z,sig[0..2]: {126,-114,93}]
+2019-11-11 16:24:27.628 EVENT_PARSER 63 streamEventParser Recovered 9216 event from stream file
+2019-11-11 16:24:28.160 DEMO_INFO 54 <      threadCons  0   > collectedStartPauseMsg 1
+2019-11-11 16:24:28.161 DEMO_INFO 54 <      threadCons  0   > collectedStartPauseMsg 2
+2019-11-11 16:24:28.161 DEMO_INFO 54 <      threadCons  0   > collectedStartPauseMsg 3
+2019-11-11 16:24:28.161 DEMO_INFO 54 <      threadCons  0   > collectedStartPauseMsg 4
+2019-11-11 16:24:28.245 EVENT_PARSER 49 <     platformRun  0  0> Inserted 9216 event to forCons queue, recoverEventsRound 369
+2019-11-11 16:24:28.246 EVENT_PARSER 49 <     platformRun  0  0> forConsQueueCount 9216
+2019-11-11 16:24:28.331 DEMO_INFO 54 <      threadCons  0   > collectedStopPauseMsg 1
+2019-11-11 16:24:28.338 DEMO_INFO 54 <      threadCons  0   > collectedStopPauseMsg 2
+2019-11-11 16:24:28.339 DEMO_INFO 54 <      threadCons  0   > collectedStopPauseMsg 3
+2019-11-11 16:24:28.339 DEMO_INFO 54 <      threadCons  0   > collectedStopPauseMsg 4
+2019-11-11 16:24:28.814 EVENT_PARSER 61 <objectFileManager  0   > Last recovered signed state has been saved in state recover mode
+2019-11-11 16:24:28.816 STARTUP 40 Thread-8 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+2019-11-11 16:25:24.987 STARTUP 1 main Browser main() started
+2019-11-11 16:25:25.011 STARTUP 1 main About to run startPlatforms()
+2019-11-11 16:25:25.017 STARTUP 1 main About do crypto instantiation
+2019-11-11 16:25:25.023 STARTUP 1 main About start loading keys
+2019-11-11 16:25:26.065 STARTUP 1 main Done loading keys
+2019-11-11 16:25:26.065 STARTUP 1 main About to start creating Crypto objects
+2019-11-11 16:25:26.914 STARTUP 1 main Done creating Crypto objects
+2019-11-11 16:25:26.914 STARTUP 1 main Done with crypto instantiation
+2019-11-11 16:25:26.916 STARTUP 1 main Starting platforms
+2019-11-11 16:25:27.173 STARTUP 1 main Adv Crypto Subsystem: CryptoFactory initializing
+2019-11-11 16:25:27.185 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2019-11-11 16:25:27.273 STARTUP 1 main Adv Crypto Subsystem: CpuCryptoEngine initialized
+2019-11-11 16:25:27.274 STARTUP 1 main Adv Crypto Subsystem: CryptoFactory startup complete
+2019-11-11 16:25:27.275 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2019-11-11 16:25:27.275 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2019-11-11 16:25:27.275 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 30000
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 10000
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 2500
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 10000
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmFCLLCreateAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmFCLLUpdateAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmFCLLDeleteAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmFCLLTransferAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateAmount 0
+2019-11-11 16:25:27.276 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobDeleteAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2019-11-11 16:25:27.277 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 30000
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 10000
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 2500
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 10000
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmFCLLCreateAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmFCLLUpdateAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmFCLLDeleteAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmFCLLTransferAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:25:27.278 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobDeleteAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 1
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2019-11-11 16:25:27.279 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 30000
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 10000
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 2500
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 10000
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmFCLLCreateAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmFCLLUpdateAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmFCLLDeleteAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmFCLLTransferAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:25:27.280 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 2 state fcmBlobDeleteAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 2
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2019-11-11 16:25:27.281 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 30000
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 10000
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 2500
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 10000
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmFCLLCreateAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmFCLLUpdateAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmFCLLDeleteAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmFCLLTransferAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateLargeAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateLargeAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2019-11-11 16:25:27.282 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2019-11-11 16:25:27.283 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateAmount 0
+2019-11-11 16:25:27.283 DEMO_INFO 1 main Restore node 3 state fcmBlobDeleteAmount 0
+2019-11-11 16:25:27.283 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendAmount 0
+2019-11-11 16:25:27.283 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 3
+2019-11-11 16:25:27.335 DEMO_INFO 1 main Restore state storage map size 0
+2019-11-11 16:25:27.335 DEMO_INFO 1 main Restore state account map size 0
+2019-11-11 16:25:28.000 DEMO_INFO 1 main Restore state map size 110000
+2019-11-11 16:25:28.036 STARTUP 1 main Last known sequence numbers after restart are [2251, 2314, 2279, 2376]
+2019-11-11 16:25:28.047 STARTUP 1 main BinaryObject: Recovery Starting
+2019-11-11 16:25:28.048 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2019-11-11 16:25:28.441 STARTUP 1 main BinaryObject: Recovery Finished
+2019-11-11 16:25:28.441 STARTUP 1 main Done with starting platforms
+2019-11-11 16:25:28.450 STARTUP 59 <     platformRun  0  0> Platform 0 has loaded a saved state for round 370. Will freeze until: 2019-11-11T16:25:38.441698
+2019-11-11 16:25:28.482 STARTUP 1 main Browser main() finished
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -Xmx100g
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -Xms8g
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:+UnlockExperimentalVMOptions
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:+UseZGC
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:ConcGCThreads=14
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:+UseLargePages
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -XX:MaxDirectMemorySize=32g
+2019-11-11 16:25:28.610 STARTUP 59 <     platformRun  0  0> JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2019-11-11 16:25:28.611 STARTUP 59 <     platformRun  0  0> Parsing JSON TEST_STATE_RECOVER.json
+2019-11-11 16:25:28.686 DEMO_INFO 59 <     platformRun  0  0>  insertSeq         = true
+2019-11-11 16:25:28.687 DEMO_INFO 59 <     platformRun  0  0>  appendSig         = false
+2019-11-11 16:25:28.687 DEMO_INFO 59 <     platformRun  0  0>  variedSize        = false
+2019-11-11 16:25:28.687 DEMO_INFO 59 <     platformRun  0  0>  payloadByteSize   = 100
+2019-11-11 16:25:28.687 DEMO_INFO 59 <     platformRun  0  0>  maxByteSize       = 100
+2019-11-11 16:25:28.687 DEMO_INFO 59 <     platformRun  0  0>  type              = TYPE_RANDOM_BYTES
+2019-11-11 16:25:28.688 DEMO_INFO 59 <     platformRun  0  0> Size distribution  = [100]
+2019-11-11 16:25:28.688 DEMO_INFO 59 <     platformRun  0  0> Type distribution  = [TYPE_FCM_TEST]
+2019-11-11 16:25:28.688 DEMO_INFO 59 <     platformRun  0  0> Ratio distribution = [100.0]
+2019-11-11 16:25:28.695 DEMO_INFO 59 <     platformRun  0  0> Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2019-11-11 16:25:28.698 DEMO_INFO 59 <     platformRun  0  0> This test will generate sequential FCM payload:
+2019-11-11 16:25:28.699 DEMO_INFO 59 <     platformRun  0  0> Set data account counter as 30000
+2019-11-11 16:25:28.699 DEMO_INFO 59 <     platformRun  0  0> Set FCLL account counter as 0
+2019-11-11 16:25:28.699 DEMO_INFO 59 <     platformRun  0  0> Set Blob account counter as 0
+2019-11-11 16:25:29.940 DEMO_INFO 59 <     platformRun  0  0> LOADED Platform expected family map
+2019-11-11 16:25:29.940 DEMO_INFO 59 <     platformRun  0  0> Set data account counter as 110000
+2019-11-11 16:25:29.940 DEMO_INFO 59 <     platformRun  0  0> Set FCLL account counter as 0
+2019-11-11 16:25:29.940 DEMO_INFO 59 <     platformRun  0  0> Set Blob account counter as 0
+2019-11-11 16:25:29.950 DEMO_INFO 69 <      appMainRun  0   > Node 0 starts transactions ........
+2019-11-11 16:25:30.374 STARTUP 92 sync_server_3 Platform Status Change ACTIVE 
+2019-11-11 16:26:22.905 DEMO_INFO 69 <      appMainRun  0   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2019-11-11 16:26:22.905 DEMO_INFO 69 <      appMainRun  0   > Stop generating transactions 
+2019-11-11 16:26:23.309 DEMO_INFO 64 <      threadCons  0   > collectedStartPauseMsg 1
+2019-11-11 16:26:23.449 DEMO_INFO 64 <      threadCons  0   > collectedStartPauseMsg 2
+2019-11-11 16:26:23.450 DEMO_INFO 64 <      threadCons  0   > collectedStartPauseMsg 3
+2019-11-11 16:26:23.451 DEMO_INFO 64 <      threadCons  0   > collectedStartPauseMsg 4
+2019-11-11 16:26:23.952 DEMO_INFO 70 checkThread_node0 Start checking stage ....
+2019-11-11 16:26:23.952 DEMO_INFO 70 checkThread_node0 All node finished submitting all transactions
+2019-11-11 16:26:27.099 DEMO_INFO 70 checkThread_node0 Platform fslog and map saved
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Checking FCM results OK
+
+
+
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Node 0 transactionSubmitted 52500
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Node 0 Total Recv Transaction 105000
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Node 0 Total Recv FCM Transaction 105000
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Node 0 Total Recv File Transaction 0
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Node 0 Total totalTranAmountFromPrevRun 52500
+2019-11-11 16:26:27.340 DEMO_INFO 70 checkThread_node0 Waiting for all nodes to get stop pause or exit sync message
+2019-11-11 16:26:27.728 DEMO_INFO 64 <      threadCons  0   > collectedStopPauseMsg 1
+2019-11-11 16:26:27.729 DEMO_INFO 64 <      threadCons  0   > collectedStopPauseMsg 2
+2019-11-11 16:26:27.875 DEMO_INFO 64 <      threadCons  0   > collectedStopPauseMsg 3
+2019-11-11 16:26:27.875 DEMO_INFO 64 <      threadCons  0   > collectedStopPauseMsg 4
+2019-11-11 16:26:32.341 DEMO_INFO 70 checkThread_node0 All node finished submitting all transactions
+2019-11-11 16:26:32.341 DEMO_INFO 70 checkThread_node0 TEST SUCCESS: Quit checking
+2019-11-11 16:27:02.343 STARTUP 40 Thread-8 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked

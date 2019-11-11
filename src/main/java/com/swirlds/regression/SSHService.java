@@ -46,6 +46,7 @@ import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOW
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
+import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -844,11 +845,13 @@ public class SSHService {
 	 */
 	boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
 
-		// compare generated event stream files with original ones, ignore files exist in original ones
+		// compare generated event stream files with original ones, ignore only files exist in original ones
 		String compareCmd = "diff  " + REMOTE_EXPERIMENT_LOCATION + eventDir
 				+ " " + REMOTE_EXPERIMENT_LOCATION + originalDir + " | grep diff | wc -l";
 
 		Session.Command cmd = executeCmd(compareCmd);
+
+		// return string is a number with bracket
 		String cmdResult = readCommandOutput(cmd).toString();
 		cmdResult = cmdResult.replace("[", "").replace("]", ""); //remove bracket
 
@@ -856,7 +859,7 @@ public class SSHService {
 			if (Integer.parseInt(cmdResult) == 0) {
 				log.info(MARKER, "Found NO difference in recovered event files and original ones");
 				executeCmd("echo \"" + EVENT_MATCH_MSG + "\"  >> " +
-						REMOTE_EXPERIMENT_LOCATION + "swirlds.log");
+						REMOTE_EXPERIMENT_LOCATION + EVENT_MATCH_LOG_NAME);
 				return true; // no difference found
 			} else {
 				log.info(MARKER, "Found difference in recovered event files and original ones");

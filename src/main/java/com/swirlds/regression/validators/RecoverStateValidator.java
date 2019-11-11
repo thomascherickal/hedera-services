@@ -23,11 +23,13 @@ import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
@@ -43,6 +45,8 @@ import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAG
 
 public class RecoverStateValidator extends NodeValidator {
 
+
+	public final static String EVENT_MATCH_LOG_NAME = "recover_event_match.log";
 	public RecoverStateValidator(List<NodeData> nodeData) {
 		super(nodeData);
 	}
@@ -83,19 +87,19 @@ public class RecoverStateValidator extends NodeValidator {
 				continue; //check next node
 			}
 
-			end = nodeLog.nextEntryContaining(EVENT_MATCH_MSG);
-			if (end == null) {
-				addError("Node " + i + " recovered event file does not match original ones !");
-				isValid = false;
-				continue; //check next node
-			}
-
 			end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
 			if (end == null) {
 				addError("Node " + i + " did not resume run!");
 				isValid = false;
 				continue; //check next node
 			}
+
+			if ( !checkRecoverEventMatchLog(nodeData.get(i).getRecoverEventMatchLog())){
+				addError("Node " + i + " recovered event file does not match original ones !");
+				isValid = false;
+				continue; //check next node
+			}
+
 		}
 
 		isValidated = true;
@@ -104,5 +108,21 @@ public class RecoverStateValidator extends NodeValidator {
 	@Override
 	public boolean isValid() {
 		return isValidated && isValid;
+	}
+
+
+	public boolean checkRecoverEventMatchLog(InputStream input) {
+		if (input != null) {
+
+			Scanner eventScanner = new Scanner(input);
+			if (eventScanner.hasNextLine()) {
+				String entry = eventScanner.nextLine();
+				log.info(MARKER, "Read match log entry = {}", entry);
+				if (entry.contains(EVENT_MATCH_MSG)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
