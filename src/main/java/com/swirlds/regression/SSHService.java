@@ -620,7 +620,7 @@ public class SSHService {
 	 * Return number of test finished message, such as SUCCESS or FAIL, found in log
 	 * Or return -1 if error happened
 	 */
-	public int countTestFinishedMsg() {
+	int countTestFinishedMsg() {
 		final Session.Command cmd = execCommand(RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE,
 				"Check if PTD test is done", -1);
 		ArrayList<String> output = readCommandOutput(cmd);
@@ -793,6 +793,9 @@ public class SSHService {
 		return true;
 	}
 
+	/**
+	 * Find how many signed state subdirectories have been created
+	 */
 	int getSignedStatesAmount() {
 		// first find out how many signed state saved to disk, parse the result string to a number
 		// this return how many signed state (sub-directories) created

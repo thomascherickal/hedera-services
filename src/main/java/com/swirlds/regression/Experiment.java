@@ -852,6 +852,12 @@ public class Experiment {
 		}
 	}
 
+	/**
+	 * List names of signed state directories currently on disk
+	 *
+	 * @param memo
+	 * 		Memo string
+	 */
 	public void displaySignedStates(String memo) {
 		for (SSHService node : sshNodes) {
 			node.displaySignedStates(memo);
@@ -859,7 +865,7 @@ public class Experiment {
 	}
 
 	/**
-	 * Sleep until reached the testDuration, or JAVA process or the number of test finished message found
+	 * Sleep until reached the testDuration, or JAVA process died, or the number of test finished message found
 	 * in logs equal or large than messageAmount
 	 */
 	public void sleepUntilEnoughFinishMessage(long testDuration, int messageAmount) {
@@ -894,6 +900,7 @@ public class Experiment {
 						after the first reconnect/restart */
 						isProcDown.set(i, !isProcStillRunning);
 					}
+					// Check if there are enough number of test finished message in the log
 					isTestFinished.set(i, node.countTestFinishedMsg() == messageAmount);
 				}
 				/* we don't want to exit if only a few nodes have reported being finished */

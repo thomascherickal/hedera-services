@@ -56,7 +56,7 @@ public class RecoverStateValidator extends NodeValidator {
 	boolean isValid = true;
 
 	/**
-	 * An passing test case should have following TWO TEST_SUCCESS key messages in order
+	 * An passing test case should have following key messages in order
 	 *
 	 * TEST_SUCCESS
 	 *

@@ -104,7 +104,7 @@ public class RecoverStateRun implements TestRun {
 		// start all processes
 		experiment.startAllSwirlds();
 
-		// sleep through the rest of the test
+		// sleep until JAVA process dies, or second test finish message has been found
 		experiment.sleepUntilEnoughFinishMessage(testDuration, 2);
 	}
 
