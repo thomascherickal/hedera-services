@@ -49,6 +49,7 @@ public class RecoverStateRun implements TestRun {
 		// sleep through the rest of the test
 		long testDuration = testConfig.getDuration() * MILLIS;
 		experiment.sleepThroughExperiment(testDuration);
+		String originalStreamFileDir = settingsBuilder.getSettingValue("eventsLogDir") + "/*/";
 
 		/**************************
 		 Stage 2 recover run
@@ -84,7 +85,7 @@ public class RecoverStateRun implements TestRun {
 
 		experiment.displaySignedStates("AFTER recover");
 
-		experiment.makeSha1sumOfRecoveredEvents(RECOVER_EVENT_DIR);
+		experiment.checkRecoveredEventFiles(RECOVER_EVENT_DIR, originalStreamFileDir);
 
 		/**************************
 		 Stage 3 resume run

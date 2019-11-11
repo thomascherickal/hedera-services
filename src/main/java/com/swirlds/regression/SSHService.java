@@ -40,11 +40,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.swirlds.regression.ConfigBuilder.SWIRLDS_NAME;
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
-import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -760,7 +761,7 @@ public class SSHService {
 	 */
 	void displaySignedStates(String memo) {
 		String displayCmd =
-				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
+				"ls -tr " + SAVED_STATE_LOCATION;
 		Session.Command cmd = executeCmd(displayCmd);
 		log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
 	}
@@ -769,14 +770,14 @@ public class SSHService {
 		// this command returns the last directory, which is the round number
 		// of last signed state
 		String findLastStateCmd =
-				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + " | tail -1";
+				"ls -tr " + SAVED_STATE_LOCATION + " | tail -1";
 		Session.Command cmd = executeCmd(findLastStateCmd);
 		if (cmd.getExitStatus() == 0) {
 			String findLastStateRound = readCommandOutput(cmd).toString();
 			findLastStateRound = findLastStateRound.replace("[", "").replace("]", ""); //remove bracket
 
 			String rmStatesCmd =
-					"rm -r " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + "/" + findLastStateRound;
+					"rm -r " + SAVED_STATE_LOCATION + "/" + findLastStateRound;
 			cmd = executeCmd(rmStatesCmd);
 			if (cmd.getExitStatus() != 0) {
 				log.error(ERROR, "Exception running rm state command {}", rmStatesCmd);
@@ -795,7 +796,7 @@ public class SSHService {
 		// first find out how many signed state saved to disk, parse the result string to a number
 		// this return how many signed state (sub-directories) created
 		String lsStatesCmd =
-				"ls -tr " + REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME + " | wc -l";
+				"ls -tr " + SAVED_STATE_LOCATION + " | wc -l";
 
 		Session.Command cmd = executeCmd(lsStatesCmd);
 		if (cmd.getExitStatus() == 0) {
@@ -835,35 +836,36 @@ public class SSHService {
 	}
 
 	/**
-	 * Generate hash from event files generated during recover mode
+	 * Compare event files generated during recover mode whether match original ones
 	 *
 	 * @param eventDir
-	 * 		relative path to event files
+	 * @param originalDir
+	 * @return
 	 */
-	int makeSha1sumOfRecoveredEvents(String eventDir) {
-		String prefix = "recovered_";
-		final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-		final String evts_list = baseDir + prefix + EVENT_FILE_LIST;
-		final String sha1Sum_log = baseDir + prefix + EVENT_LIST_FILE;
-		final String finalHashLog = baseDir + prefix + FINAL_EVENT_FILE_HASH;
-		final String evtsSigList = baseDir + prefix + EVENT_SIG_FILE_LIST;
-		final String commandStr = String.format(
-				"cd %s; " +
-						"wc -c *.evts > %s ; " +    //create a list of file name and byte size
-						"sha1sum *.evts > %s; " +  //create a list of hash of individual evts file
-						"ls *.evts_sig > %s;" +
-						"sha1sum %s > %s;",
-				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + eventDir,
-				evts_list, sha1Sum_log, evtsSigList, sha1Sum_log, finalHashLog);
-		final String description =
-				"Create sha1sum of recovered event files on node: " + ipAddress + " dir: " + eventDir;
-		log.trace(MARKER, "Hash creation commandStr = {}", commandStr);
+	boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
 
-		Session.Command result = execCommand(commandStr, description);
-		if (result != null) {
-			return result.getExitStatus();
-		} else {
-			return -1;
+		// compare generated event stream files with original ones, ignore files exist in original ones
+		String compareCmd = "diff  " + REMOTE_EXPERIMENT_LOCATION + eventDir
+				+ " " + REMOTE_EXPERIMENT_LOCATION + originalDir + " | grep diff | wc -l";
+
+		Session.Command cmd = executeCmd(compareCmd);
+		String cmdResult = readCommandOutput(cmd).toString();
+		cmdResult = cmdResult.replace("[", "").replace("]", ""); //remove bracket
+
+		try {
+			if (Integer.parseInt(cmdResult) == 0) {
+				log.info(MARKER, "Found NO difference in recovered event files and original ones");
+				executeCmd("echo \"" + EVENT_MATCH_MSG + "\"  >> " +
+						REMOTE_EXPERIMENT_LOCATION + "swirlds.log");
+				return true; // no difference found
+			} else {
+				log.info(MARKER, "Found difference in recovered event files and original ones");
+				return false;
+			}
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Exception ", e);
+			return false;
 		}
 	}
+
 }

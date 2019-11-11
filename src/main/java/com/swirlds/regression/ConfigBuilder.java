@@ -35,14 +35,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.swirlds.regression.RegressionUtilities.SWIRLDS_NAME;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class ConfigBuilder {
 	private static final Logger log = LogManager.getLogger(Experiment.class);
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
-
-	public static final String SWIRLDS_NAME = "123";
 
 	private static final String CONFIG_HEADER =
 			"###############################################################################################\n"

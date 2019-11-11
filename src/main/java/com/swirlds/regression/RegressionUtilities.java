@@ -123,6 +123,10 @@ public class RegressionUtilities {
 	static final String REG_GIT_USER_EMAIL = "swirlds-test@swirlds.org";
 	static final boolean CHECK_USER_EMAIL_CHANNEL = true;
 
+	static final String SWIRLDS_NAME = "123";
+	static final String SAVED_STATE_LOCATION = REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
+	public static final String EVENT_MATCH_MSG = "Recovered file match original ones";
+
 	static final boolean USE_STAKES_IN_CONFIG = true;
 	// total stakes are the same as the number of the number of tinybars in existence
 	// (50 billion)*(times 100 million)

@@ -37,6 +37,7 @@ import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
 
@@ -82,12 +83,21 @@ public class RecoverStateValidator extends NodeValidator {
 				continue; //check next node
 			}
 
+			end = nodeLog.nextEntryContaining(EVENT_MATCH_MSG);
+			if (end == null) {
+				addError("Node " + i + " recovered event file does not match original ones !");
+				isValid = false;
+				continue; //check next node
+			}
+
 			end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
 			if (end == null) {
 				addError("Node " + i + " did not resume run!");
 				isValid = false;
+				continue; //check next node
 			}
 		}
+
 		isValidated = true;
 	}
 

@@ -911,15 +911,18 @@ public class Experiment {
 	}
 
 	/**
-	 * Generate hash from event files generated during recover mode
-	 *
+	 * Compare event files generated during recover mode whether match original ones
 	 * @param eventDir
-	 * 		relative path to event files
+	 * @param originalDir
+	 * @return
 	 */
-	public void makeSha1sumOfRecoveredEvents(String eventDir) {
+	public boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
 		for (SSHService node : sshNodes) {
-			node.displayRecoveredEventFiles(eventDir);
-			node.makeSha1sumOfRecoveredEvents(eventDir);
+			if (!node.checkRecoveredEventFiles(eventDir, originalDir)){
+				return false;
+			}
+
 		}
+		return true;
 	}
 }
