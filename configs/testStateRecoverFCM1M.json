@@ -12,12 +12,12 @@
   ],
   "recoverConfig":{
     "app": {
-      "jar": "PlatformTestingDemo.jar",
+      "jar": "PlatformTestingApp.jar",
       "parameterList": ["TEST_PAUSE_NOCHECK.json"]
     }
   },  
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["TEST_RECOVER_FCM1M.json"]
   },
   "resultFiles": [
