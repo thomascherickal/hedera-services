@@ -841,14 +841,16 @@ public class Experiment {
 	public void deleteSignedStates() {
 		SSHService node0 = sshNodes.get(0);
 		int savedStatesAmount = node0.getSignedStatesAmount();
+		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
+		if (savedStatesAmount > 1) {
+			// random generate an amount and delete such amount of signed state
+			// at least leave one of the original signed state
+			int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
+			log.info(MARKER, "Random delete {} signed state", randNum);
 
-		// random generate an amount and delete such amount of signed state
-		// at least leave one of the original signed state
-		int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
-		log.info(MARKER, "Random delete {} signed state", randNum);
-
-		for (SSHService node : sshNodes) {
-			node.deleteSignedStates(randNum);
+			for (SSHService node : sshNodes) {
+				node.deleteSignedStates(randNum);
+			}
 		}
 	}
 
