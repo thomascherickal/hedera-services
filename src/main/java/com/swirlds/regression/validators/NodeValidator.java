@@ -83,14 +83,14 @@ public abstract class NodeValidator extends Validator {
 		// Assumptions: for PTD, there is always only one parameter: the PTD JSON config file
 		ArrayList<Double> throttleValues = new ArrayList<>();
 		String jarName = testConfig.getApp().getJar();
-		if (!jarName.equals("PlatformTestingDemo.jar")) return throttleValues;
+		if (!jarName.equals("PlatformTestingApp.jar")) return throttleValues;
 
 		String jsonFileName = testConfig.getApp().getParameterList().get(0);
 		JsonFactory factory = new JsonFactory();
 		ObjectMapper mapper = new ObjectMapper(factory);
 		JsonNode rootNode = null;
 		// assumed location of PTD json config file
-		//String fullPath = "../platform-apps/tests/PlatformTestingDemo/target/classes/" + jsonFileName;
+		//String fullPath = "../platform-apps/tests/PlatformTestingApp/target/classes/" + jsonFileName;
 		String fullPath = PTDJsonConfigFilePath + jsonFileName;
 
 		try {

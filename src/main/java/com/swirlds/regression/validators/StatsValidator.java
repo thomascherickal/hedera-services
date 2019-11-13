@@ -38,7 +38,8 @@ import static com.swirlds.regression.RegressionUtilities.MB;
 public class StatsValidator extends NodeValidator {
 	private boolean isValidated = false;
 	private TestConfig testConfig;
-	public String PTDJsonConfigFilePath = "../platform-apps/tests/PlatformTestingDemo/target/classes/"; // for throttle validation
+	public String PTDJsonConfigFilePath = "../platform-apps/tests/PlatformTestingApp/target/classes/"; // for throttle
+	// validation
 
 	public StatsValidator(List<NodeData> nodeData, TestConfig testConfig) {
 
