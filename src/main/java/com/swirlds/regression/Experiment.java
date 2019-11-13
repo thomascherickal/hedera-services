@@ -869,65 +869,49 @@ public class Experiment {
 	 * in logs equal or large than messageAmount
 	 */
 	public void sleepUntilEnoughFinishMessage(long testDuration, int messageAmount) {
-		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
-			ArrayList<Boolean> isProcDown = new ArrayList<>();
-			ArrayList<Boolean> isTestFinished = new ArrayList<>();
-			/* set array lists to appropriate size with default values */
-			for (int i = 0; i < sshNodes.size(); i++) {
-				isProcDown.add(false);
-				isTestFinished.add(false);
-			}
-			/* testDuration is already in milliseconds */
-			/* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
-			long endTime = System.nanoTime() + (testDuration * 1_000_000);
-			log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / 1_000);
-			while (System.nanoTime() < endTime) { // Don't go over set test time
-				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
-					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
-				} catch (InterruptedException e) {
-					log.error(ERROR, "could not sleep.", e);
-				}
-				/* Check all processes are still running, then check if test has finished */
+		long startTime = System.nanoTime();
+		boolean isEnoughFinishMessage = false;
+		long remainedDurationMS = testDuration;
+
+		while (!isEnoughFinishMessage) {
+			sleepThroughExperiment(remainedDurationMS);
+
+			long endTime = System.nanoTime();
+			long actualSleepIntervalMS = (endTime - startTime) / 1_000_000;
+
+			if (actualSleepIntervalMS < testDuration) {
+				// sleepThroughExperiment exited before testDuration due to at lease one finish message
+				// then we need check if enough finish message being found
 				for (int i = 0; i < sshNodes.size(); i++) {
 					SSHService node = sshNodes.get(i);
-					boolean isProcStillRunning = node.checkProcess();
-					/* if this it the first time down, keep running, if down two times in a row, stop */
-					if (!isProcStillRunning && isProcDown.get(i)) {
-						return;
+					if (node.countTestFinishedMsg() == messageAmount) {
+						log.info(MARKER, "Node {} found enough finish message", i);
+
+						// isEnoughFinishMessage stays in true if all nodes found enough finish message
+						isEnoughFinishMessage = true;
 					} else {
-						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
-						after the first reconnect/restart */
-						isProcDown.set(i, !isProcStillRunning);
+						isEnoughFinishMessage = false;
 					}
-					// Check if there are enough number of test finished message in the log
-					isTestFinished.set(i, node.countTestFinishedMsg() == messageAmount);
 				}
-				/* we don't want to exit if only a few nodes have reported being finished */
-				if (checkForAllTrue(isTestFinished)) {
-					return;
-				}
-			}
-		} else {
-			try {
-				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
-				log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
-				Thread.sleep(testDuration);
-			} catch (InterruptedException e) {
-				log.error(ERROR, "could not sleep.", e);
+				remainedDurationMS = remainedDurationMS - actualSleepIntervalMS;
+			} else {
+				// has been running longer than testDuration
+				log.info(MARKER, "Could not find {} finish message during defined test duration", messageAmount);
+				break;
 			}
 		}
 	}
 
 	/**
 	 * Compare event files generated during recover mode whether match original ones
+	 *
 	 * @param eventDir
 	 * @param originalDir
 	 * @return
 	 */
 	public boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
 		for (SSHService node : sshNodes) {
-			if (!node.checkRecoveredEventFiles(eventDir, originalDir)){
+			if (!node.checkRecoveredEventFiles(eventDir, originalDir)) {
 				return false;
 			}
 
