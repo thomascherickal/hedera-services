@@ -18,7 +18,9 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -27,10 +29,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.swirlds.common.PlatformLogMarker.DEMO_INFO;
 import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
 import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
+import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 
@@ -40,9 +44,16 @@ public class ReconnectValidator extends NodeValidator {
 		super(nodeData);
 	}
 
+	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
+	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
+	double savedStateStartRoundNumber = 0;
 
 	boolean isValidated = false;
 	boolean isValid = true;
+
+	public void setSavedStateStartRoundNumber(double savedStateStartRoundNumber) {
+		this.savedStateStartRoundNumber = savedStateStartRoundNumber;
+	}
 
 	/**
 	 * Check log and csv of reconnect test results
@@ -83,7 +94,7 @@ public class ReconnectValidator extends NodeValidator {
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
 
-		double transHandleAverage = 0; //transH/sec
+		double lastRoundSup = 0; //last entry of roundSup in each node
 		for (int i = 0; i < nodeNum - 1; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
@@ -138,9 +149,17 @@ public class ReconnectValidator extends NodeValidator {
 				isValid = false;
 				log.error(MARKER, "nodecsv is null, that's an issue");
 			}
-			transHandleAverage += nodeCsv.getColumn(TRANSACTIONS_HANDLED_PER_SECOND).getAverage();
+
+			if (i == 0) {
+				lastRoundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
+			} else {
+				double thisLastRoundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
+				if (lastRoundSup != thisLastRoundSup) {
+					isValid = false;
+					addError(String.format("node%d has different last roundSup with node0. node%d: %.0f; node0: %.0f", i, i, thisLastRoundSup, lastRoundSup));
+				}
+			}
 		}
-		transHandleAverage /= nodeNum - 1;
 
 		LogReader nodeLog = nodeData.get(nodeNum - 1).getLogReader();
 		CsvReader nodeCsv = nodeData.get(nodeNum - 1).getCsvReader();
@@ -172,16 +191,15 @@ public class ReconnectValidator extends NodeValidator {
 				addError(String.format("Node %d hash error during receiving SignedState", nodeNum - 1));
 				isValid = false;
 			}
-
 		}
 
 		if (!nodeReconnected) {
 			isValid = false;
 		} else {
-			double transHandleLast = nodeCsv.getColumn(TRANSACTIONS_HANDLED_PER_SECOND).getLastEntryAsDouble();
+			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
-			if (transHandleAverage * 0.8 > transHandleLast) {
-				addError("transH/sec too low on reconnected node");
+			if (roundSup < savedStateStartRoundNumber) {
+				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber %d", nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
 		}
