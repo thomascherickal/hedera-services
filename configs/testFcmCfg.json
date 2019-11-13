@@ -8,7 +8,7 @@
     {"name":"csvAppend", "value":"true"}
   ],
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCM1M.json"]
   },
   "resultFiles": [

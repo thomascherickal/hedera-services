@@ -11,12 +11,12 @@
     "freezeTiming": 1,
     "freezeIterations": 5,
     "postFreezeApp": {
-      "jar": "PlatformTestingDemo.jar",
+      "jar": "PlatformTestingApp.jar",
       "parameterList": ["FCMBlob1K.json"]
     }
   },
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCM1KFreezeBlob.json"]
   },
   "resultFiles": [
