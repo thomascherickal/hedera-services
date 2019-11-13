@@ -14,7 +14,7 @@
     "parameterList": ["FCMFCQ1K.json"]
   },
   "startSavedState": {
-    "location": "/Users/qianqiu/Documents/swirlds/platform/platform-swirlds/regression/savedState/FCQ-Batch-PTD/SetStakeInConfig/savedState",
+    "location": "s3://swirlds-regression/saved-states/FCQ-Batch-PTD/SetStakeInConfig/",
     "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
     "swirldName": "123",
     "round": 4212,

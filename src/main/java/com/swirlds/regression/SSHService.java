@@ -697,6 +697,27 @@ public class SSHService {
 		throwIfExitCodeBad(cmd, description);
 	}
 
+	public void listDirFiles(String destination) {
+		String command = String.format(
+				"ls -al %s",
+				destination
+		);
+		String description = String.format(
+				"list files in %s: %s",
+				ipAddress, destination
+		);
+		Session.Command cmd = execCommand(
+				command,
+				description
+		);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String outputStr : output) {
+			log.info(MARKER, outputStr);
+		}
+		throwIfExitCodeBad(cmd, description);
+	}
+
+
 	void restoreDb(String tarGzPath) {
 		if (tarGzPath == null) {
 			throw new IllegalArgumentException("tarGzPath should not be null");
