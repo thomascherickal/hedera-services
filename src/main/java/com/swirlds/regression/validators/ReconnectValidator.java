@@ -48,6 +48,9 @@ public class ReconnectValidator extends NodeValidator {
 	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
 	double savedStateStartRoundNumber = 0;
 
+	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not greater than this value
+	double lastRoundSupDiffLimit = 5;
+
 	boolean isValidated = false;
 	boolean isValid = true;
 
@@ -94,7 +97,9 @@ public class ReconnectValidator extends NodeValidator {
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
 
-		double lastRoundSup = 0; //last entry of roundSup in each node
+		double minLastRoundSup = 0; //minimum last entry of roundSup among all node
+		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node
+
 		for (int i = 0; i < nodeNum - 1; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
@@ -151,14 +156,18 @@ public class ReconnectValidator extends NodeValidator {
 			}
 
 			if (i == 0) {
-				lastRoundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
+				minLastRoundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
+				maxLastRoundSup = minLastRoundSup;
 			} else {
 				double thisLastRoundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
-				if (lastRoundSup != thisLastRoundSup) {
-					isValid = false;
-					addError(String.format("node%d has different last roundSup with node0. node%d: %.0f; node0: %.0f", i, i, thisLastRoundSup, lastRoundSup));
-				}
+				minLastRoundSup = Math.min(minLastRoundSup, thisLastRoundSup);
+				maxLastRoundSup = Math.max(maxLastRoundSup, thisLastRoundSup);
 			}
+		}
+
+		if (maxLastRoundSup - minLastRoundSup > lastRoundSupDiffLimit) {
+			isValid = false;
+			addError(String.format("Difference of last roundSup among all nodes exceeds lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; Difference: %.0f.", lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, maxLastRoundSup - minLastRoundSup));
 		}
 
 		LogReader nodeLog = nodeData.get(nodeNum - 1).getLogReader();
