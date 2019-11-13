@@ -548,6 +548,8 @@ public class Experiment {
 					case AWS_S3:
 						log.info(MARKER, "Downloading saved state for S3 to node {}", i);
 						currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
+						// list files in destination directory for validation
+						currentNode.listDirFiles(ssPath);
 						break;
 					case LOCAL:
 						log.info(MARKER, "Uploading local saved state to node {}", i);
