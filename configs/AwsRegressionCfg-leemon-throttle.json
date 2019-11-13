@@ -1,0 +1,64 @@
+{
+  "name":"Praveen-leemon-throttle",
+  "result": {
+	"uri":"testing/results"
+  },
+  "cloud":{
+	"service":"aws",
+	"securityGroup":"SwirldsSecGroup",
+	"securityGroupID":"sg-7214c20b",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceType": "M410xlarge",
+	"instanceKey": "Praveen-aws-swirlds",
+	"keyLocation":"../sdk/testing/Praveen-aws-swirlds",
+	"login": "ubuntu",
+//	"regionList":[
+//	  { "region":"us-east-2", "numberOfNodes":4,
+//		"instanceList": [
+//		  "i-0f9ab75fefcc427ee",
+//		  "i-09bda14dcedd02c18",
+//		  "i-0686c886e51459b87",
+//		  "i-03f30f5abda66eb66"
+//		]
+//	  }
+//	]
+	"regionList":[
+	  { "region":"us-east-2", "numberOfNodes":4}
+	]
+  },
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testFcm1kThrottlingCfg.json"
+	//"testing/configs/testFcmFreezeCfg.json"
+	//"testing/configs/testSigningDemoCfg.json"
+	//"testing/configs/testRestartCfg.json"
+	//"testing/configs/testFcmCfg.json"
+	// AVAILABLE EXPERIMENT TEMPLATES
+	//"configs/testFcm1KBlobCfg.json"
+	//"testing/configs/testReconnectCfg.json"
+	//"testing/configs/testRemoteCfg.json"
+	//"testing/configs/testFcmCfgStream.json"
+	//"testing/configs/testFcm3MCfg.json"
+	//"testing/configs/testFcm3MCfgStream.json"
+	//"testing/configs/testFcfsCfg.json"
+	//"testing/configs/testFcfsFreezeCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack":{
+    "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+    "channel": "regression-test",
+    // "notifyOn" options: ALL, WARNING, ERROR
+    "notifyOn": "ALL",
+    "notifyChannel": false,
+    "notifyUserIds": ["UJN08V6CV"]
+  }
+}
+

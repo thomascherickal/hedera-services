@@ -17,8 +17,17 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.csv.CsvStat;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.junit.jupiter.api.TestTemplate;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -67,6 +76,125 @@ public abstract class NodeValidator extends Validator {
 			sum += value;
 		}
 		return sum / nodeData.size();
+	}
+
+	private ArrayList<Double> getAndParsePtdConfig(TestConfig testConfig, String PTDJsonConfigFilePath) {
+
+		// Assumptions: for PTD, there is always only one parameter: the PTD JSON config file
+		ArrayList<Double> throttleValues = new ArrayList<>();
+		String jarName = testConfig.getApp().getJar();
+		if (!jarName.equals("PlatformTestingDemo.jar")) return throttleValues;
+
+		String jsonFileName = testConfig.getApp().getParameterList().get(0);
+		JsonFactory factory = new JsonFactory();
+		ObjectMapper mapper = new ObjectMapper(factory);
+		JsonNode rootNode = null;
+		// assumed location of PTD json config file
+		//String fullPath = "../platform-apps/tests/PlatformTestingDemo/target/classes/" + jsonFileName;
+		String fullPath = PTDJsonConfigFilePath + jsonFileName;
+
+		try {
+			File jsonFile = new File(fullPath);
+			rootNode = mapper.readTree(jsonFile);
+			boolean enableThrottle = rootNode.findValue("submitConfig").findValue("enableThrottling").asBoolean();
+			if (enableThrottle) {
+				JsonNode tpsMap = rootNode.findValue("submitConfig").findValue("tpsMap");
+				int index = 0;
+				for (JsonNode throttleOp : tpsMap) {
+					throttleValues.add(index++, throttleOp.asDouble());
+				}
+				//System.out.println("Found " + throttleValues.size() + " throttle values");
+				addInfo(String.format("Found %d throttle values", throttleValues.size()));
+			}
+		} catch (IOException | NullPointerException e) {
+			System.out.println("Unable to read PTD json file: " + fullPath);
+			addWarning("Unable to read PTD json file: " + fullPath);
+		}
+
+		return throttleValues;
+	}
+
+	public void checkThrottledTransPerSec(TestConfig testConfig, String PTDJsonConfigFilePath) {
+
+		// Compute a moving average (MA) of all the trans/sec data using a window size
+		// and tolerance to compare against the set throttle.  Whenever the MA
+		// stabilizes, keep track of the MA that minimizes variation with previous MA
+		// As soon as MA starts increasing or decreasing, compare the MA that minimized variation
+		// against a throttle value parsed in from PTD config
+
+		ArrayList<Double> throttleValues = getAndParsePtdConfig(testConfig, PTDJsonConfigFilePath);
+		if (throttleValues.size() == 0) return;
+		//double [] throttleValues = {400.0, 100.0, 300.0, 150.0};
+
+		int throttleValuesIndex = 0;
+		double sumMa = 0.0;
+		int MOVING_AVERAGE_WINDOW = 5; // sumMa computed over this many values
+		double TOLERANCE = 0.02; //sumMa is stable if |sumMa-sumPrevMa| < TOLERANCE*sumMa
+
+		int numNodes = nodeData.size();
+		//System.out.println("numNodes: " + numNodes);
+
+		CsvReader nodeCsv = nodeData.get(0).getCsvReader();
+		CsvStat transSec = nodeCsv.getColumn("trans/sec");
+
+		for (int i = 0; i < MOVING_AVERAGE_WINDOW; i++)
+			sumMa += transSec.getDataElement(i); // initialization
+
+		double sumMaPrev = sumMa; // previous value of MA
+		double minMaDiff = Double.MAX_VALUE; // the minimium value of the |sumMa - sumMaPrev| once sumMa is stable
+		double minVarMa = sumMa; // the sumMa that results in minMaDiff
+
+		int dir = 0;
+		int dirPrev = -2;
+
+		for (int i = MOVING_AVERAGE_WINDOW; i < transSec.dataSize(); i++) {
+			// generate a moving average and stop when average stabilizes
+
+			sumMa = sumMaPrev - transSec.getDataElement(i - MOVING_AVERAGE_WINDOW) +
+					transSec.getDataElement(i);
+			//System.out.print("Computed Moving average: " + sumMa / MOVING_AVERAGE_WINDOW / numNodes);
+			double maDiff = Math.abs(sumMa - sumMaPrev);
+			if (maDiff < TOLERANCE * sumMa) {
+				dir = 0; //stable
+				if (minMaDiff > maDiff) {
+					minMaDiff = maDiff;
+					minVarMa = sumMa;
+				}
+				//System.out.println(", stable.");
+			} else {
+				dir = 1; //increasing or decreasing
+				minMaDiff = Double.MAX_VALUE;
+				//System.out.println(", not stable.");
+			}
+
+			if (dir - dirPrev != 0) {
+				// checking dirPrev so that we are switching from stable to increasing/decreasing
+				// this allows us to have the "best" stable value of sumMa, the one that minimized the variation
+				if (dirPrev == 0) {
+					// check a throttle value in config versus sumMa
+					if (throttleValuesIndex >= throttleValues.size()) {
+						//addWarning("\tError: more stable moving averages detected than throttle values");
+					} else {
+						double averageTrans = minVarMa / MOVING_AVERAGE_WINDOW / numNodes;
+						if (Math.abs(throttleValues.get(throttleValuesIndex) - averageTrans) > 0.1 * averageTrans) {
+							addWarning(String.format("Transactions/sec did not match throttle setting: " +
+											"%.3f achieved vs expected value of %.3f",
+									averageTrans, throttleValues.get(throttleValuesIndex)));
+						}
+						addInfo(String.format("Specified throttle value %.3f vs achieved %.3f",
+								throttleValues.get(throttleValuesIndex),
+								minVarMa / MOVING_AVERAGE_WINDOW / numNodes));
+						//System.out.println(
+						//		"\tChecking throttle value " + throttleValuesIndex + ": " + throttleValues.get(
+						//				throttleValuesIndex));
+						//System.out.println("\tMoving average is: " + minVarMa / MOVING_AVERAGE_WINDOW / numNodes);
+						throttleValuesIndex++;
+					}
+				}
+			}
+			sumMaPrev = sumMa;
+			dirPrev = dir;
+		}
 	}
 
 	public void checkC2CVariation() {

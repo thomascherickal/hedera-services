@@ -220,6 +220,7 @@ public class RegressionUtilities {
 		returnIterator.add(new File(SDK_DIR + "data/repos/"));
 		returnIterator.add(new File(SDK_DIR + "kernels/"));
 		returnIterator.add(new File(SDK_DIR + "swirlds.jar"));
+		returnIterator.add(new File(SDK_DIR + "testing/badgerize.sh"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
@@ -253,6 +254,7 @@ public class RegressionUtilities {
 		returnIterator.add("swirlds.jar");
 		returnIterator.add("privateAddresses.txt");
 		returnIterator.add("publicAddresses.txt");
+		returnIterator.add("badgerize.sh");
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
@@ -274,9 +276,10 @@ public class RegressionUtilities {
 		returnIterator.add("*.xml");
 		returnIterator.add("*.txt");
 		returnIterator.add("*.json");
-		//returnIterator.add("badger_*");
+		returnIterator.add("badger_*");
 		//returnIterator.add("stream_*");
-		//returnIterator.add("postgres_reports");
+		returnIterator.add("postgres_reports"); // badgerized web summaries
+		returnIterator.add("latest_postgres*"); // raw log files(s)
 
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);

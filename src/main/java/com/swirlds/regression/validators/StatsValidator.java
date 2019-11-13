@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -36,13 +37,18 @@ import static com.swirlds.regression.RegressionUtilities.MB;
 
 public class StatsValidator extends NodeValidator {
 	private boolean isValidated = false;
+	private TestConfig testConfig;
+	public String PTDJsonConfigFilePath = "../platform-apps/tests/PlatformTestingDemo/target/classes/"; // for throttle validation
 
-	public StatsValidator(List<NodeData> nodeData) {
+	public StatsValidator(List<NodeData> nodeData, TestConfig testConfig) {
+
 		super(nodeData);
+		this.testConfig = testConfig;
 	}
 
 	@Override
 	public void validate() throws IOException {
+
 		int nodeNum = nodeData.size();
 
 		Instant startTime = null;
@@ -97,6 +103,7 @@ public class StatsValidator extends NodeValidator {
 		checkMemFree();
 		checkTotalMemory();
 		checkDiskspaceFree();
+		checkThrottledTransPerSec(testConfig, PTDJsonConfigFilePath);
 
 		isValidated = true;
 	}

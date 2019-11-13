@@ -48,6 +48,15 @@ public class CsvStat {
 		this.data.add(data);
 	}
 
+	public int dataSize() {
+		return data.size();
+	}
+
+	public double getDataElement(int index) {
+		if (index < data.size()) return Double.parseDouble(data.get(index));
+		else return 0.0;
+	}
+
 	public double getAverage() {
 		double sum = 0;
 		for (String s : data) {
