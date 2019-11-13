@@ -1,0 +1,28 @@
+{
+  "name":"FCMFCQ1K-startSavedState",
+  "description" : "platform testing demo - FCMFCQ1K-startSavedState",
+  "duration": 6600,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting"},
+    {"name":"csvAppend", "value":"true"},
+    {"name":"reconnectActive", "value": "1"},
+    {"name": "checkSignedStateFromDisk", "value": "true"}
+  ],
+  "app": {
+    "jar": "PlatformTestingDemo.jar",
+    "parameterList": ["FCMFCQ1K.json"]
+  },
+  "startSavedState": {
+    "location": "/Users/qianqiu/Documents/swirlds/platform/platform-swirlds/regression/savedState/FCQ-Batch-PTD/SetStakeInConfig/savedState",
+    "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
+    "swirldName": "123",
+    "round": 4212,
+    "restoreDb": true,
+    "nodeIdentifier": "ALL_BUT_LAST"
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT"]
+}
