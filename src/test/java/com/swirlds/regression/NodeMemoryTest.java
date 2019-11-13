@@ -17,7 +17,6 @@
 
 package com.swirlds.regression;
 
-import org.apache.logging.log4j.core.util.Assert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -26,7 +25,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class NodeMemoryTest {
 
@@ -45,12 +45,12 @@ public class NodeMemoryTest {
 
 		//TODO should be helper function, or should be static function in MemoryAllocation
 		totalMemory = totalMemory.replaceAll("[^a-zA-Z0-9]", "");
-		String[] seperatedMemStr = totalMemory.split("(?<=\\d)(?=\\D)");
+		String[] separatedMemStr = totalMemory.split("(?<=\\d)(?=\\D)");
 		NodeMemory testNM = new NodeMemory(totalMemory);
-		int amount = Integer.valueOf(seperatedMemStr[0]);
-		String size = seperatedMemStr[1];
-		assertEquals(amount, testNM.totalMemory.getRawMemoryAmount());
-		assertEquals(size, testNM.totalMemory.getMemoryType().getMemoryIdent());
+		int amount = Integer.parseInt(separatedMemStr[0]);
+		String size = separatedMemStr[1];
+		assertEquals(amount, testNM.getTotalMemory().getRawMemoryAmount());
+		assertEquals(size, testNM.getTotalMemory().getMemoryType().getMemoryIdent());
 	}
 
 	@ParameterizedTest
@@ -75,16 +75,18 @@ public class NodeMemoryTest {
 			"64GB, 31744, 63488, 60GB"
 	})
 	@DisplayName("Test Calculations made by constructor are correct")
-	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory, String jvmMemory) throws NumberFormatException{
+	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory,
+			String jvmMemory) throws NumberFormatException {
 		NodeMemory testNM = new NodeMemory(totalMemory);
-		assertEquals(hugePageNumber, testNM.hugePagesNumber);
-		assertEquals(hugePageKBMemory, (int)testNM.hugePagesMemory.getAdjustedMemoryAmount(MemoryType.MB));
-		assertEquals(RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS, testNM.postgresMaxPreparedTransaction);
-		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS), testNM.postgresTempBuffers);
-		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM), testNM.postgresWorkMem);
-		assertEquals(new MemoryAllocation(jvmMemory), testNM.jvmMemory);
+		assertEquals(hugePageNumber, testNM.getHugePagesNumber());
+		assertEquals(hugePageKBMemory, (int) testNM.getHugePagesMemory().getAdjustedMemoryAmount(MemoryType.MB));
+		assertEquals(RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS,
+				testNM.getPostgresMaxPreparedTransaction());
+		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS),
+				testNM.getPostgresTempBuffers());
+		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM), testNM.getPostgresWorkMem());
+		assertEquals(new MemoryAllocation(jvmMemory), testNM.getJvmMemory());
 		/* TODO test postgres Shared_buffer */
-
 	}
 
 }
