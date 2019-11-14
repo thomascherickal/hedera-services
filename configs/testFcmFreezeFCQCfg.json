@@ -11,7 +11,7 @@
     "freezeTiming": 1,
     "freezeIterations": 5,
     "postFreezeApp": {
-      "jar": "PlatformTestingDemo.jar",
+      "jar": "PlatformTestingApp.jar",
       "parameterList": ["FCM1K.json"]
     }
   },

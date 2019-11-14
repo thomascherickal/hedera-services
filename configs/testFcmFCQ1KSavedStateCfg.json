@@ -10,7 +10,7 @@
     {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
   "app": {
-    "jar": "PlatformTestingDemo.jar",
+    "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMFCQ1K.json"]
   },
   "startSavedState": {
