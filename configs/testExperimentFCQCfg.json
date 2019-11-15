@@ -1,0 +1,21 @@
+{
+  "name":"FC-Queue-Experiment",
+  "description" : "platform testing demo - FCQ Experiment",
+  "duration": 6600,
+  "settings": [
+    {"name": "throttle7extra", "value": "0.02" },
+    {"name":"throttle7", "value": "1" },
+    {"name":"throttle7threshold", "value": "1.5" },
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"}
+  ],
+  "app": {
+    "jar": "PlatformTestingApp.jar",
+    "parameterList": ["FCMFCQExperiment.json"]
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO"]
+}
