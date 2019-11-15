@@ -185,6 +185,7 @@ public class SSHService {
 				if (!file.exists()) {
 					continue;
 				}
+				System.out.println("Tarring file: " + file.getName());
 				if (file.isFile()) {
 					archive.bundleFile(Paths.get(file.toURI()));
 				} else if (file.isDirectory()) {
@@ -727,5 +728,22 @@ public class SSHService {
 					)
 			);
 		}
+	}
+
+	void badgerize() {
+		// call the badgerize.sh script that prepares database logs for download
+
+		String command = String.format("cd /home/ubuntu/; chmod -R 777 %s; sudo ./%sbadgerize.sh -u postgres;",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+
+		String description = "Badgerizing and taring database logs";
+
+		//executeCmd("cd /home/ubuntu/;");
+		//executeCmd("chmod -R 777 remoteExperiment;");
+		//executeCmd("sudo ./remoteExperiment/badgerize.sh -u postgres;");
+
+		Session.Command cmd = execCommand(command, description);
+		throwIfExitCodeBad(cmd, description);
 	}
 }

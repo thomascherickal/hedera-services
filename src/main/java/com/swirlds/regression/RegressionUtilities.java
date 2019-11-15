@@ -54,7 +54,7 @@ public class RegressionUtilities {
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";
-	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingDemo/src/main/resources/";
+	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
 	public static final String CONFIG_FILE = "config.txt";

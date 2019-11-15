@@ -37,14 +37,12 @@ import static com.swirlds.regression.RegressionUtilities.MB;
 
 public class StatsValidator extends NodeValidator {
 	private boolean isValidated = false;
-	private TestConfig testConfig;
-	public String PTDJsonConfigFilePath = "../platform-apps/tests/PlatformTestingApp/target/classes/"; // for throttle
+
 	// validation
 
-	public StatsValidator(List<NodeData> nodeData, TestConfig testConfig) {
+	public StatsValidator(List<NodeData> nodeData) {
 
 		super(nodeData);
-		this.testConfig = testConfig;
 	}
 
 	@Override
@@ -104,7 +102,6 @@ public class StatsValidator extends NodeValidator {
 		checkMemFree();
 		checkTotalMemory();
 		checkDiskspaceFree();
-		checkThrottledTransPerSec(testConfig, PTDJsonConfigFilePath);
 
 		isValidated = true;
 	}

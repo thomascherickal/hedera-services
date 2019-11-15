@@ -49,7 +49,11 @@ public class ValidatorFactory {
 			case PLATFORM_TESTING_DEMO:
 				return new PtdValidator(nodeData);
 			case STATS:
-				return new StatsValidator(nodeData, testConfig);
+				return new StatsValidator(nodeData);
+			case THROTTLE:
+				return new ThrottleValidator(nodeData);
+			case PTA_THROTTLE:
+				return new PTAThrottleValidator(nodeData, testConfig);
 			default:
 				return new StandardValidator(nodeData);
 		}

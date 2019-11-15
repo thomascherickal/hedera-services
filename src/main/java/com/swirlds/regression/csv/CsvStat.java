@@ -52,9 +52,23 @@ public class CsvStat {
 		return data.size();
 	}
 
-	public double getDataElement(int index) {
-		if (index < data.size()) return Double.parseDouble(data.get(index));
-		else return 0.0;
+	public String getDataElement(int index) {
+
+		if (index < data.size()) return data.get(index);
+		else return "";
+	}
+
+	public double asDouble(String s) {
+		double d = Double.NaN;
+		try {
+			d = Double.parseDouble(s);
+		} catch (NumberFormatException e) {
+			log.debug("Cannot parse stat:'{}' value:'{}'", name, s);
+		} catch (NullPointerException e) {
+			log.debug("stat:'{}' value:'{}' is null", name, s);
+			d = 0.0;
+		}
+		return d;
 	}
 
 	public double getAverage() {

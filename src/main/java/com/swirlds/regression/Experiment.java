@@ -568,18 +568,14 @@ public class Experiment {
 		stopAllSwirlds();
 
 		// call badgerize.sh that tars all the database logs
-		String downloadDbLogs = settingsFile.getSettingValue("downloadDbLogFiles");
-		if (downloadDbLogs != null) {
-			if (downloadDbLogs.equals("true")) {
-				for (int i = 0; i < nodeNumber; i++) {
-					String pubIP = publicIPList.get(i);
-					SSHService currentNode = new SSHService(login, pubIP, keyfile);
-					currentNode.executeCmd("cd /home/ubuntu/;");
-					currentNode.executeCmd("chmod -R 777 remoteExperiment;");
-					currentNode.executeCmd("sudo ./remoteExperiment/badgerize.sh -u postgres;");
-				}
+
+		if (testConfig.getDownloadDbLogFiles()) {
+			for (int i = 0; i < nodeNumber; i++) {
+				SSHService currentNode = sshNodes.get(i);
+				currentNode.badgerize();
 			}
 		}
+
 		/* make sure that more streaming client than nodes were not requested */
 		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
 		for (int i = 0; i < eventFileWriters; i++) {

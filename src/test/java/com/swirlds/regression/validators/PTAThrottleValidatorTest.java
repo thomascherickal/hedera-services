@@ -31,7 +31,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class StatsValidatorTest {
+public class PTAThrottleValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
@@ -39,7 +39,7 @@ public class StatsValidatorTest {
 			"logs/FCM1KThrottling-2",
 			"logs/FCM1KThrottling-3"
 	})
-	void statsValidatorTest(String testDir) throws IOException {
+	void PTAThrottleValidatorTest(String testDir) throws IOException {
 		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "PlatformTesting", 1);
 
 		Path testConfigFileLocation = Paths.get("configs/testFcm1kThrottlingCfg.json");
@@ -47,11 +47,10 @@ public class StatsValidatorTest {
 		ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 		TestConfig testConfig = objectMapper.readValue(jsonData, TestConfig.class);
 
-		StatsValidator validator = new StatsValidator(nodeData, testConfig);
-		validator.PTDJsonConfigFilePath = "src/test/resources/" + testDir + "/";
+		PTAThrottleValidator validator = new PTAThrottleValidator(nodeData, testConfig);
+		validator.PTAJsonConfigFilePath = "src/test/resources/" + testDir + "/";
 		validator.validate();
 		System.out.println("LOGS: " + testDir);
 		System.out.println(validator.concatAllMessages());
-		assertEquals(true, validator.isValid());
 	}
 }
