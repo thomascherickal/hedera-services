@@ -1,18 +1,25 @@
 {
   "name":"FC-Queue-Experiment",
-  "description" : "platform testing demo - FCQ Experiment",
+  "description" : "platform testing demo - FCQ Experiment - start from saved state which contains 50k accounts, each have 10k records in FCQ; then perform updates, transfers and deletes",
   "duration": 6600,
   "settings": [
-    {"name": "throttle7extra", "value": "0.02" },
-    {"name":"throttle7", "value": "1" },
-    {"name":"throttle7threshold", "value": "1.5" },
     {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"}
+    {"name":"csvFileName", "value":"PlatformTesting"},
+    {"name":"csvAppend", "value":"true"},
+    {"name":"reconnectActive", "value": "1"},
+    {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMFCQExperiment.json"]
+  },
+  "startSavedState": {
+    "location": "s3://swirlds-regression/saved-states/FCQ-Batch-PTD/FCQ-10KRecordsPerLeave/",
+    "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
+    "swirldName": "123",
+    "round": 65,
+    "restoreDb": true,
+    "nodeIdentifier": "ALL"
   },
   "resultFiles": [
     "swirlds.log"

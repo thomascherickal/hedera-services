@@ -36,6 +36,5 @@
 	"notifyChannel": false,
 	"notifyUserIds": [ "UC8SDDC20", "UL19K9CTB", "UE4P47SMT"]
   },
-  "jvmOptions": "-Xmx100g -Xms64g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14",
   "uploadToSharePoint": false
 }
