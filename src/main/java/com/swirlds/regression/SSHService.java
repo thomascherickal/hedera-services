@@ -739,10 +739,6 @@ public class SSHService {
 
 		String description = "Badgerizing and taring database logs";
 
-		//executeCmd("cd /home/ubuntu/;");
-		//executeCmd("chmod -R 777 remoteExperiment;");
-		//executeCmd("sudo ./remoteExperiment/badgerize.sh -u postgres;");
-
 		Session.Command cmd = execCommand(command, description);
 		throwIfExitCodeBad(cmd, description);
 	}
