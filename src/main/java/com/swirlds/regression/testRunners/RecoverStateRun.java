@@ -52,11 +52,6 @@ public class RecoverStateRun implements TestRun {
 		// delete old states
 		experiment.randomDeleteLastNSignedStates();
 
-		// recover run may use different App parameters
-		ArrayList<String> oldParams = testConfig.getApp().getParameterList();
-		ArrayList<String> newParams = testConfig.getRecoverConfig().getApp().getParameterList();
-		experiment.getTestConfig().getApp().setParameterList(newParams);
-
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
 		settingsBuilder.addSetting("playbackStreamFileDirectory", "data/eventStream ");
@@ -82,9 +77,6 @@ public class RecoverStateRun implements TestRun {
 		/**************************
 		 Stage 3 resume run
 		 **************************/
-		// restore the old App parameters
-		experiment.getTestConfig().getApp().setParameterList(oldParams);
-
 		settingsBuilder.addSetting("enableStateRecovery", "false");
 
 		// restore event to original directory

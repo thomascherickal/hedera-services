@@ -182,7 +182,6 @@ public class TestConfig implements FileRequirement {
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
 		add(list, freezeConfig, app);
-		add(list, recoverConfig, app);
 		return list;
 	}
 
