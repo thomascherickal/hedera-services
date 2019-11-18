@@ -617,15 +617,14 @@ public class SSHService {
 	}
 
 	/**
-	 * Return number of test finished message, such as SUCCESS or FAIL, found in log
+	 * Return number of specified message found in log
 	 * Or return -1 if error happened
 	 */
-	int countTestFinishedMsg() {
-		final Session.Command cmd = execCommand(RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE,
-				"Check if PTD test is done", -1);
+	int countSpecifiedMsg(String msg ) {
+		final Session.Command cmd = execCommand(msg,
+				"Check specified msg", -1);
 		ArrayList<String> output = readCommandOutput(cmd);
 		for (String out : output) {
-			log.trace(MARKER, "is test finished output size({}): {}", output.size(), out);
 			if (out.contains("No such file or directory")) {
 				log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
 				return -1;

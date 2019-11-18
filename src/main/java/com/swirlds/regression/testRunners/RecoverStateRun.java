@@ -21,7 +21,9 @@ import com.swirlds.regression.Experiment;
 import com.swirlds.regression.SettingsBuilder;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 
@@ -43,7 +45,13 @@ public class RecoverStateRun implements TestRun {
 
 		// sleep through the rest of the test
 		long testDuration = testConfig.getDuration() * MILLIS;
-		experiment.sleepThroughExperiment(testDuration);
+
+		// sleep through the rest of the test
+		List<BooleanSupplier> checkerList = new LinkedList<>();
+		checkerList.add(experiment::isProcessFinished);
+		experiment.sleepThroughExperimentWithCheckerList(testDuration,
+				checkerList);
+
 		String originalStreamFileDir = settingsBuilder.getSettingValue("eventsLogDir") + "/*/";
 
 		/**************************
@@ -68,7 +76,9 @@ public class RecoverStateRun implements TestRun {
 		experiment.startAllSwirlds();
 
 		// sleep through the rest of the test
-		experiment.sleepThroughExperiment(testDuration);
+		experiment.sleepThroughExperimentWithCheckerList(testDuration,
+				checkerList);
+
 
 		experiment.displaySignedStates("AFTER recover");
 
@@ -88,8 +98,9 @@ public class RecoverStateRun implements TestRun {
 		// start all processes
 		experiment.startAllSwirlds();
 
-		// sleep until JAVA process dies, or second test finish message has been found
-		experiment.sleepUntilEnoughFinishMessage(testDuration, 2);
+		checkerList.add(experiment::isFoundTwoPTDFinishMessage);
+		experiment.sleepThroughExperimentWithCheckerList(testDuration,
+				checkerList);
 	}
 
 }

@@ -65,9 +65,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
@@ -245,6 +247,101 @@ public class Experiment {
 				log.error(ERROR, "could not sleep.", e);
 			}
 		}
+	}
+
+	/**
+	 * Sleep until reached the testDuration, or one of checker callback return true
+	 *
+	 * @param testDuration
+	 * 		Default test duration to run if none of checker return true
+	 * @param checkerList
+	 * 		A list of callback functions to check whether the conditions of exiting sleep mode have been met
+	 */
+	public void sleepThroughExperimentWithCheckerList(long testDuration,
+			List<BooleanSupplier> checkerList) {
+		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
+
+			long endTime = System.nanoTime() + (testDuration * 1_000_000);
+			log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / 1_000);
+
+			while (System.nanoTime() < endTime) { // Don't go over set test time
+				try {
+					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
+					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+				} catch (InterruptedException e) {
+					log.error(ERROR, "could not sleep.", e);
+				}
+
+				if (checkerList != null) {
+					for (BooleanSupplier checker : checkerList) {
+						if (checker != null) {
+							if (checker.getAsBoolean()) {
+								break;
+							}
+						}
+					}
+				}
+			}
+		} else {
+			try {
+				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
+				log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
+				Thread.sleep(testDuration);
+			} catch (InterruptedException e) {
+				log.error(ERROR, "could not sleep.", e);
+			}
+		}
+	}
+
+	/**
+	 * Whether all node find defined number of message in log file
+	 */
+	public boolean isAllNodeFoundEnoughMessage(String msg, int messageAmount) {
+		boolean isEnoughMsgFound = false;
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			if (node.countSpecifiedMsg(msg) == messageAmount) {
+				log.info(MARKER, "Node {} found enough message {}", i, msg);
+				isEnoughMsgFound = true;
+			} else {
+				isEnoughMsgFound = false;
+			}
+		}
+		return isEnoughMsgFound;
+	}
+
+	public boolean isFoundTwoPTDFinishMessage() {
+		return isAllNodeFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2);
+	}
+
+	public boolean isProcessFinished() {
+		ArrayList<Boolean> isProcDown = new ArrayList<>();
+		ArrayList<Boolean> isTestFinished = new ArrayList<>();
+		/* set array lists to appropriate size with default values */
+		for (int i = 0; i < sshNodes.size(); i++) {
+			isProcDown.add(false);
+			isTestFinished.add(false);
+		}
+
+		/* Check all processes are still running, then check if test has finished */
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			boolean isProcStillRunning = node.checkProcess();
+			/* if this it the first time down, keep running, if down two times in a row, stop */
+			if (!isProcStillRunning && isProcDown.get(i)) {
+				return true;
+			} else {
+						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
+						after the first reconnect/restart */
+				isProcDown.set(i, !isProcStillRunning);
+			}
+			isTestFinished.set(i, node.isTestFinished());
+		}
+		/* we don't want to exit if only a few nodes have reported being finished */
+		if (checkForAllTrue(isTestFinished)) {
+			return true;
+		}
+		return false;
 	}
 
 	private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {
@@ -877,44 +974,6 @@ public class Experiment {
 	public void displaySignedStates(String memo) {
 		for (SSHService node : sshNodes) {
 			node.displaySignedStates(memo);
-		}
-	}
-
-	/**
-	 * Sleep until reached the testDuration, or JAVA process died, or the number of test finished message found
-	 * in logs equal or large than messageAmount
-	 */
-	public void sleepUntilEnoughFinishMessage(long testDuration, int messageAmount) {
-		long startTime = System.nanoTime();
-		boolean isEnoughFinishMessage = false;
-		long remainedDurationMS = testDuration;
-
-		while (!isEnoughFinishMessage) {
-			sleepThroughExperiment(remainedDurationMS);
-
-			long endTime = System.nanoTime();
-			long actualSleepIntervalMS = (endTime - startTime) / 1_000_000;
-
-			if (actualSleepIntervalMS < testDuration) {
-				// sleepThroughExperiment exited before testDuration due to at lease one finish message
-				// then we need check if enough finish message being found
-				for (int i = 0; i < sshNodes.size(); i++) {
-					SSHService node = sshNodes.get(i);
-					if (node.countTestFinishedMsg() == messageAmount) {
-						log.info(MARKER, "Node {} found enough finish message", i);
-
-						// isEnoughFinishMessage stays in true if all nodes found enough finish message
-						isEnoughFinishMessage = true;
-					} else {
-						isEnoughFinishMessage = false;
-					}
-				}
-				remainedDurationMS = remainedDurationMS - actualSleepIntervalMS;
-			} else {
-				// has been running longer than testDuration
-				log.info(MARKER, "Could not find {} finish message during defined test duration", messageAmount);
-				break;
-			}
 		}
 	}
 
