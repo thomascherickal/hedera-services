@@ -62,7 +62,7 @@ public class PTAThrottleValidator extends ThrottleValidator {
 		// Assumptions: for PTA, there is always only one parameter: the PTA JSON config file
 		ArrayList<Double> throttleValues = new ArrayList<>();
 		String jarName = testConfig.getApp().getJar();
-		if (!jarName.equals("PlatformTestingApp.jar")) return throttleValues;
+		if (!jarName.equals(RegressionUtilities.PLATFORM_TESTING_APP)) return throttleValues;
 
 		String jsonFileName = testConfig.getApp().getParameterList().get(0);
 		JsonFactory factory = new JsonFactory();

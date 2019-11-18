@@ -185,7 +185,6 @@ public class SSHService {
 				if (!file.exists()) {
 					continue;
 				}
-				System.out.println("Tarring file: " + file.getName());
 				if (file.isFile()) {
 					archive.bundleFile(Paths.get(file.toURI()));
 				} else if (file.isDirectory()) {
