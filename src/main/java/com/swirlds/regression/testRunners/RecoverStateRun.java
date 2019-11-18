@@ -32,11 +32,6 @@ public class RecoverStateRun implements TestRun {
 	private final static String RECOVER_EVENT_DIR = "data/eventStreamRecover/*/";
 
 	@Override
-	public void preRun(TestConfig testConfig, Experiment experiment) {
-
-	}
-
-	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
 		SettingsBuilder settingsBuilder = experiment.getSettingsFile();
 
@@ -108,8 +103,4 @@ public class RecoverStateRun implements TestRun {
 		experiment.sleepUntilEnoughFinishMessage(testDuration, 2);
 	}
 
-	@Override
-	public void postRun(TestConfig testConfig, Experiment experiment) {
-
-	}
 }
