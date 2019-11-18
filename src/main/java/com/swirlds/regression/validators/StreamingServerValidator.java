@@ -62,6 +62,8 @@ public class StreamingServerValidator extends Validator {
 			if ( !checkRecoverEventMatchLog(ssData.get(i).getRecoverEventMatchLog())){
 				addError("Node " + i + " recovered event file does not match original ones !");
 				this.valid = false;
+			}else{
+				addError("Node " + i + " recovered event file match original ones");
 			}
 		}
 	}
