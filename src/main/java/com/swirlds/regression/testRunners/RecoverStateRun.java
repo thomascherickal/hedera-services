@@ -49,11 +49,6 @@ public class RecoverStateRun implements TestRun {
 		/**************************
 		 Stage 2 recover run
 		 **************************/
-		settingsBuilder.addSetting("enableStateRecovery", "true");
-
-		// save more states on disk so we can test with deleting more old signed state
-		settingsBuilder.addSetting("signedStateDisk", "100");
-
 		// delete old states
 		experiment.randomDeleteLastNSignedStates();
 
@@ -66,7 +61,8 @@ public class RecoverStateRun implements TestRun {
 		settingsBuilder.addSetting("enableStateRecovery", "true");
 		settingsBuilder.addSetting("playbackStreamFileDirectory", "data/eventStream ");
 
-		// save event to different directory
+		// save event to different directory so later we can compare event file created during
+		// recover mode with event files created by the original run
 		settingsBuilder.addSetting("eventsLogDir", "data/eventStreamRecover");
 
 		experiment.sendSettingFileToNodes();

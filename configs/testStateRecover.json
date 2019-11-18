@@ -7,6 +7,7 @@
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
     {"name":"saveStatePeriod", "value":"15"},
+    {"name":"signedStateDisk", "value":"100"},
     {"name":"enableEventStreaming", "value":"true"},
     {"name":"eventsLogDir", "value":"data/eventStream"}
   ],
