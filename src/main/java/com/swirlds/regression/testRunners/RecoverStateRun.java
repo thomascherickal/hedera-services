@@ -62,7 +62,7 @@ public class RecoverStateRun implements TestRun {
 		// delete old states
 		experiment.deleteSignedStates();
 
-		// change config.txt PlatformTestingDemo.jar, TEST_PAUSE_NOCHECK.json
+		// recover run may use different App parameters
 		ArrayList<String> oldParams = testConfig.getApp().getParameterList();
 		ArrayList<String> newParams = testConfig.getRecoverConfig().getApp().getParameterList();
 		experiment.getTestConfig().getApp().setParameterList(newParams);
@@ -90,7 +90,7 @@ public class RecoverStateRun implements TestRun {
 		/**************************
 		 Stage 3 resume run
 		 **************************/
-		// change config.txt 'PlatformTestingDemo.jar, TEST_STATE_RECOVER.json '
+		// restore the old App parameters
 		experiment.getTestConfig().getApp().setParameterList(oldParams);
 
 		settingsBuilder.addSetting("enableStateRecovery", "false");
