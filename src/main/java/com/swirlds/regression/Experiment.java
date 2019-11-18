@@ -842,7 +842,7 @@ public class Experiment {
 	/**
 	 * Random delete last few saved signed states
 	 */
-	public void deleteSignedStates() {
+	public void randomDeleteLastNSignedStates() {
 		SSHService node0 = sshNodes.get(0);
 		int savedStatesAmount = node0.getNumberOfSignedStates();
 		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
@@ -852,9 +852,19 @@ public class Experiment {
 			int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
 			log.info(MARKER, "Random delete {} signed state", randNum);
 
-			for (SSHService node : sshNodes) {
-				node.deleteSignedStates(randNum);
-			}
+			deleteLastNSignedStates(randNum);
+		}
+	}
+
+	/**
+	 * Random delete last few saved signed states from disk
+	 *
+	 * @param deleteNumber
+	 * 		number of signed state to be deleted
+	 */
+	public void deleteLastNSignedStates(int deleteNumber) {
+		for (SSHService node : sshNodes) {
+			node.deleteSignedStates(deleteNumber);
 		}
 	}
 

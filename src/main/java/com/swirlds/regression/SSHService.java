@@ -830,16 +830,6 @@ public class SSHService {
 	}
 
 	/**
-	 * List event files created during recover mode
-	 */
-	void displayRecoveredEventFiles(String eventDir) {
-		String displayCmd =
-				"ls -tr " + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + eventDir + "*.evts";
-		Session.Command cmd = executeCmd(displayCmd);
-		log.info(MARKER, "Node {}: Event files created during recover are {}", ipAddress, readCommandOutput(cmd).toString());
-	}
-
-	/**
 	 * Compare event files generated during recover mode whether match original ones
 	 *
 	 * @param eventDir

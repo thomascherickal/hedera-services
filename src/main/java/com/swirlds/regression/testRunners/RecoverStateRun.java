@@ -55,7 +55,7 @@ public class RecoverStateRun implements TestRun {
 		settingsBuilder.addSetting("signedStateDisk", "100");
 
 		// delete old states
-		experiment.deleteSignedStates();
+		experiment.randomDeleteLastNSignedStates();
 
 		// recover run may use different App parameters
 		ArrayList<String> oldParams = testConfig.getApp().getParameterList();
