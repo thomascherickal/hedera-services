@@ -77,39 +77,15 @@ public abstract class ValidatorTestUtil {
 			final InputStream eventsSigInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
 					eventsSigFileName);
 
-			data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput));
-		}
-		if (data.size() == 0) {
-			throw new RuntimeException("Cannot find log files in: " + directory);
-		}
-		return data;
-	}
-
-	public static List<StreamingServerData> loadStreamingServerDataWithRecoverEventLo(
-			String directory) throws RuntimeException {
-		List<StreamingServerData> data = new ArrayList<>();
-		for (int i = 0; ; i++) {
-			final String shaFileName = String.format("%s/node%04d/" + StreamingServerValidator.FINAL_EVENT_FILE_HASH,
-					directory, i);
-			final String shaEventFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_LIST_FILE,
-					directory, i);
-			final String eventsSigFileName =
-					String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SIG_FILE_LIST,
-					directory, i);
-
-			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(shaFileName);
-			if (shaInput == null) {
-				break;
+			InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+					String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
+			if (recoverEventLogStream != null) {
+				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput,
+						ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+								String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
+			} else {
+				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput));
 			}
-
-			final InputStream shaEventInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					shaEventFileName);
-			final InputStream eventsSigInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					eventsSigFileName);
-
-			data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput,
-					ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-							String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
 		}
 		if (data.size() == 0) {
 			throw new RuntimeException("Cannot find log files in: " + directory);
