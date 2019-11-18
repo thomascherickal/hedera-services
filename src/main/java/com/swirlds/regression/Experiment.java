@@ -70,10 +70,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
-import static com.swirlds.regression.RegressionUtilities.SDK_DIR;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
-import static com.swirlds.regression.RegressionUtilities.CLOUD_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_DEFAULT;
@@ -320,10 +318,9 @@ public class Experiment {
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
 				String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
 				InputStream csvInput = getInputStream(csvFilePath);
-				final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
 				if (logInput != null && csvInput != null) {
 					nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
-							csvInput), getInputStream(recoverEventMatchFileName)));
+							csvInput)));
 				}
 			}
 		}
@@ -336,8 +333,16 @@ public class Experiment {
 			final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
 			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
 			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
-			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-					getInputStream(shaEventFileName)));
+			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
+
+			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
+			if (recoverEventLogStream != null) {
+				nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
+						getInputStream(shaEventFileName), recoverEventLogStream));
+			} else {
+				nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
+						getInputStream(shaEventFileName)));
+			}
 		}
 		return nodeData;
 	}

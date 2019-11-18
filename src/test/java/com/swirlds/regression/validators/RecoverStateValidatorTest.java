@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RecoverStateValidatorTest {
 
@@ -35,7 +36,7 @@ class RecoverStateValidatorTest {
 	})
 	void validRecoverStateLog(String testDir) throws IOException {
 		System.out.println("Dir: " + testDir);
-		List<NodeData> nodeData = ValidatorTestUtil.loadNodeDataWithRecoverEventLog(testDir, "PlatformTesting", 1);
+		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "PlatformTesting", 1);
 		NodeValidator validator = new RecoverStateValidator(nodeData);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
@@ -47,4 +48,18 @@ class RecoverStateValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/recoverState/successRun"
+	})
+	void validateSuccess(final String testDir) {
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerDataWithRecoverEventLo(testDir);
+		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		validator.validate();
+
+		System.out.println(validator.concatAllMessages());
+
+		assertTrue(validator.isValid());
+	}
 }

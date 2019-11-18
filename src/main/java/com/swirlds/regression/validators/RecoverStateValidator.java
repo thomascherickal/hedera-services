@@ -17,30 +17,12 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
-import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
-import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
-import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
-import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
-import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
-import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
-import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
-import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
 
 public class RecoverStateValidator extends NodeValidator {
@@ -93,13 +75,6 @@ public class RecoverStateValidator extends NodeValidator {
 				isValid = false;
 				continue; //check next node
 			}
-
-			if ( !checkRecoverEventMatchLog(nodeData.get(i).getRecoverEventMatchLog())){
-				addError("Node " + i + " recovered event file does not match original ones !");
-				isValid = false;
-				continue; //check next node
-			}
-
 		}
 
 		isValidated = true;
@@ -110,19 +85,4 @@ public class RecoverStateValidator extends NodeValidator {
 		return isValidated && isValid;
 	}
 
-
-	public boolean checkRecoverEventMatchLog(InputStream input) {
-		if (input != null) {
-
-			Scanner eventScanner = new Scanner(input);
-			if (eventScanner.hasNextLine()) {
-				String entry = eventScanner.nextLine();
-				log.info(MARKER, "Read match log entry = {}", entry);
-				if (entry.contains(EVENT_MATCH_MSG)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 }

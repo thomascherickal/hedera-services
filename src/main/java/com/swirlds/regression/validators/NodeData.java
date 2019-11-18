@@ -20,18 +20,9 @@ package com.swirlds.regression.validators;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
 
-import java.io.InputStream;
-
 public class NodeData {
 	private LogReader logReader;
 	private CsvReader csvReader;
-	private InputStream recoverEventMatchLog = null;
-
-	public NodeData(LogReader logReader, CsvReader csvReader, InputStream recoverEventMatchLog) {
-		this.logReader = logReader;
-		this.csvReader = csvReader;
-		this.recoverEventMatchLog = recoverEventMatchLog;
-	}
 
 	public NodeData(LogReader logReader, CsvReader csvReader) {
 		this.logReader = logReader;
@@ -46,7 +37,4 @@ public class NodeData {
 		return csvReader;
 	}
 
-	public InputStream getRecoverEventMatchLog() {
-		return recoverEventMatchLog;
-	}
 }

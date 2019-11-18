@@ -34,6 +34,7 @@ public class StreamingServerData {
 	private ArrayList<String> sha1Events = null;
 	private boolean sha1EventsRead = false;
 	private final List<String> evtsSigEvents;
+	private InputStream recoverEventMatchLog = null;
 
 	public StreamingServerData(InputStream sha1sumStream) {
 		this(null, sha1sumStream, null);
@@ -43,10 +44,19 @@ public class StreamingServerData {
 		this(null, sha1sumStream, sha1EventStream);
 	}
 
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream, final InputStream sha1EventStream) {
+	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
+			final InputStream sha1EventStream) {
 		evtsSigEvents = readEventsFile(evtsSigStream);
 		this.sha1sumStream = sha1sumStream;
 		getSha1Events(sha1EventStream);
+	}
+
+	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
+			final InputStream sha1EventStream, InputStream recoverEventMatchLog) {
+		evtsSigEvents = readEventsFile(evtsSigStream);
+		this.sha1sumStream = sha1sumStream;
+		getSha1Events(sha1EventStream);
+		this.recoverEventMatchLog = recoverEventMatchLog;
 	}
 
 	private void getSha1Events(InputStream sha1EventStream) {
@@ -110,5 +120,9 @@ public class StreamingServerData {
 
 	public EventSigEvent getEvtsSigEvents() {
 		return new EventSigEvent(this.evtsSigEvents);
+	}
+
+	public InputStream getRecoverEventMatchLog() {
+		return recoverEventMatchLog;
 	}
 }

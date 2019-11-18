@@ -17,11 +17,14 @@
 
 package com.swirlds.regression.validators;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.EMPTY_HASH;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 
 public class StreamingServerValidator extends Validator {
 
@@ -54,6 +57,13 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		validateEvtSigFiles();
+
+		for (int i = 0; i < ssData.size(); i++) {
+			if ( !checkRecoverEventMatchLog(ssData.get(i).getRecoverEventMatchLog())){
+				addError("Node " + i + " recovered event file does not match original ones !");
+				this.valid = false;
+			}
+		}
 	}
 
 	private boolean isAnySha1SumMissing(final List<String> sha1sumList) {
@@ -175,5 +185,21 @@ public class StreamingServerValidator extends Validator {
 
 		this.valid &= evtsValid;
 		addInfo(String.format("Are evts_sig files valid: %s for %d files", evtsValid, reference.size()));
+	}
+
+
+	private boolean checkRecoverEventMatchLog(InputStream input) {
+		if (input != null) {
+
+			Scanner eventScanner = new Scanner(input);
+			if (eventScanner.hasNextLine()) {
+				String entry = eventScanner.nextLine();
+				log.info(MARKER, "Read match log entry = {}", entry);
+				if (entry.contains(EVENT_MATCH_MSG)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
