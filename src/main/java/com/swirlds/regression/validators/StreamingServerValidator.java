@@ -63,7 +63,7 @@ public class StreamingServerValidator extends Validator {
 				addError("Node " + i + " recovered event file does not match original ones !");
 				this.valid = false;
 			}else{
-				addError("Node " + i + " recovered event file match original ones");
+				addInfo("Node " + i + " recovered event file match original ones");
 			}
 		}
 	}

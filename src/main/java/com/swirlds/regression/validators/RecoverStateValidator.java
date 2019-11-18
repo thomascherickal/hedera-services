@@ -76,7 +76,7 @@ public class RecoverStateValidator extends NodeValidator {
 				continue; //check next node
 			}
 
-			addInfo("Node " + i + " finished recover run and resume normally as expected !");
+			addInfo("Node " + i + " finished recover run and resume normally as expected");
 		}
 
 		isValidated = true;

@@ -57,7 +57,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -845,7 +844,7 @@ public class Experiment {
 	 */
 	public void deleteSignedStates() {
 		SSHService node0 = sshNodes.get(0);
-		int savedStatesAmount = node0.getSignedStatesAmount();
+		int savedStatesAmount = node0.getNumberOfSignedStates();
 		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
 		if (savedStatesAmount > 1) {
 			// random generate an amount and delete such amount of signed state

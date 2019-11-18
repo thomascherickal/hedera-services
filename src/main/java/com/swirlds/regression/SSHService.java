@@ -796,7 +796,7 @@ public class SSHService {
 	/**
 	 * Find how many signed state subdirectories have been created
 	 */
-	int getSignedStatesAmount() {
+	int getNumberOfSignedStates() {
 		// first find out how many signed state saved to disk, parse the result string to a number
 		// this return how many signed state (sub-directories) created
 		String lsStatesCmd =
