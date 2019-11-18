@@ -63,6 +63,7 @@ public class RecoverStateRun implements TestRun {
 
 		// save event to different directory so later we can compare event file created during
 		// recover mode with event files created by the original run
+		String oldEventsLogDir = settingsBuilder.getSettingValue("eventsLogDir");
 		settingsBuilder.addSetting("eventsLogDir", "data/eventStreamRecover");
 
 		experiment.sendSettingFileToNodes();
@@ -86,8 +87,8 @@ public class RecoverStateRun implements TestRun {
 
 		settingsBuilder.addSetting("enableStateRecovery", "false");
 
-		// save event to original directory
-		settingsBuilder.addSetting("eventsLogDir", "data/eventStream");
+		// restore event to original directory
+		settingsBuilder.addSetting("eventsLogDir", oldEventsLogDir);
 
 		experiment.sendSettingFileToNodes();
 		experiment.sendConfigToNodes();
