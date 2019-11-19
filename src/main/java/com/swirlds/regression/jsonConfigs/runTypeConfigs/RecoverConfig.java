@@ -18,5 +18,13 @@
 package com.swirlds.regression.jsonConfigs.runTypeConfigs;
 
 public class RecoverConfig {
+	private String eventDir;
 
+	public String getEventDir() {
+		return eventDir;
+	}
+
+	public void setEventDir(String eventDir) {
+		this.eventDir = eventDir;
+	}
 }

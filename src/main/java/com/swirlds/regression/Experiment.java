@@ -296,7 +296,7 @@ public class Experiment {
 	/**
 	 * Whether all node find defined number of message in log file
 	 */
-	public boolean isAllNodeFoundEnoughMessage(String msg, int messageAmount) {
+	public boolean isAllNodesFoundEnoughMessage(String msg, int messageAmount) {
 		boolean isEnoughMsgFound = false;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
@@ -311,7 +311,7 @@ public class Experiment {
 	}
 
 	public boolean isFoundTwoPTDFinishMessage() {
-		return isAllNodeFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2);
+		return isAllNodesFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2);
 	}
 
 	public boolean isProcessFinished() {
@@ -935,7 +935,9 @@ public class Experiment {
 	}
 
 	/**
-	 * Random delete last few saved signed states
+	 * Delete last few saved states from all nodes.
+	 * The number of deleted states are random generated based on current number
+	 * of saved states
 	 */
 	public void randomDeleteLastNSignedStates() {
 		SSHService node0 = sshNodes.get(0);

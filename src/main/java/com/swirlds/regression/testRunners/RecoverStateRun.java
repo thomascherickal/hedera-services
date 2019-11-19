@@ -52,7 +52,8 @@ public class RecoverStateRun implements TestRun {
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 
-		String originalStreamFileDir = settingsBuilder.getSettingValue("eventsLogDir") + "/*/";
+		String oldEventsLogDir = settingsBuilder.getSettingValue("eventsLogDir");
+		String originalStreamFileDir = oldEventsLogDir + "/*/";
 
 		/**************************
 		 Stage 2 recover run
@@ -62,12 +63,11 @@ public class RecoverStateRun implements TestRun {
 
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
-		settingsBuilder.addSetting("playbackStreamFileDirectory", "data/eventStream ");
+		settingsBuilder.addSetting("playbackStreamFileDirectory", oldEventsLogDir);
 
 		// save event to different directory so later we can compare event file created during
 		// recover mode with event files created by the original run
-		String oldEventsLogDir = settingsBuilder.getSettingValue("eventsLogDir");
-		settingsBuilder.addSetting("eventsLogDir", "data/eventStreamRecover");
+		settingsBuilder.addSetting("eventsLogDir", testConfig.getRecoverConfig().getEventDir());
 
 		experiment.sendSettingFileToNodes();
 		experiment.sendConfigToNodes();

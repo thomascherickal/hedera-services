@@ -12,6 +12,7 @@
     {"name":"eventsLogDir", "value":"data/eventStream"}
   ],
   "recoverConfig":{
+    "eventDir" : "data/eventStreamRecover"
   },  
   "app": {
     "jar": "PlatformTestingApp.jar",
