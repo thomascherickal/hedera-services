@@ -432,13 +432,8 @@ public class Experiment {
 			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
 
 			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
-			if (recoverEventLogStream != null) {
-				nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-						getInputStream(shaEventFileName), recoverEventLogStream));
-			} else {
-				nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-						getInputStream(shaEventFileName)));
-			}
+			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
+					getInputStream(shaEventFileName), recoverEventLogStream));
 		}
 		return nodeData;
 	}
@@ -493,6 +488,9 @@ public class Experiment {
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
 					loadStreamingServerData(testConfig.getName()));
+			if (testConfig.getRunType() == RunType.RECOVER) {
+				ssValidator.setStateRecoverMode(true);
+			}
 			requiredValidator.add(ssValidator);
 		}
 
@@ -961,7 +959,8 @@ public class Experiment {
 	 */
 	public void deleteLastNSignedStates(int deleteNumber) {
 		for (SSHService node : sshNodes) {
-			node.deleteSignedStates(deleteNumber);
+			List<SavedStatePathInfo> stateList = node.getSavedStatesDirectories();
+			node.deleteLastNSignedStates(deleteNumber, stateList);
 		}
 	}
 

@@ -36,15 +36,19 @@ import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
@@ -620,7 +624,7 @@ public class SSHService {
 	 * Return number of specified message found in log
 	 * Or return -1 if error happened
 	 */
-	int countSpecifiedMsg(String msg ) {
+	int countSpecifiedMsg(String msg) {
 		final Session.Command cmd = execCommand(msg,
 				"Check specified msg", -1);
 		ArrayList<String> output = readCommandOutput(cmd);
@@ -753,6 +757,58 @@ public class SSHService {
 		}
 	}
 
+	public List<SavedStatePathInfo> getSavedStatesDirectories() {
+		List<SavedStatePathInfo> dirList = new ArrayList<>();
+		String listCmd =
+				"ls -d " + getSavedStateDirectory() + "/*";
+		Session.Command cmd = executeCmd(listCmd);
+		if (cmd.getExitStatus() == 0) {
+			String cmdResultString = readCommandOutput(cmd).toString();
+			cmdResultString = cmdResultString.replace("[", "").replace("]", ""); //remove bracket
+			String[] directories = cmdResultString.split(" ");
+			for (String dir : directories) {
+				SavedStatePathInfo result = parseSavedStatPath(dir.replace(",", ""));
+				if (result != null) {
+					dirList.add(result);
+				}
+			}
+			log.info(MARKER, "Saved states are ", dirList.toString());
+		} else {
+			log.error(ERROR, "Exception running getSavedStatesDirectories command {} cmd result {}",
+					cmd, readCommandOutput(cmd).toString());
+		}
+		//sorting by round number
+		dirList = dirList.stream().sorted(Comparator.comparingLong(SavedStatePathInfo::getRoundNumber)).collect(
+				Collectors.toList());
+		;
+		return dirList;
+	}
+
+
+	/**
+	 * Parse saved signed state path and return its main class name, nodeId, swirds name in a SavedStatePathInfo
+	 * instance,
+	 */
+	private SavedStatePathInfo parseSavedStatPath(String path) {
+		String pathWithoutBase = path.replace(REMOTE_STATE_LOCATION, "");
+		String[] segments = pathWithoutBase.split("/");
+
+		try {
+			SavedStatePathInfo result = new SavedStatePathInfo(path, Long.parseLong(segments[3]),
+					Long.parseLong(segments[1]), segments[2], segments[0]);
+
+			return result;
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Parsing saved state path {} -> {} error ", path, Arrays.toString(segments), e);
+			return null;
+		}
+
+	}
+
+	private String getSavedStateDirectory() {
+		return SAVED_STATE_LOCATION;
+	}
+
 	/**
 	 * List names of signed state directories currently on disk
 	 *
@@ -761,79 +817,49 @@ public class SSHService {
 	 */
 	void displaySignedStates(String memo) {
 		String displayCmd =
-				"ls -tr " + SAVED_STATE_LOCATION;
+				"ls -tr " + getSavedStateDirectory();
 		Session.Command cmd = executeCmd(displayCmd);
 		log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
 	}
 
-	private boolean deleteLastSignedState() {
-		// this command returns the last directory, which is the round number
-		// of last signed state
-		String findLastStateCmd =
-				"ls -tr " + SAVED_STATE_LOCATION + " | tail -1";
-		Session.Command cmd = executeCmd(findLastStateCmd);
-		if (cmd.getExitStatus() == 0) {
-			String findLastStateRound = readCommandOutput(cmd).toString();
-			findLastStateRound = findLastStateRound.replace("[", "").replace("]", ""); //remove bracket
-
-			String rmStatesCmd =
-					"rm -r " + SAVED_STATE_LOCATION + "/" + findLastStateRound;
-			cmd = executeCmd(rmStatesCmd);
-			if (cmd.getExitStatus() != 0) {
-				log.error(ERROR, "Exception running rm state command {}", rmStatesCmd);
-				return false;
-			}
-
-		} else {
-			log.error(ERROR, "Exception running findLastStateCmd command {} cmd result {}", findLastStateCmd
-					, readCommandOutput(cmd).toString());
-			return false;
-		}
-		return true;
+	private void deleteSignedState(SavedStatePathInfo state) {
+		deleteRemoteFileOrDirectory(state.getFullPath());
 	}
 
+	public boolean deleteRemoteFileOrDirectory(String path) {
+		String rmStatesCmd = "rm -r " + path;
+		Session.Command cmd = executeCmd(rmStatesCmd);
+		if (cmd.getExitStatus() != 0) {
+			log.error(ERROR, "Exception running rm command {}", rmStatesCmd);
+			return false;
+		} else {
+			log.info(MARKER, "Delete {} is OK", path);
+			return true;
+		}
+	}
+	
 	/**
 	 * Find how many signed state subdirectories have been created
 	 */
 	int getNumberOfSignedStates() {
-		// first find out how many signed state saved to disk, parse the result string to a number
-		// this return how many signed state (sub-directories) created
-		String lsStatesCmd =
-				"ls -tr " + SAVED_STATE_LOCATION + " | wc -l";
-
-		Session.Command cmd = executeCmd(lsStatesCmd);
-		if (cmd.getExitStatus() == 0) {
-			String result = readCommandOutput(cmd).toString();
-			result = result.replace("[", "").replace("]", ""); //remove bracket
-			try {
-				return Integer.parseInt(result);
-			} catch (NumberFormatException e) {
-				log.error(ERROR, "Could not parse result of ls command {}", lsStatesCmd, e);
-			}
-		}
-		return 0;
+		List<SavedStatePathInfo> result = getSavedStatesDirectories();
+		return result.size();
 	}
 
 	/**
 	 * Delete multiple signed state saved on disk
 	 */
-	void deleteSignedStates(int deleteAmount) {
+	void deleteLastNSignedStates(int deleteAmount, List<SavedStatePathInfo> currentStates) {
+		int size = currentStates.size();
 		displaySignedStates("BEFORE deleting States");
-		log.info(MARKER, "Random delete {} signed states", deleteAmount);
-		for (int i = 0; i < deleteAmount; i++) {
-			if (!deleteLastSignedState()) {
-				break;
-			}
+		for (int i = size - deleteAmount; i < size; i++) {
+			deleteSignedState(currentStates.get(i));
 		}
 		displaySignedStates("AFTER deleting States");
 	}
 
 	/**
 	 * Compare event files generated during recover mode whether match original ones
-	 *
-	 * @param eventDir
-	 * @param originalDir
-	 * @return
 	 */
 	boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
 

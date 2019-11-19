@@ -35,6 +35,7 @@ public class StreamingServerValidator extends Validator {
 
 	private final List<StreamingServerData> ssData;
 	private boolean valid = false;
+	private boolean stateRecoverMode = false;
 
 	public StreamingServerValidator(final List<StreamingServerData> ssData) {
 		this.ssData = ssData;
@@ -58,12 +59,14 @@ public class StreamingServerValidator extends Validator {
 
 		validateEvtSigFiles();
 
-		for (int i = 0; i < ssData.size(); i++) {
-			if ( !checkRecoverEventMatchLog(ssData.get(i).getRecoverEventMatchLog())){
-				addError("Node " + i + " recovered event file does not match original ones !");
-				this.valid = false;
-			}else{
-				addInfo("Node " + i + " recovered event file match original ones");
+		if (stateRecoverMode) {
+			for (int i = 0; i < ssData.size(); i++) {
+				if (!checkRecoverEventMatchLog(ssData.get(i).getRecoverEventMatchLog())) {
+					addError("Node " + i + " recovered event file does not match original ones !");
+					this.valid = false;
+				} else {
+					addInfo("Node " + i + " recovered event file match original ones");
+				}
 			}
 		}
 	}
@@ -124,9 +127,9 @@ public class StreamingServerValidator extends Validator {
 	}
 
 	/*
-		Because some nodes may be killed while events are still being written, the last event file (or two) may 
+		Because some nodes may be killed while events are still being written, the last event file (or two) may
 		mismatch. For that reason we check from the second to last common last event back. If a difference is found
-		then an error existing in the streaming data. There is a small statistical chance the lastCommonEvent is not 
+		then an error existing in the streaming data. There is a small statistical chance the lastCommonEvent is not
 		mismatched, but that a new evt file was started after the last line of the leastCommonEvt was written. This is
 		a small likelihood and it is assumed that in this case if all other events are equal the lastCommonEvent
 		would be equal as well.
@@ -192,7 +195,6 @@ public class StreamingServerValidator extends Validator {
 
 	private boolean checkRecoverEventMatchLog(InputStream input) {
 		if (input != null) {
-
 			Scanner eventScanner = new Scanner(input);
 			if (eventScanner.hasNextLine()) {
 				String entry = eventScanner.nextLine();
@@ -201,7 +203,18 @@ public class StreamingServerValidator extends Validator {
 					return true;
 				}
 			}
+		}else{
+			log.error(ERROR, "Input stream of event match log after state recover is null");
+			return false;
 		}
 		return false;
+	}
+
+	public boolean isStateRecoverMode() {
+		return stateRecoverMode;
+	}
+
+	public void setStateRecoverMode(boolean stateRecoverMode) {
+		this.stateRecoverMode = stateRecoverMode;
 	}
 }
