@@ -19,10 +19,10 @@
     "swirldName": "123",
     "round": 65,
     "restoreDb": true,
-    "nodeIdentifier": "ALL"
+    "nodeIdentifier": "ALL_BUT_LAST"
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO"]
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT"]
 }
