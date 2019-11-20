@@ -46,6 +46,7 @@ class CloudService {
     RunInstancesRequest runInstanceRequest;
     ArrayList<Instance> instances;
     ArrayList<AWSNode> ec2List;
+    NodeMemory memoryNeedsForAllNodes;
 
     boolean instancesRunning = false;
 
@@ -450,5 +451,17 @@ class CloudService {
         DescribeInstancesResult instResult = ec2.describeInstances(instRequest);
 
         return instResult.getReservations();
+    }
+
+    public void setupNodeMemory(String instanceType) {
+            setHugePagesOnNodes();
+            setPostgresConfOnNodes();
+    }
+
+    private void setPostgresConfOnNodes() {
+    }
+
+    private void setHugePagesOnNodes() {
+
     }
 }

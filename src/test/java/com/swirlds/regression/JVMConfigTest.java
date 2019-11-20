@@ -62,7 +62,7 @@ public class JVMConfigTest {
 	@ParameterizedTest
 	@CsvSource({
 //			// MaxJVM, expected String
-			"-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:+UseLargePages -Xmx16g -Xms2g -XX:ZMarkStackSpaceLimit=16g -XX:MaxDirectMemorySize=12g",
+			"-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:+UseLargePages -Xmx8g -Xms2g -XX:ZMarkStackSpaceLimit=6g -XX:MaxDirectMemorySize=6g",
 			"-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:+UseLargePages -Xmx12g -Xms2g -XX:ZMarkStackSpaceLimit=9g -XX:MaxDirectMemorySize=9g",
 			"-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:+UseLargePages -Xmx4g -Xms1g -XX:ZMarkStackSpaceLimit=3g -XX:MaxDirectMemorySize=3g",
 			"-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:+UseLargePages -Xmx4m -Xms1m -XX:ZMarkStackSpaceLimit=3m -XX:MaxDirectMemorySize=3m",
