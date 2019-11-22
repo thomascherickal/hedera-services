@@ -1,5 +1,5 @@
 {
-  "name": "Nathan_FCM_1K_NamingStd",
+  "name": "Nathan_Signing_Demo_Benchmark",
   "result": {
 	"uri": "results"
   },
@@ -23,7 +23,7 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testFcm1KCfg.json"
+	"configs/testSigningDemoCfg.json"
   ],
   "db": {
 	"type": "postgresql",
