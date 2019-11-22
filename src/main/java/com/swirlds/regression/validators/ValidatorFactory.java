@@ -17,14 +17,19 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 
 public class ValidatorFactory {
 
-	public static NodeValidator getValidator(ValidatorType vt, List<NodeData> nodeData) {
+
+	public static NodeValidator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
 		if (vt == null) {
 			return null;
 		}
+
 		switch (vt) {
 /*			case FCFS_CSV:
 				return new FCFSValidator();
@@ -45,6 +50,10 @@ public class ValidatorFactory {
 				return new PtdValidator(nodeData);
 			case STATS:
 				return new StatsValidator(nodeData);
+			case THROTTLE:
+				return new ThrottleValidator(nodeData);
+			case PTA_THROTTLE:
+				return new PTAThrottleValidator(nodeData, testConfig);
 			default:
 				return new StandardValidator(nodeData);
 		}
