@@ -164,6 +164,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-costexplorer</artifactId>
+			<version>1.11.489</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-common</artifactId>
 			<version>0.6.0</version>

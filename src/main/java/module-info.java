@@ -17,6 +17,7 @@ module com.swirlds.regression {
 	requires aws.java.sdk.ec2;
 	requires aws.java.sdk.core;
 	requires aws.java.sdk.pricing;
+	requires aws.java.sdk.costexplorer;
 
 	requires jdk.xml.dom;
 

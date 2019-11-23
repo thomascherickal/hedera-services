@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.amazonaws.services.costexplorer.model.EC2InstanceDetails;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
@@ -400,8 +401,9 @@ class CloudService {
                     image.getImageId(), image.getImageLocation(), image.getName());
         }
         return images.get(0).getImageId();
-
     }
+
+
 
 
     /**
@@ -454,8 +456,16 @@ class CloudService {
     }
 
     public void setupNodeMemory(String instanceType) {
+        String MemorySize = GetMemory();
             setHugePagesOnNodes();
             setPostgresConfOnNodes();
+    }
+
+    private String GetMemory() {
+        EC2InstanceDetails instanceDetails = new EC2InstanceDetails();
+
+        return "";
+
     }
 
     private void setPostgresConfOnNodes() {
