@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -37,12 +38,16 @@ import static com.swirlds.regression.RegressionUtilities.MB;
 public class StatsValidator extends NodeValidator {
 	private boolean isValidated = false;
 
+	// validation
+
 	public StatsValidator(List<NodeData> nodeData) {
+
 		super(nodeData);
 	}
 
 	@Override
 	public void validate() throws IOException {
+
 		int nodeNum = nodeData.size();
 
 		Instant startTime = null;

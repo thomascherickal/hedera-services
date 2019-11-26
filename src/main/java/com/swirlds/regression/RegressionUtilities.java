@@ -49,12 +49,13 @@ import static com.swirlds.common.PlatformLogMessages.PTD_SUCCESS;
 
 public class RegressionUtilities {
 
+	public static final String PLATFORM_TESTING_APP = "PlatformTestingApp.jar";
 	public static final String WRITE_FILE_DIRECTORY = "tmp/";
 	public static final String PUBLIC_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "publicAddresses.txt";
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";
-	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingDemo/src/main/resources/";
+	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
 	public static final String CONFIG_FILE = "config.txt";
@@ -230,6 +231,7 @@ public class RegressionUtilities {
 		returnIterator.add(new File(SDK_DIR + "data/repos/"));
 		returnIterator.add(new File(SDK_DIR + "kernels/"));
 		returnIterator.add(new File(SDK_DIR + "swirlds.jar"));
+		returnIterator.add(new File(SDK_DIR + "testing/badgerize.sh"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
@@ -263,6 +265,7 @@ public class RegressionUtilities {
 		returnIterator.add("swirlds.jar");
 		returnIterator.add("privateAddresses.txt");
 		returnIterator.add("publicAddresses.txt");
+		returnIterator.add("badgerize.sh");
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
@@ -284,9 +287,10 @@ public class RegressionUtilities {
 		returnIterator.add("*.xml");
 		returnIterator.add("*.txt");
 		returnIterator.add("*.json");
-		//returnIterator.add("badger_*");
+		returnIterator.add("badger_*");
 		//returnIterator.add("stream_*");
-		//returnIterator.add("postgres_reports");
+		returnIterator.add("postgres_reports"); // badgerized web summaries
+		returnIterator.add("latest_postgres*"); // raw log files(s)
 
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);

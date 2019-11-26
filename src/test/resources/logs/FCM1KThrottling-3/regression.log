@@ -1,0 +1,1119 @@
+2019-11-01 20:39:00.841 main Starting Regression...
+2019-11-01 20:39:00.847 main Importing regression file: ./configs/AwsRegressionCfg-leemon-throttle.json
+2019-11-01 20:39:00.954 main Parsing JSON......
+2019-11-01 20:39:01.001 main parse Reg Config
+2019-11-01 20:39:01.001 main parse Node Config
+2019-11-01 20:39:01.001 main running regression on: Mac OS X
+2019-11-01 20:39:01.002 main command to be run: git log -n 1 --decorate=short
+2019-11-01 20:39:01.063 main Git Info: commit e86de77a802b5899d8d09a95beedc1c255eef0ac (HEAD -> leemon-throttle-new, origin/leemon-throttle-new)
+Author: Praveen Murthy <praveen.murthy@swirlds.com>
+Date:   Fri Nov 1 19:48:52 2019 -0700
+
+    #1496: code reformat, typo fix
+
+2019-11-01 20:39:01.066 main base: test 2019-11-01-20-39-00	logFile:test 2019-11-01-20-39-00.log	errFile:test 2019-11-01-20-39-00.err	logDir:testing/logs/2019-11-01-20-39-00
+2019-11-01 20:39:01.072 main lo0: flags=8049<UP,LOOPBACK,RUNNING,MULTICAST> mtu 16384
+2019-11-01 20:39:01.073 main 	options=1203<RXCSUM,TXCSUM,TXSTATUS,SW_TIMESTAMP>
+2019-11-01 20:39:01.073 main 	inet 127.0.0.1 netmask 0xff000000 
+2019-11-01 20:39:01.073 main 	inet6 ::1 prefixlen 128 
+2019-11-01 20:39:01.073 main 	inet6 fe80::1%lo0 prefixlen 64 scopeid 0x1 
+2019-11-01 20:39:01.073 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.073 main gif0: flags=8010<POINTOPOINT,MULTICAST> mtu 1280
+2019-11-01 20:39:01.073 main stf0: flags=0<> mtu 1280
+2019-11-01 20:39:01.073 main XHC0: flags=0<> mtu 0
+2019-11-01 20:39:01.074 main VHC128: flags=0<> mtu 0
+2019-11-01 20:39:01.074 main XHC1: flags=0<> mtu 0
+2019-11-01 20:39:01.074 main XHC20: flags=0<> mtu 0
+2019-11-01 20:39:01.074 main en5: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.074 main 	ether ac:de:48:00:11:22 
+2019-11-01 20:39:01.074 main 	inet6 fe80::aede:48ff:fe00:1122%en5 prefixlen 64 scopeid 0x8 
+2019-11-01 20:39:01.074 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.074 main 	media: autoselect (100baseTX <full-duplex>)
+2019-11-01 20:39:01.074 main 	status: active
+2019-11-01 20:39:01.074 main ap1: flags=8802<BROADCAST,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.075 main 	ether 3a:f9:d3:de:41:af 
+2019-11-01 20:39:01.075 main 	media: autoselect
+2019-11-01 20:39:01.075 main 	status: inactive
+2019-11-01 20:39:01.075 main en0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.075 main 	ether 38:f9:d3:de:41:af 
+2019-11-01 20:39:01.075 main 	inet6 fe80::cb7:2119:95b7:4e43%en0 prefixlen 64 duplicated secured scopeid 0xa 
+2019-11-01 20:39:01.075 main 	inet 192.168.2.34 netmask 0xffffff00 broadcast 192.168.2.255
+2019-11-01 20:39:01.075 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.075 main 	media: autoselect
+2019-11-01 20:39:01.076 main 	status: active
+2019-11-01 20:39:01.076 main p2p0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 2304
+2019-11-01 20:39:01.076 main 	ether 0a:f9:d3:de:41:af 
+2019-11-01 20:39:01.076 main 	media: autoselect
+2019-11-01 20:39:01.076 main 	status: inactive
+2019-11-01 20:39:01.076 main awdl0: flags=8943<UP,BROADCAST,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1484
+2019-11-01 20:39:01.076 main 	ether 7a:9d:73:fe:39:19 
+2019-11-01 20:39:01.076 main 	inet6 fe80::789d:73ff:fefe:3919%awdl0 prefixlen 64 scopeid 0xc 
+2019-11-01 20:39:01.076 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.076 main 	media: autoselect
+2019-11-01 20:39:01.076 main 	status: active
+2019-11-01 20:39:01.077 main en1: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.077 main 	options=60<TSO4,TSO6>
+2019-11-01 20:39:01.077 main 	ether 9e:00:68:d1:f2:01 
+2019-11-01 20:39:01.077 main 	media: autoselect <full-duplex>
+2019-11-01 20:39:01.077 main 	status: inactive
+2019-11-01 20:39:01.077 main en2: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.077 main 	options=60<TSO4,TSO6>
+2019-11-01 20:39:01.077 main 	ether 9e:00:68:d1:f2:00 
+2019-11-01 20:39:01.077 main 	media: autoselect <full-duplex>
+2019-11-01 20:39:01.077 main 	status: inactive
+2019-11-01 20:39:01.078 main en3: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.078 main 	options=60<TSO4,TSO6>
+2019-11-01 20:39:01.078 main 	ether 9e:00:68:d1:f2:05 
+2019-11-01 20:39:01.078 main 	media: autoselect <full-duplex>
+2019-11-01 20:39:01.078 main 	status: inactive
+2019-11-01 20:39:01.078 main en4: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.078 main 	options=60<TSO4,TSO6>
+2019-11-01 20:39:01.078 main 	ether 9e:00:68:d1:f2:04 
+2019-11-01 20:39:01.078 main 	media: autoselect <full-duplex>
+2019-11-01 20:39:01.078 main 	status: inactive
+2019-11-01 20:39:01.078 main bridge0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+2019-11-01 20:39:01.079 main 	options=63<RXCSUM,TXCSUM,TSO4,TSO6>
+2019-11-01 20:39:01.079 main 	ether 9e:00:68:d1:f2:01 
+2019-11-01 20:39:01.079 main 	Configuration:
+2019-11-01 20:39:01.079 main 		id 0:0:0:0:0:0 priority 0 hellotime 0 fwddelay 0
+2019-11-01 20:39:01.079 main 		maxage 0 holdcnt 0 proto stp maxaddr 100 timeout 1200
+2019-11-01 20:39:01.079 main 		root id 0:0:0:0:0:0 priority 0 ifcost 0 port 0
+2019-11-01 20:39:01.079 main 		ipfilter disabled flags 0x2
+2019-11-01 20:39:01.079 main 	member: en1 flags=3<LEARNING,DISCOVER>
+2019-11-01 20:39:01.079 main 	        ifmaxaddr 0 port 13 priority 0 path cost 0
+2019-11-01 20:39:01.079 main 	member: en2 flags=3<LEARNING,DISCOVER>
+2019-11-01 20:39:01.079 main 	        ifmaxaddr 0 port 14 priority 0 path cost 0
+2019-11-01 20:39:01.079 main 	member: en3 flags=3<LEARNING,DISCOVER>
+2019-11-01 20:39:01.080 main 	        ifmaxaddr 0 port 15 priority 0 path cost 0
+2019-11-01 20:39:01.080 main 	member: en4 flags=3<LEARNING,DISCOVER>
+2019-11-01 20:39:01.080 main 	        ifmaxaddr 0 port 16 priority 0 path cost 0
+2019-11-01 20:39:01.080 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.080 main 	media: <unknown type>
+2019-11-01 20:39:01.080 main 	status: inactive
+2019-11-01 20:39:01.080 main utun0: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 2000
+2019-11-01 20:39:01.080 main 	inet6 fe80::1b36:5ab5:8021:dac%utun0 prefixlen 64 scopeid 0x12 
+2019-11-01 20:39:01.080 main 	nd6 options=201<PERFORMNUD,DAD>
+2019-11-01 20:39:01.088 main Getting existing nodes 4
+2019-11-01 20:39:01.480 main New instances requested
+2019-11-01 20:39:02.086 main Key was found Praveen-aws-swirlds matches Praveen-aws-swirlds
+2019-11-01 20:39:02.509 main ami-03830c2d38abfdd43 == 772706802921/ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10 == ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10
+2019-11-01 20:39:03.895 main Instance:i-081e7bc1be195691c	 Status:pending	 public IP:null	 private IP:172.31.5.3
+2019-11-01 20:39:03.895 main Instance:i-0d6fb42a9e43e6d05	 Status:pending	 public IP:null	 private IP:172.31.9.172
+2019-11-01 20:39:03.896 main Instance:i-02c834d3e48a9fecb	 Status:pending	 public IP:null	 private IP:172.31.2.75
+2019-11-01 20:39:03.896 main Instance:i-0d6bd1a732ce8fdc9	 Status:pending	 public IP:null	 private IP:172.31.8.138
+2019-11-01 20:39:03.896 main instance IDs: i-081e7bc1be195691c
+2019-11-01 20:39:04.180 main instance state:pending	running name:Running	running string:running
+2019-11-01 20:39:04.180 main sleeping for 30 seconds to allow instances to boot up
+2019-11-01 20:39:34.183 main instance IDs: i-081e7bc1be195691c
+2019-11-01 20:39:34.496 main instance state:running	running string:running	public ip:13.59.81.13
+2019-11-01 20:39:34.496 main instance state:running	running string:running	public ip:3.133.133.196
+2019-11-01 20:39:34.497 main instance state:running	running string:running	public ip:3.15.219.251
+2019-11-01 20:39:34.497 main instance state:running	running string:running	public ip:18.191.198.13
+2019-11-01 20:39:34.499 main Importing experiment file: configs/testFcm1kThrottlingCfg.json
+2019-11-01 20:39:34.500 main Parsing Test JSON......
+2019-11-01 20:39:34.511 main Parsed Test JSON......
+2019-11-01 20:39:34.513 main Dump setting file ../sdk/settings.txt
+2019-11-01 20:39:34.514 main Name:maxOutgoingSyncs 		: value:          1
+2019-11-01 20:39:34.515 main Name:throttle7extra 		: value:            0.5
+2019-11-01 20:39:34.515 main Name:saveStatePeriod 		: value:           300
+2019-11-01 20:39:34.515 main Name:showInternalStats 		: value:        1
+2019-11-01 20:39:34.515 main Name:showDbStats 		: value:              0
+2019-11-01 20:39:34.515 main Name:doUpnp 		: value:                   false
+2019-11-01 20:39:34.515 main Name:useLoopbackIp 		: value:            false
+2019-11-01 20:39:34.515 main Name:csvFileName 		: value:              PlatformTesting
+2019-11-01 20:39:34.515 main Name:roundsExpired 		: value:            500
+2019-11-01 20:39:34.515 main Name: showInternalStats		: value:1
+2019-11-01 20:39:34.515 main Name: csvFileName		: value:PlatformTesting
+2019-11-01 20:39:34.515 main Name: csvAppend		: value:true
+2019-11-01 20:39:34.520 main Dump setting file tmp/settings.txt
+2019-11-01 20:39:34.520 main Name:showDbStats 		: value:              0
+2019-11-01 20:39:34.520 main Name:doUpnp 		: value:                   false
+2019-11-01 20:39:34.520 main Name:saveStatePeriod 		: value:           300
+2019-11-01 20:39:34.520 main Name:roundsExpired 		: value:            500
+2019-11-01 20:39:34.520 main Name:showInternalStats 		: value:1
+2019-11-01 20:39:34.520 main Name:csvFileName 		: value:PlatformTesting
+2019-11-01 20:39:34.520 main Name:csvAppend 		: value:true
+2019-11-01 20:39:34.521 main Name:useLoopbackIp 		: value:            false
+2019-11-01 20:39:34.521 main Name:maxOutgoingSyncs 		: value:          1
+2019-11-01 20:39:34.521 main Name:throttle7extra 		: value:            0.5
+2019-11-01 20:39:54.533 main attempt 0 to connect to node 13.59.81.13 failed, will retry 10 more times.
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:403) ~[?:?]
+	at java.net.Socket.connect(Socket.java:591) ~[?:?]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:126) ~[sshj-0.27.0.jar:0.27.0]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:117) ~[sshj-0.27.0.jar:0.27.0]
+	at com.swirlds.regression.SSHService.buildSession(SSHService.java:503) [regression.jar:?]
+	at com.swirlds.regression.SSHService.<init>(SSHService.java:77) [regression.jar:?]
+	at com.swirlds.regression.Experiment.runRemoteExperiment(Experiment.java:502) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.runExperiments(RegressionMain.java:191) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunCloudExperiment(RegressionMain.java:107) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunRegression(RegressionMain.java:83) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.main(RegressionMain.java:338) [regression.jar:?]
+2019-11-01 20:39:56.626 main attempt 1 to connect to node 13.59.81.13 failed, will retry 9 more times.
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:403) ~[?:?]
+	at java.net.Socket.connect(Socket.java:591) ~[?:?]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:126) ~[sshj-0.27.0.jar:0.27.0]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:117) ~[sshj-0.27.0.jar:0.27.0]
+	at com.swirlds.regression.SSHService.buildSession(SSHService.java:503) [regression.jar:?]
+	at com.swirlds.regression.SSHService.<init>(SSHService.java:77) [regression.jar:?]
+	at com.swirlds.regression.Experiment.runRemoteExperiment(Experiment.java:502) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.runExperiments(RegressionMain.java:191) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunCloudExperiment(RegressionMain.java:107) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunRegression(RegressionMain.java:83) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.main(RegressionMain.java:338) [regression.jar:?]
+2019-11-01 20:39:58.722 main attempt 2 to connect to node 13.59.81.13 failed, will retry 8 more times.
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:403) ~[?:?]
+	at java.net.Socket.connect(Socket.java:591) ~[?:?]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:126) ~[sshj-0.27.0.jar:0.27.0]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:117) ~[sshj-0.27.0.jar:0.27.0]
+	at com.swirlds.regression.SSHService.buildSession(SSHService.java:503) [regression.jar:?]
+	at com.swirlds.regression.SSHService.<init>(SSHService.java:77) [regression.jar:?]
+	at com.swirlds.regression.Experiment.runRemoteExperiment(Experiment.java:502) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.runExperiments(RegressionMain.java:191) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunCloudExperiment(RegressionMain.java:107) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunRegression(RegressionMain.java:83) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.main(RegressionMain.java:338) [regression.jar:?]
+2019-11-01 20:40:00.807 main attempt 3 to connect to node 13.59.81.13 failed, will retry 7 more times.
+java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:399) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:242) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:224) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:403) ~[?:?]
+	at java.net.Socket.connect(Socket.java:591) ~[?:?]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:126) ~[sshj-0.27.0.jar:0.27.0]
+	at net.schmizz.sshj.SocketClient.connect(SocketClient.java:117) ~[sshj-0.27.0.jar:0.27.0]
+	at com.swirlds.regression.SSHService.buildSession(SSHService.java:503) [regression.jar:?]
+	at com.swirlds.regression.SSHService.<init>(SSHService.java:77) [regression.jar:?]
+	at com.swirlds.regression.Experiment.runRemoteExperiment(Experiment.java:502) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.runExperiments(RegressionMain.java:191) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunCloudExperiment(RegressionMain.java:107) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunRegression(RegressionMain.java:83) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.main(RegressionMain.java:338) [regression.jar:?]
+2019-11-01 20:40:14.925 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 20:40:14.934 main **java kill exit status: 0 :: null
+2019-11-01 20:40:15.201 main 'Preparing node for next experiment' command:
+sudo rm -rf remoteExperiment
+exit status: 0 :: null
+2019-11-01 20:40:17.587 main 'Dropping fcfs extension' command:
+sudo -i -u postgres psql -c "drop extension crypto;"
+exit status: 1 :: null
+2019-11-01 20:40:17.588 main Dropping extension: input null 	 error ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:17.588 main Drop fcfs extension produced this error: ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:19.508 main 'Dropping fcfs table' command:
+sudo -i -u postgres psql -c " drop database fcfs;"
+exit status: 0 :: null
+2019-11-01 20:40:19.509 main Dropping database: input DROP DATABASE 	 error null
+2019-11-01 20:40:25.243 main 'recreating fcfs table before next test' command:
+sudo -i -u postgres psql -c "create database fcfs with owner = swirlds;"
+exit status: 0 :: null
+2019-11-01 20:40:25.244 main creating database: input CREATE DATABASE 	 error null
+2019-11-01 20:40:25.244 main Successfully dropped and recreated db
+2019-11-01 20:40:26.095 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:40:26.264 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 0 :: null
+2019-11-01 20:40:26.265 main ** exit status for making directory: remoteExperiment/ was 0 
+2019-11-01 20:40:29.490 main took 3224 milliseconds to upload 1 (remoteExperiment.tar.gz) files to 13.59.81.13
+2019-11-01 20:40:30.204 main 'extract tar downloaded from node:13.59.81.13' command:
+cd remoteExperiment/; tar -zxvf remoteExperiment.tar.gz; rm *.tar.gz 
+exit status: 0 :: null
+2019-11-01 20:40:30.205 main ** exit status: 0 :: null
+2019-11-01 20:40:30.468 main 'generic command call:chmod 400 ~/remoteExperiment/Praveen-aws-swirlds.pem' command:
+chmod 400 ~/remoteExperiment/Praveen-aws-swirlds.pem
+exit status: 0 :: null
+2019-11-01 20:40:30.469 main **chmod 400 ~/remoteExperiment/Praveen-aws-swirlds.pem exit status: 0 :: null
+2019-11-01 20:40:30.469 main Took 5 seconds to upload tarball
+2019-11-01 20:40:34.150 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 20:40:34.150 main **java kill exit status: 0 :: null
+2019-11-01 20:40:34.422 main 'Preparing node for next experiment' command:
+sudo rm -rf remoteExperiment
+exit status: 0 :: null
+2019-11-01 20:40:36.095 main 'Dropping fcfs extension' command:
+sudo -i -u postgres psql -c "drop extension crypto;"
+exit status: 1 :: null
+2019-11-01 20:40:36.096 main Dropping extension: input null 	 error ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:36.096 main Drop fcfs extension produced this error: ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:38.723 main 'Dropping fcfs table' command:
+sudo -i -u postgres psql -c " drop database fcfs;"
+exit status: 0 :: null
+2019-11-01 20:40:38.724 main Dropping database: input DROP DATABASE 	 error null
+2019-11-01 20:40:40.294 main 'recreating fcfs table before next test' command:
+sudo -i -u postgres psql -c "create database fcfs with owner = swirlds;"
+exit status: 0 :: null
+2019-11-01 20:40:40.295 main creating database: input CREATE DATABASE 	 error null
+2019-11-01 20:40:40.295 main Successfully dropped and recreated db
+2019-11-01 20:40:40.295 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:40:40.447 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:40:40.448 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:40:40.452 main rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.133.133.196:./remoteExperiment/ 
+2019-11-01 20:40:42.814 main 'generic command call:rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.133.133.196:./remoteExperiment/ ' command:
+rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.133.133.196:./remoteExperiment/ 
+exit status: 0 :: null
+2019-11-01 20:40:42.815 main **rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.133.133.196:./remoteExperiment/  exit status: 0 :: null
+2019-11-01 20:40:42.815 main took 2 seconds to rsync from node 13.59.81.13 to node 3.133.133.196
+2019-11-01 20:40:46.233 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 20:40:46.233 main **java kill exit status: 0 :: null
+2019-11-01 20:40:46.508 main 'Preparing node for next experiment' command:
+sudo rm -rf remoteExperiment
+exit status: 0 :: null
+2019-11-01 20:40:47.292 main 'Dropping fcfs extension' command:
+sudo -i -u postgres psql -c "drop extension crypto;"
+exit status: 1 :: null
+2019-11-01 20:40:47.292 main Dropping extension: input null 	 error ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:47.293 main Drop fcfs extension produced this error: ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:48.792 main 'Dropping fcfs table' command:
+sudo -i -u postgres psql -c " drop database fcfs;"
+exit status: 0 :: null
+2019-11-01 20:40:48.793 main Dropping database: input DROP DATABASE 	 error null
+2019-11-01 20:40:50.634 main 'recreating fcfs table before next test' command:
+sudo -i -u postgres psql -c "create database fcfs with owner = swirlds;"
+exit status: 0 :: null
+2019-11-01 20:40:50.635 main creating database: input CREATE DATABASE 	 error null
+2019-11-01 20:40:50.635 main Successfully dropped and recreated db
+2019-11-01 20:40:50.635 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:40:50.844 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:40:50.844 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:40:50.845 main rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.15.219.251:./remoteExperiment/ 
+2019-11-01 20:40:52.991 main 'generic command call:rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.15.219.251:./remoteExperiment/ ' command:
+rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.15.219.251:./remoteExperiment/ 
+exit status: 0 :: null
+2019-11-01 20:40:52.992 main **rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@3.15.219.251:./remoteExperiment/  exit status: 0 :: null
+2019-11-01 20:40:52.992 main took 2 seconds to rsync from node 13.59.81.13 to node 3.15.219.251
+2019-11-01 20:40:55.789 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 20:40:55.790 main **java kill exit status: 0 :: null
+2019-11-01 20:40:56.059 main 'Preparing node for next experiment' command:
+sudo rm -rf remoteExperiment
+exit status: 0 :: null
+2019-11-01 20:40:56.779 main 'Dropping fcfs extension' command:
+sudo -i -u postgres psql -c "drop extension crypto;"
+exit status: 1 :: null
+2019-11-01 20:40:56.779 main Dropping extension: input null 	 error ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:56.780 main Drop fcfs extension produced this error: ERROR:  extension "crypto" does not exist
+2019-11-01 20:40:57.352 main 'Dropping fcfs table' command:
+sudo -i -u postgres psql -c " drop database fcfs;"
+exit status: 0 :: null
+2019-11-01 20:40:57.353 main Dropping database: input DROP DATABASE 	 error null
+2019-11-01 20:40:58.522 main 'recreating fcfs table before next test' command:
+sudo -i -u postgres psql -c "create database fcfs with owner = swirlds;"
+exit status: 0 :: null
+2019-11-01 20:40:58.522 main creating database: input CREATE DATABASE 	 error null
+2019-11-01 20:40:58.523 main Successfully dropped and recreated db
+2019-11-01 20:40:58.523 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:40:58.674 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:40:58.674 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:40:58.674 main rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@18.191.198.13:./remoteExperiment/ 
+2019-11-01 20:41:00.672 main 'generic command call:rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@18.191.198.13:./remoteExperiment/ ' command:
+rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@18.191.198.13:./remoteExperiment/ 
+exit status: 0 :: null
+2019-11-01 20:41:00.673 main **rsync -a -r -z -e "ssh -o StrictHostKeyChecking=no -i ~/remoteExperiment/Praveen-aws-swirlds.pem" --include="data/" --include="data/apps/" --include="data/apps/**" --include="data/backup/" --include="data/backup/**" --include="data/keys/" --include="data/keys/**" --include="data/lib/" --include="data/lib/**" --include="data/repos/" --include="data/repos/**" --include="kernels/" --include="kernels/**" --include="swirlds.jar" --include="privateAddresses.txt" --include="publicAddresses.txt" --include="Praveen-aws-swirlds.pem" --include="config.txt" --include="settings.txt" --include="log4j2-regression.xml" --exclude="*" --delete --delete-excluded ./remoteExperiment/ ubuntu@18.191.198.13:./remoteExperiment/  exit status: 0 :: null
+2019-11-01 20:41:00.673 main took 2 seconds to rsync from node 13.59.81.13 to node 18.191.198.13
+2019-11-01 20:41:00.673 main upload to nodes has finished
+2019-11-01 20:41:00.673 main Sleeping for 30 seconds to allow PostGres to start
+2019-11-01 20:41:30.686 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:41:30.844 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:41:30.845 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:41:31.532 main took 686 milliseconds to upload 1 (settings.txt) files to 13.59.81.13
+2019-11-01 20:41:31.532 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:41:31.684 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:41:31.684 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:41:32.411 main took 726 milliseconds to upload 1 (settings.txt) files to 3.133.133.196
+2019-11-01 20:41:32.411 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:41:32.569 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:41:32.569 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:41:33.292 main took 722 milliseconds to upload 1 (settings.txt) files to 3.15.219.251
+2019-11-01 20:41:33.292 main Making new Dir: remoteExperiment/ 
+2019-11-01 20:41:33.443 main 'make new directory:remoteExperiment/' command:
+mkdir remoteExperiment/
+exit status: 1 :: null
+2019-11-01 20:41:33.444 main ** exit status for making directory: remoteExperiment/ was 1 
+2019-11-01 20:41:34.200 main took 756 milliseconds to upload 1 (settings.txt) files to 18.191.198.13
+2019-11-01 20:41:34.353 main 'Start swirlds.jar' command:
+cd remoteExperiment/; java -Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >output.log 2>&1 & disown -h
+exit status: 0 :: null
+2019-11-01 20:41:34.353 main node:13.59.81.13swirlds.jar started.
+2019-11-01 20:41:34.504 main 'Start swirlds.jar' command:
+cd remoteExperiment/; java -Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >output.log 2>&1 & disown -h
+exit status: 0 :: null
+2019-11-01 20:41:34.504 main node:3.133.133.196swirlds.jar started.
+2019-11-01 20:41:34.660 main 'Start swirlds.jar' command:
+cd remoteExperiment/; java -Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >output.log 2>&1 & disown -h
+exit status: 0 :: null
+2019-11-01 20:41:34.660 main node:3.15.219.251swirlds.jar started.
+2019-11-01 20:41:34.816 main 'Start swirlds.jar' command:
+cd remoteExperiment/; java -Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >output.log 2>&1 & disown -h
+exit status: 0 :: null
+2019-11-01 20:41:34.816 main node:18.191.198.13swirlds.jar started.
+2019-11-01 20:41:34.816 main sleeping for 7200 seconds, or until test finishes 
+2019-11-01 20:41:34.817 main sleeping for 300 seconds 
+2019-11-01 20:46:34.976 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:46:35.255 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:46:35.255 main reading command
+2019-11-01 20:46:35.255 main 3684 java
+
+2019-11-01 20:46:35.256 main lines in output 1
+2019-11-01 20:46:35.256 main Added 3684 java to returnArray
+2019-11-01 20:46:35.519 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:46:35.520 main reading command
+2019-11-01 20:46:35.520 main lines in output 1
+2019-11-01 20:46:35.520 main Added  to returnArray
+2019-11-01 20:46:35.520 main is test finished output size(1): 
+2019-11-01 20:46:35.520 main Test is not finished
+2019-11-01 20:46:35.673 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:46:35.952 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:46:35.952 main reading command
+2019-11-01 20:46:35.953 main 3740 java
+
+2019-11-01 20:46:35.953 main lines in output 1
+2019-11-01 20:46:35.953 main Added 3740 java to returnArray
+2019-11-01 20:46:36.217 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:46:36.218 main reading command
+2019-11-01 20:46:36.218 main lines in output 1
+2019-11-01 20:46:36.218 main Added  to returnArray
+2019-11-01 20:46:36.218 main is test finished output size(1): 
+2019-11-01 20:46:36.218 main Test is not finished
+2019-11-01 20:46:36.375 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:46:36.657 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:46:36.657 main reading command
+2019-11-01 20:46:36.658 main 3750 java
+
+2019-11-01 20:46:36.658 main lines in output 1
+2019-11-01 20:46:36.658 main Added 3750 java to returnArray
+2019-11-01 20:46:36.930 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:46:36.930 main reading command
+2019-11-01 20:46:36.930 main lines in output 1
+2019-11-01 20:46:36.930 main Added  to returnArray
+2019-11-01 20:46:36.931 main is test finished output size(1): 
+2019-11-01 20:46:36.931 main Test is not finished
+2019-11-01 20:46:37.084 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:46:37.371 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:46:37.371 main reading command
+2019-11-01 20:46:37.372 main 3762 java
+
+2019-11-01 20:46:37.372 main lines in output 1
+2019-11-01 20:46:37.372 main Added 3762 java to returnArray
+2019-11-01 20:46:37.640 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:46:37.642 main reading command
+2019-11-01 20:46:37.642 main lines in output 1
+2019-11-01 20:46:37.642 main Added  to returnArray
+2019-11-01 20:46:37.642 main is test finished output size(1): 
+2019-11-01 20:46:37.642 main Test is not finished
+2019-11-01 20:46:37.643 main sleeping for 300 seconds 
+2019-11-01 20:51:37.803 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:51:38.080 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:51:38.080 main reading command
+2019-11-01 20:51:38.080 main 3684 java
+
+2019-11-01 20:51:38.081 main lines in output 1
+2019-11-01 20:51:38.081 main Added 3684 java to returnArray
+2019-11-01 20:51:38.348 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:51:38.348 main reading command
+2019-11-01 20:51:38.349 main 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+
+2019-11-01 20:51:38.349 main lines in output 1
+2019-11-01 20:51:38.349 main Added 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:51:38.350 main is test finished output size(1): 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+2019-11-01 20:51:38.501 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:51:38.775 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:51:38.775 main reading command
+2019-11-01 20:51:38.776 main 3740 java
+
+2019-11-01 20:51:38.776 main lines in output 1
+2019-11-01 20:51:38.776 main Added 3740 java to returnArray
+2019-11-01 20:51:39.041 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:51:39.042 main reading command
+2019-11-01 20:51:39.042 main 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+
+2019-11-01 20:51:39.042 main lines in output 1
+2019-11-01 20:51:39.042 main Added 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:51:39.042 main is test finished output size(1): 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+2019-11-01 20:51:39.198 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:51:39.478 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:51:39.478 main reading command
+2019-11-01 20:51:39.478 main 3750 java
+
+2019-11-01 20:51:39.479 main lines in output 1
+2019-11-01 20:51:39.479 main Added 3750 java to returnArray
+2019-11-01 20:51:39.749 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:51:39.749 main reading command
+2019-11-01 20:51:39.750 main 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+
+2019-11-01 20:51:39.750 main lines in output 1
+2019-11-01 20:51:39.750 main Added 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:51:39.750 main is test finished output size(1): 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+2019-11-01 20:51:39.903 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:51:40.180 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:51:40.180 main reading command
+2019-11-01 20:51:40.181 main 3762 java
+
+2019-11-01 20:51:40.181 main lines in output 1
+2019-11-01 20:51:40.181 main Added 3762 java to returnArray
+2019-11-01 20:51:40.444 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:51:40.445 main reading command
+2019-11-01 20:51:40.445 main lines in output 1
+2019-11-01 20:51:40.445 main Added  to returnArray
+2019-11-01 20:51:40.445 main is test finished output size(1): 
+2019-11-01 20:51:40.445 main Test is not finished
+2019-11-01 20:51:40.445 main sleeping for 300 seconds 
+2019-11-01 20:56:40.604 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:56:40.881 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:56:40.882 main reading command
+2019-11-01 20:56:40.882 main 3684 java
+
+2019-11-01 20:56:40.882 main lines in output 1
+2019-11-01 20:56:40.883 main Added 3684 java to returnArray
+2019-11-01 20:56:41.146 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:56:41.146 main reading command
+2019-11-01 20:56:41.147 main 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+
+2019-11-01 20:56:41.147 main lines in output 1
+2019-11-01 20:56:41.147 main Added 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:56:41.147 main is test finished output size(1): 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+2019-11-01 20:56:41.302 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:56:41.577 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:56:41.577 main reading command
+2019-11-01 20:56:41.577 main 3740 java
+
+2019-11-01 20:56:41.577 main lines in output 1
+2019-11-01 20:56:41.577 main Added 3740 java to returnArray
+2019-11-01 20:56:41.843 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:56:41.843 main reading command
+2019-11-01 20:56:41.844 main 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+
+2019-11-01 20:56:41.844 main lines in output 1
+2019-11-01 20:56:41.844 main Added 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:56:41.844 main is test finished output size(1): 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+2019-11-01 20:56:42.000 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:56:42.280 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:56:42.280 main reading command
+2019-11-01 20:56:42.281 main 3750 java
+
+2019-11-01 20:56:42.281 main lines in output 1
+2019-11-01 20:56:42.281 main Added 3750 java to returnArray
+2019-11-01 20:56:42.550 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 20:56:42.550 main reading command
+2019-11-01 20:56:42.551 main 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+
+2019-11-01 20:56:42.551 main lines in output 1
+2019-11-01 20:56:42.551 main Added 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 20:56:42.551 main is test finished output size(1): 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+2019-11-01 20:56:42.704 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 20:56:42.983 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 20:56:42.983 main reading command
+2019-11-01 20:56:42.984 main 3762 java
+
+2019-11-01 20:56:42.984 main lines in output 1
+2019-11-01 20:56:42.984 main Added 3762 java to returnArray
+2019-11-01 20:56:43.251 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 20:56:43.251 main reading command
+2019-11-01 20:56:43.251 main lines in output 1
+2019-11-01 20:56:43.251 main Added  to returnArray
+2019-11-01 20:56:43.251 main is test finished output size(1): 
+2019-11-01 20:56:43.252 main Test is not finished
+2019-11-01 20:56:43.252 main sleeping for 300 seconds 
+2019-11-01 21:01:43.412 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:01:43.687 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:01:43.687 main reading command
+2019-11-01 21:01:43.688 main 3684 java
+
+2019-11-01 21:01:43.688 main lines in output 1
+2019-11-01 21:01:43.688 main Added 3684 java to returnArray
+2019-11-01 21:01:43.952 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:01:43.952 main reading command
+2019-11-01 21:01:43.952 main 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+
+2019-11-01 21:01:43.953 main lines in output 1
+2019-11-01 21:01:43.953 main Added 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:01:43.953 main is test finished output size(1): 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+2019-11-01 21:01:44.106 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:01:44.382 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:01:44.382 main reading command
+2019-11-01 21:01:44.383 main 3740 java
+
+2019-11-01 21:01:44.383 main lines in output 1
+2019-11-01 21:01:44.383 main Added 3740 java to returnArray
+2019-11-01 21:01:44.648 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:01:44.649 main reading command
+2019-11-01 21:01:44.649 main 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+
+2019-11-01 21:01:44.649 main lines in output 1
+2019-11-01 21:01:44.650 main Added 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:01:44.650 main is test finished output size(1): 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+2019-11-01 21:01:44.807 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:01:45.086 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:01:45.086 main reading command
+2019-11-01 21:01:45.087 main 3750 java
+
+2019-11-01 21:01:45.087 main lines in output 1
+2019-11-01 21:01:45.087 main Added 3750 java to returnArray
+2019-11-01 21:01:45.360 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:01:45.360 main reading command
+2019-11-01 21:01:45.361 main 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+
+2019-11-01 21:01:45.361 main lines in output 1
+2019-11-01 21:01:45.361 main Added 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:01:45.361 main is test finished output size(1): 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+2019-11-01 21:01:45.516 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:01:45.791 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:01:45.792 main reading command
+2019-11-01 21:01:45.792 main 3762 java
+
+2019-11-01 21:01:45.792 main lines in output 1
+2019-11-01 21:01:45.792 main Added 3762 java to returnArray
+2019-11-01 21:01:46.057 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 21:01:46.057 main reading command
+2019-11-01 21:01:46.058 main lines in output 1
+2019-11-01 21:01:46.058 main Added  to returnArray
+2019-11-01 21:01:46.058 main is test finished output size(1): 
+2019-11-01 21:01:46.058 main Test is not finished
+2019-11-01 21:01:46.058 main sleeping for 300 seconds 
+2019-11-01 21:06:46.222 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:06:46.497 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:06:46.497 main reading command
+2019-11-01 21:06:46.498 main 3684 java
+
+2019-11-01 21:06:46.498 main lines in output 1
+2019-11-01 21:06:46.498 main Added 3684 java to returnArray
+2019-11-01 21:06:46.762 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:06:46.763 main reading command
+2019-11-01 21:06:46.763 main 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+
+2019-11-01 21:06:46.763 main lines in output 1
+2019-11-01 21:06:46.764 main Added 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:06:46.764 main is test finished output size(1): 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+2019-11-01 21:06:46.915 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:06:47.194 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:06:47.194 main reading command
+2019-11-01 21:06:47.194 main 3740 java
+
+2019-11-01 21:06:47.194 main lines in output 1
+2019-11-01 21:06:47.194 main Added 3740 java to returnArray
+2019-11-01 21:06:47.459 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:06:47.459 main reading command
+2019-11-01 21:06:47.459 main 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+
+2019-11-01 21:06:47.460 main lines in output 1
+2019-11-01 21:06:47.460 main Added 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:06:47.460 main is test finished output size(1): 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+2019-11-01 21:06:47.616 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:06:47.897 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:06:47.898 main reading command
+2019-11-01 21:06:47.898 main 3750 java
+
+2019-11-01 21:06:47.898 main lines in output 1
+2019-11-01 21:06:47.898 main Added 3750 java to returnArray
+2019-11-01 21:06:48.171 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:06:48.171 main reading command
+2019-11-01 21:06:48.171 main 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+
+2019-11-01 21:06:48.172 main lines in output 1
+2019-11-01 21:06:48.172 main Added 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:06:48.172 main is test finished output size(1): 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+2019-11-01 21:06:48.325 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:06:48.602 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:06:48.602 main reading command
+2019-11-01 21:06:48.602 main 3762 java
+
+2019-11-01 21:06:48.602 main lines in output 1
+2019-11-01 21:06:48.602 main Added 3762 java to returnArray
+2019-11-01 21:06:48.867 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 1 :: null
+2019-11-01 21:06:48.867 main reading command
+2019-11-01 21:06:48.867 main lines in output 1
+2019-11-01 21:06:48.867 main Added  to returnArray
+2019-11-01 21:06:48.867 main is test finished output size(1): 
+2019-11-01 21:06:48.867 main Test is not finished
+2019-11-01 21:06:48.867 main sleeping for 300 seconds 
+2019-11-01 21:47:59.148 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:47:59.427 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:47:59.427 main reading command
+2019-11-01 21:47:59.428 main 3684 java
+
+2019-11-01 21:47:59.428 main lines in output 1
+2019-11-01 21:47:59.429 main Added 3684 java to returnArray
+2019-11-01 21:47:59.692 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:47:59.692 main reading command
+2019-11-01 21:47:59.693 main 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+
+2019-11-01 21:47:59.693 main lines in output 1
+2019-11-01 21:47:59.693 main Added 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:47:59.693 main is test finished output size(1): 2019-11-02 03:50:28.809 DEMO_INFO 50 <      appMainRun  0   > TRANSACTIONS FINISHED
+2019-11-01 21:47:59.847 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:48:00.123 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:48:00.123 main reading command
+2019-11-01 21:48:00.124 main 3740 java
+
+2019-11-01 21:48:00.124 main lines in output 1
+2019-11-01 21:48:00.124 main Added 3740 java to returnArray
+2019-11-01 21:48:00.393 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:48:00.394 main reading command
+2019-11-01 21:48:00.394 main 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+
+2019-11-01 21:48:00.395 main lines in output 1
+2019-11-01 21:48:00.395 main Added 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:48:00.395 main is test finished output size(1): 2019-11-02 03:50:28.733 DEMO_INFO 50 <      appMainRun  1   > TRANSACTIONS FINISHED
+2019-11-01 21:48:00.551 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:48:00.833 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:48:00.833 main reading command
+2019-11-01 21:48:00.834 main 3750 java
+
+2019-11-01 21:48:00.834 main lines in output 1
+2019-11-01 21:48:00.835 main Added 3750 java to returnArray
+2019-11-01 21:48:01.106 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:48:01.107 main reading command
+2019-11-01 21:48:01.107 main 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+
+2019-11-01 21:48:01.108 main lines in output 1
+2019-11-01 21:48:01.108 main Added 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:48:01.108 main is test finished output size(1): 2019-11-02 03:50:28.701 DEMO_INFO 50 <      appMainRun  2   > TRANSACTIONS FINISHED
+2019-11-01 21:48:01.261 main 'test if connection broken' command:
+echo test
+exit status: 0 :: null
+2019-11-01 21:48:01.537 main 'Check if java process is running' command:
+pgrep -fl java
+exit status: 0 :: null
+2019-11-01 21:48:01.537 main reading command
+2019-11-01 21:48:01.538 main 3762 java
+
+2019-11-01 21:48:01.538 main lines in output 1
+2019-11-01 21:48:01.539 main Added 3762 java to returnArray
+2019-11-01 21:48:01.807 main 'Check if PTD test is done' command:
+egrep "TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR" remoteExperiment/swirlds.log
+exit status: 0 :: null
+2019-11-01 21:48:01.808 main reading command
+2019-11-01 21:48:01.808 main 2019-11-02 04:07:24.792 DEMO_INFO 50 <      appMainRun  3   > TRANSACTIONS FINISHED
+
+2019-11-01 21:48:01.809 main lines in output 1
+2019-11-01 21:48:01.809 main Added 2019-11-02 04:07:24.792 DEMO_INFO 50 <      appMainRun  3   > TRANSACTIONS FINISHED to returnArray
+2019-11-01 21:48:01.809 main is test finished output size(1): 2019-11-02 04:07:24.792 DEMO_INFO 50 <      appMainRun  3   > TRANSACTIONS FINISHED
+2019-11-01 21:48:01.982 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 21:48:01.983 main **java kill exit status: 0 :: null
+2019-11-01 21:48:02.160 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 21:48:02.161 main **java kill exit status: 0 :: null
+2019-11-01 21:48:02.337 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 21:48:02.337 main **java kill exit status: 0 :: null
+2019-11-01 21:48:02.525 main 'command to kill the java process' command:
+sudo pkill -f java
+exit status: 0 :: null
+2019-11-01 21:48:02.525 main **java kill exit status: 0 :: null
+2019-11-01 21:48:02.533 main top level folder: results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/
+2019-11-01 21:48:02.706 main 'Find list of Files based on extension' command:
+find . \( -name "*.csv" -o -name "*.log" -o -name "*.xml" -o -name "*.txt" -o -name "*.json" -o -name "swirlds.log" \) -not -path "*/data/*"
+exit status: 0 :: null
+2019-11-01 21:48:02.706 main Extensions to look for on node 13.59.81.13: 
+2019-11-01 21:48:02.706 main reading command
+2019-11-01 21:48:02.707 main ./remoteExperiment/settings.txt
+./remoteExperiment/PlatformTesting0.csv
+./remoteExperiment/publicAddresses.txt
+./remoteExperiment/settingsUsed.txt
+./remoteExperiment/output.log
+./remoteExperiment/privateAddresses.txt
+./remoteExperiment/config.txt
+./remoteExperiment/log4j2-regression.xml
+./remoteExperiment/swirlds.log
+
+2019-11-01 21:48:02.707 main lines in output 9
+2019-11-01 21:48:02.707 main Added ./remoteExperiment/settings.txt to returnArray
+2019-11-01 21:48:02.707 main Added ./remoteExperiment/PlatformTesting0.csv to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/publicAddresses.txt to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/settingsUsed.txt to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/output.log to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/privateAddresses.txt to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/config.txt to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/log4j2-regression.xml to returnArray
+2019-11-01 21:48:02.708 main Added ./remoteExperiment/swirlds.log to returnArray
+2019-11-01 21:48:02.708 main total files found:9
+2019-11-01 21:48:02.709 main CutOff of '18' computed for the line './remoteExperiment/settings.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:02.714 main downloading ./remoteExperiment/settings.txt from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/settings.txt
+2019-11-01 21:48:03.270 main CutOff of '18' computed for the line './remoteExperiment/PlatformTesting0.csv' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:03.270 main downloading ./remoteExperiment/PlatformTesting0.csv from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/PlatformTesting0.csv
+2019-11-01 21:48:04.376 main CutOff of '18' computed for the line './remoteExperiment/publicAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:04.376 main downloading ./remoteExperiment/publicAddresses.txt from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/publicAddresses.txt
+2019-11-01 21:48:04.932 main CutOff of '18' computed for the line './remoteExperiment/settingsUsed.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:04.933 main downloading ./remoteExperiment/settingsUsed.txt from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/settingsUsed.txt
+2019-11-01 21:48:05.496 main CutOff of '18' computed for the line './remoteExperiment/output.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:05.496 main downloading ./remoteExperiment/output.log from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/output.log
+2019-11-01 21:48:06.061 main CutOff of '18' computed for the line './remoteExperiment/privateAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:06.061 main downloading ./remoteExperiment/privateAddresses.txt from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/privateAddresses.txt
+2019-11-01 21:48:06.623 main CutOff of '18' computed for the line './remoteExperiment/config.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:06.624 main downloading ./remoteExperiment/config.txt from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/config.txt
+2019-11-01 21:48:07.184 main CutOff of '18' computed for the line './remoteExperiment/log4j2-regression.xml' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:07.184 main downloading ./remoteExperiment/log4j2-regression.xml from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/log4j2-regression.xml
+2019-11-01 21:48:07.746 main CutOff of '18' computed for the line './remoteExperiment/swirlds.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:07.746 main downloading ./remoteExperiment/swirlds.log from node 13.59.81.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0000/swirlds.log
+2019-11-01 21:48:08.316 main top level folder: results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/
+2019-11-01 21:48:08.484 main 'Find list of Files based on extension' command:
+find . \( -name "*.csv" -o -name "*.log" -o -name "*.xml" -o -name "*.txt" -o -name "*.json" -o -name "swirlds.log" \) -not -path "*/data/*"
+exit status: 0 :: null
+2019-11-01 21:48:08.485 main Extensions to look for on node 3.133.133.196: 
+2019-11-01 21:48:08.485 main reading command
+2019-11-01 21:48:08.485 main ./remoteExperiment/settings.txt
+./remoteExperiment/PlatformTesting1.csv
+./remoteExperiment/publicAddresses.txt
+./remoteExperiment/settingsUsed.txt
+./remoteExperiment/output.log
+./remoteExperiment/privateAddresses.txt
+./remoteExperiment/config.txt
+./remoteExperiment/log4j2-regression.xml
+./remoteExperiment/swirlds.log
+
+2019-11-01 21:48:08.486 main lines in output 9
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/settings.txt to returnArray
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/PlatformTesting1.csv to returnArray
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/publicAddresses.txt to returnArray
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/settingsUsed.txt to returnArray
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/output.log to returnArray
+2019-11-01 21:48:08.486 main Added ./remoteExperiment/privateAddresses.txt to returnArray
+2019-11-01 21:48:08.487 main Added ./remoteExperiment/config.txt to returnArray
+2019-11-01 21:48:08.487 main Added ./remoteExperiment/log4j2-regression.xml to returnArray
+2019-11-01 21:48:08.487 main Added ./remoteExperiment/swirlds.log to returnArray
+2019-11-01 21:48:08.487 main total files found:9
+2019-11-01 21:48:08.487 main CutOff of '18' computed for the line './remoteExperiment/settings.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:08.488 main downloading ./remoteExperiment/settings.txt from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/settings.txt
+2019-11-01 21:48:09.050 main CutOff of '18' computed for the line './remoteExperiment/PlatformTesting1.csv' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:09.050 main downloading ./remoteExperiment/PlatformTesting1.csv from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/PlatformTesting1.csv
+2019-11-01 21:48:10.424 main CutOff of '18' computed for the line './remoteExperiment/publicAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:10.424 main downloading ./remoteExperiment/publicAddresses.txt from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/publicAddresses.txt
+2019-11-01 21:48:11.497 main CutOff of '18' computed for the line './remoteExperiment/settingsUsed.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:11.498 main downloading ./remoteExperiment/settingsUsed.txt from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/settingsUsed.txt
+2019-11-01 21:48:12.676 main CutOff of '18' computed for the line './remoteExperiment/output.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:12.677 main downloading ./remoteExperiment/output.log from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/output.log
+2019-11-01 21:48:13.756 main CutOff of '18' computed for the line './remoteExperiment/privateAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:13.756 main downloading ./remoteExperiment/privateAddresses.txt from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/privateAddresses.txt
+2019-11-01 21:48:15.087 main CutOff of '18' computed for the line './remoteExperiment/config.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:15.087 main downloading ./remoteExperiment/config.txt from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/config.txt
+2019-11-01 21:48:16.350 main CutOff of '18' computed for the line './remoteExperiment/log4j2-regression.xml' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:16.351 main downloading ./remoteExperiment/log4j2-regression.xml from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/log4j2-regression.xml
+2019-11-01 21:48:17.662 main CutOff of '18' computed for the line './remoteExperiment/swirlds.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:17.663 main downloading ./remoteExperiment/swirlds.log from node 3.133.133.196 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0001/swirlds.log
+2019-11-01 21:48:18.298 main top level folder: results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/
+2019-11-01 21:48:18.475 main 'Find list of Files based on extension' command:
+find . \( -name "*.csv" -o -name "*.log" -o -name "*.xml" -o -name "*.txt" -o -name "*.json" -o -name "swirlds.log" \) -not -path "*/data/*"
+exit status: 0 :: null
+2019-11-01 21:48:18.475 main Extensions to look for on node 3.15.219.251: 
+2019-11-01 21:48:18.475 main reading command
+2019-11-01 21:48:18.476 main ./remoteExperiment/settings.txt
+./remoteExperiment/publicAddresses.txt
+./remoteExperiment/settingsUsed.txt
+./remoteExperiment/PlatformTesting2.csv
+./remoteExperiment/output.log
+./remoteExperiment/privateAddresses.txt
+./remoteExperiment/config.txt
+./remoteExperiment/log4j2-regression.xml
+./remoteExperiment/swirlds.log
+
+2019-11-01 21:48:18.476 main lines in output 9
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/settings.txt to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/publicAddresses.txt to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/settingsUsed.txt to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/PlatformTesting2.csv to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/output.log to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/privateAddresses.txt to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/config.txt to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/log4j2-regression.xml to returnArray
+2019-11-01 21:48:18.477 main Added ./remoteExperiment/swirlds.log to returnArray
+2019-11-01 21:48:18.478 main total files found:9
+2019-11-01 21:48:18.478 main CutOff of '18' computed for the line './remoteExperiment/settings.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:18.479 main downloading ./remoteExperiment/settings.txt from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/settings.txt
+2019-11-01 21:48:19.050 main CutOff of '18' computed for the line './remoteExperiment/publicAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:19.050 main downloading ./remoteExperiment/publicAddresses.txt from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/publicAddresses.txt
+2019-11-01 21:48:19.627 main CutOff of '18' computed for the line './remoteExperiment/settingsUsed.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:19.627 main downloading ./remoteExperiment/settingsUsed.txt from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/settingsUsed.txt
+2019-11-01 21:48:20.205 main CutOff of '18' computed for the line './remoteExperiment/PlatformTesting2.csv' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:20.205 main downloading ./remoteExperiment/PlatformTesting2.csv from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/PlatformTesting2.csv
+2019-11-01 21:48:21.260 main CutOff of '18' computed for the line './remoteExperiment/output.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:21.261 main downloading ./remoteExperiment/output.log from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/output.log
+2019-11-01 21:48:21.833 main CutOff of '18' computed for the line './remoteExperiment/privateAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:21.833 main downloading ./remoteExperiment/privateAddresses.txt from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/privateAddresses.txt
+2019-11-01 21:48:22.405 main CutOff of '18' computed for the line './remoteExperiment/config.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:22.405 main downloading ./remoteExperiment/config.txt from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/config.txt
+2019-11-01 21:48:22.978 main CutOff of '18' computed for the line './remoteExperiment/log4j2-regression.xml' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:22.979 main downloading ./remoteExperiment/log4j2-regression.xml from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/log4j2-regression.xml
+2019-11-01 21:48:23.556 main CutOff of '18' computed for the line './remoteExperiment/swirlds.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:23.556 main downloading ./remoteExperiment/swirlds.log from node 3.15.219.251 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0002/swirlds.log
+2019-11-01 21:48:24.217 main top level folder: results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/
+2019-11-01 21:48:24.395 main 'Find list of Files based on extension' command:
+find . \( -name "*.csv" -o -name "*.log" -o -name "*.xml" -o -name "*.txt" -o -name "*.json" -o -name "swirlds.log" \) -not -path "*/data/*"
+exit status: 0 :: null
+2019-11-01 21:48:24.395 main Extensions to look for on node 18.191.198.13: 
+2019-11-01 21:48:24.395 main reading command
+2019-11-01 21:48:24.395 main ./remoteExperiment/settings.txt
+./remoteExperiment/PlatformTesting3.csv
+./remoteExperiment/publicAddresses.txt
+./remoteExperiment/settingsUsed.txt
+./remoteExperiment/output.log
+./remoteExperiment/privateAddresses.txt
+./remoteExperiment/config.txt
+./remoteExperiment/log4j2-regression.xml
+./remoteExperiment/swirlds.log
+
+2019-11-01 21:48:24.396 main lines in output 9
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/settings.txt to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/PlatformTesting3.csv to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/publicAddresses.txt to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/settingsUsed.txt to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/output.log to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/privateAddresses.txt to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/config.txt to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/log4j2-regression.xml to returnArray
+2019-11-01 21:48:24.396 main Added ./remoteExperiment/swirlds.log to returnArray
+2019-11-01 21:48:24.396 main total files found:9
+2019-11-01 21:48:24.397 main CutOff of '18' computed for the line './remoteExperiment/settings.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:24.397 main downloading ./remoteExperiment/settings.txt from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/settings.txt
+2019-11-01 21:48:24.961 main CutOff of '18' computed for the line './remoteExperiment/PlatformTesting3.csv' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:24.962 main downloading ./remoteExperiment/PlatformTesting3.csv from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/PlatformTesting3.csv
+2019-11-01 21:48:25.835 main CutOff of '18' computed for the line './remoteExperiment/publicAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:25.835 main downloading ./remoteExperiment/publicAddresses.txt from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/publicAddresses.txt
+2019-11-01 21:48:26.399 main CutOff of '18' computed for the line './remoteExperiment/settingsUsed.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:26.400 main downloading ./remoteExperiment/settingsUsed.txt from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/settingsUsed.txt
+2019-11-01 21:48:26.966 main CutOff of '18' computed for the line './remoteExperiment/output.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:26.966 main downloading ./remoteExperiment/output.log from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/output.log
+2019-11-01 21:48:27.539 main CutOff of '18' computed for the line './remoteExperiment/privateAddresses.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:27.539 main downloading ./remoteExperiment/privateAddresses.txt from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/privateAddresses.txt
+2019-11-01 21:48:28.103 main CutOff of '18' computed for the line './remoteExperiment/config.txt' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:28.103 main downloading ./remoteExperiment/config.txt from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/config.txt
+2019-11-01 21:48:28.667 main CutOff of '18' computed for the line './remoteExperiment/log4j2-regression.xml' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:28.667 main downloading ./remoteExperiment/log4j2-regression.xml from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/log4j2-regression.xml
+2019-11-01 21:48:29.232 main CutOff of '18' computed for the line './remoteExperiment/swirlds.log' with cutOffString of 'remoteExperiment/'.
+2019-11-01 21:48:29.232 main downloading ./remoteExperiment/swirlds.log from node 18.191.198.13 putting it in results/20191102-0339-Praveen-leemon-throttle/FCM1KThrottling/node0003/swirlds.log
+2019-11-01 21:48:29.834 main Downloaded experiment data
+2019-11-01 21:48:32.569 main *Run:* Praveen-leemon-throttle
+*Test:* FCM1KThrottling
+*Configured Test Duration:* 7200
+*ResultsFolder:* 20191102-0339-FCM1KThrottling
+*Git:* commit e86de77a802b5899d8d09a95beedc1c255eef0ac (HEAD -> leemon-throttle-new, origin/leemon-throttle-new) - Fri Nov 1 19:48:52 2019 -0700
+```
+---- StatsValidator SUCCEEDED validation ----
+<<INFO>>
+Test took 66 minutes 20 seconds
+Average number of transactions handled per second is: 96.410
+Max creation to consensus is: 237.737 seconds
+Lowest Free Memory: 80.000MB
+Maximum Total Memory Used: 30942.000MB
+Maximum Diskspace Used: 11251.914MB
+Found 4 throttle values
+Specified throttle value 400.000 vs achieved 39.663
+Specified throttle value 100.000 vs achieved 16.083
+Specified throttle value 300.000 vs achieved 17.491
+Specified throttle value 150.000 vs achieved 24.405
+<<WARNING>>
+C2C variation is too high! [Node:0 min:0.338 max:53.670 var:158.787] [Node:1 min:0.333 max:50.242 var:150.877] [Node:2 min:0.342 max:45.356 var:132.620] [Node:3 min:0.345 max:237.737 var:689.093]
+Consensus queue size is too high! [Node:0 maxSize:500.000] [Node:1 maxSize:500.000] [Node:2 maxSize:500.000] [Node:3 maxSize:500.000]
+Transactions/sec did not match throttle setting: 39.663 achieved vs expect value of 400.000
+Transactions/sec did not match throttle setting: 16.083 achieved vs expect value of 100.000
+Transactions/sec did not match throttle setting: 17.491 achieved vs expect value of 300.000
+Transactions/sec did not match throttle setting: 24.405 achieved vs expect value of 150.000
+```
+```
+---- PtdValidator FAILED validation ----
+<<INFO>>
+Node0 Finished
+Node1 Finished
+Node2 Finished
+Node3 Finished
+Test took 25 minutes 42 seconds
+<<ERROR>>
+Node 0 had 1 exceptions.
+Node 1 had 1 exceptions.
+Node 2 had 1 exceptions.
+Node 3 had 1 exceptions.
+Test had 4 exceptions!
+```
+
+2019-11-01 21:48:32.570 main Test validation finished
+2019-11-01 21:48:33.052 main Token == t=EwDYAk6hBwAUoI9qUOm+nWxx1GEBzUSgrucLnssAAWfW/YhXLEIFTNt4xG1KE2PHPIw17rDGIiclyGCp0OSbXZU8A8JeZaksFnPQV657kaJdVOqZiKIp5wlB5bMEDDEUxjCf00WglkCS4NpneHzTbRdpLKkuy/QKs6STcpQYbagXhEylSNACvjOTzPmXCXiIt6E2A3dr/S5iNmL9v7MKxx5UWJLWzi8kcvP9dAeAsNfVdbHQewyrKDKY7W2F2hiAgrjN5HTCKrFqow34ntFT23om/ipeEt6SHsUOk8hNr30rqmo0Nwog3b3EsxVYN06pvOLuGx4vnoko8+23oBKW4lFbCzlX8/YiT7tw72A7iNg6to/2biHm4OtVbIACXqADZgAACJL69Y/QXzFBqAFs0xY1Am9lmXXGwSxI/+7ciIklCWrzm/hLsBy3A9bxhACvpi/lK0z+oW3Sq23IiEto63nrgknBgaDJVwdwKWds5Tnldzu2n/Mr++fx38VRqKiiV79Jh0eRzw5DwxwoA9ReHFKBMYk+UB7Gdz9Xo2fKHimTUD4UQdlppDtFW50r5fl9npdJ3p10VTer989Pa/e6KGSE4FMeRoSCKobRv49r3JQ3kFdWSz7te7FzG/NdRbOoZJ0OlHHfcmMqDlu2dVGGosTaAHRjUn/+12voxxmgOWowMbcOShs8IBtTXU6sB50/UxrZju+WpV3Q1u8QeaxvBuEC3TCw73CI33EDq0t2KLUOUAh4e1Jd0cRLc20+YRqhPhtsaEQ/ga7Sp7wsZeWIcYm15J4jJK9UjTVf1BW6v2Hoxi3res0i01x9N6SAuwHeTKSsusQ1WJM+BwzsLNE8HjrFOUAAuf5j0h4sJ55GGJSxnwWiHhx8vw065Zpw/o+wD0n7a4W3QWx/9BVQmr1GuB6gzlJh3ZtERrT1i/zUb9IKTvawRIp/2JRy57Lwa8BcI/FmeC+jDAI=&p=
+2019-11-01 21:48:33.052 main Token = t=EwDYAk6hBwAUoI9qUOm+nWxx1GEBzUSgrucLnssAAWfW/YhXLEIFTNt4xG1KE2PHPIw17rDGIiclyGCp0OSbXZU8A8JeZaksFnPQV657kaJdVOqZiKIp5wlB5bMEDDEUxjCf00WglkCS4NpneHzTbRdpLKkuy/QKs6STcpQYbagXhEylSNACvjOTzPmXCXiIt6E2A3dr/S5iNmL9v7MKxx5UWJLWzi8kcvP9dAeAsNfVdbHQewyrKDKY7W2F2hiAgrjN5HTCKrFqow34ntFT23om/ipeEt6SHsUOk8hNr30rqmo0Nwog3b3EsxVYN06pvOLuGx4vnoko8+23oBKW4lFbCzlX8/YiT7tw72A7iNg6to/2biHm4OtVbIACXqADZgAACJL69Y/QXzFBqAFs0xY1Am9lmXXGwSxI/+7ciIklCWrzm/hLsBy3A9bxhACvpi/lK0z+oW3Sq23IiEto63nrgknBgaDJVwdwKWds5Tnldzu2n/Mr++fx38VRqKiiV79Jh0eRzw5DwxwoA9ReHFKBMYk+UB7Gdz9Xo2fKHimTUD4UQdlppDtFW50r5fl9npdJ3p10VTer989Pa/e6KGSE4FMeRoSCKobRv49r3JQ3kFdWSz7te7FzG/NdRbOoZJ0OlHHfcmMqDlu2dVGGosTaAHRjUn/+12voxxmgOWowMbcOShs8IBtTXU6sB50/UxrZju+WpV3Q1u8QeaxvBuEC3TCw73CI33EDq0t2KLUOUAh4e1Jd0cRLc20+YRqhPhtsaEQ/ga7Sp7wsZeWIcYm15J4jJK9UjTVf1BW6v2Hoxi3res0i01x9N6SAuwHeTKSsusQ1WJM+BwzsLNE8HjrFOUAAuf5j0h4sJ55GGJSxnwWiHhx8vw065Zpw/o+wD0n7a4W3QWx/9BVQmr1GuB6gzlJh3ZtERrT1i/zUb9IKTvawRIp/2JRy57Lwa8BcI/FmeC+jDAI=&p=
+2019-11-01 21:48:33.913 main raw Json: {"d":{"GetContextWebInformation":{"__metadata":{"type":"SP.ContextWebInformation"},"FormDigestTimeoutSeconds":1800,"FormDigestValue":"0x94EB60122296CEEC50E65240B5D9A60EEF8D136FC91375F542DB445590314F97EBC86E7D1DBD11E2CF3D9208C8016982EE0C723D5CA5ECC2157713333DD33BBC,02 Nov 2019 04:48:33 -0000","LibraryVersion":"16.0.19423.12018","SiteFullUrl":"https://hederatest.sharepoint.com/sites/Engineering","SupportedSchemaVersions":{"__metadata":{"type":"Collection(Edm.String)"},"results":["14.0.0.0","15.0.0.0"]},"WebFullUrl":"https://hederatest.sharepoint.com/sites/Engineering"}}} end
+2019-11-01 21:48:33.922 main digetValue: 0x94EB60122296CEEC50E65240B5D9A60EEF8D136FC91375F542DB445590314F97EBC86E7D1DBD11E2CF3D9208C8016982EE0C723D5CA5ECC2157713333DD33BBC,02 Nov 2019 04:48:33 -0000
+2019-11-01 21:48:33.925 main Could not copy regression log
+java.nio.file.NoSuchFileException: gitLog.log
+	at sun.nio.fs.UnixException.translateToIOException(UnixException.java:92) ~[?:?]
+	at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111) ~[?:?]
+	at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:116) ~[?:?]
+	at sun.nio.fs.UnixCopyFile.copy(UnixCopyFile.java:548) ~[?:?]
+	at sun.nio.fs.UnixFileSystemProvider.copy(UnixFileSystemProvider.java:258) ~[?:?]
+	at java.nio.file.Files.copy(Files.java:1297) ~[?:?]
+	at com.swirlds.regression.Experiment.copyLogFileToResultsFolder(Experiment.java:666) [regression.jar:?]
+	at com.swirlds.regression.Experiment.uploadFilesToSharepoint(Experiment.java:614) [regression.jar:?]
+	at com.swirlds.regression.Experiment.runRemoteExperiment(Experiment.java:585) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.runExperiments(RegressionMain.java:191) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunCloudExperiment(RegressionMain.java:107) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.RunRegression(RegressionMain.java:83) [regression.jar:?]
+	at com.swirlds.regression.RegressionMain.main(RegressionMain.java:338) [regression.jar:?]
