@@ -49,7 +49,7 @@ public class ReconnectValidator extends NodeValidator {
 	double savedStateStartRoundNumber = 0;
 
 	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not greater than this value
-	double lastRoundSupDiffLimit = 5;
+	double lastRoundSupDiffLimit = 8;
 
 	boolean isValidated = false;
 	boolean isValid = true;
@@ -165,11 +165,6 @@ public class ReconnectValidator extends NodeValidator {
 			}
 		}
 
-		if (maxLastRoundSup - minLastRoundSup > lastRoundSupDiffLimit) {
-			isValid = false;
-			addError(String.format("Difference of last roundSup among all nodes exceeds lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; Difference: %.0f.", lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, maxLastRoundSup - minLastRoundSup));
-		}
-
 		LogReader nodeLog = nodeData.get(nodeNum - 1).getLogReader();
 		CsvReader nodeCsv = nodeData.get(nodeNum - 1).getCsvReader();
 		boolean nodeReconnected = false;
@@ -210,6 +205,11 @@ public class ReconnectValidator extends NodeValidator {
 			if (roundSup < savedStateStartRoundNumber) {
 				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber %d", nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
+			}
+
+			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit) {
+				isValid = false;
+				addError(String.format("Difference of last roundSup between reconnected Node %d with other nodes exceeds lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; reconnected node's last roundSup: %.0f.", nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
 
