@@ -25,5 +25,7 @@ public enum ValidatorType {
 	FCM_CSV,
 	FCFS_CSV,
 	PLATFORM_TESTING_DEMO,
-	STATS
+	STATS,
+	THROTTLE,
+	PTA_THROTTLE
 }

@@ -27,6 +27,7 @@ import com.hubspot.slack.client.models.response.SlackError;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 import com.swirlds.regression.AWSServerCheck;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class SlackServerCheckMsg {
@@ -67,18 +68,21 @@ public class SlackServerCheckMsg {
 
 		for (StringBuilder attachText : regionInstanceInformation) {
 			Attachment.Builder attach = Attachment.builder();
-			attach.setText(attachText.toString());
+
 			int indexofRegionTotal = attachText.indexOf("$") + 1;
 			int endIndexOfRegionTotal = attachText.indexOf("*\n", indexofRegionTotal);
-			float regionTotal = Float.parseFloat(attachText.substring(indexofRegionTotal, endIndexOfRegionTotal));
+			double regionTotal = Double.parseDouble(attachText.substring(indexofRegionTotal, endIndexOfRegionTotal).replace(",",""));
 			// if [there is an exception] OR [test not valid] OR [test has errors]
 			if (regionTotal <= AWSServerCheck.SAFE_SPENDING_AMOUNT) {
 				attach.setColor("#00FF00");
 			} else if (regionTotal > AWSServerCheck.DANGEROUS_SPENDING_AMOUNT) {
+				attachText.insert(0, "<!channel> ");
 				attach.setColor("#FF0000");
 			} else {
+				attachText.insert(0, "<!here> ");
 				attach.setColor("#FFFF00");
 			}
+			attach.setText(attachText.toString());
 			msg.addAttachments(attach.build());
 		}
 		return msg.build();

@@ -44,6 +44,8 @@ public class TestConfig implements FileRequirement {
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
 
+	private boolean downloadDbLogFiles = false;
+
 	private ReconnectConfig reconnectConfig = null;
 	private RestartConfig restartConfig = null;
 	private FreezeConfig freezeConfig = null;
@@ -116,6 +118,14 @@ public class TestConfig implements FileRequirement {
 		for (String item : validatorStrings) {
 			validators.add(ValidatorType.valueOf(item));
 		}
+	}
+
+	public boolean getDownloadDbLogFiles() {
+		return downloadDbLogFiles;
+	}
+
+	public void setDownloadDbLogFiles(boolean downloadDbLogFiles) {
+		this.downloadDbLogFiles = downloadDbLogFiles;
 	}
 
 	public String getLog4j2File() {
