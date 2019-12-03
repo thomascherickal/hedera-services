@@ -17,8 +17,17 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.csv.CsvStat;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.junit.jupiter.api.TestTemplate;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,6 +77,8 @@ public abstract class NodeValidator extends Validator {
 		}
 		return sum / nodeData.size();
 	}
+
+
 
 	public void checkC2CVariation() {
 		checkAllNodes((nodeData, nodeId) -> {

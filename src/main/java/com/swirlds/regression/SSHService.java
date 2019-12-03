@@ -837,7 +837,7 @@ public class SSHService {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Find how many signed state subdirectories have been created
 	 */
@@ -888,5 +888,17 @@ public class SSHService {
 			return false;
 		}
 	}
+	
+	void badgerize() {
+		// call the badgerize.sh script that prepares database logs for download
 
+		String command = String.format("cd /home/ubuntu/; chmod -R 777 %s; sudo ./%sbadgerize.sh -u postgres;",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+
+		String description = "Badgerizing and taring database logs";
+
+		Session.Command cmd = execCommand(command, description);
+		throwIfExitCodeBad(cmd, description);
+	}
 }

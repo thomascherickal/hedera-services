@@ -481,7 +481,7 @@ public class Experiment {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData));
+			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
 		}
 
 		// Add stream server validator if event streaming is configured
@@ -668,6 +668,15 @@ public class Experiment {
 
 		//TODO maybe move the kill to the TestRun
 		stopAllSwirlds();
+
+		// call badgerize.sh that tars all the database logs
+
+		if (testConfig.getDownloadDbLogFiles()) {
+			for (int i = 0; i < nodeNumber; i++) {
+				SSHService currentNode = sshNodes.get(i);
+				currentNode.badgerize();
+			}
+		}
 
 		/* make sure that more streaming client than nodes were not requested */
 		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
