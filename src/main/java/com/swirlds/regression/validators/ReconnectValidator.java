@@ -198,6 +198,7 @@ public class ReconnectValidator extends NodeValidator {
 		}
 
 		if (!nodeReconnected) {
+			addError(String.format("Node didn't reconnect"));
 			isValid = false;
 		} else {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
