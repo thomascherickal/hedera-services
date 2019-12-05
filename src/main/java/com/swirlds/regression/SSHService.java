@@ -623,8 +623,14 @@ public class SSHService {
 	/**
 	 * Return number of specified message found in log
 	 * Or return -1 if error happened
+	 *
+	 * @param msg
+	 * 		The string message to search for
+	 * @param fileName
+	 * 		File name to search for the message
 	 */
-	int countSpecifiedMsg(String msg) {
+	int countSpecifiedMsg(String msg, String fileName) {
+		String searchCmd =  "egrep " + " \"" + msg + "\" " + fileName;
 		final Session.Command cmd = execCommand(msg,
 				"Check specified msg", -1);
 		ArrayList<String> output = readCommandOutput(cmd);
@@ -784,10 +790,17 @@ public class SSHService {
 		return dirList;
 	}
 
-
 	/**
 	 * Parse saved signed state path and return its main class name, nodeId, swirds name in a SavedStatePathInfo
-	 * instance,
+	 * instance
+	 *
+	 * @param path
+	 * 		A file system path of an saved signed state. It contains the main class name of swirlds App,
+	 * 		node ID, swirlds name and round number of the signed state
+	 *
+	 * 		An example is : com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/33
+	 *
+	 * @return An SavedStatePathInfo instance contains the parsed results
 	 */
 	private SavedStatePathInfo parseSavedStatPath(String path) {
 		String pathWithoutBase = path.replace(REMOTE_STATE_LOCATION, "");

@@ -70,6 +70,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE;
+import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
@@ -83,6 +84,7 @@ import static com.swirlds.regression.RegressionUtilities.REG_GIT_BRANCH;
 import static com.swirlds.regression.RegressionUtilities.REG_GIT_USER_EMAIL;
 import static com.swirlds.regression.RegressionUtilities.REG_SLACK_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
@@ -210,11 +212,11 @@ public class Experiment {
 			}
 			/* testDuration is already in milliseconds */
 			/* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
-			long endTime = System.nanoTime() + (testDuration * 1_000_000);
-			log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / 1_000);
+			long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+			log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / MILLIS);
 			while (System.nanoTime() < endTime) { // Don't go over set test time
 				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
+					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
 					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
 				} catch (InterruptedException e) {
 					log.error(ERROR, "could not sleep.", e);
@@ -241,7 +243,7 @@ public class Experiment {
 		} else {
 			try {
 				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
-				log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
+				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
 				Thread.sleep(testDuration);
 			} catch (InterruptedException e) {
 				log.error(ERROR, "could not sleep.", e);
@@ -253,7 +255,7 @@ public class Experiment {
 	 * Sleep until reached the testDuration, or one of checker callback return true
 	 *
 	 * @param testDuration
-	 * 		Default test duration to run if none of checker return true
+	 * 		Default test duration, in the unit of milliseconds, to run if none of checker return true
 	 * @param checkerList
 	 * 		A list of callback functions to check whether the conditions of exiting sleep mode have been met
 	 */
@@ -261,12 +263,12 @@ public class Experiment {
 			List<BooleanSupplier> checkerList) {
 		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
 
-			long endTime = System.nanoTime() + (testDuration * 1_000_000);
-			log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / 1_000);
+			long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+			log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / MILLIS);
 
 			while (System.nanoTime() < endTime) { // Don't go over set test time
 				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
+					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
 					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
 				} catch (InterruptedException e) {
 					log.error(ERROR, "could not sleep.", e);
@@ -285,7 +287,7 @@ public class Experiment {
 		} else {
 			try {
 				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
-				log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
+				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
 				Thread.sleep(testDuration);
 			} catch (InterruptedException e) {
 				log.error(ERROR, "could not sleep.", e);
@@ -295,12 +297,20 @@ public class Experiment {
 
 	/**
 	 * Whether all node find defined number of message in log file
+	 *
+	 * @param msg
+	 * 		The string message to search for
+	 * @param messageAmount
+	 * 		How many times the message expected to appear
+	 * @param fileName
+	 * 		File name to search for the message
+	 * @return return true if the time that the message appeared is equal or larger than messageAmount
 	 */
-	public boolean isAllNodesFoundEnoughMessage(String msg, int messageAmount) {
+	public boolean isAllNodesFoundEnoughMessage(String msg, int messageAmount, String fileName) {
 		boolean isEnoughMsgFound = false;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(msg) == messageAmount) {
+			if (node.countSpecifiedMsg(msg, fileName) == messageAmount) {
 				log.info(MARKER, "Node {} found enough message {}", i, msg);
 				isEnoughMsgFound = true;
 			} else {
@@ -311,7 +321,7 @@ public class Experiment {
 	}
 
 	public boolean isFoundTwoPTDFinishMessage() {
-		return isAllNodesFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2);
+		return isAllNodesFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2, REMOTE_SWIRLDS_LOG);
 	}
 
 	public boolean isProcessFinished() {
@@ -331,8 +341,6 @@ public class Experiment {
 			if (!isProcStillRunning && isProcDown.get(i)) {
 				return true;
 			} else {
-						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
-						after the first reconnect/restart */
 				isProcDown.set(i, !isProcStillRunning);
 			}
 			isTestFinished.set(i, node.isTestFinished());
@@ -963,7 +971,7 @@ public class Experiment {
 	}
 
 	/**
-	 * Random delete last few saved signed states from disk
+	 * Delete last few saved signed states from disk
 	 *
 	 * @param deleteNumber
 	 * 		number of signed state to be deleted

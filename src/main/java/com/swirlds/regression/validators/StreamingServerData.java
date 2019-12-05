@@ -44,6 +44,16 @@ public class StreamingServerData {
 		this(null, sha1sumStream, sha1EventStream);
 	}
 
+	/**
+	 *
+	 * @param evtsSigStream
+	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sha1sumStream
+	 * 		The input stream contains the hash value of the list of hash values of event stream files
+	 * @param sha1EventStream
+	 * 		The input stream contains the list of hash values of event stream files
+	 * 	stream files a with previous generated event stream files
+	 */
 	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
 			final InputStream sha1EventStream) {
 		evtsSigEvents = readEventsFile(evtsSigStream);
@@ -51,6 +61,18 @@ public class StreamingServerData {
 		getSha1Events(sha1EventStream);
 	}
 
+	/**
+	 *
+	 * @param evtsSigStream
+	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sha1sumStream
+	 * 		The input stream contains the hash value of the list of hash values of event stream files
+	 * @param sha1EventStream
+	 * 		The input stream contains the list of hash values of event stream files
+	 * @param recoverEventMatchLog
+	 * 		The input stream contains the comparison result of comparing hashes of recovered event
+	 * 	stream files a with previous generated event stream files
+	 */
 	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
 			final InputStream sha1EventStream, InputStream recoverEventMatchLog) {
 		evtsSigEvents = readEventsFile(evtsSigStream);
