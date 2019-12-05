@@ -193,11 +193,20 @@ public class Experiment {
 
 	public void stopLastSwirlds() {
 		SSHService nodeToKill = sshNodes.get(sshNodes.size() - 1);
-		nodeToKill.killJavaProcess();
+		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
+			nodeToKill.killNetwork();
+		} else {
+			nodeToKill.killJavaProcess();
+		}
 	}
 
 	public void startLastSwirlds() {
-		sshNodes.get(sshNodes.size() - 1).execWithProcessID(regConfig.getJvmOptions());
+		SSHService nodeToReconnect = sshNodes.get(sshNodes.size() - 1);
+		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
+			nodeToReconnect.reviveNetwork();
+		} else {
+			nodeToReconnect.execWithProcessID(regConfig.getJvmOptions());
+		}
 	}
 
 	public void sleepThroughExperiment(long testDuration) {
