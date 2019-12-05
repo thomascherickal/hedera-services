@@ -621,17 +621,19 @@ public class SSHService {
 	}
 
 	/**
-	 * Return number of specified message found in log
+	 * Search a lists of messages in the log file and
+	 * return the total number of occurrences of all messages
 	 * Or return -1 if error happened
 	 *
-	 * @param msg
-	 * 		The string message to search for
+	 * @param msgList
+	 * 		A list of message to search for
 	 * @param fileName
 	 * 		File name to search for the message
 	 */
-	int countSpecifiedMsg(String msg, String fileName) {
-		String searchCmd =  "egrep " + " \"" + msg + "\" " + fileName;
-		final Session.Command cmd = execCommand(msg,
+	int countSpecifiedMsg(List<String> msgList, String fileName) {
+		String joined = String.join("|", msgList);
+		String searchCmd =  "egrep " + " \"" + joined + "\" " + fileName;
+		final Session.Command cmd = execCommand(searchCmd,
 				"Check specified msg", -1);
 		ArrayList<String> output = readCommandOutput(cmd);
 		for (String out : output) {
@@ -901,7 +903,7 @@ public class SSHService {
 			return false;
 		}
 	}
-	
+
 	void badgerize() {
 		// call the badgerize.sh script that prepares database logs for download
 

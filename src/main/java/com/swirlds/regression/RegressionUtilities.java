@@ -81,6 +81,8 @@ public class RegressionUtilities {
 	public static final int MILLIS = 1000;
 	public static final int MS_TO_NS = 1000_000;
 
+	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
+			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension crypto;" +

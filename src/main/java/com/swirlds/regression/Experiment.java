@@ -60,6 +60,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -79,6 +80,7 @@ import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVA
 import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_DEFAULT;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
+import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
 import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.REG_GIT_BRANCH;
 import static com.swirlds.regression.RegressionUtilities.REG_GIT_USER_EMAIL;
@@ -278,7 +280,7 @@ public class Experiment {
 					for (BooleanSupplier checker : checkerList) {
 						if (checker != null) {
 							if (checker.getAsBoolean()) {
-								break;
+								return; //exit both for and while loop
 							}
 						}
 					}
@@ -286,7 +288,6 @@ public class Experiment {
 			}
 		} else {
 			try {
-				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
 				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
 				Thread.sleep(testDuration);
 			} catch (InterruptedException e) {
@@ -296,22 +297,22 @@ public class Experiment {
 	}
 
 	/**
-	 * Whether all node find defined number of message in log file
+	 * Whether all node find defined number of messages in log file
 	 *
-	 * @param msg
-	 * 		The string message to search for
+	 * @param msgList
+	 * 		A list of message to search for
 	 * @param messageAmount
 	 * 		How many times the message expected to appear
 	 * @param fileName
 	 * 		File name to search for the message
 	 * @return return true if the time that the message appeared is equal or larger than messageAmount
 	 */
-	public boolean isAllNodesFoundEnoughMessage(String msg, int messageAmount, String fileName) {
+	public boolean isAllNodesFoundEnoughMessage(List<String> msgList, int messageAmount, String fileName) {
 		boolean isEnoughMsgFound = false;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(msg, fileName) == messageAmount) {
-				log.info(MARKER, "Node {} found enough message {}", i, msg);
+			if (node.countSpecifiedMsg(msgList, fileName) == messageAmount) {
+				log.info(MARKER, "Node {} found enough message {}", i, msgList);
 				isEnoughMsgFound = true;
 			} else {
 				isEnoughMsgFound = false;
@@ -321,7 +322,7 @@ public class Experiment {
 	}
 
 	public boolean isFoundTwoPTDFinishMessage() {
-		return isAllNodesFoundEnoughMessage(CHECK_FOR_PTD_TEST_MESSAGE, 2, REMOTE_SWIRLDS_LOG);
+		return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
 	}
 
 	public boolean isProcessFinished() {

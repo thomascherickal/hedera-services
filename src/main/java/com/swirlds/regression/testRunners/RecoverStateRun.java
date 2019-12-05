@@ -98,6 +98,7 @@ public class RecoverStateRun implements TestRun {
 		// start all processes
 		experiment.startAllSwirlds();
 
+		checkerList.clear();
 		checkerList.add(experiment::isFoundTwoPTDFinishMessage);
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
