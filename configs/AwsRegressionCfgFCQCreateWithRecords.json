@@ -1,5 +1,5 @@
 {
-  "name":"FCQ_Experiment",
+  "name":"FCQ_Experiment_GenerateWithRecords",
   "result": {
 	"uri":"results"
   },
@@ -9,7 +9,7 @@
 	"securityGroupID":"sg-7214c20b",
 	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M416xlarge",
-	"instanceKey": "regression-key-neeha",
+	"instanceKey": "qianqiu@swirlds.com",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[

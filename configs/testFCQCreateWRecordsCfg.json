@@ -1,5 +1,5 @@
 {
-  "name":"FC-Queue-Experiment",
+  "name":"FCQ_Experiment_GenerateWithRecords",
   "description" : "platform testing demo - FCQ Experiment",
   "duration": 6600,
   "settings": [

@@ -1,5 +1,5 @@
 {
-  "name":"FCQ_Experiment_startFromState10KRecords",
+  "name":"FCM3M-GenerateState",
   "result": {
 	"uri":"results"
   },
@@ -7,9 +7,9 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
-	"instanceType": "M416xlarge",
-	"instanceKey": "ATF-Key",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceType": "M410xlarge",
+	"instanceKey": "qianqiu@swirlds.com",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
@@ -20,7 +20,7 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testExperimentFCQCfg.json"
+	"configs/testFcmZGCCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -36,6 +36,5 @@
 	"notifyChannel": false,
 	"notifyUserIds": [ "UC8SDDC20", "UL19K9CTB", "UE4P47SMT"]
   },
-  "jvmOptions": "-Xmx100g -Xms16g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14",
   "uploadToSharePoint": false
 }
