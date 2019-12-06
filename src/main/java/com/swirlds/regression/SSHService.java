@@ -765,6 +765,23 @@ public class SSHService {
 		}
 	}
 
+	/**
+	 * Read a list of directories of signed state from file system, parse them to a list of SavedStatePathInfo
+	 * instances
+	 *
+	 * Example of returned string value from ls command
+	 *
+	 * [remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/185,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/30,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/351,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/515,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/674]
+	 *
+	 *
+	 * @return
+	 * 		A list of SavedStatePathInfo instances
+	 */
 	public List<SavedStatePathInfo> getSavedStatesDirectories() {
 		List<SavedStatePathInfo> dirList = new ArrayList<>();
 		String listCmd =
