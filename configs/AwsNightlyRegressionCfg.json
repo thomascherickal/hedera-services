@@ -42,7 +42,14 @@
 	"configs/testFcm1KFCLLCfg.json",
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcm10MBx10KBlobCfg.json",
-	"configs/testFcm4kx100KBlobCfg.json"
+	"configs/testFcm4kx100KBlobCfg.json",
+	"configs/testFcm3MSavedStateCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
+	"configs/testExperimentFCQCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectFCQMultiReconnectCfg.json",
+	"configs/testReconnectFCQCfg.json"
   ],
   "db": {
 	"type": "postgresql",

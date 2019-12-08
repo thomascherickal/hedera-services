@@ -1,5 +1,5 @@
 {
-  "name":"FCQ_1K_Neeha",
+  "name":"FCM_FCLL_GetForModify",
   "result": {
 	"uri":"results"
   },
@@ -7,7 +7,7 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M410xlarge",
 	"instanceKey": "ATF-Key",
 	"keyLocation":"./keys/my-key",
@@ -20,7 +20,7 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testFCM1KFCQCfg.json"
+	"configs/testFCMFCLLGetForModifyCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -34,7 +34,7 @@
 	"channel": "regression-test",
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
-	"notifyUserIds": [ "UC8SDDC20", "UL19K9CTB"]
+	"notifyUserIds": [ "UC8SDDC20", "UL19K9CTB", "UE4P47SMT"]
   },
   "uploadToSharePoint": true
 }
