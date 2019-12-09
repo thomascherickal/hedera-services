@@ -72,7 +72,6 @@ public class RegressionUtilities {
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL| " +
-			"TEST PAUSE |" +
 			"TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
