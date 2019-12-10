@@ -30,6 +30,7 @@
 	  }
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
   },
