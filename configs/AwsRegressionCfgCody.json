@@ -1,0 +1,42 @@
+{
+  "name": "cody-test",
+  "result": {
+	"uri": "results"
+  },
+  "cloud": {
+	"service": "aws",
+	"securityGroup": "SwirldsSecGroup",
+	"securityGroupID": "sg-f98b7086",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11-R2",
+	"instanceType": "M44xlarge",
+	"instanceKey": "cody-littley",
+	"keyLocation": "keys/cody-littley",
+	"login": "ubuntu",
+	"regionList": [
+	  {
+		"region": "us-west-2",
+		"numberOfNodes": 4
+	  }
+	]
+  },
+  "log": {
+	"uri": "testing/logs/"
+  },
+  "experiments": [
+	"configs/testSigningDemoCfg.json",
+	"configs/testFcm1KCfg.json",
+	"configs/testFcmBlob1KCfg.json",
+	"configs/testRestartCfg.json.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack": {
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"channel": "UPTMVMGAK"
+  }
+}
