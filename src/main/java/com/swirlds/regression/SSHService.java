@@ -492,6 +492,18 @@ public class SSHService {
 		log.info(MARKER, "**java kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
 	}
 
+	void killNetwork() {
+		final Session.Command cmd = execCommand(RegressionUtilities.KILL_NET_COMMAND,
+				"command to kill the network", -1);
+		log.info(MARKER, "**network kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+	}
+
+	void reviveNetwork() {
+		final Session.Command cmd = execCommand(RegressionUtilities.REVIVE_NET_COMMAND,
+				"command to revive the network", -1);
+		log.info(MARKER, "**network revive exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+	}
+
 	SSHClient buildSession() {
 		SSHClient client = new SSHClient();
 		int count = 0;
@@ -652,7 +664,7 @@ public class SSHService {
 			log.info(MARKER, "Drop fcfs extension produced this error: {}", dropExtensionErrorReturn);
 		}
 
-		Session.Command dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST,
+		Session.Command dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
 				"Dropping fcfs table");
 		String dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
 		String dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
@@ -660,7 +672,7 @@ public class SSHService {
 		/* database can still be tired up by a lingering java process, kill the javaprocess and retry dropping the db */
 		if (DROP_DATABASE_FCFS_KNOWN_RESPONCE.equals(dropDBErrorReturn)) {
 			killJavaProcess();
-			dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST,
+			dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
 					"Dropping fcfs table");
 			dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
 			dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
@@ -696,6 +708,27 @@ public class SSHService {
 		);
 		throwIfExitCodeBad(cmd, description);
 	}
+
+	public void listDirFiles(String destination) {
+		String command = String.format(
+				"ls -al %s",
+				destination
+		);
+		String description = String.format(
+				"list files in %s: %s",
+				ipAddress, destination
+		);
+		Session.Command cmd = execCommand(
+				command,
+				description
+		);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String outputStr : output) {
+			log.info(MARKER, outputStr);
+		}
+		throwIfExitCodeBad(cmd, description);
+	}
+
 
 	void restoreDb(String tarGzPath) {
 		if (tarGzPath == null) {

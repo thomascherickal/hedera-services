@@ -27,6 +27,7 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
 import com.swirlds.regression.validators.Validator;
@@ -120,6 +121,10 @@ public class Experiment {
 	private CloudService cloud = null;
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
 
+	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
+	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
+	private double savedStateStartRoundNumber = 0;
+
 	void setExperimentTime() {
 		this.experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0));
 	}
@@ -188,11 +193,20 @@ public class Experiment {
 
 	public void stopLastSwirlds() {
 		SSHService nodeToKill = sshNodes.get(sshNodes.size() - 1);
-		nodeToKill.killJavaProcess();
+		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
+			nodeToKill.killNetwork();
+		} else {
+			nodeToKill.killJavaProcess();
+		}
 	}
 
 	public void startLastSwirlds() {
-		sshNodes.get(sshNodes.size() - 1).execWithProcessID(regConfig.getJvmOptions());
+		SSHService nodeToReconnect = sshNodes.get(sshNodes.size() - 1);
+		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
+			nodeToReconnect.reviveNetwork();
+		} else {
+			nodeToReconnect.execWithProcessID(regConfig.getJvmOptions());
+		}
 	}
 
 	public void sleepThroughExperiment(long testDuration) {
@@ -394,6 +408,9 @@ public class Experiment {
 
 		for (Validator item : requiredValidator) {
 			try {
+				if (item instanceof ReconnectValidator) {
+					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
+				}
 				item.validate();
 				slackMsg.addValidatorInfo(item);
 			} catch (Throwable e) {
@@ -524,6 +541,11 @@ public class Experiment {
 			// copy a saved state if set in config
 			SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
 			if (savedState != null) {
+				double thisSavedStateRoundNum = savedState.getRound();
+				if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
+					savedStateStartRoundNumber = thisSavedStateRoundNum;
+				}
+
 				String ssPath = RegressionUtilities.getRemoteSavedStatePath(
 						savedState.getMainClass(),
 						i,
@@ -535,6 +557,8 @@ public class Experiment {
 					case AWS_S3:
 						log.info(MARKER, "Downloading saved state for S3 to node {}", i);
 						currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
+						// list files in destination directory for validation
+						currentNode.listDirFiles(ssPath);
 						break;
 					case LOCAL:
 						log.info(MARKER, "Uploading local saved state to node {}", i);
@@ -670,12 +694,15 @@ public class Experiment {
 		/*TODO: change regession.log into static const in RegressionUtilities */
 		final Path logFileDestination = Paths.get(getExperimentFolder() + "regression.log");
 		if (git != null) {
+			if(!new File(git.getGitLog()).exists())
+				new File(git.getGitLog()).mkdirs();
 			final Path gitLogSource = Paths.get(git.getGitLog());
 			final Path gitLogDestination = Paths.get(getExperimentFolder() + git.getGitLog());
 			try {
-				Files.copy(gitLogSource, gitLogDestination);
-			} catch (IOException e) {
-				log.error(ERROR, "Could not copy regression log", e);
+				if(gitLogSource!=null)
+					Files.copy(gitLogSource, gitLogDestination);
+			} catch (Exception e) {
+					log.error(ERROR, "Could not copy regression log", e);
 			}
 		} else {
 			log.error(ERROR, "gitInfo object not initialized");

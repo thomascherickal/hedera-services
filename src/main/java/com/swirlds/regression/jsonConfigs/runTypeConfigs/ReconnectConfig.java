@@ -19,6 +19,7 @@ package com.swirlds.regression.jsonConfigs.runTypeConfigs;
 
 public class ReconnectConfig {
 	private int reconnectTiming = 0;
+	private boolean killNetworkReconnect = true;
 
 	public int getReconnectTiming() {
 		return reconnectTiming;
@@ -26,5 +27,13 @@ public class ReconnectConfig {
 
 	public void setReconnectTiming(int reconnectTiming) {
 		this.reconnectTiming = reconnectTiming;
+	}
+
+	public boolean isKillNetworkReconnect() {
+		return killNetworkReconnect;
+	}
+
+	public void setKillNetworkReconnect(boolean killNetworkReconnect) {
+		this.killNetworkReconnect = killNetworkReconnect;
 	}
 }
