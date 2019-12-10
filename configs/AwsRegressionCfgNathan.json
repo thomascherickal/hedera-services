@@ -1,5 +1,5 @@
 {
-  "name": "Nathan_Signing_Demo_Benchmark_After_Changes_2",
+  "name": "Nathan_FCM_Multiple_Operations_TEST",
   "result": {
 	"uri": "results"
   },
@@ -12,10 +12,21 @@
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
+	//	"regionList": [
+	//	  {
+	//		"region": "us-west-2",
+	//		"numberOfNodes": 4
+	//	  }
+	//	]
 	"regionList": [
 	  {
 		"region": "us-west-2",
-		"numberOfNodes": 4
+		"instanceList": [
+		  "i-0bd1b4cfad2edfeae",
+		  "i-0079b250fe9ffa68b",
+		  "i-00610640b4c749276",
+		  "i-0b3a7ec82f4b9b84c"
+		]
 	  }
 	]
   },
@@ -23,7 +34,7 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json"
+	"configs/testFcmMultipleOperationsCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -34,6 +45,8 @@
   },
   "slack": {
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
-	"channel": "regression-test"
+	"channel": "regression-test",
+	"notifyUserIds": ["UA66NE2NT"],
+	"notifyOn": "ALL"
   }
 }
