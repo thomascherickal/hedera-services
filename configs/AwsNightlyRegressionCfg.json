@@ -49,7 +49,8 @@
 	"configs/testExperimentFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectFCQCfg.json"
+	"configs/testReconnectFCQCfg.json",
+	"configs/testFcm1kThrottlingCfg.json"
   ],
   "db": {
 	"type": "postgresql",
