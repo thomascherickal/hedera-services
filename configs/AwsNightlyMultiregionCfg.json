@@ -54,6 +54,8 @@
 	"configs/testFcm10MBx10KBlobCfg.json" // failed in multi-region
   ,
 	"configs/testFcm4kx100KBlobCfg.json"
+  ,
+	"configs/testFcm1kThrottlingCfg.json"
   ],
   "db": {
 	"type": "postgresql",
