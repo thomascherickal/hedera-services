@@ -1,7 +1,7 @@
 {
   "name":"Reconnect-Blob-mitch",
   "description" : "platform testing demo - reconnect",
-  "duration": 660,
+  "duration": 1200,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
     {"name":"throttle7", "value": "1" },
