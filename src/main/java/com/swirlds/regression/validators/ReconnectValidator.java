@@ -36,6 +36,7 @@ import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
 import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 
 public class ReconnectValidator extends NodeValidator {
@@ -125,13 +126,11 @@ public class ReconnectValidator extends NodeValidator {
 					socketExceptions++;
 				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
 					invalidEvent++;
+				} else if (e.getLogEntry().contains(OLD_EVENT_PARENT) || e.getLogEntry().contains(INVALID_PARENT)){
+					addWarning(String.format("Node %d has warning:[ %s ]", i, e.getLogEntry()));
 				} else {
-					if ( e.getLogEntry().contains(OLD_EVENT_PARENT)) {
-						addWarning(String.format("Node %d has error:[ %s ]", i, e.getLogEntry()));
-					}else {
-						unexpectedErrors++;
-						isValid = false;
-					}
+					unexpectedErrors++;
+					isValid = false;
 				}
 			}
 			if (socketExceptions > 0) {

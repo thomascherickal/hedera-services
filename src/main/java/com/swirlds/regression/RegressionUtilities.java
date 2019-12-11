@@ -104,6 +104,8 @@ public class RegressionUtilities {
 
 	public static String OLD_EVENT_PARENT = "will not use old otherParent";
 
+	public static String INVALID_PARENT = "has invalid otherParent";
+
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
 	public static final int EXCEPTIONS_SIZE = 1000;
