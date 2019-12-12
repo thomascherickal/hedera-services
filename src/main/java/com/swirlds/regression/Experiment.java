@@ -335,6 +335,9 @@ public class Experiment {
 		return isEnoughMsgFound;
 	}
 
+	/**
+	 * Whether test finished message can be found at least twice in the log file
+	 */
 	public boolean isFoundTwoPTDFinishMessage() {
 		return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
 	}
