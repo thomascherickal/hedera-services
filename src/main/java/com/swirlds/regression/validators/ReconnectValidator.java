@@ -18,9 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.PlatformLogMarker;
-import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -29,7 +27,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.swirlds.common.PlatformLogMarker.DEMO_INFO;
 import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
@@ -45,11 +42,14 @@ public class ReconnectValidator extends NodeValidator {
 		super(nodeData);
 	}
 
-	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
-	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
+	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
+	// savedState the nodes start from;
+	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect
+	// is considered to be invalid
 	double savedStateStartRoundNumber = 0;
 
-	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not greater than this value
+	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not
+	// greater than this value
 	double lastRoundSupDiffLimit = 8;
 
 	boolean isValidated = false;
@@ -126,7 +126,9 @@ public class ReconnectValidator extends NodeValidator {
 					socketExceptions++;
 				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
 					invalidEvent++;
-				} else if (e.getLogEntry().contains(OLD_EVENT_PARENT) || e.getLogEntry().contains(INVALID_PARENT)){
+				} else if (e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
+						|| e.getLogEntry().contains(OLD_EVENT_PARENT)
+						|| e.getLogEntry().contains(INVALID_PARENT)) {
 					addWarning(String.format("Node %d has warning:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
@@ -203,13 +205,20 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber %d", nodeNum - 1, roundSup, savedStateStartRoundNumber));
+				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber " +
+								"%d",
+						nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
 
 			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit) {
 				isValid = false;
-				addError(String.format("Difference of last roundSup between reconnected Node %d with other nodes exceeds lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; reconnected node's last roundSup: %.0f.", nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
+				addError(String.format(
+						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
+								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; reconnected" +
+								" " +
+								"node's last roundSup: %.0f.",
+						nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
 
