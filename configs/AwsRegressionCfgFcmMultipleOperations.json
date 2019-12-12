@@ -1,5 +1,5 @@
 {
-  "name":"ReconnectRegression",
+  "name":"Multiple-Operations",
   "result": {
 	"uri":"results"
   },
@@ -13,14 +13,14 @@
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
-	  { "region":"us-east-1", "numberOfNodes":4}
+	  { "region":"us-west-1", "numberOfNodes":4}
 	]
   },
   "log": {
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testReconnectCfg.json"
+	"configs/testFcmMultipleOperationsCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -33,5 +33,7 @@
   "slack":{
     "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
     "channel": "regression"
-  }
+  },
+
+  "uploadToSharePoint": false
 }

@@ -1,26 +1,24 @@
 {
-  "name":"reconnect",
-  "description" : "platform testing demo - reconnect",
-  "duration": 2500,
+  "name":"Restart-FC-Queue",
+  "description" : "platform testing demo - restart",
+  "duration": 1800,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
     {"name":"throttle7", "value": "1" },
     {"name":"throttle7threshold", "value": "1.5" },
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"}
+    {"name":"csvAppend", "value":"true"}
   ],
-  "reconnectConfig": {
-    "reconnectTiming": 180,
-    "killNetworkReconnect": true
+  "restartConfig":{
+    "restartTiming": 2
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMReconnect.json"]
+    "parameterList": ["FCMRestartFCQ.json"]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "RECONNECT" ]
+  "validator": [ "STATS", "RESTART" ]
 }
