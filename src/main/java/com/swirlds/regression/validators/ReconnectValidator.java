@@ -35,6 +35,7 @@ import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
+import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class ReconnectValidator extends NodeValidator {
 
@@ -128,7 +129,8 @@ public class ReconnectValidator extends NodeValidator {
 					invalidEvent++;
 				} else if (e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
 						|| e.getLogEntry().contains(OLD_EVENT_PARENT)
-						|| e.getLogEntry().contains(INVALID_PARENT)) {
+						|| e.getLogEntry().contains(INVALID_PARENT)
+						|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
 					addWarning(String.format("Node %d has warning:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
@@ -215,7 +217,8 @@ public class ReconnectValidator extends NodeValidator {
 				isValid = false;
 				addError(String.format(
 						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
-								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; reconnected" +
+								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; " +
+								"reconnected" +
 								" " +
 								"node's last roundSup: %.0f.",
 						nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));

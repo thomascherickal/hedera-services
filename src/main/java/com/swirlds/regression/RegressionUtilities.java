@@ -106,6 +106,8 @@ public class RegressionUtilities {
 
 	public static String INVALID_PARENT = "has invalid otherParent";
 
+	public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
+
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
 	public static final int EXCEPTIONS_SIZE = 1000;
