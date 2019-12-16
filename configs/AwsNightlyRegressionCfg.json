@@ -15,10 +15,7 @@
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-		"i-03c90b3fdeed8edd7",
-		"i-050d3f864b99b796f",
-		"i-0611e2febc6a73d5a",
-		"i-0cc227bff247a8a09"
+          "i-09ee53ca2f4d22259", "i-098090dc9273cad03","i-0ffa30714389e48ad","i-0196e8bd46993dfc1"
 	    ]
 	  }
 	]
