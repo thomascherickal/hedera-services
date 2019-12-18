@@ -33,6 +33,7 @@ import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
 import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
 import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
@@ -130,7 +131,8 @@ public class ReconnectValidator extends NodeValidator {
 				} else if (e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
 						|| e.getLogEntry().contains(OLD_EVENT_PARENT)
 						|| e.getLogEntry().contains(INVALID_PARENT)
-						|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
+						|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
+						|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG)) {
 					addWarning(String.format("Node %d has warning:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
