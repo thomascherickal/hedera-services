@@ -49,9 +49,9 @@ public class ReconnectValidator extends NodeValidator {
 	// is considered to be invalid
 	double savedStateStartRoundNumber = 0;
 
-	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not
+	// we consider the reconnect is valid when the difference between the last entry of roundSup of reconnected node and other nodes is not
 	// greater than this value
-	double lastRoundSupDiffLimit = 8;
+	double lastRoundSupDiffLimit = 10;
 
 	boolean isValidated = false;
 	boolean isValid = true;
@@ -213,7 +213,8 @@ public class ReconnectValidator extends NodeValidator {
 				isValid = false;
 			}
 
-			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit) {
+			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit
+					&& roundSup - minLastRoundSup > lastRoundSupDiffLimit) {
 				isValid = false;
 				addError(String.format(
 						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
