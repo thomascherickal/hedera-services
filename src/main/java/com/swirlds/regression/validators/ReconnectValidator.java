@@ -30,6 +30,7 @@ import java.util.List;
 import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
+import static com.swirlds.common.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
 import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
@@ -183,9 +184,9 @@ public class ReconnectValidator extends NodeValidator {
 					continue; // try to find next START_RECONNECT
 				}
 			}
-			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR
+			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or RECV_STATE_IO_EXCEPTION
 
-			LogEntry end = nodeLog.nextEntryContaining(Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR));
+			LogEntry end = nodeLog.nextEntryContaining(Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
 				addError(String.format("Node %d started a reconnect, but did not finish!", nodeNum - 1));
 				isValid = false;
@@ -197,7 +198,7 @@ public class ReconnectValidator extends NodeValidator {
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
 				addInfo(String.format("Node %d reconnected, time taken %dms", nodeNum - 1, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
-				addError(String.format("Node %d hash error during receiving SignedState", nodeNum - 1));
+				addError(String.format("Node %d error during receiving SignedState", nodeNum - 1));
 				isValid = false;
 			}
 		}
