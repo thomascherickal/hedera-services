@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.PlatformLogMarker;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

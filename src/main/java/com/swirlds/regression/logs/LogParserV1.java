@@ -17,8 +17,8 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.PlatformLogMarker;
-import com.swirlds.common.PlatformLogMarkerType;
+import com.swirlds.common.logging.PlatformLogMarker;
+import com.swirlds.common.logging.PlatformLogMarkerType;
 
 import java.text.DateFormat;
 import java.text.ParseException;

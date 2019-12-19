@@ -42,10 +42,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.swirlds.common.PlatformLogMessages.PTD_FINISH;
-import static com.swirlds.common.PlatformLogMessages.PTD_SUCCESS;
+import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
+import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
 
 public class RegressionUtilities {
 

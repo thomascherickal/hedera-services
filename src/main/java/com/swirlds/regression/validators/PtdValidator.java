@@ -26,12 +26,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import static com.swirlds.common.PlatformLogMessages.PTD_SUCCESS;
 import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.regression.RegressionUtilities.MB;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
 
 public class PtdValidator extends NodeValidator {
