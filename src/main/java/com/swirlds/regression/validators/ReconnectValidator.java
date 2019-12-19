@@ -134,7 +134,7 @@ public class ReconnectValidator extends NodeValidator {
 						|| e.getLogEntry().contains(INVALID_PARENT)
 						|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
 						|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG)) {
-					addWarning(String.format("Node %d has warning:[ %s ]", i, e.getLogEntry()));
+					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
 					isValid = false;
