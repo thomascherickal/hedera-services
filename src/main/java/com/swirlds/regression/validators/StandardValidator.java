@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.logging.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -51,7 +51,7 @@ public class StandardValidator extends NodeValidator {
 			int badExceptions = 0;
 			Instant nodeEnd = nodeLog.getLastEntryRead().getTime();
 			for (LogEntry ex : nodeLog.getExceptions()) {
-				if (ex.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (ex.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					Duration dur = Duration.between(ex.getTime(), nodeEnd);
 					if (dur.toSeconds() < 10) {
 						// if the socket exceptions happen at the end, that's ok

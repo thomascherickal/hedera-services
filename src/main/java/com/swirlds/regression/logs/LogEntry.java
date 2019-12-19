@@ -17,19 +17,19 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.logging.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 
 import java.time.Instant;
 
 public class LogEntry {
 	private Instant time;
-	private PlatformLogMarker marker;
+	private LogMarkerInfo marker;
 	private long threadId;
 	private String threadName;
 	private String logEntry;
 	private boolean isException;
 
-	public LogEntry(Instant time, PlatformLogMarker marker, long threadId, String threadName, String logEntry,
+	public LogEntry(Instant time, LogMarkerInfo marker, long threadId, String threadName, String logEntry,
 			boolean isException) {
 		this.time = time;
 		this.marker = marker;
@@ -43,7 +43,7 @@ public class LogEntry {
 		return time;
 	}
 
-	public PlatformLogMarker getMarker() {
+	public LogMarkerInfo getMarker() {
 		return marker;
 	}
 

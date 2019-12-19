@@ -17,8 +17,8 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.logging.PlatformLogMarker;
-import com.swirlds.common.logging.PlatformLogMarkerType;
+import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.common.logging.LogMarkerType;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -60,9 +60,9 @@ public class LogParserV1 implements LogParser {
 			} catch (ParseException e) {
 				return null;
 			}
-			PlatformLogMarker marker = null;
+			LogMarkerInfo marker = null;
 			try {
-				marker = PlatformLogMarker.valueOf(matcher.group(2));
+				marker = LogMarkerInfo.valueOf(matcher.group(2));
 			} catch (IllegalArgumentException e) {
 			}
 			long threadId;
@@ -86,11 +86,11 @@ public class LogParserV1 implements LogParser {
 		return null;
 	}
 
-	private static boolean isException(PlatformLogMarker marker, String s) {
+	private static boolean isException(LogMarkerInfo marker, String s) {
 		s = s.toLowerCase();
 		return (marker != null &&
-				(marker.getType() == PlatformLogMarkerType.EXCEPTION ||
-						marker.getType() == PlatformLogMarkerType.ERROR))
+				(marker.getType() == LogMarkerType.EXCEPTION ||
+						marker.getType() == LogMarkerType.ERROR))
 				|| s.contains("exception") || s.contains("error");
 	}
 }

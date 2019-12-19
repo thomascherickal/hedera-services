@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.logging.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
@@ -118,9 +118,9 @@ public class ReconnectValidator extends NodeValidator {
 			int invalidEvent = 0;
 			int unexpectedErrors = 0;
 			for (LogEntry e : nodeLog.getExceptions()) {
-				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
-				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
+				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
 					invalidEvent++;
 				} else {
 					if ( e.getLogEntry().contains(OLD_EVENT_PARENT)) {
