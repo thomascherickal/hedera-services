@@ -26,7 +26,7 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testFcm1KCfg.json",
 	"configs/testFcmBlob1KCfg.json",
-	"configs/testRestartCfg.json.json"
+	"configs/testRestartCfg.json"
   ],
   "db": {
 	"type": "postgresql",
