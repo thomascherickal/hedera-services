@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -38,7 +38,7 @@ class LogParserV1Test {
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
-		assertEquals(PlatformLogMarker.RECONNECT, entry.getMarker());
+		assertEquals(LogMarkerInfo.RECONNECT, entry.getMarker());
 		assertEquals(millis, entry.getThreadId());
 		assertEquals(threadName, entry.getThreadName());
 		assertEquals(msg, entry.getLogEntry());
@@ -58,7 +58,7 @@ class LogParserV1Test {
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
-		assertEquals(PlatformLogMarker.DEMO_INFO, entry.getMarker());
+		assertEquals(LogMarkerInfo.DEMO_INFO, entry.getMarker());
 		assertEquals(threadId, entry.getThreadId());
 		assertEquals(threadName, entry.getThreadName());
 		assertEquals(msg, entry.getLogEntry());

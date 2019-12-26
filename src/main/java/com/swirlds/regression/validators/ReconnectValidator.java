@@ -17,10 +17,8 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
-import com.swirlds.regression.RegressionUtilities;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -29,11 +27,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.swirlds.common.PlatformLogMarker.DEMO_INFO;
-import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
-import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
+import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
+import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
@@ -121,9 +118,9 @@ public class ReconnectValidator extends NodeValidator {
 			int invalidEvent = 0;
 			int unexpectedErrors = 0;
 			for (LogEntry e : nodeLog.getExceptions()) {
-				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
-				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
+				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
 					invalidEvent++;
 				} else {
 					if ( e.getLogEntry().contains(OLD_EVENT_PARENT)) {

@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>com.swirlds</groupId>
 		<artifactId>swirlds-platform</artifactId>
-		<version>0.6.0</version>
+		<version>0.6.5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -165,7 +165,7 @@
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-common</artifactId>
-			<version>0.6.0</version>
+			<version>0.6.5</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->

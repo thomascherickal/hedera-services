@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -34,12 +34,12 @@ class LogReaderTest {
 
 		LogEntry firstEntry = logReader.nextEntry();
 		assertEquals(618, firstEntry.getThreadId());
-		assertEquals(PlatformLogMarker.STARTUP, firstEntry.getMarker());
+		assertEquals(LogMarkerInfo.STARTUP, firstEntry.getMarker());
 		assertEquals("main Browser main() started", firstEntry.getLogEntry());
 
 		LogEntry fallenBehindEntry = logReader.nextEntryContaining("has fallen behind");
 		assertEquals(120825, fallenBehindEntry.getThreadId());
-		assertEquals(PlatformLogMarker.RECONNECT, fallenBehindEntry.getMarker());
+		assertEquals(LogMarkerInfo.RECONNECT, fallenBehindEntry.getMarker());
 		assertEquals("3 has fallen behind, will stop and clear EventFlow and Hashgraph",
 				fallenBehindEntry.getLogEntry());
 
@@ -47,7 +47,7 @@ class LogReaderTest {
 		assertEquals(8, exceptions.size());
 
 		LogEntry exception = exceptions.get(0);
-		assertEquals(PlatformLogMarker.SOCKET_EXCEPTIONS, exception.getMarker());
+		assertEquals(LogMarkerInfo.SOCKET_EXCEPTIONS, exception.getMarker());
 		assertEquals(true, exception.isException());
 		assertEquals("3 didn't receive anything from 1 for 5005 ms. Disconnecting...", exception.getLogEntry());
 	}
