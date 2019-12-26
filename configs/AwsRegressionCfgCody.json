@@ -8,7 +8,7 @@
 	"securityGroup": "SwirldsSecGroup",
 	"securityGroupID": "sg-f98b7086",
 	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11-R2",
-	"instanceType": "M44xlarge",
+	"instanceType": "M410xlarge",
 	"instanceKey": "cody-littley",
 	"keyLocation": "keys/cody-littley",
 	"login": "ubuntu",
