@@ -15,10 +15,7 @@
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-		"i-03c90b3fdeed8edd7",
-		"i-050d3f864b99b796f",
-		"i-0611e2febc6a73d5a",
-		"i-0cc227bff247a8a09"
+          "i-09ee53ca2f4d22259", "i-098090dc9273cad03","i-0ffa30714389e48ad","i-0196e8bd46993dfc1"
 	    ]
 	  }
 	]
@@ -32,25 +29,25 @@
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
 	"configs/testRestartCfg.json",
-	"configs/testRestartFCLLCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
-	"configs/testFcmFreezeFCLLCfg.json",
 	"configs/testFcmFreezeBlobCfg.json",
 	"configs/testFcmCfg.json",
 	"configs/testFcm3MCfg.json",
-	"configs/testFcm1KFCLLCfg.json",
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcm10MBx10KBlobCfg.json",
 	"configs/testFcm4kx100KBlobCfg.json",
-	"configs/testFcm3MSavedStateCfg.json",
+//	"configs/testFcm3MSavedStateCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
 	"configs/testFCM1KFCQCfg.json",
-	"configs/testExperimentFCQCfg.json",
+//	"configs/testExperimentFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectFCQCfg.json",
-	"configs/testReconnectBlobCfg.json"
+	"configs/testReconnectBlobCfg.json",
+//	"configs/testReconnectFCQCfg.json",
+	"configs/testFcm1kThrottlingCfg.json",
+	  "configs/testFcmCfg.json",
+	  "configs/testFcm3MCfg.json"
   ],
   "db": {
 	"type": "postgresql",
