@@ -97,7 +97,7 @@ public class StreamingServerValidator extends Validator {
 							"Server %d and %d do servers have the same hashes, except the last evt. This is common " +
 									"in apps that do not have a set ending.", i - 1, i));
 				} else {
-					addError(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
+					addInfo(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
 							FINAL_EVENT_FILE_HASH));
 					mismatch = true;
 				}
