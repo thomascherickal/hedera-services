@@ -382,14 +382,14 @@ public class Experiment {
 			}
 		}
 
-		// If the test contains restart/reconnect, we don't use StreamingServerValidator, because during the restart the event streams wont be generated, which would cause mismatch in evts files on the nodes
-		boolean restart = false;
+		// If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the event streams wont be generated, which would cause mismatch in evts files on the nodes
+		boolean reconnect = false;
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
 		for (ValidatorType item : testConfig.validators) {
-			if (!restart && (item.equals(ValidatorType.RECONNECT) || item.equals(ValidatorType.RESTART))) {
-				restart = true;
+			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
+				reconnect = true;
 			}
 
 			List<NodeData> nodeData = loadNodeData(testConfig.getName());
@@ -406,8 +406,8 @@ public class Experiment {
 			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
 		}
 
-		// Add stream server validator if event streaming is configured and it is not a restart test
-		if (regConfig.getEventFilesWriters() > 0 && !restart) {
+		// Add stream server validator if event streaming is configured and it is not a reconnect test
+		if (regConfig.getEventFilesWriters() > 0 && !reconnect) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
 					loadStreamingServerData(testConfig.getName()));
 			requiredValidator.add(ssValidator);
