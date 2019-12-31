@@ -406,10 +406,10 @@ public class Experiment {
 			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
 		}
 
-		// Add stream server validator if event streaming is configured and it is not a reconnect test
-		if (regConfig.getEventFilesWriters() > 0 && !reconnect) {
+		// Add stream server validator if event streaming is configured
+		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()));
+					loadStreamingServerData(testConfig.getName()), reconnect);
 			requiredValidator.add(ssValidator);
 		}
 

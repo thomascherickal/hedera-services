@@ -38,7 +38,7 @@ class StreamingServerValidatorTest {
 	})
 	void validateSuccess(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -55,7 +55,7 @@ class StreamingServerValidatorTest {
 	})
 	void validateFailure(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -76,7 +76,7 @@ class StreamingServerValidatorTest {
 	@ValueSource( strings = { "logs/sha1test/evtssig-fail-notmatching"})
 	void checksForInvalidEvgsSigInNode0003(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -105,7 +105,7 @@ class StreamingServerValidatorTest {
 	@ValueSource( strings = { "logs/sha1test/evtssig-fail-missing-two"})
 	void checksForInvalidEvgsSigInNode0003MisssingTwoFiles(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
