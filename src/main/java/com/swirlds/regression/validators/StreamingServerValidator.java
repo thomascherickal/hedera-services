@@ -112,7 +112,7 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		if (!mismatch && !someEmpty) {
-			addInfo(String.format("The events saved by the first %d servers have the same hashes.", ssData.size()));
+			addInfo(String.format("The events saved by the first %d servers have the same hashes.", sha1sumList.size()));
 			valid = true;
 		}
 	}
