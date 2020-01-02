@@ -51,7 +51,8 @@ public class ReconnectValidator extends NodeValidator {
 	// is considered to be invalid
 	double savedStateStartRoundNumber = 0;
 
-	// we consider the reconnect is valid when the difference between the last entry of roundSup of reconnected node and other nodes is not
+	// we consider the reconnect is valid when the difference between the last entry of roundSup of reconnected node
+	// and other nodes is not
 	// greater than this value
 	double lastRoundSupDiffLimit = 10;
 
@@ -101,8 +102,8 @@ public class ReconnectValidator extends NodeValidator {
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
 
-		double minLastRoundSup = 0; //minimum last entry of roundSup among all node
-		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node
+		double minLastRoundSup = 0; //minimum last entry of roundSup among all node except the reconnected node
+		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node except the reconnected node
 
 		for (int i = 0; i < nodeNum - 1; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
@@ -185,9 +186,11 @@ public class ReconnectValidator extends NodeValidator {
 					continue; // try to find next START_RECONNECT
 				}
 			}
-			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or RECV_STATE_IO_EXCEPTION
+			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
+			// RECV_STATE_IO_EXCEPTION
 
-			LogEntry end = nodeLog.nextEntryContaining(Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
+			LogEntry end = nodeLog.nextEntryContaining(
+					Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
 				addError(String.format("Node %d started a reconnect, but did not finish!", nodeNum - 1));
 				isValid = false;
@@ -217,15 +220,12 @@ public class ReconnectValidator extends NodeValidator {
 				isValid = false;
 			}
 
-			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit
-					&& roundSup - minLastRoundSup > lastRoundSupDiffLimit) {
+			if (minLastRoundSup - roundSup > lastRoundSupDiffLimit) {
 				isValid = false;
 				addError(String.format(
 						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
 								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; " +
-								"reconnected" +
-								" " +
-								"node's last roundSup: %.0f.",
+								"reconnected node's last roundSup: %.0f.",
 						nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
