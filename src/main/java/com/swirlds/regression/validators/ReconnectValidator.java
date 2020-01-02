@@ -138,7 +138,7 @@ public class ReconnectValidator extends NodeValidator {
 				} else {
 					unexpectedErrors++;
 					isValid = false;
-					addError(String.format("Node %d has %d unexpected error: [%s]", i, e.getLogEntry()));
+					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
 				}
 			}
 			if (socketExceptions > 0) {
