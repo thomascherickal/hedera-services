@@ -130,11 +130,7 @@ public class ReconnectValidator extends NodeValidator {
 					socketExceptions++;
 				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
 					invalidEvent++;
-				} else if (e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
-						|| e.getLogEntry().contains(OLD_EVENT_PARENT)
-						|| e.getLogEntry().contains(INVALID_PARENT)
-						|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
-						|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG)) {
+				} else if (isWarning(e)) {
 					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
@@ -236,5 +232,14 @@ public class ReconnectValidator extends NodeValidator {
 	@Override
 	public boolean isValid() {
 		return isValidated && isValid;
+	}
+
+	private boolean isWarning(LogEntry e)
+	{
+		return e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
+				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
+				|| e.getLogEntry().contains(INVALID_PARENT)
+				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
+				|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG);
 	}
 }
