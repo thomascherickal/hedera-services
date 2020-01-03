@@ -1,6 +1,6 @@
 {
   "name":"Multi-Reconnect-Blob",
-  "description" : "platform testing demo - multi-reconnect Blob",
+  "description" : "platform testing app - multi-reconnect Blob",
   "duration": 2400,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
