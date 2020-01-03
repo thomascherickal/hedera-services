@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
+
 public class RestartValidator extends NodeValidator {
 
 	public RestartValidator(List<NodeData> nodeData) {
@@ -112,6 +114,8 @@ public class RestartValidator extends NodeValidator {
 			for (LogEntry e : nodeLog.getExceptions()) {
 				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
+				} else if (e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
+					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
 					isValid = false;
