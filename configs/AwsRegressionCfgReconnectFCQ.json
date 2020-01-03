@@ -16,6 +16,7 @@
 	  { "region":"us-east-2", "numberOfNodes":4}
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
