@@ -33,7 +33,6 @@
 	"configs/testFcmFreezeCfg.json",
 	"configs/testFcmFreezeBlobCfg.json",
 	"configs/testFcmCfg.json",
-	"configs/testFcm3MCfg.json",
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcm10MBx10KBlobCfg.json",
 	"configs/testFcm4kx100KBlobCfg.json",
