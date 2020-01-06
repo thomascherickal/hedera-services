@@ -14,10 +14,10 @@
     "parameterList": ["FCM1KAfterStartFromX.json"]
   },
   "startSavedState": {
-    "location": "s3://swirlds-regression/saved-states/FCQ-Batch-PTD/FCM3MZGC/",
+    "location": "s3://swirlds-regression/saved-states/PlatformTestingApp/FCM3M/",
     "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
     "swirldName": "123",
-    "round": 14943,
+    "round": 10114,
     "restoreDb": true,
     "nodeIdentifier": "ALL_BUT_LAST"
   },
