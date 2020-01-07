@@ -86,14 +86,14 @@ class StreamingServerValidatorTest {
 		assertEquals("The contents of two nodes don't match:\n" +
 				"\n" +
 				"Reference Node 0: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100352Z.evts_sig\n" +
 				"\n" +
 				"Validating node 3: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100353Z.evts_sig\n" +
 				"\n" +
@@ -115,14 +115,14 @@ class StreamingServerValidatorTest {
 		assertEquals("The contents of two nodes don't match:\n" +
 				"\n" +
 				"Reference Node 0: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100352Z.evts_sig\n" +
 				"\n" +
 				"Validating node 3: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"\n" +
 				"--- End of diff\n" +
 				"\n", errorMessage);
