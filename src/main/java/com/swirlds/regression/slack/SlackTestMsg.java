@@ -190,9 +190,10 @@ public class SlackTestMsg extends BaseSlackMsg {
 		sb.append(" validation");
 		sb.append(" ----").append(NEWLINE);
 
-		appendValidatorMessages(validator, sb, "INFO");
-		appendValidatorMessages(validator, sb, "WARNING");
 		appendValidatorMessages(validator, sb, "ERROR");
+		appendValidatorMessages(validator, sb, "WARNING");
+		appendValidatorMessages(validator, sb, "INFO");
+
 		sb.append("```").append(NEWLINE);
 	}
 
