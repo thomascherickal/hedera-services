@@ -487,6 +487,11 @@ parser.add_argument('-e', '--endTime',
                     default='',
                     dest="endTime")
 
+parser.add_argument('-N' '--NOCHOICE',
+                    help='scan the directory as the root directory, do not offer a choice of directories under the root',
+                    action='store_true',
+                    dest="noChoice")
+
 PARAMETER = parser.parse_args(sys.argv[1:])
 
 pp.pprint(PARAMETER)
@@ -1097,7 +1102,9 @@ def scan_csv_and_logs():
             pp.pprint(stat_data_dict)
             clear_data()
     else:
-        choose_directory = choose_subdirecotry()
+        choose_directory = PARAMETER.directory
+        if PARAMETER.noChoice == False:
+            choose_directory = choose_subdirecotry()
         print("The directory to search for csv files is %s" % (choose_directory))
         scan_csv_files(choose_directory)
 
