@@ -190,6 +190,10 @@ public class SlackTestMsg extends BaseSlackMsg {
 		sb.append(" validation");
 		sb.append(" ----").append(NEWLINE);
 
+		// If there are many warnings in the test validation,
+		// errors are not displayed in slack post.
+		// So, errors are displayed before warnings.
+
 		appendValidatorMessages(validator, sb, "INFO");
 		appendValidatorMessages(validator, sb, "ERROR");
 		appendValidatorMessages(validator, sb, "WARNING");
