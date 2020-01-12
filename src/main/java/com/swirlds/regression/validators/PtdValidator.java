@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.common.PlatformLogMarker;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
@@ -33,6 +34,7 @@ import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.MB;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
+import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class PtdValidator extends NodeValidator {
 	private boolean isValidated = false;
@@ -50,6 +52,7 @@ public class PtdValidator extends NodeValidator {
 		Instant endTime = null;
 		int numFinished = 0;
 		int numProblems = 0;
+		int socketExceptions = 0;
 		String exceptionString = "";
 		double transHandleAverage = 0; //transH/sec
 		double maxC2C = -1;
@@ -77,13 +80,17 @@ public class PtdValidator extends NodeValidator {
 					endTime = end.getTime();
 				}
 			}
-			if (nodeLog.getExceptionCount() > 0) {
-				addError("Node " + i + " had " + nodeLog.getExceptionCount() + " exceptions.");
-			}
-			numProblems += nodeLog.getExceptionCount();
+
 			if (nodeLog.getExceptionCount() > 0) {
 				for (LogEntry le : nodeLog.getExceptions()) {
-					exceptionString += le.getLogEntry() + "\\r";
+					if (le.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+						socketExceptions++;
+					} else if (le.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
+						addWarning(String.format("Node %d has exception:[ %s ]", i, le.getLogEntry()));
+					} else {
+						numProblems++;
+						exceptionString += le.getLogEntry() + "\\r";
+					}
 				}
 			}
 

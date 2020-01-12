@@ -42,6 +42,7 @@
 //	"configs/testExperimentFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
+	"configs/testReconnectBlobCfg.json",
 //	"configs/testReconnectFCQCfg.json",
 	"configs/testFcm1kThrottlingCfg.json",
 	  "configs/testFcmCfg.json",

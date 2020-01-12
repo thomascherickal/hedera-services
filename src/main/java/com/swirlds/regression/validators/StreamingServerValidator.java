@@ -32,9 +32,12 @@ public class StreamingServerValidator extends Validator {
 
 	private final List<StreamingServerData> ssData;
 	private boolean valid = false;
+	// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
+	private boolean reconnect = false;
 
-	public StreamingServerValidator(final List<StreamingServerData> ssData) {
+	public StreamingServerValidator(final List<StreamingServerData> ssData, final boolean reconnect) {
 		this.ssData = ssData;
+		this.reconnect = reconnect;
 	}
 
 	@Override
@@ -44,16 +47,19 @@ public class StreamingServerValidator extends Validator {
 			return;
 		}
 
-		final List<String> sha1sumList = new ArrayList<>(ssData.size());
-		for (final StreamingServerData data : ssData) {
-			sha1sumList.add(data.getSha1SumData());
+		// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
+		final int validateNodesNum = reconnect ? ssData.size() - 1 : ssData.size();
+
+		final List<String> sha1sumList = new ArrayList<>(validateNodesNum);
+		for (int i = 0; i < validateNodesNum; i++) {
+			sha1sumList.add(ssData.get(i).getSha1SumData());
 		}
 
 		if (!isAnySha1SumMissing(sha1sumList)) {
 			isChecksumListValid(sha1sumList);
 		}
 
-		validateEvtSigFiles();
+		validateEvtSigFiles(validateNodesNum);
 	}
 
 	private boolean isAnySha1SumMissing(final List<String> sha1sumList) {
@@ -97,7 +103,7 @@ public class StreamingServerValidator extends Validator {
 							"Server %d and %d do servers have the same hashes, except the last evt. This is common " +
 									"in apps that do not have a set ending.", i - 1, i));
 				} else {
-					addError(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
+					addInfo(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
 							FINAL_EVENT_FILE_HASH));
 					mismatch = true;
 				}
@@ -106,7 +112,7 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		if (!mismatch && !someEmpty) {
-			addInfo(String.format("The events saved by the first %d servers have the same hashes.", ssData.size()));
+			addInfo(String.format("The events saved by the first %d servers have the same hashes.", sha1sumList.size()));
 			valid = true;
 		}
 	}
@@ -149,14 +155,14 @@ public class StreamingServerValidator extends Validator {
 		return valid;
 	}
 
-	private void validateEvtSigFiles() {
+	private void validateEvtSigFiles(final int validateNodesNum) {
 		boolean evtsValid = true;
 		final List<EventSigEvent> sigEvents = this.ssData.stream()
 				.map(StreamingServerData::getEvtsSigEvents)
 				.collect(Collectors.toList());
 
 		final EventSigEvent reference = sigEvents.get(0);
-		for (int index = 1; index < sigEvents.size(); index++) {
+		for (int index = 1; index < validateNodesNum; index++) {
 			final EventSigEvent event = sigEvents.get(index);
 			if (!reference.equals(event)) {
 				String description = "The contents of two nodes don't match:\n\n" +
