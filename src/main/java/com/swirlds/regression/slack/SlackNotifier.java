@@ -29,6 +29,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
@@ -81,6 +85,25 @@ public class SlackNotifier {
             // to have less useless noise in the log
             log.error(ERROR, "Slack threw an exception: {}", t.getMessage());
             return null;
+        }
+    }
+
+    public void uploadFile(SlackTestMsg message, String fileLocation, String experimentName){
+        String processResponseString;
+        Process slackFile;
+        try{
+            String uploadFileToSlackCmd = "curl -F file=@"+ fileLocation +"-F \"initial_comment=" + experimentName + " - Stats graph\" -F \"as_user=False\" -F \"channels="+ message.slackConfig.getChannel() +"\" -H \"Authorization: Bearer " + message.slackConfig.getBotToken() + "\" https://slack.com/api/files.upload";
+            System.out.println(uploadFileToSlackCmd);
+            slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
+            BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
+            while((processResponseString = br.readLine()) != null){
+                System.out.println("line: " + processResponseString);
+            }
+            slackFile.waitFor();
+            System.out.println("exit: " + slackFile.exitValue());
+            slackFile.destroy();
+        } catch (IOException | InterruptedException e){
+            e.printStackTrace();
         }
     }
 

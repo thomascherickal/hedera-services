@@ -426,26 +426,7 @@ public class Experiment {
 		sendSlackMessage(slackMsg);
 		log.info(MARKER, slackMsg.getPlainText());
 		createStatsFile(getExperimentFolder());
-		sendSlackStatsFile();
-	}
-
-	private void sendSlackStatsFile() {
-		String processResponseString;
-		Process slackFile;
-		try{
-			String uploadFileToSlackCmd = "curl -F file=@./multipage_pdf.pdf -F \"initial_comment=" + testConfig.getName() + " - Stats graph\" -F \"as_user=False\" -F \"channels="+ regConfig.getSlack().getChannel() +"\" -H \"Authorization: Bearer " + regConfig.getSlack().getToken() + "\" https://slack.com/api/files.upload";
-			System.out.println(uploadFileToSlackCmd);
-			slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
-			BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
-			while((processResponseString = br.readLine()) != null){
-				System.out.println("line: " + processResponseString);
-			}
-			slackFile.waitFor();
-			System.out.println("exit: " + slackFile.exitValue());
-			slackFile.destroy();
-		} catch (IOException | InterruptedException e){
-			e.printStackTrace();
-		}
+		sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
 	}
 
 	private void createStatsFile(String resultsFolder) {
@@ -546,6 +527,10 @@ public class Experiment {
 		SlackTestMsg msg = new SlackTestMsg(regConfig, testConfig);
 		msg.addError(error);
 		slacker.messageChannel(msg);
+	}
+
+	public void sendSlackStatsFile(SlackTestMsg msg, String fileLocation) {
+		slacker.uploadFile(msg, fileLocation, testConfig.getName());
 	}
 
 	void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
