@@ -24,68 +24,67 @@ import com.hubspot.slack.client.SlackClient;
 import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.SlackError;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
-import org.apache.http.io.SessionOutputBuffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 public class SlackNotifier {
-	private static final Logger log = LogManager.getLogger(SlackNotifier.class);
-	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
+    private static final Logger log = LogManager.getLogger(SlackNotifier.class);
+    private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
-	private final SlackClient slackClient;
-	private String channel;
+    private final SlackClient slackClient;
+    private String channel;
 
-	/**
-	 * Do not use this, this is for Guice
-	 */
-	@Inject
-	public SlackNotifier(SlackClient slackClient) {
-		this.slackClient = slackClient;
-	}
+    /**
+     * Do not use this, this is for Guice
+     */
+    @Inject
+    public SlackNotifier(SlackClient slackClient) {
+        this.slackClient = slackClient;
+    }
 
-	public static SlackNotifier createSlackNotifier(String token, String channel) {
-		SlackNotifier sn = Guice.createInjector(
-				new SlackModule(token))
-				.getInstance(SlackNotifier.class);
-		sn.setChannel(channel);
-		return sn;
-	}
+    public static SlackNotifier createSlackNotifier(String token, String channel) {
+        SlackNotifier sn = Guice.createInjector(
+                new SlackModule(token))
+                .getInstance(SlackNotifier.class);
+        sn.setChannel(channel);
+        return sn;
+    }
 
-	public ChatPostMessageResponse messageChannel(String message, boolean notifyChannel) {
-		Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
-				ChatPostMessageParams.builder()
-						.setText(notifyChannel ? "<!here> " + message : message)
-						.setChannelId(channel)
-						.build()
-		).join();
+    public ChatPostMessageResponse messageChannel(String message, boolean notifyChannel) {
+        Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
+                ChatPostMessageParams.builder()
+                        .setText(notifyChannel ? "<!here> " + message : message)
+                        .setChannelId(channel)
+                        .build()
+        ).join();
 
-		return postResult.unwrapOrElseThrow(); // release failure here as a RTE
-	}
+        return postResult.unwrapOrElseThrow(); // release failure here as a RTE
+    }
 
-	public ChatPostMessageResponse messageChannel(String message) {
-		return messageChannel(message, false);
-	}
+    public ChatPostMessageResponse messageChannel(String message) {
+        return messageChannel(message, false);
+    }
 
-	public ChatPostMessageResponse messageChannel(SlackTestMsg message) {
-		try {
-			Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
-					message.build(channel)
-			).join();
+    public ChatPostMessageResponse messageChannel(SlackTestMsg message) {
+        try {
+            Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
+                    message.build(channel)
+            ).join();
 
-			return postResult.unwrapOrElseThrow();
-		} catch (Throwable t) {
-			// slack sometimes throws an exception but still sends the message
-			// the exceptions have been inconsistent and don't affect the outcome,
-			// this is why we are only logging the message, not the full stack trace,
-			// to have less useless noise in the log
-			log.error(ERROR, "Slack threw an exception: {}", t.getMessage());
-			return null;
-		}
-	}
+            return postResult.unwrapOrElseThrow();
+        } catch (Throwable t) {
+            // slack sometimes throws an exception but still sends the message
+            // the exceptions have been inconsistent and don't affect the outcome,
+            // this is why we are only logging the message, not the full stack trace,
+            // to have less useless noise in the log
+            log.error(ERROR, "Slack threw an exception: {}", t.getMessage());
+            return null;
+        }
+    }
 
-	private void setChannel(String channel) {
-		this.channel = channel;
-	}
+    private void setChannel(String channel) {
+        this.channel = channel;
+    }
 }

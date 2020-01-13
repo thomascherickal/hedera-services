@@ -48,10 +48,7 @@ import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.SocketException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -421,6 +418,55 @@ public class Experiment {
 
 		sendSlackMessage(slackMsg);
 		log.info(MARKER, slackMsg.getPlainText());
+		createStatsFile(getExperimentFolder());
+		sendSlackStatsFile();
+	}
+
+	private void sendSlackStatsFile() {
+		String processResponseString;
+		Process slackFile;
+		try{
+			String uploadFileToSlackCmd = "curl -F file=@./multipage_pdf.pdf -F \"initial_comment=" + testConfig.getName() + " - Stats graph\" -F \"as_user=False\" -F \"channels="+ regConfig.getSlack().getChannel() +"\" -H \"Authorization: Bearer " + regConfig.getSlack().getToken() + "\" https://slack.com/api/files.upload";
+			System.out.println(uploadFileToSlackCmd);
+			slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
+			BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
+			while((processResponseString = br.readLine()) != null){
+				System.out.println("line: " + processResponseString);
+			}
+			slackFile.waitFor();
+			System.out.println("exit: " + slackFile.exitValue());
+			slackFile.destroy();
+		} catch (IOException | InterruptedException e){
+			e.printStackTrace();
+		}
+	}
+
+	private void createStatsFile(String resultsFolder) {
+		String processResponseString;
+		Process slackFile;
+		try{
+			slackFile = Runtime.getRuntime().exec("pwd");
+			BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
+			while((processResponseString = br.readLine()) != null){
+				System.out.println("line: " + processResponseString);
+			}
+			slackFile.waitFor();
+			System.out.println("exit: " + slackFile.exitValue());
+			slackFile.destroy();
+
+			String insightCmd = "python ./insight.py -p -d" + resultsFolder + " -g -cPlatformTesting -N";
+			System.out.println(insightCmd);
+			slackFile = Runtime.getRuntime().exec(insightCmd);
+			br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
+			while((processResponseString = br.readLine()) != null){
+				System.out.println("line: " + processResponseString);
+			}
+			slackFile.waitFor();
+			System.out.println("exit: " + slackFile.exitValue());
+			slackFile.destroy();
+		} catch (IOException | InterruptedException e){
+			e.printStackTrace();
+		}
 	}
 
 	public void sendSettingFileToNodes() {
