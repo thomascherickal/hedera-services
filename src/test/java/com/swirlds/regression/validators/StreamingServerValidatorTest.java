@@ -38,7 +38,7 @@ class StreamingServerValidatorTest {
 	})
 	void validateSuccess(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -55,7 +55,7 @@ class StreamingServerValidatorTest {
 	})
 	void validateFailure(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -76,7 +76,7 @@ class StreamingServerValidatorTest {
 	@ValueSource( strings = { "logs/sha1test/evtssig-fail-notmatching"})
 	void checksForInvalidEvgsSigInNode0003(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -86,14 +86,14 @@ class StreamingServerValidatorTest {
 		assertEquals("The contents of two nodes don't match:\n" +
 				"\n" +
 				"Reference Node 0: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100352Z.evts_sig\n" +
 				"\n" +
 				"Validating node 3: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100353Z.evts_sig\n" +
 				"\n" +
@@ -105,7 +105,7 @@ class StreamingServerValidatorTest {
 	@ValueSource( strings = { "logs/sha1test/evtssig-fail-missing-two"})
 	void checksForInvalidEvgsSigInNode0003MisssingTwoFiles(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
-		final StreamingServerValidator validator = new StreamingServerValidator(data);
+		final StreamingServerValidator validator = new StreamingServerValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
@@ -115,14 +115,14 @@ class StreamingServerValidatorTest {
 		assertEquals("The contents of two nodes don't match:\n" +
 				"\n" +
 				"Reference Node 0: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_42_10.051057Z.evts_sig\n" +
 				"2019-07-23T01_43_20.100352Z.evts_sig\n" +
 				"\n" +
 				"Validating node 3: \n" +
-				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"2019-07-23T01_40_50.083046Z.evts_sig\n" +
+				"2019-07-23T01_41_00.032741Z.evts_sig\n" +
 				"\n" +
 				"--- End of diff\n" +
 				"\n", errorMessage);

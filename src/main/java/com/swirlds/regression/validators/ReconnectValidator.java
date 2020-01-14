@@ -33,7 +33,10 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MIS
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
+import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
+import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class ReconnectValidator extends NodeValidator {
 
@@ -41,12 +44,16 @@ public class ReconnectValidator extends NodeValidator {
 		super(nodeData);
 	}
 
-	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
-	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
+	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
+	// savedState the nodes start from;
+	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect
+	// is considered to be invalid
 	double savedStateStartRoundNumber = 0;
 
-	// we consider the reconnect is valid when the difference between the last entry of roundSup of each node is not greater than this value
-	double lastRoundSupDiffLimit = 8;
+	// we consider the reconnect is valid when the difference between the last entry of roundSup of reconnected node
+	// and other nodes is not
+	// greater than this value
+	double lastRoundSupDiffLimit = 10;
 
 	boolean isValidated = false;
 	boolean isValid = true;
@@ -94,8 +101,8 @@ public class ReconnectValidator extends NodeValidator {
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
 
-		double minLastRoundSup = 0; //minimum last entry of roundSup among all node
-		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node
+		double minLastRoundSup = 0; //minimum last entry of roundSup among all node except the reconnected node
+		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node except the reconnected node
 
 		for (int i = 0; i < nodeNum - 1; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
@@ -122,13 +129,12 @@ public class ReconnectValidator extends NodeValidator {
 					socketExceptions++;
 				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
 					invalidEvent++;
+				} else if (isWarning(e)) {
+					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
 				} else {
-					if ( e.getLogEntry().contains(OLD_EVENT_PARENT)) {
-						addWarning(String.format("Node %d has error:[ %s ]", i, e.getLogEntry()));
-					}else {
-						unexpectedErrors++;
-						isValid = false;
-					}
+					unexpectedErrors++;
+					isValid = false;
+					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
 				}
 			}
 			if (socketExceptions > 0) {
@@ -175,9 +181,11 @@ public class ReconnectValidator extends NodeValidator {
 					continue; // try to find next START_RECONNECT
 				}
 			}
-			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR
+			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
+			// RECV_STATE_IO_EXCEPTION
 
-			LogEntry end = nodeLog.nextEntryContaining(Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR));
+			LogEntry end = nodeLog.nextEntryContaining(
+					Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
 				addError(String.format("Node %d started a reconnect, but did not finish!", nodeNum - 1));
 				isValid = false;
@@ -189,7 +197,7 @@ public class ReconnectValidator extends NodeValidator {
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
 				addInfo(String.format("Node %d reconnected, time taken %dms", nodeNum - 1, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
-				addError(String.format("Node %d hash error during receiving SignedState", nodeNum - 1));
+				addError(String.format("Node %d error during receiving SignedState", nodeNum - 1));
 				isValid = false;
 			}
 		}
@@ -201,13 +209,19 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber %d", nodeNum - 1, roundSup, savedStateStartRoundNumber));
+				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber " +
+								"%d",
+						nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
 
-			if (maxLastRoundSup - roundSup > lastRoundSupDiffLimit) {
+			if (minLastRoundSup - roundSup > lastRoundSupDiffLimit) {
 				isValid = false;
-				addError(String.format("Difference of last roundSup between reconnected Node %d with other nodes exceeds lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; reconnected node's last roundSup: %.0f.", nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
+				addError(String.format(
+						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
+								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; " +
+								"reconnected node's last roundSup: %.0f.",
+						nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
 
@@ -217,5 +231,14 @@ public class ReconnectValidator extends NodeValidator {
 	@Override
 	public boolean isValid() {
 		return isValidated && isValid;
+	}
+
+	private boolean isWarning(LogEntry e)
+	{
+		return e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
+				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
+				|| e.getLogEntry().contains(INVALID_PARENT)
+				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
+				|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG);
 	}
 }

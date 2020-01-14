@@ -88,9 +88,11 @@ public class LogParserV1 implements LogParser {
 
 	private static boolean isException(LogMarkerInfo marker, String s) {
 		s = s.toLowerCase();
+		// In SNAPSHOT_MANAGER log, it would contain "error=false" when it succeeds, we should not consider it to be an exception
 		return (marker != null &&
 				(marker.getType() == LogMarkerType.EXCEPTION ||
 						marker.getType() == LogMarkerType.ERROR))
 				|| s.contains("exception") || s.contains("error");
+
 	}
 }

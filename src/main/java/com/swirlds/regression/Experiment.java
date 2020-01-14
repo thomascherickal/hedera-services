@@ -382,9 +382,16 @@ public class Experiment {
 			}
 		}
 
+		// If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the event streams wont be generated, which would cause mismatch in evts files on the nodes
+		boolean reconnect = false;
+
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
 		for (ValidatorType item : testConfig.validators) {
+			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
+				reconnect = true;
+			}
+
 			List<NodeData> nodeData = loadNodeData(testConfig.getName());
 			if (nodeData == null || nodeData.size() == 0) {
 				slackMsg.addError("No data found for " + item);
@@ -402,7 +409,7 @@ public class Experiment {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()));
+					loadStreamingServerData(testConfig.getName()), reconnect);
 			requiredValidator.add(ssValidator);
 		}
 
