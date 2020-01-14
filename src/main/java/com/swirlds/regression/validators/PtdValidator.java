@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
@@ -81,7 +81,7 @@ public class PtdValidator extends NodeValidator {
 
 			if (nodeLog.getExceptionCount() > 0) {
 				for (LogEntry le : nodeLog.getExceptions()) {
-					if (le.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
 					} else if (le.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
 						addWarning(String.format("Node %d has exception:[ %s ]", i, le.getLogEntry()));
