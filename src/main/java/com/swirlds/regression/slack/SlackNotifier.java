@@ -92,7 +92,7 @@ public class SlackNotifier {
         String processResponseString;
         Process slackFile;
         try{
-            String uploadFileToSlackCmd = "curl -F file=@"+ fileLocation +"-F \"initial_comment=" + experimentName + " - Stats graph\" -F \"as_user=False\" -F \"channels="+ message.slackConfig.getChannel() +"\" -H \"Authorization: Bearer " + message.slackConfig.getBotToken() + "\" https://slack.com/api/files.upload";
+            String uploadFileToSlackCmd = "curl -F file=@"+ fileLocation +" -F \"initial_comment=" + experimentName + " - Stats graph\" -F \"as_user=False\" -F \"channels="+ message.slackConfig.getChannel() +"\" -H \"Authorization: Bearer " + message.slackConfig.getBotToken() + "\" https://slack.com/api/files.upload";
             System.out.println(uploadFileToSlackCmd);
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
