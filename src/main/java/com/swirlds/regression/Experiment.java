@@ -105,6 +105,7 @@ public class Experiment {
 
 	static final int EXPERIMENT_START_DELAY = 2;
 	static final int EXPERIMENT_FREEZE_SECOND_AFTER_STARTUP = 10;
+	static final String INSIGHT_CMD = "%s ./insight.py -p -d%s -g -cPlatformTesting -N";
 
 	private TestConfig testConfig;
 	private RegressionConfig regConfig;
@@ -442,7 +443,7 @@ public class Experiment {
 			System.out.println("exit: " + slackFile.exitValue());
 			slackFile.destroy();
 
-			String insightCmd = "python ./insight.py -p -d" + resultsFolder + " -g -cPlatformTesting -N";
+			String insightCmd = String.format(INSIGHT_CMD,RegressionUtilities.getPythonExecutable(),resultsFolder);
 			System.out.println(insightCmd);
 			slackFile = Runtime.getRuntime().exec(insightCmd);
 			br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));

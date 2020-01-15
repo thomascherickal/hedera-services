@@ -146,6 +146,8 @@ public class RegressionUtilities {
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
 
+	private static final String OS = System.getProperty("os.name").toLowerCase();
+
 	protected static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
 	}
@@ -318,5 +320,13 @@ public class RegressionUtilities {
 		}
 		return Arrays.stream(dir.listFiles()).filter(File::isFile)
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
+	}
+
+	public static String getPythonExecutable() {
+		String pythonExecutable = "python3";
+		if (OS.indexOf("win") >= 0) {
+			pythonExecutable = "python";
+		}
+		return pythonExecutable;
 	}
 }

@@ -18,6 +18,7 @@
 package com.swirlds.regression.slack;
 
 import com.swirlds.regression.GitInfo;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
@@ -145,17 +146,9 @@ public class SlackNotifierTester {
             ClassLoader classloader = Thread.currentThread().getContextClassLoader();
             String testFilePath = classloader.getResource(SLACK_TEST_FILE_LOCATION).getPath().replaceFirst("/", "").replace("/", "\\");
             String insightFilePath = new File(INSIGHT_FILE_LOCATION).getAbsolutePath();
-            String pythonExecutable = getPythonExecutable();
+            String pythonExecutable = RegressionUtilities.getPythonExecutable();
             String pythonCmd = String.format(BASE_PYTHON_STRING, pythonExecutable, insightFilePath, testFilePath);
             runExecCommand(pythonCmd);
-    }
-
-    private static String getPythonExecutable() {
-        String pythonExecutable = "python3";
-        if (OS.indexOf("win") >= 0) {
-            pythonExecutable = "python";
-        }
-        return pythonExecutable;
     }
 
     private static RegressionConfig getRegConfig() {
