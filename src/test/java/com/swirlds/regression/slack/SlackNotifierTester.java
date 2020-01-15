@@ -34,13 +34,24 @@ import java.util.Arrays;
 import static com.swirlds.regression.slack.SlackNotifier.createSlackNotifier;
 
 public class SlackNotifierTester {
+    private static final String BASE_CURL_STRING = "curl -F file=@%s -F \"initial_comment=%s - Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
+    private static final String SLACK_TOKEN = "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc";
+    private static final String SLACK_BOT_TOKEN = "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo";
+    private static final String SLACK_CHANNEL = "UA5K2LZ1D";
+    private static final String SLACK_FILE_TO_UPLOAD = "./regression/multipage_pdf.pdf";
+    private static final String SLACK_EXPERIMENT_NAME = "SlackUnitTestForFileUpload";
+
+    private static final String SLACK_TEST_FILE_LOCATION = "logs/PTD-FCM1K-success/";
+    private static final String INSIGHT_FILE_LOCATION = "regression/insight.py";
+
+    private static final String BASE_PYTHON_STRING = "%s %s -p -d%s -g -cPlatformTesting -N";
+    private static final String OS = System.getProperty("os.name").toLowerCase();
+
     public static void main(String[] args) throws IOException {
-        String slackToken = "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc";
-        String slackChannel = "UA5K2LZ1D";
 
         SlackNotifier sn = createSlackNotifier(
-                slackToken,
-                slackChannel);
+                SLACK_TOKEN,
+                SLACK_CHANNEL);
 
         //testNoExperiment(sn);
         testAllFeatures(sn);
@@ -101,30 +112,21 @@ public class SlackNotifierTester {
 //		System.out.println("--- end");
         sn.messageChannel(msg);
 
-        String s;
-        Process slackFile;
-        try {
-            slackFile = Runtime.getRuntime().exec("pwd");
-            BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
-            while ((s = br.readLine()) != null) {
-                System.out.println("line: " + s);
-            }
-            slackFile.waitFor();
-            System.out.println("exit: " + slackFile.exitValue());
-            slackFile.destroy();
-            slackFile = Runtime.getRuntime().exec("python3 ./regression/insight.py -p -dresults/20200109-0017-regression-TestMultiRegionIssues -g -cPlatformTesting");
-            br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
-            while ((s = br.readLine()) != null) {
-                System.out.println("line: " + s);
-            }
-            slackFile.waitFor();
-            System.out.println("exit: " + slackFile.exitValue());
-            slackFile.destroy();
+        runInsightScript();
 
-            slackFile = Runtime.getRuntime().exec("curl -F file=@./regression/multipage_pdf.pdf -F \"initial_comment=Stats graph\" -F \"channels=UA5K2LZ1D\" -H \"Authorization: Bearer xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc\" https://slack.com/api/files.upload");
-            br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
+        slackFileUpload();
+    }
+
+    private static void runExecCommand(String command) {
+        try {
+            Process slackFile;
+            BufferedReader br;
+            String s;
+            System.out.println(command);
+            slackFile = Runtime.getRuntime().exec(command);
+            br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
             while ((s = br.readLine()) != null) {
-                System.out.println("line: " + s);
+                //    System.out.println("line: " + s);
             }
             slackFile.waitFor();
             System.out.println("exit: " + slackFile.exitValue());
@@ -132,8 +134,28 @@ public class SlackNotifierTester {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
+    private static void slackFileUpload() {
+            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING, SLACK_FILE_TO_UPLOAD, SLACK_EXPERIMENT_NAME, SLACK_CHANNEL, SLACK_BOT_TOKEN);
+            runExecCommand(uploadFileToSlackCmd);
+    }
 
+    private static void runInsightScript() {
+            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+            String testFilePath = classloader.getResource(SLACK_TEST_FILE_LOCATION).getPath().replaceFirst("/", "").replace("/", "\\");
+            String insightFilePath = new File(INSIGHT_FILE_LOCATION).getAbsolutePath();
+            String pythonExecutable = getPythonExecutable();
+            String pythonCmd = String.format(BASE_PYTHON_STRING, pythonExecutable, insightFilePath, testFilePath);
+            runExecCommand(pythonCmd);
+    }
+
+    private static String getPythonExecutable() {
+        String pythonExecutable = "python3";
+        if (OS.indexOf("win") >= 0) {
+            pythonExecutable = "python";
+        }
+        return pythonExecutable;
     }
 
     private static RegressionConfig getRegConfig() {
