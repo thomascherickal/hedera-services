@@ -37,6 +37,8 @@ public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
+    private static final String BASE_CURL_STRING = "curl -F file=@%s -F \"initial_comment=%s - Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
+
     private final SlackClient slackClient;
     private String channel;
 
@@ -92,9 +94,7 @@ public class SlackNotifier {
         String processResponseString;
         Process slackFile;
         try{
-            final String BASE_CURL_STRING = "curl -F file=@%s -F \"initial_comment=%s - Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
             String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
-            System.out.println(uploadFileToSlackCmd);
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
             while((processResponseString = br.readLine()) != null){
