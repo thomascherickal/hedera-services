@@ -24,6 +24,7 @@ import com.hubspot.slack.client.SlackClient;
 import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.SlackError;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
+import com.swirlds.regression.ExecStreamReader;
 import com.swirlds.regression.RegressionUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,16 +32,12 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.Buffer;
 import java.util.Arrays;
 
 public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
-
-    private static final String BASE_CURL_STRING = "curl -F \"file=@%s\" -F \"initial_comment=%s-Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
+    private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
 
     private final SlackClient slackClient;
     private String channel;
@@ -93,46 +90,48 @@ public class SlackNotifier {
         }
     }
 
-    public void uploadFile(SlackTestMsg message, String fileLocation, String experimentName){
+    public void uploadFile(SlackTestMsg message, String fileLocation, String experimentName) {
         String processResponseString;
         Process slackFile;
         BufferedReader br;
-        try{
-            if(!RegressionUtilities.isWindows()) {
-                slackFile = Runtime.getRuntime().exec(new String[]{"chmod", "777", fileLocation});
+        if (!RegressionUtilities.isWindows()) {
+            ExecStreamReader.outputProcessStreams(new String[]{"chmod", "777", fileLocation});
+               /* slackFile = Runtime.getRuntime().exec(new String[]{"chmod", "777", fileLocation});
                 br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
                 while ((processResponseString = br.readLine()) != null) {
-                    System.out.println("line: " + processResponseString);
+                    log.trace(MARKER,"chmod line: {}", processResponseString);
                 }
                 slackFile.waitFor();
-                System.out.println("exit: " + slackFile.exitValue());
-                slackFile.destroy();
-            }
+                log.info(MARKER,"chmod exit: {}", slackFile.exitValue());
+                slackFile.destroy();*/
+        }
 
-            String fOption = "-F";
-            String hOption = "-H";
-            String fileOption = String.format("file=@%s",fileLocation);
-            String commentOption = String.format("initial_comment=%s-Stats graph",experimentName);
-            String userOption = String.format("as_user=False");
-            String channelOption = String.format("channels=%s",message.slackConfig.getChannel());
-            String authOption = String.format("Authorization: Bearer %s", message.slackConfig.getBotToken());
-            String slackOption = String.format("https://slack.com/api/files.upload");
+        String[] uploadFileToSlackCmd = buildCurlString(message, fileLocation, experimentName);
+        ExecStreamReader.outputProcessStreams(uploadFileToSlackCmd);
 
-            String [] uploadFileToSlackCmd = new String [] {"curl", fOption, fileOption, fOption, commentOption, fOption, userOption, fOption, channelOption, hOption, authOption, slackOption};
-//            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
-            System.out.println(Arrays.toString(uploadFileToSlackCmd));
-
-            slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
+            /*slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
             while((processResponseString = br.readLine()) != null){
-                System.out.println("line: " + processResponseString);
+                log.trace("curl line: {}", processResponseString);
             }
             slackFile.waitFor();
-            System.out.println("exit: " + slackFile.exitValue());
-            slackFile.destroy();
-        } catch (IOException | InterruptedException e){
-            e.printStackTrace();
-        }
+            log.info(MARKER,"curl exit: {}", slackFile.exitValue());
+            slackFile.destroy();*/
+    }
+
+    public String[] buildCurlString(SlackTestMsg message, String fileLocation, String experimentName) {
+        String fOption = "-F";
+        String hOption = "-H";
+        String fileOption = String.format("file=@%s", fileLocation);
+        String commentOption = String.format("initial_comment=%s-Stats graph", experimentName);
+        String userOption = String.format("as_user=False");
+        String channelOption = String.format("channels=%s", message.slackConfig.getChannel());
+        String authOption = String.format("Authorization: Bearer %s", message.slackConfig.getBotToken());
+        String slackOption = String.format("https://slack.com/api/files.upload");
+
+        String[] uploadFileToSlackCmd = new String[]{"curl", fOption, fileOption, fOption, commentOption, fOption, userOption, fOption, channelOption, hOption, authOption, slackOption};
+        log.info(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
+        return uploadFileToSlackCmd;
     }
 
     private void setChannel(String channel) {

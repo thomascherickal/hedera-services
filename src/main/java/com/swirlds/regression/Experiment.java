@@ -431,31 +431,27 @@ public class Experiment {
 	}
 
 	private void createStatsFile(String resultsFolder) {
-		String processResponseString;
-		Process slackFile;
-		try{
-			slackFile = Runtime.getRuntime().exec("pwd");
-			BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
-			while((processResponseString = br.readLine()) != null){
-				System.out.println("line: " + processResponseString);
-			}
-			slackFile.waitFor();
-			System.out.println("exit: " + slackFile.exitValue());
-			slackFile.destroy();
+		//String processResponseString;
+		//Process slackFile;
+		//BufferedReader br;
+		//String cmd = "insight.py";
+		//try{
 
-			String insightCmd = String.format(INSIGHT_CMD,RegressionUtilities.getPythonExecutable(),resultsFolder);
-			System.out.println(insightCmd);
+			String[] insightCmd = String.format(INSIGHT_CMD,RegressionUtilities.getPythonExecutable(),resultsFolder).split(" ");
+			ExecStreamReader.outputProcessStreams(insightCmd);
+			/*System.out.println(insightCmd);
 			slackFile = Runtime.getRuntime().exec(insightCmd);
+			ExecStreamReader.outputProcessStreams(slackFile,cmd);
 			br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
 			while((processResponseString = br.readLine()) != null){
-				System.out.println("line: " + processResponseString);
+				log.info(MARKER,"{} line: {}",cmd, processResponseString);
 			}
 			slackFile.waitFor();
-			System.out.println("exit: " + slackFile.exitValue());
+			log.info(MARKER,"{} exit: {}",cmd, slackFile.exitValue());
 			slackFile.destroy();
-		} catch (IOException | InterruptedException e){
-			e.printStackTrace();
-		}
+		} catch (IOException e){
+			log.error(ERROR,"failed to executre {}",cmd,e);
+		}*/
 	}
 
 	public void sendSettingFileToNodes() {
