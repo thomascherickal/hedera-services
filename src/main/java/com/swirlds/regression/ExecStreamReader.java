@@ -5,7 +5,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class ExecStreamReader {
     private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -22,7 +24,6 @@ public class ExecStreamReader {
             // Final versions of the the params, to be used within the threads
             final BufferedReader stdOut = new BufferedReader(new InputStreamReader(process.getInputStream()));
             final BufferedReader stdErr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            final BufferedWriter stdIn = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
             // Thread that reads std out and feeds the writer given in input
             new Thread() {

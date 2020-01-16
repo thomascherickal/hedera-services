@@ -31,13 +31,20 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import java.io.BufferedReader;
 import java.util.Arrays;
 
 public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
     private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
+    public static final String CURL_FILE_OPTION = "file=@%s";
+    public static final String CURL_INITIAL_COMMENT_OPTION = "initial_comment=%s-Stats graph";
+    public static final String CURL_AS_USER_FALSE = "as_user=False";
+    public static final String CURL_CHANNELS = "channels=%s";
+    public static final String CURL_AUTHORIZATION_TOKEN = "Authorization: Bearer %s";
+    public static final String CURL_FILE_UPLOAD_ADDRESS = "https://slack.com/api/files.upload";
+    public static final String CURL_DASH_F = "-F";
+    public static final String CURL_DASH_H = "-H";
 
     private final SlackClient slackClient;
     private String channel;
@@ -91,46 +98,24 @@ public class SlackNotifier {
     }
 
     public void uploadFile(SlackTestMsg message, String fileLocation, String experimentName) {
-        String processResponseString;
-        Process slackFile;
-        BufferedReader br;
+        /* If unix based change file to be universally accessible so curl can open it. */
         if (!RegressionUtilities.isWindows()) {
             ExecStreamReader.outputProcessStreams(new String[]{"chmod", "777", fileLocation});
-               /* slackFile = Runtime.getRuntime().exec(new String[]{"chmod", "777", fileLocation});
-                br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
-                while ((processResponseString = br.readLine()) != null) {
-                    log.trace(MARKER,"chmod line: {}", processResponseString);
-                }
-                slackFile.waitFor();
-                log.info(MARKER,"chmod exit: {}", slackFile.exitValue());
-                slackFile.destroy();*/
         }
 
+        /* build the curl command and execute it to upload graph files to slack */
         String[] uploadFileToSlackCmd = buildCurlString(message, fileLocation, experimentName);
         ExecStreamReader.outputProcessStreams(uploadFileToSlackCmd);
-
-            /*slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
-            br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
-            while((processResponseString = br.readLine()) != null){
-                log.trace("curl line: {}", processResponseString);
-            }
-            slackFile.waitFor();
-            log.info(MARKER,"curl exit: {}", slackFile.exitValue());
-            slackFile.destroy();*/
     }
 
-    public String[] buildCurlString(SlackTestMsg message, String fileLocation, String experimentName) {
-        String fOption = "-F";
-        String hOption = "-H";
-        String fileOption = String.format("file=@%s", fileLocation);
-        String commentOption = String.format("initial_comment=%s-Stats graph", experimentName);
-        String userOption = String.format("as_user=False");
-        String channelOption = String.format("channels=%s", message.slackConfig.getChannel());
-        String authOption = String.format("Authorization: Bearer %s", message.slackConfig.getBotToken());
-        String slackOption = String.format("https://slack.com/api/files.upload");
+    public static String[] buildCurlString(SlackTestMsg message, String fileLocation, String experimentName) {
+        String fileOption = String.format(CURL_FILE_OPTION, fileLocation);
+        String commentOption = String.format(CURL_INITIAL_COMMENT_OPTION, experimentName);
+        String channelOption = String.format(CURL_CHANNELS, message.slackConfig.getChannel());
+        String botAuthToken = String.format(CURL_AUTHORIZATION_TOKEN, message.slackConfig.getBotToken());
 
-        String[] uploadFileToSlackCmd = new String[]{"curl", fOption, fileOption, fOption, commentOption, fOption, userOption, fOption, channelOption, hOption, authOption, slackOption};
-        log.info(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
+        String[] uploadFileToSlackCmd = new String[]{"curl", CURL_DASH_F, fileOption, CURL_DASH_F, commentOption, CURL_DASH_F, CURL_AS_USER_FALSE, CURL_DASH_F, channelOption, CURL_DASH_H, botAuthToken, CURL_FILE_UPLOAD_ADDRESS};
+        log.trace(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
         return uploadFileToSlackCmd;
     }
 
