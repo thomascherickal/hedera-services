@@ -24,6 +24,7 @@ import com.hubspot.slack.client.SlackClient;
 import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.response.SlackError;
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
+import com.swirlds.regression.RegressionUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -32,6 +33,7 @@ import org.apache.logging.log4j.MarkerManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.util.Arrays;
 
 public class SlackNotifier {
@@ -94,23 +96,34 @@ public class SlackNotifier {
     public void uploadFile(SlackTestMsg message, String fileLocation, String experimentName){
         String processResponseString;
         Process slackFile;
+        BufferedReader br;
         try{
-            //String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
-            //System.out.println(uploadFileToSlackCmd);
+            if(!RegressionUtilities.isWindows()) {
+                slackFile = Runtime.getRuntime().exec(new String[]{"chmod", "777", fileLocation});
+                br = new BufferedReader(new InputStreamReader(slackFile.getInputStream()));
+                while ((processResponseString = br.readLine()) != null) {
+                    System.out.println("line: " + processResponseString);
+                }
+                slackFile.waitFor();
+                System.out.println("exit: " + slackFile.exitValue());
+                slackFile.destroy();
+            }
+
             String fOption = "-F";
             String hOption = "-H";
-            String fileOption = String.format("-F \"file=@%s\"",fileLocation);
-            String commentOption = String.format("-F \"initial_comment=%s-Stats graph\"",experimentName);
-            String userOption = String.format("-F \"as_user=False\"");
-            String channelOption = String.format("-F \"channels=%s\"",message.slackConfig.getChannel());
-            String authOption = String.format(" -H \"Authorization: Bearer %s\"", message.slackConfig.getBotToken());
+            String fileOption = String.format("file=@%s",fileLocation);
+            String commentOption = String.format("initial_comment=%s-Stats graph",experimentName);
+            String userOption = String.format("as_user=False");
+            String channelOption = String.format("channels=%s",message.slackConfig.getChannel());
+            String authOption = String.format("Authorization: Bearer %s", message.slackConfig.getBotToken());
             String slackOption = String.format("https://slack.com/api/files.upload");
+
             String [] uploadFileToSlackCmd = new String [] {"curl", fOption, fileOption, fOption, commentOption, fOption, userOption, fOption, channelOption, hOption, authOption, slackOption};
 //            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
             System.out.println(Arrays.toString(uploadFileToSlackCmd));
 
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
-            BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
+            br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
             while((processResponseString = br.readLine()) != null){
                 System.out.println("line: " + processResponseString);
             }

@@ -322,9 +322,13 @@ public class RegressionUtilities {
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
 	}
 
+	public static boolean isWindows(){
+		return OS.indexOf("win") >= 0;
+	}
+
 	public static String getPythonExecutable() {
 		String pythonExecutable = "python3";
-		if (OS.indexOf("win") >= 0) {
+		if (isWindows()) {
 			pythonExecutable = "python";
 		}
 		return pythonExecutable;
