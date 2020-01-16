@@ -37,7 +37,7 @@ public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
-    private static final String BASE_CURL_STRING = "curl -F file=@%s -F \"initial_comment=%s - Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
+    private static final String BASE_CURL_STRING = "curl -F \"file=@%s\" -F \"initial_comment=%s-Stats graph\" -F \"as_user=False\" -F \"channels=%s\" -H \"Authorization: Bearer %s\" https://slack.com/api/files.upload";
 
     private final SlackClient slackClient;
     private String channel;
@@ -94,8 +94,18 @@ public class SlackNotifier {
         String processResponseString;
         Process slackFile;
         try{
-            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
-            System.out.println(uploadFileToSlackCmd);
+            //String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
+            //System.out.println(uploadFileToSlackCmd);
+            String fileOption = String.format("-F \"file=@%s\"",fileLocation);
+            String commentOption = String.format("-F \"initial_comment=%s-Stats graph\"",experimentName);
+            String userOption = String.format("-F \"as_user=False\"");
+            String channelOption = String.format("-F \"channels=%s\"",message.slackConfig.getChannel());
+            String authOption = String.format(" -H \"Authorization: Bearer %s\"", message.slackConfig.getBotToken());
+            String slackOption = String.format("https://slack.com/api/files.upload");
+            String [] uploadFileToSlackCmd = new String [] {"curl", fileOption, commentOption, userOption, channelOption, authOption, slackOption};
+//            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
+            System.out.println(uploadFileToSlackCmd.toString());
+
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
             while((processResponseString = br.readLine()) != null){
