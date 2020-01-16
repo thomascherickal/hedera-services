@@ -32,6 +32,7 @@ import org.apache.logging.log4j.MarkerManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class SlackNotifier {
     private static final Logger log = LogManager.getLogger(SlackNotifier.class);
@@ -96,15 +97,17 @@ public class SlackNotifier {
         try{
             //String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
             //System.out.println(uploadFileToSlackCmd);
+            String fOption = "-F";
+            String hOption = "-H";
             String fileOption = String.format("-F \"file=@%s\"",fileLocation);
             String commentOption = String.format("-F \"initial_comment=%s-Stats graph\"",experimentName);
             String userOption = String.format("-F \"as_user=False\"");
             String channelOption = String.format("-F \"channels=%s\"",message.slackConfig.getChannel());
             String authOption = String.format(" -H \"Authorization: Bearer %s\"", message.slackConfig.getBotToken());
             String slackOption = String.format("https://slack.com/api/files.upload");
-            String [] uploadFileToSlackCmd = new String [] {"curl", fileOption, commentOption, userOption, channelOption, authOption, slackOption};
+            String [] uploadFileToSlackCmd = new String [] {"curl", fOption, fileOption, fOption, commentOption, fOption, userOption, fOption, channelOption, hOption, authOption, slackOption};
 //            String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
-            System.out.println(uploadFileToSlackCmd.toString());
+            System.out.println(Arrays.toString(uploadFileToSlackCmd));
 
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
