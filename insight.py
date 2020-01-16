@@ -27,129 +27,9 @@ import os
 import platform
 import pprint
 import sys
+from datetime import datetime
+
 import matplotlib
-
-from datetime import datetime, timedelta, timezone
-
-def _parse_isoformat_date(dtstr):
-    # It is assumed that this function will only be called with a
-    # string of length exactly 10, and (though this is not used) ASCII-only
-    year = int(dtstr[0:4])
-    if dtstr[4] != '-':
-        raise ValueError('Invalid date separator: %s' % dtstr[4])
-
-    month = int(dtstr[5:7])
-
-    if dtstr[7] != '-':
-        raise ValueError('Invalid date separator')
-
-    day = int(dtstr[8:10])
-
-    return [year, month, day]
-
-
-def _parse_hh_mm_ss_ff(tstr):
-    # Parses things of the form HH[:MM[:SS[.fff[fff]]]]
-    len_str = len(tstr)
-
-    time_comps = [0, 0, 0, 0]
-    pos = 0
-    for comp in range(0, 3):
-        if (len_str - pos) < 2:
-            raise ValueError('Incomplete time component')
-
-        time_comps[comp] = int(tstr[pos:pos+2])
-
-        pos += 2
-        next_char = tstr[pos:pos+1]
-
-        if not next_char or comp >= 2:
-            break
-
-        if next_char != ':':
-            raise ValueError('Invalid time separator: %c' % next_char)
-
-        pos += 1
-
-    if pos < len_str:
-        if tstr[pos] != '.':
-            raise ValueError('Invalid microsecond component')
-        else:
-            pos += 1
-
-            len_remainder = len_str - pos
-            if len_remainder not in (3, 6):
-                raise ValueError('Invalid microsecond component')
-
-            time_comps[3] = int(tstr[pos:])
-            if len_remainder == 3:
-                time_comps[3] *= 1000
-
-    return time_comps
-
-
-def _parse_isoformat_time(tstr):
-    # Format supported is HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]
-    len_str = len(tstr)
-    if len_str < 2:
-        raise ValueError('Isoformat time too short')
-
-    # This is equivalent to re.search('[+-]', tstr), but faster
-    tz_pos = (tstr.find('-') + 1 or tstr.find('+') + 1)
-    timestr = tstr[:tz_pos-1] if tz_pos > 0 else tstr
-
-    time_comps = _parse_hh_mm_ss_ff(timestr)
-
-    tzi = None
-    if tz_pos > 0:
-        tzstr = tstr[tz_pos:]
-
-        # Valid time zone strings are:
-        # HH:MM               len: 5
-        # HH:MM:SS            len: 8
-        # HH:MM:SS.ffffff     len: 15
-
-        if len(tzstr) not in (5, 8, 15):
-            raise ValueError('Malformed time zone string')
-
-        tz_comps = _parse_hh_mm_ss_ff(tzstr)
-        if all(x == 0 for x in tz_comps):
-            tzi = timezone.utc
-        else:
-            tzsign = -1 if tstr[tz_pos - 1] == '-' else 1
-
-            td = timedelta(hours=tz_comps[0], minutes=tz_comps[1],
-                           seconds=tz_comps[2], microseconds=tz_comps[3])
-
-            tzi = timezone(tzsign * td)
-
-    time_comps.append(tzi)
-
-    return time_comps
-
-def datetime_from_isformat(date_string):
-    """Construct a datetime from the output of datetime.isoformat()."""
-    if not isinstance(date_string, str):
-        raise TypeError('fromisoformat: argument must be str')
-
-    # Split this at the separator
-    dstr = date_string[0:10]
-    tstr = date_string[11:]
-
-    try:
-        date_components = _parse_isoformat_date(dstr)
-    except ValueError:
-        raise ValueError(f'Invalid isoformat string: {date_string!r}')
-
-    if tstr:
-        try:
-            time_components = _parse_isoformat_time(tstr)
-        except ValueError:
-            raise ValueError(f'Invalid isoformat string: {date_string!r}')
-    else:
-        time_components = [0, 0, 0, 0, None]
-
-    return datetime(*(date_components + time_components))
 
 # enable non-interactive mode if no DISPLAY defined in environment
 # this is for running script as backend to generate PDF, PNG, etc
@@ -249,7 +129,7 @@ class PageSlider(matplotlib.widgets.Slider):
 
 
 ##############################
-# default global 
+# default global
 ##############################
 
 # key log information to analyze in swirlds.log
@@ -409,7 +289,8 @@ default_stat_names = [
     "cEvents/sec", "sigVerifyAsync/sec", "sigVerifySync/sec", "secTransH",
     "expandDoneWaitCount", "expandDoneWaitTime", "zeroSigsCountExpand", "zeroSigsCountHandle",
     "threads", "stateSigs", "secStateCopy", "acctLookupRetries/sec",
-    "avgAcctLookupRetryAttempts", "avgAcctRetryWaitMs", "fracSyncSlowed"
+    "avgAcctLookupRetryAttempts", "avgAcctRetryWaitMs", "fracSyncSlowed",
+    "conns", "events/sec", "rescuedEv/sec","rounds/sec","ping"
 ]
 
 occuurence = {
@@ -418,7 +299,7 @@ occuurence = {
 
 SWIRLDS_LOG = "swirlds.log"
 
-# use multi thread for scanning 
+# use multi thread for scanning
 threads = []
 
 use_thread = True
@@ -599,7 +480,7 @@ def scan_invalid_state(file_name):
     invalid_state_dict.update({nodeid: my_dict})
 
 
-# 
+#
 # given a file, search the key words appears how many times
 # insert result in stat_data_dict
 #
@@ -633,7 +514,7 @@ def search_log_file(file_name, search_dict):
 
             # pp.pprint(stat_data_dict[keyword])
 
-        # search exception 
+        # search exception
         # with open(file_name, 'r') as searchfile:
         #     print (" ------   File name ", file_name, " ---------")
         #     for line in searchfile:
@@ -645,22 +526,22 @@ def search_log_file(file_name, search_dict):
         print("Failed to open file ", file_name, " size too big ? size = ", os.path.getsize(file_name))
 
 
-# 
+#
 # given a GC log file, search the key words appears find its time stamp and values
 #
 #
 #  {  "Gc_Pauses" : {
 #         "0" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #         "1" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #         "2" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #  }
 #
@@ -706,7 +587,7 @@ def search_gc_log_file(file_name, search_dict):
         print("Failed to open file ", file_name, " size too big ? size = ", os.path.getsize(file_name))
 
 
-# 
+#
 # given a file list, search the key words appears how many times
 #
 def search_log_in_list(file_list, search_dict):
@@ -735,7 +616,7 @@ def search_gc_log_in_list(file_list, search_dict):
             search_gc_log_file(file_name, search_dict)
 
 
-# 
+#
 # extrat data from csv file given a stat list
 #
 def extract_stat_data(file, stat_name_list):
@@ -781,7 +662,7 @@ def extract_stat_data(file, stat_name_list):
                         # convert UTC timestamp to epoch time
                         if pos_map[j] == "time":
                             column = column.replace(" UTC", "")
-                            column = datetime_from_isformat(column).timestamp()
+                            column = datetime.fromisoformat(column).timestamp()
                             this_row_timestamp = int(column)
                             if (this_row_timestamp - last_row_timestamp) > 5:  # csv raws has big gap
                                 csv_gap_counter = csv_gap_counter + 1
@@ -809,7 +690,7 @@ def extract_stat_data(file, stat_name_list):
     print("file ", file, " has ", csv_gap_counter, " big csv gaps ")
 
 
-# 
+#
 # extrat data from csv file list and save in map
 #
 def extract_list(file_list, stat_name_list):
@@ -840,7 +721,7 @@ def number_array_min_max_avg(stat_name, numbers):
 
 
 # Draw graph of the given statistic
-# 
+#
 # stat_name
 #       name of statistic
 # fig_count
@@ -925,7 +806,7 @@ def draw_subplot(stat_name, fig_count):
                 else:
                     lines = sub_axes[row, column].plot(xlables_new, sampled_values)
                 lines[0].set_linestyle(LINE_STYLES[i % NUM_STYLES])
-                # lines[0].set_color(LINE_COLORS[i%NUM_COLORS])  
+                # lines[0].set_color(LINE_COLORS[i%NUM_COLORS])
                 line_ref.append(lines[0])
                 nodeid_ref.append(nodeid)
 
@@ -990,10 +871,6 @@ def press(event):
             print('Last directory already, could not move to next one')
             print('\a')  # beep since this is the last
 
-    else:
-        # ignore all other key strokes to avoid redraw graph unnecessariliy
-        return
-
     slider.set_val(current_page)
     slider._colorize(current_page)
     # print ("update page ", current_page)
@@ -1029,7 +906,7 @@ def find_prefix_dir(prefix):
 
 #
 # scan platform stat csv fils given a directory
-# 
+#
 def scan_csv_files(directory):
     # find a list of csv files
     csv_file_list = []
@@ -1080,7 +957,7 @@ def clear_data():
 #
 #  list subdirectoreis under target directory
 #  and prompt user to select one subdirectory
-#  then scan csv and swirlds.log under the 
+#  then scan csv and swirlds.log under the
 #  selected subdirectory and save data
 #  in global variable stat_data_dict
 #
@@ -1089,7 +966,7 @@ def scan_csv_and_logs():
     global choose_directory
 
     if len(PARAMETER.autoScan) > 0:
-        # auto scan mode to scan all subdirectories with defined prefix and 
+        # auto scan mode to scan all subdirectories with defined prefix and
         # print out summary
         direcotry_list = find_prefix_dir(PARAMETER.autoScan)
         for direcotry in direcotry_list:
@@ -1207,14 +1084,10 @@ def align_time_stamp():
     # timestamp of all nodes
     min = 2 ** 31 - 1
     for nodeid, values in timestamps.items():
-        try:
-            first_value = values[0]
-            if first_value < min:
-                min = first_value
-            print(" last UTC time string ", values[-1])
-        except IndexError:  #handle sometimes truncated CSV files
-            pp.pprint(values)
-        
+        first_value = values[0]
+        if first_value < min:
+            min = first_value
+        print(" last UTC time string ", values[-1])
 
     print(" find min UTC time ", min)
 

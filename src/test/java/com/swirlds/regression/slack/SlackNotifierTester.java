@@ -79,7 +79,7 @@ public class SlackNotifierTester {
         SlackTestMsg msg = new SlackTestMsg(
                 getRegConfig(),
                 getTestConfig(),
-                "20200109-0017-regression-TestMultiRegionIssues",
+                SLACK_TEST_FILE_LOCATION,
                 gi
         );
 
