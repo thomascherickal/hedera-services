@@ -95,6 +95,7 @@ public class SlackNotifier {
         Process slackFile;
         try{
             String uploadFileToSlackCmd = String.format(BASE_CURL_STRING,fileLocation,experimentName,message.slackConfig.getChannel(), message.slackConfig.getBotToken());
+            System.out.println(uploadFileToSlackCmd);
             slackFile = Runtime.getRuntime().exec(uploadFileToSlackCmd);
             BufferedReader br = new BufferedReader(new InputStreamReader(slackFile.getErrorStream()));
             while((processResponseString = br.readLine()) != null){
