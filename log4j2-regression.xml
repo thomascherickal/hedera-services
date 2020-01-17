@@ -26,6 +26,7 @@
     <MarkerFilter marker="TCP_CONNECT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
     <!-- Errors -->
     <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT_DISCARD"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <!-- Other -->
     <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_FROM_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>

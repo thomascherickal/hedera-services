@@ -7,7 +7,7 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M410xlarge",
 	"instanceKey": "ATF-Key",
 	"keyLocation":"./keys/my-key",
@@ -16,6 +16,7 @@
 	  { "region":"us-east-1", "numberOfNodes":4}
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
