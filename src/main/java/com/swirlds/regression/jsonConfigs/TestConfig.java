@@ -191,7 +191,7 @@ public class TestConfig implements FileRequirement {
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
-		add(list, freezeConfig, app);
+		add(list, freezeConfig, recoverConfig, app);
 		return list;
 	}
 

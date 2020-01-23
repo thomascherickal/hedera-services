@@ -520,7 +520,7 @@ public class Experiment {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-			loadStreamingServerData(testConfig.getName()), reconnect);
+					loadStreamingServerData(testConfig.getName()), reconnect);
 			if (testConfig.getRunType() == RunType.RECOVER) {
 				ssValidator.setStateRecoverMode(true);
 			}
@@ -995,7 +995,7 @@ public class Experiment {
 	 * The number of deleted states are random generated based on current number
 	 * of saved states
 	 */
-	public void randomDeleteLastNSignedStates() {
+	public boolean randomDeleteLastNSignedStates() {
 		SSHService node0 = sshNodes.get(0);
 		int savedStatesAmount = node0.getNumberOfSignedStates();
 		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
@@ -1007,6 +1007,11 @@ public class Experiment {
 
 			deleteLastNSignedStates(randNum);
 		}
+		if (savedStatesAmount == 0) {
+			log.error(ERROR, "no signed state saved, cannot continue recover test");
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -1033,6 +1038,16 @@ public class Experiment {
 			node.displaySignedStates(memo);
 		}
 	}
+
+	/**
+	 * Restore database from backup file
+	 */
+	public void recoverDatabase() {
+		for (SSHService node : sshNodes) {
+			node.recoverDatabase();
+		}
+	}
+
 
 	/**
 	 * Compare event files generated during recover mode whether match original ones

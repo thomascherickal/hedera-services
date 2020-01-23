@@ -59,7 +59,9 @@ public class RecoverStateRun implements TestRun {
 		 Stage 2 recover run
 		 **************************/
 		// delete old states
-		experiment.randomDeleteLastNSignedStates();
+		if (!experiment.randomDeleteLastNSignedStates()) {
+			return;
+		}
 
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
@@ -71,6 +73,9 @@ public class RecoverStateRun implements TestRun {
 
 		experiment.sendSettingFileToNodes();
 		experiment.sendConfigToNodes();
+
+		// unzip database backup file and restore
+		experiment.recoverDatabase();
 
 		// start all processes
 		experiment.startAllSwirlds();
