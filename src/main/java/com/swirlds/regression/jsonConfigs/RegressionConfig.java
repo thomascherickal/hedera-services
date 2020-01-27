@@ -33,7 +33,7 @@ public class RegressionConfig {
 
 	private String name;
 	private int eventFilesWriters = 0;
-	private boolean uploadToSharePoint = true;
+	private boolean uploadToSharePoint = false;
 	private String jvmOptions = "";
 
 

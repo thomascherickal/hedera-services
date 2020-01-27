@@ -26,7 +26,7 @@ public class SlackConfig {
 	private String botToken;
 	private String channel;
 	private SlackTestMsg.NotifyOn notifyOn = SlackTestMsg.NotifyOn.ERROR;
-	private boolean notifyChannel = true;
+	private boolean notifyChannel = false;
 	private List<String> notifyUserIds = null;
 
 	public String getToken() {
