@@ -990,6 +990,11 @@ public class Experiment {
 		return settingsFile;
 	}
 
+	public int getNumberOfSignedStates(){
+		SSHService node0 = sshNodes.get(0);
+		return node0.getNumberOfSignedStates();
+	}
+
 	/**
 	 * Delete last few saved states from all nodes.
 	 * The number of deleted states are random generated based on current number
@@ -1048,7 +1053,24 @@ public class Experiment {
 		}
 	}
 
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	public void backupSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.backupSavedSignedState(tempDir);
+		}
+	}
 
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	public void restoreSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.restoreSavedSignedState(tempDir);
+		}
+	}
+	
 	/**
 	 * Compare event files generated during recover mode whether match original ones
 	 *

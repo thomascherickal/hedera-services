@@ -896,21 +896,39 @@ public class SSHService {
 		// get the last state directory
 		String restoreCmd = "cd " + targetDir + "; tar -xf PostgresBackup.tar.gz; pwd  ";
 		Session.Command cmd = executeCmd(restoreCmd);
-		log.info(MARKER, "Node {}: Unzip data base result is", ipAddress, readCommandOutput(cmd).toString());
+		log.info(MARKER, "Node {}: Unzip data base result is {}", ipAddress, readCommandOutput(cmd).toString());
 
 
-//		restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION  + "drop_database.psql\" ";
-//		cmd = executeCmd(restoreCmd);
-//		log.info(MARKER, "Node {}: Drop data base result is", ipAddress, readCommandOutput(cmd).toString());
-
-		restoreCmd = "cd " + targetDir + "; "+
-				" sudo -u postgres pg_restore -C --format=d --dbname=fcfs --clean  " +
-				" ./ ; cd -";
-
-		log.info(MARKER, "Before run cmd {}", restoreCmd);
+		restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION  + "drop_database.psql\" ";
 		cmd = executeCmd(restoreCmd);
-		log.info(MARKER, "Node {}: Restore data base result is", ipAddress, readCommandOutput(cmd).toString());
+		log.info(MARKER, "Node {}: Drop data base result is {}", ipAddress, readCommandOutput(cmd).toString());
 
+		restoreCmd = "cd " + targetDir + ";  sudo -u postgres createdb fcfs ; "+
+				" chmod 666 * ;" +  // enable access
+				" sudo -u postgres pg_restore  --format=d --dbname=fcfs ./ ; cd -";
+
+		log.info(MARKER, "Before run cmd {}:", restoreCmd);
+		cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+	}
+
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	void backupSavedSignedState(String tempDir){
+		String cpCmd = "cp -r " + REMOTE_STATE_LOCATION + " " + tempDir;
+		Session.Command cmd = executeCmd(cpCmd);
+	}
+
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	void restoreSavedSignedState(String tempDir){
+		String rmCmd = " rm -rf " + REMOTE_STATE_LOCATION + "/* ; ";
+		String cpCmd = "cp -r " + tempDir + "/* " + REMOTE_STATE_LOCATION + " ; ";
+		String lsCmd = " ls " + REMOTE_STATE_LOCATION;
+		Session.Command cmd = executeCmd(rmCmd + cpCmd + lsCmd);
 	}
 
 	private void deleteSignedState(SavedStatePathInfo state) {

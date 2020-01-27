@@ -109,4 +109,34 @@ public class RecoverStateRun implements TestRun {
 				checkerList);
 	}
 
+	boolean compareStateVSDatabase(Experiment experiment, long testDuration, List<BooleanSupplier> checkerList) {
+		// delete last states
+		experiment.deleteLastNSignedStates(1);
+
+		// unzip database backup file and restore
+		experiment.recoverDatabase();
+
+		// start all processes
+		experiment.startAllSwirlds();
+
+		// sleep through the rest of the test
+		experiment.sleepThroughExperimentWithCheckerList(testDuration,
+				checkerList);
+
+		return true;
+	}
+
+	void checkStateVSDatabase(Experiment experiment, List<BooleanSupplier> checkerList) {
+
+		SettingsBuilder settingsBuilder = experiment.getSettingsFile();
+		settingsBuilder.addSetting("saveStatePeriod", "12000"); //avoid saving new signed state
+		experiment.sendSettingFileToNodes();
+		experiment.sendConfigToNodes();
+
+
+		int number = experiment.getNumberOfSignedStates();
+		for (int i = 0; i < number-1; i++) {
+			compareStateVSDatabase(experiment, 61_000L, checkerList);
+		}
+	}
 }

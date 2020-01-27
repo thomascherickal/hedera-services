@@ -17,7 +17,7 @@
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMBlob1K.json"]
+    "parameterList": ["FCMBlob1KRecover.json"]
   },
   "resultFiles": [
     "swirlds.log"
