@@ -108,6 +108,7 @@ sdk/data/saved
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+.idea/**/libraries
 
 
 # Graphing CLI Results & Graphs Folders
