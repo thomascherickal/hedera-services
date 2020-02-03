@@ -65,7 +65,7 @@ public class RegressionUtilities {
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
 	public static final int SHA1_DIVISOR = 25;
-	public static final long JAVA_PROC_CHECK_INTERVAL = 1 * 60 * 1000; // min * sec * millis
+	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis
 	public static final int MB = 1024 * 1024;
 	public static final String CHECK_JAVA_PROC_COMMAND = "pgrep -fl java";
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
@@ -120,6 +120,9 @@ public class RegressionUtilities {
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
+    public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+    public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
+
 	private static final Logger log = LogManager.getLogger(Experiment.class);
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
@@ -152,6 +155,8 @@ public class RegressionUtilities {
 			"i-0611e2febc6a73d5a",
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
+
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
 	protected static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -325,5 +330,17 @@ public class RegressionUtilities {
 		}
 		return Arrays.stream(dir.listFiles()).filter(File::isFile)
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
-	}
+    }
+
+    public static boolean isWindows() {
+        return OS.indexOf("win") >= 0;
+    }
+ 
+    public static String getPythonExecutable() {
+        String pythonExecutable = "python3";
+        if (isWindows()) {
+            pythonExecutable = "python";
+        }
+        return pythonExecutable;
+    }
 }
