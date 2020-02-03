@@ -536,14 +536,14 @@ public class Experiment {
 		}
 
 		sendSlackMessage(slackMsg);
-        log.info(MARKER, slackMsg.getPlainText());
-        createStatsFile(getExperimentFolder());
-        sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
-    }
- 
-    private void createStatsFile(String resultsFolder) {
-        String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
-        ExecStreamReader.outputProcessStreams(insightCmd);
+		log.info(MARKER, slackMsg.getPlainText());
+		createStatsFile(getExperimentFolder());
+		sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
+	}
+
+	private void createStatsFile(String resultsFolder) {
+		String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
+		ExecStreamReader.outputProcessStreams(insightCmd);
 	}
 
 	public void sendSettingFileToNodes() {
