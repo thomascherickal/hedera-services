@@ -22,7 +22,8 @@
   },
   "experiments": [
     "configs/testStateRecover.json" ,
-    "configs/testStateRecoverFCM1M.json" ],
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCM1M.json" ],
   "db": {
 	"type": "postgresql",
 	"login": "dbregression",
