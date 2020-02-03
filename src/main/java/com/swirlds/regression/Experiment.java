@@ -210,341 +210,342 @@ public class Experiment {
 
     public void sleepThroughExperiment(long testDuration) {
         /*TODO: Test duration shouldn't be needed for PTD now, look into removing it for PTD tests */
-		/* Local test shouldn't look for dead nodes, if the test is too short this would just make the test run
-		longer */
-		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
-			ArrayList<Boolean> isProcDown = new ArrayList<>();
-			ArrayList<Boolean> isTestFinished = new ArrayList<>();
-			/* set array lists to appropriate size with default values */
-			for (int i = 0; i < sshNodes.size(); i++) {
-				isProcDown.add(false);
-				isTestFinished.add(false);
-			}
-			/* testDuration is already in milliseconds */
-			/* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
-			long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
-			log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / MILLIS);
-			while (System.nanoTime() < endTime) { // Don't go over set test time
-				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
-					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
-				} catch (InterruptedException e) {
-					log.error(ERROR, "could not sleep.", e);
-				}
-				/* Check all processes are still running, then check if test has finished */
-				for (int i = 0; i < sshNodes.size(); i++) {
-					SSHService node = sshNodes.get(i);
-					boolean isProcStillRunning = node.checkProcess();
-					/* if this it the first time down, keep running, if down two times in a row, stop */
-					if (!isProcStillRunning && isProcDown.get(i)) {
-						return;
-					} else {
-						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
-						after the first reconnect/restart */
-						isProcDown.set(i, !isProcStillRunning);
-					}
-					isTestFinished.set(i, node.isTestFinished());
-				}
-				/* we don't want to exit if only a few nodes have reported being finished */
-				if (checkForAllTrue(isTestFinished)) {
-					return;
-				}
-			}
-		} else {
-			try {
-				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
-				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
-				Thread.sleep(testDuration);
-			} catch (InterruptedException e) {
-				log.error(ERROR, "could not sleep.", e);
-			}
-		}
-	}
+        /* Local test shouldn't look for dead nodes, if the test is too short this would just make the test run
+        longer */
+        if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
+            ArrayList<Boolean> isProcDown = new ArrayList<>();
+            ArrayList<Boolean> isTestFinished = new ArrayList<>();
+            /* set array lists to appropriate size with default values */
+            for (int i = 0; i < sshNodes.size(); i++) {
+                isProcDown.add(false);
+                isTestFinished.add(false);
+            }
+            /* testDuration is already in milliseconds */
+            /* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
+            long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+            log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / MILLIS);
+            while (System.nanoTime() < endTime) { // Don't go over set test time
+                try {
+                    log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
+                    Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    log.error(ERROR, "could not sleep.", e);
+                }
+                /* Check all processes are still running, then check if test has finished */
+                for (int i = 0; i < sshNodes.size(); i++) {
+                    SSHService node = sshNodes.get(i);
+                    boolean isProcStillRunning = node.checkProcess();
+                    /* if this it the first time down, keep running, if down two times in a row, stop */
+                    if (!isProcStillRunning && isProcDown.get(i)) {
+                        return;
+                    } else {
+                        /* always set to true in case it was false, this makes sure reconnect and restart don't fail out
+                        after the first reconnect/restart */
+                        isProcDown.set(i, !isProcStillRunning);
+                    }
+                    isTestFinished.set(i, node.isTestFinished());
+                }
+                /* we don't want to exit if only a few nodes have reported being finished */
+                if (checkForAllTrue(isTestFinished)) {
+                    return;
+                }
+            }
+        } else {
+            try {
+                //TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
+                log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
+                Thread.sleep(testDuration);
+            } catch (InterruptedException e) {
+                log.error(ERROR, "could not sleep.", e);
+            }
+        }
+    }
 
-	/**
-	 * Sleep until reached the testDuration, or one of checker callback return true
-	 *
-	 * @param testDuration
-	 * 		Default test duration, in the unit of milliseconds, to run if none of checker return true
-	 * @param checkerList
-	 * 		A list of callback functions to check whether the conditions of exiting sleep mode have been met
-	 */
-	public void sleepThroughExperimentWithCheckerList(long testDuration,
-			List<BooleanSupplier> checkerList) {
-		if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
+    /**
+     * Sleep until reached the testDuration, or one of checker callback return true
+     *
+     * @param testDuration
+     * 		Default test duration, in the unit of milliseconds, to run if none of checker return true
+     * @param checkerList
+     * 		A list of callback functions to check whether the conditions of exiting sleep mode have been met
+     */
+    public void sleepThroughExperimentWithCheckerList(long testDuration,
+            List<BooleanSupplier> checkerList) {
+        if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
 
-			long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
-			log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / MILLIS);
+            long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+            log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / MILLIS);
 
-			while (System.nanoTime() < endTime) { // Don't go over set test time
-				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
-					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
-				} catch (InterruptedException e) {
-					log.error(ERROR, "could not sleep.", e);
-				}
+            while (System.nanoTime() < endTime) { // Don't go over set test time
+                try {
+                    log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
+                    Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    log.error(ERROR, "could not sleep.", e);
+                }
 
-				if (checkerList != null) {
-					for (BooleanSupplier checker : checkerList) {
-						if (checker != null) {
-							if (checker.getAsBoolean()) {
-								return; //exit both for and while loop
-							}
-						}
-					}
-				}
-			}
-		} else {
-			try {
-				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
-				Thread.sleep(testDuration);
-			} catch (InterruptedException e) {
-				log.error(ERROR, "could not sleep.", e);
-			}
-		}
-	}
+                if (checkerList != null) {
+                    for (BooleanSupplier checker : checkerList) {
+                        if (checker != null) {
+                            if (checker.getAsBoolean()) {
+                                return; //exit both for and while loop
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            try {
+                log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
+                Thread.sleep(testDuration);
+            } catch (InterruptedException e) {
+                log.error(ERROR, "could not sleep.", e);
+            }
+        }
+    }
 
-	/**
-	 * Whether all node find defined number of messages in log file
-	 *
-	 * @param msgList
-	 * 		A list of message to search for
-	 * @param messageAmount
-	 * 		How many times the message expected to appear
-	 * @param fileName
-	 * 		File name to search for the message
-	 * @return return true if the time that the message appeared is equal or larger than messageAmount
-	 */
-	public boolean isAllNodesFoundEnoughMessage(List<String> msgList, int messageAmount, String fileName) {
-		boolean isEnoughMsgFound = false;
-		for (int i = 0; i < sshNodes.size(); i++) {
-			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(msgList, fileName) == messageAmount) {
-				log.info(MARKER, "Node {} found enough message {}", i, msgList);
-				isEnoughMsgFound = true;
-			} else {
-				isEnoughMsgFound = false;
-			}
-		}
-		return isEnoughMsgFound;
-	}
+    /**
+     * Whether all node find defined number of messages in log file
+     *
+     * @param msgList
+     * 		A list of message to search for
+     * @param messageAmount
+     * 		How many times the message expected to appear
+     * @param fileName
+     * 		File name to search for the message
+     * @return return true if the time that the message appeared is equal or larger than messageAmount
+     */
+    public boolean isAllNodesFoundEnoughMessage(List<String> msgList, int messageAmount, String fileName) {
+        boolean isEnoughMsgFound = false;
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            if (node.countSpecifiedMsg(msgList, fileName) == messageAmount) {
+                log.info(MARKER, "Node {} found enough message {}", i, msgList);
+                isEnoughMsgFound = true;
+            } else {
+                isEnoughMsgFound = false;
+            }
+        }
+        return isEnoughMsgFound;
+    }
 
-	/**
-	 * Whether test finished message can be found at least twice in the log file
-	 */
-	public boolean isFoundTwoPTDFinishMessage() {
-		return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
-	}
+    /**
+     * Whether test finished message can be found at least twice in the log file
+     */
+    public boolean isFoundTwoPTDFinishMessage() {
+        return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
+    }
 
-	public boolean isProcessFinished() {
-		ArrayList<Boolean> isProcDown = new ArrayList<>();
-		ArrayList<Boolean> isTestFinished = new ArrayList<>();
-		/* set array lists to appropriate size with default values */
-		for (int i = 0; i < sshNodes.size(); i++) {
-			isProcDown.add(false);
-			isTestFinished.add(false);
-		}
+    public boolean isProcessFinished() {
+        ArrayList<Boolean> isProcDown = new ArrayList<>();
+        ArrayList<Boolean> isTestFinished = new ArrayList<>();
+        /* set array lists to appropriate size with default values */
+        for (int i = 0; i < sshNodes.size(); i++) {
+            isProcDown.add(false);
+            isTestFinished.add(false);
+        }
 
-		/* Check all processes are still running, then check if test has finished */
-		for (int i = 0; i < sshNodes.size(); i++) {
-			SSHService node = sshNodes.get(i);
-			boolean isProcStillRunning = node.checkProcess();
-			/* if this it the first time down, keep running, if down two times in a row, stop */
-			if (!isProcStillRunning && isProcDown.get(i)) {
-				return true;
-			} else {
-				isProcDown.set(i, !isProcStillRunning);
-			}
-			isTestFinished.set(i, node.isTestFinished());
-		}
-		/* we don't want to exit if only a few nodes have reported being finished */
-		if (checkForAllTrue(isTestFinished)) {
-			return true;
-		}
-		return false;
-	}
+        /* Check all processes are still running, then check if test has finished */
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            boolean isProcStillRunning = node.checkProcess();
+            /* if this it the first time down, keep running, if down two times in a row, stop */
+            if (!isProcStillRunning && isProcDown.get(i)) {
+                return true;
+            } else {
+                isProcDown.set(i, !isProcStillRunning);
+            }
+            isTestFinished.set(i, node.isTestFinished());
+        }
+        /* we don't want to exit if only a few nodes have reported being finished */
+        if (checkForAllTrue(isTestFinished)) {
+            return true;
+        }
+        return false;
+    }
 
-	private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {
-		for (Boolean val : isTestFinished) {
-			if (!val) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {
+        for (Boolean val : isTestFinished) {
+            if (!val) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	private void sendTarToNode(SSHService currentNode, ArrayList<File> addedFiles) {
-		String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
-		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
-		long startTime = System.nanoTime();
-		Collection<File> filesToSend = getSDKFilesToUpload(
-				new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
-		File oldTarFile = new File(TAR_NAME);
-		if (oldTarFile.exists()) {
-			oldTarFile.delete();
-		}
-		currentNode.createNewTar(filesToSend);
-		ArrayList<File> tarball = new ArrayList<>();
-		tarball.add(new File(TAR_NAME));
-		currentNode.scpToSpecificFiles(tarball);
-		currentNode.extractTar();
-		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
-		long endTime = System.nanoTime();
-		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
-	}
+    private void sendTarToNode(SSHService currentNode, ArrayList<File> addedFiles) {
+        String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
+        String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
+        long startTime = System.nanoTime();
+        Collection<File> filesToSend = getSDKFilesToUpload(
+                new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
+        File oldTarFile = new File(TAR_NAME);
+        if (oldTarFile.exists()) {
+            oldTarFile.delete();
+        }
+        currentNode.createNewTar(filesToSend);
+        ArrayList<File> tarball = new ArrayList<>();
+        tarball.add(new File(TAR_NAME));
+        currentNode.scpToSpecificFiles(tarball);
+        currentNode.extractTar();
+        currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
+        long endTime = System.nanoTime();
+        log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
+    }
 
-	private String getExperimentResultsFolderForNode(int nodeNumber) {
-		return getExperimentFolder() + "node000" + nodeNumber + "/";
-	}
+    private String getExperimentResultsFolderForNode(int nodeNumber) {
+        return getExperimentFolder() + "node000" + nodeNumber + "/";
+    }
 
-	private String getExperimentFolder() {
-		String folderName = regConfig.getName() + "/" + testConfig.getName();
-		return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
-				folderName) + "/";
-	}
+    private String getExperimentFolder() {
+        String folderName = regConfig.getName() + "/" + testConfig.getName();
+        return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
+                folderName) + "/";
+    }
 
-	private InputStream getInputStream(String filename) {
-		InputStream inputStream = null;
-		if (!new File(filename).exists()) {
-			return null;
-		}
-		try {
-			inputStream = new FileInputStream(filename);
-		} catch (IOException e) {
-			log.error(ERROR, "Could not open file {} for validation", filename, e);
-		}
-		return inputStream;
-	}
+    private InputStream getInputStream(String filename) {
+        InputStream inputStream = null;
+        if (!new File(filename).exists()) {
+            return null;
+        }
+        try {
+            inputStream = new FileInputStream(filename);
+        } catch (IOException e) {
+            log.error(ERROR, "Could not open file {} for validation", filename, e);
+        }
+        return inputStream;
+    }
 
-	private List<NodeData> loadNodeData(String directory) {
-		int numberOfNodes;
-		if (regConfig.getLocal() != null) {
-			numberOfNodes = regConfig.getLocal().getNumberOfNodes();
-		} else if (sshNodes == null || sshNodes.isEmpty()) {
-			return null;
-		} else {
-			numberOfNodes = sshNodes.size();
-		}
-		List<NodeData> nodeData = new ArrayList<>();
-		for (int i = 0; i < numberOfNodes; i++) {
-			for (String logFile : testConfig.getResultFiles()) {
-				String logFileName = getExperimentResultsFolderForNode(i) + logFile;
-				InputStream logInput = getInputStream(logFileName);
+    private List<NodeData> loadNodeData(String directory) {
+        int numberOfNodes;
+        if (regConfig.getLocal() != null) {
+            numberOfNodes = regConfig.getLocal().getNumberOfNodes();
+        } else if (sshNodes == null || sshNodes.isEmpty()) {
+            return null;
+        } else {
+            numberOfNodes = sshNodes.size();
+        }
+        List<NodeData> nodeData = new ArrayList<>();
+        for (int i = 0; i < numberOfNodes; i++) {
+            for (String logFile : testConfig.getResultFiles()) {
+                String logFileName = getExperimentResultsFolderForNode(i) + logFile;
+                InputStream logInput = getInputStream(logFileName);
 
-				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
-				String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
-				InputStream csvInput = getInputStream(csvFilePath);
-				if (logInput != null && csvInput != null) {
-					nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
-							csvInput)));
-				}
-			}
-		}
-		return nodeData;
-	}
+                String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
+                String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
+                InputStream csvInput = getInputStream(csvFilePath);
+                if (logInput != null && csvInput != null) {
+                    nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
+                            csvInput)));
+                }
+            }
+        }
+        return nodeData;
+    }
 
-	private List<StreamingServerData> loadStreamingServerData(String directory) {
-		final List<StreamingServerData> nodeData = new ArrayList<>();
-		for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
-			final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
-			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
-			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
-			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
+    private List<StreamingServerData> loadStreamingServerData(String directory) {
+        final List<StreamingServerData> nodeData = new ArrayList<>();
+        for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
+            final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
+            final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
+            final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
+            final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
 
-			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
-			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-					getInputStream(shaEventFileName), recoverEventLogStream));
-		}
-		return nodeData;
-	}
+            InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
+            nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
+                    getInputStream(shaEventFileName), recoverEventLogStream));
+        }
+        return nodeData;
+    }
 
-	private void validateTest() {
-		SlackTestMsg slackMsg = new SlackTestMsg(
-				regConfig,
-				testConfig,
-				getResultsFolder(experimentTime, testConfig.getName()),
-				git
-		);
+    private void validateTest() {
+        SlackTestMsg slackMsg = new SlackTestMsg(
+                regConfig,
+                testConfig,
+                getResultsFolder(experimentTime, testConfig.getName()),
+                git
+        );
 
-		// if posting to the regression channel, check branch and git user
-		if (regConfig.getSlack() != null
-				&& regConfig.getSlack().getChannel().equals(REG_SLACK_CHANNEL)) {
-			if (CHECK_BRANCH_CHANNEL
-					&& !git.getGitInfo(true).contains(REG_GIT_BRANCH)) {
-				slackMsg.addWarning(String.format(
-						"Only nightly tests on '%s' branch should be posted to the '%s' channel",
-						REG_GIT_BRANCH,
-						REG_SLACK_CHANNEL
-				));
-			}
-			if (CHECK_USER_EMAIL_CHANNEL
-					&& !git.getUserEmail().equals(REG_GIT_USER_EMAIL)) {
-				slackMsg.addWarning(String.format(
-						"The git user with the email '%s' should not be posting to the '%s' channel",
-						git.getUserEmail(),
-						REG_SLACK_CHANNEL
-				));
-			}
-		}
+        // if posting to the regression channel, check branch and git user
+        if (regConfig.getSlack() != null
+                && regConfig.getSlack().getChannel().equals(REG_SLACK_CHANNEL)) {
+            if (CHECK_BRANCH_CHANNEL
+                    && !git.getGitInfo(true).contains(REG_GIT_BRANCH)) {
+                slackMsg.addWarning(String.format(
+                        "Only nightly tests on '%s' branch should be posted to the '%s' channel",
+                        REG_GIT_BRANCH,
+                        REG_SLACK_CHANNEL
+                ));
+            }
+            if (CHECK_USER_EMAIL_CHANNEL
+                    && !git.getUserEmail().equals(REG_GIT_USER_EMAIL)) {
+                slackMsg.addWarning(String.format(
+                        "The git user with the email '%s' should not be posting to the '%s' channel",
+                        git.getUserEmail(),
+                        REG_SLACK_CHANNEL
+                ));
+            }
+        }
 
-		// If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the event streams wont be generated, which would cause mismatch in evts files on the nodes
-		boolean reconnect = false;
+        // If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the event streams wont be generated, which would cause mismatch in evts files on the nodes
+        boolean reconnect = false;
 
-		// Build a lists of validator
-		List<Validator> requiredValidator = new ArrayList<>();
-		for (ValidatorType item : testConfig.validators) {
-			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
-				reconnect = true;
-			}
+        // Build a lists of validator
+        List<Validator> requiredValidator = new ArrayList<>();
+        for (ValidatorType item : testConfig.validators) {
+            if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
+                reconnect = true;
+            }
 
-			List<NodeData> nodeData = loadNodeData(testConfig.getName());
-			if (nodeData == null || nodeData.size() == 0) {
-				slackMsg.addError("No data found for " + item);
-				continue;
-			} else if (nodeData.size() < regConfig.getTotalNumberOfNodes()) {
-				slackMsg.addWarning(String.format(
-						"%s - Configured number of nodes is %d, but only found %d nodes",
-						item,
-						regConfig.getTotalNumberOfNodes(),
-						nodeData.size()));
-			}
-			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
-		}
+            List<NodeData> nodeData = loadNodeData(testConfig.getName());
+            if (nodeData == null || nodeData.size() == 0) {
+                slackMsg.addError("No data found for " + item);
+                continue;
+            } else if (nodeData.size() < regConfig.getTotalNumberOfNodes()) {
+                slackMsg.addWarning(String.format(
+                        "%s - Configured number of nodes is %d, but only found %d nodes",
+                        item,
+                        regConfig.getTotalNumberOfNodes(),
+                        nodeData.size()));
+            }
+            requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
+        }
 
-		// Add stream server validator if event streaming is configured
-		if (regConfig.getEventFilesWriters() > 0) {
-			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()), reconnect);
-			if (testConfig.getRunType() == RunType.RECOVER) {
-				ssValidator.setStateRecoverMode(true);
-			}
+        // Add stream server validator if event streaming is configured
+        if (regConfig.getEventFilesWriters() > 0) {
+            StreamingServerValidator ssValidator = new StreamingServerValidator(
+                    loadStreamingServerData(testConfig.getName()), reconnect);
+            if (testConfig.getRunType() == RunType.RECOVER) {
+                ssValidator.setStateRecoverMode(true);
+            }
 
-			requiredValidator.add(ssValidator);
-		}
+            requiredValidator.add(ssValidator);
+        }
 
-		for (Validator item : requiredValidator) {
-			try {
-				if (item instanceof ReconnectValidator) {
-					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
-				}
-				item.validate();
-				slackMsg.addValidatorInfo(item);
-			} catch (Throwable e) {
-				log.error(ERROR, "{} validator failed to validate", item.getClass(), e);
-				slackMsg.addValidatorException(item, e);
-			}
-		}
+        for (Validator item : requiredValidator) {
+            try {
+                if (item instanceof ReconnectValidator) {
+                    ((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
+                }
+                item.validate();
+                slackMsg.addValidatorInfo(item);
+            } catch (Throwable e) {
+                log.error(ERROR, "{} validator failed to validate", item.getClass(), e);
+                slackMsg.addValidatorException(item, e);
+            }
+        }
 
-		sendSlackMessage(slackMsg);
-		log.info(MARKER, slackMsg.getPlainText());
-		createStatsFile(getExperimentFolder());
-		sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
-	}
+        sendSlackMessage(slackMsg);
+        log.info(MARKER, slackMsg.getPlainText());
+        createStatsFile(getExperimentFolder());
+        sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
+    }
 
-	private void createStatsFile(String resultsFolder) {
-		String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
-		ExecStreamReader.outputProcessStreams(insightCmd);
-	}
+    private void createStatsFile(String resultsFolder) {
+        String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
+        ExecStreamReader.outputProcessStreams(insightCmd);
+        
+    }
 
 	public void sendSettingFileToNodes() {
 		if (regConfig.getEventFilesWriters() == 0) {
