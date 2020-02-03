@@ -28,7 +28,6 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testStateRecover.json",
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
