@@ -23,6 +23,7 @@
   "experiments": [
     "configs/testStateRecover.json" ,
 	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
 	"configs/testStateRecoverFCM1M.json" ],
   "db": {
 	"type": "postgresql",
