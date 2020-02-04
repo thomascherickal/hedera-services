@@ -1001,6 +1001,24 @@ public class Experiment {
 		return node0.getNumberOfSignedStates();
 	}
 
+    /** check if all nodes generated same number of states */
+    public boolean generatedSameNumberStates() {
+        boolean result = true;
+        SSHService node0 = sshNodes.get(0);
+        int node0StateNumber = node0.getNumberOfSignedStates();
+        log.info(MARKER, "Important Node 0 generated {} states", node0StateNumber);
+        for (int i = 1; i < sshNodes.size() - 1; i++) {
+            int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
+            log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
+            if (stateNumber != node0StateNumber) {
+                log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
+                        0, i, node0StateNumber, stateNumber);
+                result = false;
+            }
+        }
+        return result;
+    }
+
 	/**
 	 * Delete last few saved states from all nodes.
 	 * The number of deleted states are random generated based on current number

@@ -12,7 +12,8 @@
     {"name":"eventsLogDir", "value":"data/eventStream"}
   ],
   "recoverConfig":{
-    "eventDir" : "data/eventStreamRecover"
+    "eventDir" : "data/eventStreamRecover",
+    "sqlFile" : "drop_database.psql"
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
