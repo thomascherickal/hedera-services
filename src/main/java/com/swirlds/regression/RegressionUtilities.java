@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +65,19 @@ public class RegressionUtilities {
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
+	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
+	/* this section is for dynamic allocation of huge pages and memory of instances */
+
+	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
+	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
+	static final String POSTGRES_DEFAULT_WORK_MEM = "256MB";
+	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
+	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
+	static final String OS_RESERVE_MEMORY = "2GB";
+	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "1536MB";
+
+
 	public static final int SHA1_DIVISOR = 25;
 	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis
 	public static final int MB = 1024 * 1024;
@@ -85,7 +99,7 @@ public class RegressionUtilities {
 			" drop database fcfs; create database fcfs with owner = swirlds;\"";
 	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop " +
 			"extension crypto;\"";
-	public static final String DROP_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
+	public static final String DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
 			"database fcfs;\"";
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";
@@ -132,16 +146,6 @@ public class RegressionUtilities {
 	// total stakes are the same as the number of the number of tinybars in existence
 	// (50 billion)*(times 100 million)
 	static final long TOTAL_STAKES = 50L * 1_000_000_000L * 100L * 1_000_000L;
-
-	/* this section is for dynamic allocation of huge pages and memory of instances */
-
-	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
-	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
-	static final String POSTGRES_DEFAULT_WORK_MEM = "256MB";
-	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
-	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
-	static final String OS_RESERVE_MEMORY = "2GB";
-	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "1536MB";
 
 	static final String[] NIGHTLY_REGRESSION_SERVER_LIST = {
 			"i-03c90b3fdeed8edd7",
@@ -337,4 +341,23 @@ public class RegressionUtilities {
         }
         return pythonExecutable;
     }
+
+    public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
+		/* parameter string: "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg"
+		 */
+		return String.format(JVM_OPTIONS_PARAMETER_STRING, maxMemory, minMemory, maxDirectMemory);
+	}
+
+	public static String buildParameterString(JvmOptionParametersConfig jvmOptionParametersConfig) {
+		int maxMemory = jvmOptionParametersConfig.getMaxMemory();
+		int minMemory = jvmOptionParametersConfig.getMinMemory();
+		int maxDirectMemory = jvmOptionParametersConfig.getMaxDirectMemory();
+		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+			return JVM_OPTIONS_DEFAULT;
+		}
+		else {
+			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
+		}
+	}
 }

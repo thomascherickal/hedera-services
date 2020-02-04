@@ -741,7 +741,15 @@ public class Experiment {
         String javaBin = javaHome +
                 File.separator + "bin" +
                 File.separator + "java";
-        String javaOptions = JVM_OPTIONS_DEFAULT;
+        String javaOptions;
+        /* if the individual paremeters for jvm options are set create the appropriate string, if not use the default.
+        If a jvm options string was given in the regression config use that instead.
+         */
+        if(regConfig.getJvmOptionParametersConfig() != null){
+            javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
+        } else {
+            javaOptions = JVM_OPTIONS_DEFAULT;
+        }
         if (!"".equals(regConfig.getJvmOptions())) {
             javaOptions = regConfig.getJvmOptions();
         }
