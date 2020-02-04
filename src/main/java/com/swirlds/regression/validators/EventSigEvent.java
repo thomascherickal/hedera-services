@@ -71,7 +71,13 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 		}
 
 		final int diffInSize = Math.abs(this.evtsSigEvents.size() - other.evtsSigEvents.size());
-		if (diffInSize > 1) {
+		/*
+		Because some nodes may be killed while events are still being written, the last event file or two may
+		mismatch. It is assumed that in this case if all other events are equal the last two events
+		would be equal as well. The difference is not allowed to be greater than 2.
+		*/
+
+		if (diffInSize > 2) {
 			return false;
 		}
 
@@ -80,7 +86,7 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 
 	private boolean equalsWithAllButTheLastEvent(final EventSigEvent other) {
 		final int minSize = this.evtsSigEvents.size() > other.evtsSigEvents.size() ? other.evtsSigEvents.size() : this.evtsSigEvents.size();
-		for (int index = 0; index < minSize; index++) {
+		for (int index = 0; index < minSize - 1; index++) {
 			if (!this.evtsSigEvents.get(index).equals(other.evtsSigEvents.get(index))) {
 				return false;
 			}

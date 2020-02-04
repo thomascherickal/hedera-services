@@ -17,98 +17,145 @@
 
 package com.swirlds.regression.slack;
 
+import com.swirlds.regression.ExecStreamReader;
 import com.swirlds.regression.GitInfo;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.validators.DummyValidator;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import static com.swirlds.regression.slack.SlackNotifier.createSlackNotifier;
 
 public class SlackNotifierTester {
-	public static void main(String[] args) throws IOException {
-		String slackToken = "insert token here";
-		String slackChannel = "regression-test";
+    private static final String SLACK_TOKEN = "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc";
+    private static final String SLACK_BOT_TOKEN = "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo";
+    private static final String SLACK_CHANNEL = "regression-test";
+    private static final String SLACK_FILE_TO_UPLOAD = "./regression/multipage_pdf.pdf";
+    private static final String SLACK_EXPERIMENT_NAME = "SlackUnitTestForFileUpload";
 
-		SlackNotifier sn = createSlackNotifier(
-				slackToken,
-				slackChannel);
+    private static final String SLACK_TEST_FILE_LOCATION = "logs/PTD-FCM1K-success/";
+    private static final String INSIGHT_FILE_LOCATION = "regression/insight.py";
+    private static final String SLACK_REGRESSION_NAME = "Slack Regression Unit Test";
 
-		testNoExperiment(sn);
-		//testAllFeatures(sn);
-		//testFailedExperiment(sn);
-	}
+    public static void main(String[] args) throws IOException {
 
-	private static void testNoExperiment(SlackNotifier sn) {
-		SlackTestMsg msg = new SlackTestMsg(
-				getRegConfig());
-		msg.addError("No test found");
-		sn.messageChannel(msg);
-	}
+        SlackNotifier sn = createSlackNotifier(
+                SLACK_TOKEN,
+                SLACK_CHANNEL);
 
-	private static void testFailedExperiment(SlackNotifier sn) {
-		SlackTestMsg msg = new SlackTestMsg(
-				getRegConfig(),
-				getTestConfig()
-		);
-		msg.addError("An error has occurred while running the test");
+        //testNoExperiment(sn);
+        testAllFeatures(sn);
+        //testFailedExperiment(sn);
+        //testSendFile(sn);
+    }
 
-		sn.messageChannel(msg);
-	}
+    private static void testNoExperiment(SlackNotifier sn) {
+        SlackTestMsg msg = new SlackTestMsg(
+                getRegConfig());
+        msg.addError("No test found");
+        sn.messageChannel(msg);
+    }
 
-	private static void testAllFeatures(SlackNotifier sn) {
-		GitInfo gi = new GitInfo();
-		gi.gitVersionInfo();
-		SlackTestMsg msg = new SlackTestMsg(
-				getRegConfig(),
-				getTestConfig(),
-				"folder-name",
-				gi
-		);
+    private static void testFailedExperiment(SlackNotifier sn) {
+        SlackTestMsg msg = new SlackTestMsg(
+                getRegConfig(),
+                getTestConfig()
+        );
+        msg.addError("An error has occurred while running the test");
 
-		msg.addWarning("A test warning");
-		msg.addError("A test error");
+        sn.messageChannel(msg);
+    }
 
-		DummyValidator v = new DummyValidator();
-		v.addInfo("some info");
-		msg.addValidatorInfo(v);
+    private static void testAllFeatures(SlackNotifier sn) {
+        GitInfo gi = new GitInfo();
+        gi.gitVersionInfo();
+        SlackTestMsg msg = new SlackTestMsg(
+                getRegConfig(),
+                getTestConfig(),
+                SLACK_TEST_FILE_LOCATION,
+                gi
+        );
 
-		v = new DummyValidator();
-		v.addWarning("a warning");
-		msg.addValidatorInfo(v);
+        msg.addWarning("A test warning");
+        msg.addError("A test error");
 
-		v = new DummyValidator();
-		for (int i = 0; i < 20; i++) {
-			v.addError("error " + i);
-		}
-		v.setValid(false);
-		msg.addValidatorInfo(v);
+        DummyValidator v = new DummyValidator();
+        v.addInfo("some info");
+        msg.addValidatorInfo(v);
 
-		v = new DummyValidator();
-		msg.addValidatorException(v, new Exception("an exception"));
+        v = new DummyValidator();
+        v.addWarning("a warning");
+        msg.addValidatorInfo(v);
+
+        v = new DummyValidator();
+        for (int i = 0; i < 20; i++) {
+            v.addError("error " + i);
+        }
+        v.setValid(false);
+        msg.addValidatorInfo(v);
+
+        v = new DummyValidator();
+        msg.addValidatorException(v, new Exception("an exception"));
 
 //		System.out.println("--- start");
 //		System.out.println(msg.getPlainText());
 //		System.out.println("--- end");
-		sn.messageChannel(msg);
-	}
+        sn.messageChannel(msg);
 
-	private static RegressionConfig getRegConfig() {
-		RegressionConfig reg = new RegressionConfig();
-		reg.setName("Reg config name");
-		SlackConfig slackConfig = new SlackConfig();
-		slackConfig.setNotifyUserIds(Arrays.asList("UA4T7UJQJ"));
-		reg.setSlack(slackConfig);
-		return reg;
-	}
+        runInsightScript();
 
-	private static TestConfig getTestConfig() {
-		TestConfig test = new TestConfig();
-		test.setName("Test name");
-		test.setDuration(60);
-		return test;
-	}
+        slackFileUpload();
+    }
+
+    private static void runExecCommand(String command) {
+        ExecStreamReader.outputProcessStreams(command.split(" "));
+    }
+
+    private static void slackFileUpload() {
+        String[] uploadFileToSlackCmd = SlackNotifier.buildCurlString(new SlackTestMsg(getRegConfig(), getTestConfig()), SLACK_FILE_TO_UPLOAD, SLACK_EXPERIMENT_NAME);
+        ExecStreamReader.outputProcessStreams(uploadFileToSlackCmd);
+    }
+
+    private static void runInsightScript() {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        String testFilePath = classloader.getResource(SLACK_TEST_FILE_LOCATION).getPath().replaceFirst("/", "").replace("/", "\\");
+        String insightFilePath = new File(INSIGHT_FILE_LOCATION).getAbsolutePath();
+        String pythonExecutable = RegressionUtilities.getPythonExecutable();
+        String pythonCmd = String.format(RegressionUtilities.INSIGHT_CMD, pythonExecutable, insightFilePath, testFilePath);
+        runExecCommand(pythonCmd);
+    }
+
+    private static RegressionConfig getRegConfig() {
+        RegressionConfig reg = new RegressionConfig();
+        reg.setName(SLACK_REGRESSION_NAME);
+        SlackConfig slackConfig = new SlackConfig();
+        slackConfig.setNotifyUserIds(Arrays.asList("UA5K2LZ1D"));
+        slackConfig.setBotToken(SLACK_BOT_TOKEN);
+        slackConfig.setToken(SLACK_TOKEN);
+        slackConfig.setChannel(SLACK_CHANNEL);
+        reg.setSlack(slackConfig);
+        return reg;
+    }
+
+    private static TestConfig getTestConfig() {
+        TestConfig test = new TestConfig();
+        test.setName(SLACK_EXPERIMENT_NAME);
+        test.setDuration(60);
+        return test;
+    }
+
+    private static File loadSlackPdfAttachment(String filePath) throws URISyntaxException, IOException {
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        URI slackAttachmentLocation = classloader.getResource(filePath).toURI();
+
+        File slackAttachment = new File(slackAttachmentLocation);
+        return slackAttachment;
+    }
 }

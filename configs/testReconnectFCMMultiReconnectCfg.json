@@ -1,5 +1,5 @@
 {
-  "name":"Reconnect-FC-LinkedList",
+  "name":"Multi-Reconnect-FCM",
   "description" : "platform testing demo - reconnect",
   "duration": 1500,
   "settings": [
@@ -9,14 +9,15 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"}
+    {"name":"reconnectActive", "value":"1"},
+    {"name":"roundsExpired", "value":"50"}
   ],
   "reconnectConfig": {
     "reconnectTiming": 180
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMReconnectFCLL.json"]
+    "parameterList": ["FCMMultiReconnect.json"]
   },
   "resultFiles": [
     "swirlds.log"

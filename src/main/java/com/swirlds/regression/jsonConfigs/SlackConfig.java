@@ -23,9 +23,10 @@ import java.util.List;
 
 public class SlackConfig {
 	private String token;
+	private String botToken;
 	private String channel;
 	private SlackTestMsg.NotifyOn notifyOn = SlackTestMsg.NotifyOn.ERROR;
-	private boolean notifyChannel = true;
+	private boolean notifyChannel = false;
 	private List<String> notifyUserIds = null;
 
 	public String getToken() {
@@ -34,6 +35,14 @@ public class SlackConfig {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getBotToken() {
+		return botToken;
+	}
+
+	public void setBotToken(String botToken) {
+		this.botToken = botToken;
 	}
 
 	public String getChannel() {

@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.swirlds.common.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.PlatformLogMessages.PTD_SUCCESS;
@@ -71,10 +70,9 @@ public class RegressionUtilities {
 	public static final String CHECK_JAVA_PROC_COMMAND = "pgrep -fl java";
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
-	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS " +
-			"FINISHED|TEST" +
-			" " +
-			"ERROR\" remoteExperiment/swirlds.log";
+	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+    public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -84,14 +82,11 @@ public class RegressionUtilities {
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension crypto;" +
-			" " +
-			"drop database fcfs; create database fcfs with owner = swirlds;\"";
+			" drop database fcfs; create database fcfs with owner = swirlds;\"";
 	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop " +
-			"extension" +
-			" crypto;\"";
+			"extension crypto;\"";
 	public static final String DROP_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
-			"database" +
-			" fcfs;\"";
+			"database fcfs;\"";
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";
 	static final String DROP_DATABASE_FCFS_KNOWN_RESPONCE = "ERROR:  database \"fcfs\" is being accessed by other " +
@@ -101,12 +96,20 @@ public class RegressionUtilities {
 	static final String CREATE_DATABASE_FCFS_EXPECTED_RESPONCE = "CREATE DATABASE";
 
 	public static String OLD_EVENT_PARENT = "will not use old otherParent";
+	public static String INVALID_PARENT = "has invalid otherParent";
+    public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
+
+    // caused by InterruptedException | ExecutionException
+    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
 	public static final int EXCEPTIONS_SIZE = 1000;
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
+
+	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+    public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
@@ -146,6 +149,8 @@ public class RegressionUtilities {
 			"i-0611e2febc6a73d5a",
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
+
+	private static final String OS = System.getProperty("os.name").toLowerCase();
 
 	protected static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -320,4 +325,16 @@ public class RegressionUtilities {
 		return Arrays.stream(dir.listFiles()).filter(File::isFile)
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
 	}
+
+	public static boolean isWindows() {
+        return OS.indexOf("win") >= 0;
+    }
+
+    public static String getPythonExecutable() {
+        String pythonExecutable = "python3";
+        if (isWindows()) {
+            pythonExecutable = "python";
+        }
+        return pythonExecutable;
+    }
 }

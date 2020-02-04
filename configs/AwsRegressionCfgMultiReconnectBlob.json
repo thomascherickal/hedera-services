@@ -1,5 +1,5 @@
 {
-  "name":"FCLL_Restart",
+  "name":"Blob_Multi_Reconnect",
   "result": {
 	"uri":"results"
   },
@@ -7,7 +7,7 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M410xlarge",
 	"instanceKey": "ATF-Key",
 	"keyLocation":"./keys/my-key",
@@ -16,11 +16,12 @@
 	  { "region":"us-east-1", "numberOfNodes":4}
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testRestartFCLLCfg.json"
+	"configs/testReconnectBlobMultiReconnectCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -29,10 +30,13 @@
 	"port": "5432",
 	"database": "stats"
   },
-
   "slack":{
-    "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
-    "channel": "regression"
-  }
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	"channel": "regression",
+	"notifyOn": "ERROR",
+	"notifyChannel": false,
+	"notifyUserIds": [ "UA4T7UJQJ", "UA5K2LZ1D"]
+  },
   "uploadToSharePoint": true
 }

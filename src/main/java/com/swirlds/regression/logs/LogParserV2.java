@@ -85,6 +85,7 @@ public class LogParserV2 implements LogParser {
 		return (marker != null &&
 				(marker.getType() == PlatformLogMarkerType.EXCEPTION ||
 						marker.getType() == PlatformLogMarkerType.ERROR))
-				|| s.contains("exception") || s.contains("error");
+				|| s.contains("exception")
+				|| (s.contains("error") && !s.contains("error=false"));
 	}
 }

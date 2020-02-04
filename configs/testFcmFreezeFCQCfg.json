@@ -1,11 +1,12 @@
 {
-  "name":"DynamicRestartFCLL",
+  "name":"DynamicRestartFCQ",
   "description" : "platform testing demo - FCM1K",
   "duration": 540,
   "settings": [
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"}
+    {"name":"csvAppend", "value":"true"},
+    {"name":"saveStatePeriod", "value":"300"}
   ],
   "freezeConfig": {
     "freezeTiming": 1,
@@ -17,7 +18,7 @@
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCM1KFreezeFCLL.json"]
+    "parameterList": ["FCM1KFreezeFCQ.json"]
   },
   "resultFiles": [
     "swirlds.log"

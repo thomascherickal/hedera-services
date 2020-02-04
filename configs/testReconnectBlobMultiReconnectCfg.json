@@ -1,15 +1,18 @@
 {
-  "name":"reconnect",
-  "description" : "platform testing demo - reconnect",
-  "duration": 2500,
+  "name":"Multi-Reconnect-Blob",
+  "description" : "platform testing app - multi-reconnect Blob",
+  "duration": 2400,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
     {"name":"throttle7", "value": "1" },
     {"name":"throttle7threshold", "value": "1.5" },
+
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"}
+    {"name":"reconnectActive", "value":"1"},
+    {"name":"enableEventStreaming", "value":"true"},
+    {"name":"roundsExpired", "value":"250"}
   ],
   "reconnectConfig": {
     "reconnectTiming": 180,
@@ -17,7 +20,7 @@
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMReconnect.json"]
+    "parameterList": ["FCMMultiReconnectBlob.json"]
   },
   "resultFiles": [
     "swirlds.log"

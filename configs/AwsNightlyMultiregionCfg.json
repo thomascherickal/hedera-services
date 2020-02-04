@@ -7,7 +7,7 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M410xlarge",
 	"instanceKey": "Multiregion-Key",
 	"keyLocation":"./keys/my-key",
@@ -27,33 +27,26 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json" // failed multi-region
-  ,
-	"configs/testSigningDemo4KCfg.json"
-  ,
-	"configs/testRestartCfg.json"
-  ,
-	"configs/testRestartFCLLCfg.json"
-  ,
-	"configs/testRestartBlobCfg.json" // bad stats
-  ,
-	"configs/testFcmFreezeCfg.json"
-  ,
-	"configs/testFcmFreezeFCLLCfg.json"
-  ,
-	"configs/testFcmFreezeBlobCfg.json" // failed multi-region
-  ,
-	"configs/testFcmCfg.json" // failed multi-region
-  ,
-	"configs/testFcm3MCfg.json" //failed multi- region
-  ,
-	"configs/testFcm1KFCLLCfg.json" //had an exception where node 1 couldn't connect to node 7 for more than 5 seconds.
-  ,
-	"configs/testFcmMultisizeBlobCfg.json"
-  ,
-	"configs/testFcm10MBx10KBlobCfg.json" // failed in multi-region
-  ,
-	"configs/testFcm4kx100KBlobCfg.json"
+	  "configs/testSigningDemoCfg.json",
+	  "configs/testSigningDemo4KCfg.json",
+	  "configs/testFcmMultipleOperationsCfg.json",
+	  "configs/testRestartCfg.json",
+	  "configs/testRestartBlobCfg.json",
+	  "configs/testFcmFreezeCfg.json",
+	  "configs/testFcmFreezeBlobCfg.json",
+	  "configs/testFcmMultisizeBlobCfg.json",
+	  "configs/testFcm10MBx10KBlobCfg.json",
+	  "configs/testFcm4kx100KBlobCfg.json",
+	  //	"configs/testFcm3MSavedStateCfg.json",
+	  "configs/testFcmFreezeFCQCfg.json",
+	  "configs/testFCM1KFCQCfg.json",
+	  //	"configs/testExperimentFCQCfg.json",
+	  "configs/testReconnectFCMMultiReconnectCfg.json",
+	  "configs/testReconnectFCQMultiReconnectCfg.json",
+	  //	"configs/testReconnectFCQCfg.json",
+	  "configs/testFcm1kThrottlingCfg.json",
+	  "configs/testFcmCfg.json",
+	  "configs/testFcm3MCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -64,6 +57,7 @@
   },
   "slack":{
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",

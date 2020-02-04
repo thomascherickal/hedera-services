@@ -51,7 +51,7 @@ duration of the test, settings, restart, reconnect, freeze, what jar to use, opt
           v) Confirm "keyLocation" is the base name of the key you chose to use.
 7) edit the new testFcm1KCfg<YOUR NAME HERE>.json file
     a) change name to the name of the experiment you are attempting to run
-            Ex.: FCLL-Streaming-8500TPS-1MC-5MT-5MU; reconnect; dynamic freeze;
+            Ex.: FCQ-Streaming-8500TPS-1MC-5MT-5MU; reconnect; dynamic freeze;
         i) make sure you name is include in the test name so it is clear who's test it is
                 in the regression-test slack channel
     b) change as appropriate  
@@ -242,7 +242,7 @@ slack: Information on the slack channel to post results on
     *        "notifyUserIds": ["slack user ID 1", "slack user ID 2"]
     *    },
     *************************************
-name: Name of the regression tests being run EX.: "663-restart-validation", "FCLL-restart", "FCLL-with-blobs"
+name: Name of the regression tests being run EX.: "663-restart-validation", "FCQ-restart"
 <OPTIONAL> eventFilesWriters: Default = 0: number of stream servers to be run for this regression (should not be more than # of nodes)
     EX: "eventFilesWriters": 4,
 <OPTIONAL> uploadToSharePoint: Default = true: whether or not to upload results to sharepoint
