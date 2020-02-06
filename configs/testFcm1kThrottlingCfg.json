@@ -14,6 +14,5 @@
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "PTA_THROTTLE" ],
-  "downloadDbLogFiles": true
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "PTA_THROTTLE" ]
 }
