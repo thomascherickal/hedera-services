@@ -139,7 +139,7 @@ public class Experiment {
 
     public void startAllSwirlds() {
         for (SSHService node : sshNodes) {
-            node.execWithProcessID(regConfig.getJvmOptions());
+            node.execWithProcessID(getJVMOptionsString());
             log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
         }
     }
@@ -164,7 +164,7 @@ public class Experiment {
         if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
             nodeToReconnect.reviveNetwork();
         } else {
-            nodeToReconnect.execWithProcessID(regConfig.getJvmOptions());
+            nodeToReconnect.execWithProcessID(getJVMOptionsString());
         }
     }
 
@@ -741,18 +741,7 @@ public class Experiment {
         String javaBin = javaHome +
                 File.separator + "bin" +
                 File.separator + "java";
-        String javaOptions;
-        /* if the individual paremeters for jvm options are set create the appropriate string, if not use the default.
-        If a jvm options string was given in the regression config use that instead.
-         */
-        if(regConfig.getJvmOptionParametersConfig() != null){
-            javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
-        } else {
-            javaOptions = JVM_OPTIONS_DEFAULT;
-        }
-        if (!"".equals(regConfig.getJvmOptions())) {
-            javaOptions = regConfig.getJvmOptions();
-        }
+        String javaOptions = getJVMOptionsString();
 
         ProcessBuilder builder = new ProcessBuilder(
                 javaBin, javaOptions, "-jar", "swirlds.jar");
@@ -775,6 +764,22 @@ public class Experiment {
         isFirstTestFinished = true;
         return process.exitValue();
 
+    }
+
+    private String getJVMOptionsString() {
+        String javaOptions;
+        /* if the individual paremeters for jvm options are set create the appropriate string, if not use the default.
+        If a jvm options string was given in the regression config use that instead.
+         */
+        if(regConfig.getJvmOptionParametersConfig() != null){
+            javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
+        } else {
+            javaOptions = JVM_OPTIONS_DEFAULT;
+        }
+        if (!"".equals(regConfig.getJvmOptions())) {
+            javaOptions = regConfig.getJvmOptions();
+        }
+        return javaOptions;
     }
 
     void scpFrom(int node, ArrayList<String> downloadExtensions) {

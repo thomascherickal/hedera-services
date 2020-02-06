@@ -504,6 +504,12 @@ public class SSHService {
 		log.info(MARKER, "**network revive exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
 	}
 
+	long checkTotalMemoryOnNode() {
+		final Session.Command cmd = execCommand(RegressionUtilities.GET_TOTAL_MB_MEMORY_ON_NODE, "command to get total MB of memory on node", -1);
+		log.info(MARKER, "Check memory exit status:" + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+		return Long.valueOf(getFirstLineOfStream(cmd.getInputStream()));
+	}
+
 	SSHClient buildSession() {
 		SSHClient client = new SSHClient();
 		int count = 0;

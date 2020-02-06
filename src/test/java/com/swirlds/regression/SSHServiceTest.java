@@ -52,12 +52,12 @@ public class SSHServiceTest {
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
 	static final String USER = "ubuntu";
-	static final String IPADDRESS = "34.222.49.13";
-	static final String KEY_FILE_LOCATION = "c:\\work\\github\\platform-swirlds\\regression\\keys\\my-key.pem";
+	static final String IPADDRESS = "18.222.31.205";
+	static final String KEY_FILE_LOCATION = ".\\keys\\my-key.pem";
 
 	static final String BAD_USER = "ec2USER";
-	static final String BAD_IPADDRESS = "51.34.59.26";
-	static final String BAD_KEY_FILE_LOCATION = "H:\\Swirlds\\git\\platform-swirlds\\sdk\\testing\\my-key";
+	static final String BAD_IPADDRESS = "3.16.38.224";
+	static final String BAD_KEY_FILE_LOCATION = "sdk\\testing\\my-key";
 
 	private SSHService Connect(String user, String ip, String keyFileLocation){
 		File keyFile = new File(keyFileLocation);
@@ -75,7 +75,7 @@ public class SSHServiceTest {
 	/************************************************************
 	 * Connection Tests                                         *
 	 ***********************************************************/
-//	@Test
+	@Test
 	@DisplayName("test connection")
 	void TestConnection(){
 		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
@@ -253,6 +253,16 @@ public class SSHServiceTest {
 		l.add("regression.sh");
 		//l.add("smth");
 		ssh.scpFilesToRemoteDir(l, "this/that/");
+	}
+
+	@Test
+	@DisplayName("Get total amount of memory on node")
+	void testMemoryTotalOnNode(){
+		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
+		long expectedMemory = 161169;
+		long nodeMemory = ssh.checkTotalMemoryOnNode();
+
+		assertTrue(expectedMemory == nodeMemory);
 	}
 
 }
