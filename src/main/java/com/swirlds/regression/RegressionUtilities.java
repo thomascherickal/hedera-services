@@ -343,13 +343,19 @@ public class RegressionUtilities {
     }
 
     public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
+
 		/* parameter string: "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg"
 		 */
-		return String.format(JVM_OPTIONS_PARAMETER_STRING, maxMemory, minMemory, maxDirectMemory);
+		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+			return JVM_OPTIONS_DEFAULT;
+		} else {
+			return String.format(JVM_OPTIONS_PARAMETER_STRING, maxMemory, minMemory, maxDirectMemory);
+		}
 	}
 
 	public static String buildParameterString(JvmOptionParametersConfig jvmOptionParametersConfig) {
+		if(jvmOptionParametersConfig == null) { return JVM_OPTIONS_DEFAULT; }
 		int maxMemory = jvmOptionParametersConfig.getMaxMemory();
 		int minMemory = jvmOptionParametersConfig.getMinMemory();
 		int maxDirectMemory = jvmOptionParametersConfig.getMaxDirectMemory();
