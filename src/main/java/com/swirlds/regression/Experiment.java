@@ -43,17 +43,57 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.*;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE;
+import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
+import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
+import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
+import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
+import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
+import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
+import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_DEFAULT;
+import static com.swirlds.regression.RegressionUtilities.MILLIS;
+import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
+import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
+import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
+import static com.swirlds.regression.RegressionUtilities.REG_GIT_BRANCH;
+import static com.swirlds.regression.RegressionUtilities.REG_GIT_USER_EMAIL;
+import static com.swirlds.regression.RegressionUtilities.REG_SLACK_CHANNEL;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
+import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
+import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
+import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
+import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
+import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
+import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
+import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
+import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
+import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
+import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
+import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
 import static com.swirlds.regression.RegressionUtilities.*;
 import static com.swirlds.regression.validators.StreamingServerValidator.*;
 import static org.apache.commons.io.FileUtils.listFiles;
@@ -170,8 +210,8 @@ public class Experiment {
 
     public void sleepThroughExperiment(long testDuration) {
         /*TODO: Test duration shouldn't be needed for PTD now, look into removing it for PTD tests */
-		/* Local test shouldn't look for dead nodes, if the test is too short this would just make the test run
-		longer */
+        /* Local test shouldn't look for dead nodes, if the test is too short this would just make the test run
+        longer */
         if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
             ArrayList<Boolean> isProcDown = new ArrayList<>();
             ArrayList<Boolean> isTestFinished = new ArrayList<>();
@@ -182,11 +222,11 @@ public class Experiment {
             }
             /* testDuration is already in milliseconds */
             /* TODO: endTime should be unnecessary if java Proc check and test success are working for PTD */
-            long endTime = System.nanoTime() + (testDuration * 1_000_000);
-            log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / 1_000);
+            long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+            log.info(MARKER, "sleeping for {} seconds, or until test finishes ", testDuration / MILLIS);
             while (System.nanoTime() < endTime) { // Don't go over set test time
                 try {
-                    log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / 1_000);
+                    log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
                     Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
                 } catch (InterruptedException e) {
                     log.error(ERROR, "could not sleep.", e);
@@ -199,8 +239,8 @@ public class Experiment {
                     if (!isProcStillRunning && isProcDown.get(i)) {
                         return;
                     } else {
-						/* always set to true in case it was false, this makes sure reconnect and restart don't fail out
-						after the first reconnect/restart */
+                        /* always set to true in case it was false, this makes sure reconnect and restart don't fail out
+                        after the first reconnect/restart */
                         isProcDown.set(i, !isProcStillRunning);
                     }
                     isTestFinished.set(i, node.isTestFinished());
@@ -213,12 +253,115 @@ public class Experiment {
         } else {
             try {
                 //TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
-                log.info(MARKER, "sleeping for {} seconds ", testDuration / 1_000);
+                log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
                 Thread.sleep(testDuration);
             } catch (InterruptedException e) {
                 log.error(ERROR, "could not sleep.", e);
             }
         }
+    }
+
+    /**
+     * Sleep until reached the testDuration, or one of checker callback return true
+     *
+     * @param testDuration
+     * 		Default test duration, in the unit of milliseconds, to run if none of checker return true
+     * @param checkerList
+     * 		A list of callback functions to check whether the conditions of exiting sleep mode have been met
+     */
+    public void sleepThroughExperimentWithCheckerList(long testDuration,
+            List<BooleanSupplier> checkerList) {
+        if (regConfig.getCloud() != null && JAVA_PROC_CHECK_INTERVAL < testDuration) {
+
+            long endTime = System.nanoTime() + (testDuration * MS_TO_NS);
+            log.info(MARKER, "sleeping for {} seconds, or until condition met ", testDuration / MILLIS);
+
+            while (System.nanoTime() < endTime) { // Don't go over set test time
+                try {
+                    log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
+                    Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                    log.error(ERROR, "could not sleep.", e);
+                }
+
+                if (checkerList != null) {
+                    for (BooleanSupplier checker : checkerList) {
+                        if (checker != null) {
+                            if (checker.getAsBoolean()) {
+                                return; //exit both for and while loop
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            try {
+                log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
+                Thread.sleep(testDuration);
+            } catch (InterruptedException e) {
+                log.error(ERROR, "could not sleep.", e);
+            }
+        }
+    }
+
+    /**
+     * Whether all node find defined number of messages in log file
+     *
+     * @param msgList
+     * 		A list of message to search for
+     * @param messageAmount
+     * 		How many times the message expected to appear
+     * @param fileName
+     * 		File name to search for the message
+     * @return return true if the time that the message appeared is equal or larger than messageAmount
+     */
+    public boolean isAllNodesFoundEnoughMessage(List<String> msgList, int messageAmount, String fileName) {
+        boolean isEnoughMsgFound = false;
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            if (node.countSpecifiedMsg(msgList, fileName) == messageAmount) {
+                log.info(MARKER, "Node {} found enough message {}", i, msgList);
+                isEnoughMsgFound = true;
+            } else {
+                isEnoughMsgFound = false;
+            }
+        }
+        return isEnoughMsgFound;
+    }
+
+    /**
+     * Whether test finished message can be found at least twice in the log file
+     */
+    public boolean isFoundTwoPTDFinishMessage() {
+        return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
+    }
+
+    public boolean isProcessFinished() {
+        ArrayList<Boolean> isProcDown = new ArrayList<>();
+        ArrayList<Boolean> isTestFinished = new ArrayList<>();
+        /* set array lists to appropriate size with default values */
+        for (int i = 0; i < sshNodes.size(); i++) {
+            isProcDown.add(false);
+            isTestFinished.add(false);
+        }
+
+        /* Check all processes are still running, then check if test has finished */
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            boolean isProcStillRunning = node.checkProcess();
+            /* if this it the first time down, keep running, if down two times in a row, stop */
+            if (!isProcStillRunning && isProcDown.get(i)) {
+                return true;
+            } else {
+                isProcDown.set(i, !isProcStillRunning);
+            }
+            isTestFinished.set(i, node.isTestFinished());
+        }
+        /* we don't want to exit if only a few nodes have reported being finished */
+        if (checkForAllTrue(isTestFinished)) {
+            return true;
+        }
+        return false;
     }
 
     private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {
@@ -306,8 +449,11 @@ public class Experiment {
             final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
             final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
             final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
+            final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
+
+            InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
             nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-                    getInputStream(shaEventFileName)));
+                    getInputStream(shaEventFileName), recoverEventLogStream));
         }
         return nodeData;
     }
@@ -369,6 +515,10 @@ public class Experiment {
         if (regConfig.getEventFilesWriters() > 0) {
             StreamingServerValidator ssValidator = new StreamingServerValidator(
                     loadStreamingServerData(testConfig.getName()), reconnect);
+            if (testConfig.getRunType() == RunType.RECOVER) {
+                ssValidator.setStateRecoverMode(true);
+            }
+
             requiredValidator.add(ssValidator);
         }
 
@@ -394,18 +544,18 @@ public class Experiment {
     private void createStatsFile(String resultsFolder) {
         String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
         ExecStreamReader.outputProcessStreams(insightCmd);
-
+        
     }
 
-    public void sendSettingFileToNodes() {
-        if (regConfig.getEventFilesWriters() == 0) {
-            sendSettingToNonStreamingNodes();
-        } else {
-            sendSettingToStreamingNodes();
-        }
-    }
+	public void sendSettingFileToNodes() {
+		if (regConfig.getEventFilesWriters() == 0) {
+			sendSettingToNonStreamingNodes();
+		} else {
+			sendSettingToStreamingNodes();
+		}
+	}
 
-    private void sendSettingToStreamingNodes() {
+	private void sendSettingToStreamingNodes() {
 		/* since the contents of the file change, but not the location of the file this can be set up outside the for
 		loop */
         ArrayList<File> newUploads = new ArrayList<>();
@@ -797,52 +947,168 @@ public class Experiment {
 					and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
 					.jar
 					 */
-                    fileToSplit.getParentFile().mkdirs();
+					fileToSplit.getParentFile().mkdirs();
 
-                }
-                Files.copy(fromFile, toFile, options);
-                log.info(MARKER, "downloading {} from node {} putting it in {}", fromFile.toString(), node,
-                        toFile.toString());
+				}
+				Files.copy(fromFile, toFile, options);
+				log.info(MARKER, "downloading {} from node {} putting it in {}", fromFile.toString(), node,
+						toFile.toString());
+			}
+		} catch (IOException e) {
+			log.error(ERROR, "Could not download files", e);
+		}
+	}
+
+	Collection<File> getListOfFiles(ArrayList<String> extension, int node) {
+		final ArrayList<String> ext = ChangeExtensionToBeNodeSpecific(extension, node);
+		final IOFileFilter filter;
+		if (ext == null) {
+			filter = TrueFileFilter.INSTANCE;
+		} else {
+			filter = new SuffixFileFilter(ext);
+		}
+
+		return listFiles(new File("./"), filter,
+				false ? TrueFileFilter.INSTANCE : FalseFileFilter.INSTANCE);
+	}
+
+	private ArrayList<String> ChangeExtensionToBeNodeSpecific(ArrayList<String> extension, int node) {
+		final ArrayList<String> returnArray = new ArrayList<>();
+		for (final String ext : extension) {
+			returnArray.add(ext.replace("*", Integer.toString(node)));
+		}
+		return returnArray;
+	}
+
+	void setupTest(TestConfig experiment) {
+		this.testConfig = experiment;
+
+		setExperimentTime();
+		configFile = new ConfigBuilder(regConfig, testConfig);
+		settingsFile = new SettingsBuilder(testConfig);
+	}
+
+	public TestConfig getTestConfig() {
+		return testConfig;
+	}
+
+	public SettingsBuilder getSettingsFile() {
+		return settingsFile;
+	}
+
+	public int getNumberOfSignedStates(){
+		SSHService node0 = sshNodes.get(0);
+		return node0.getNumberOfSignedStates();
+	}
+
+    /** check if all nodes generated same number of states */
+    public boolean generatedSameNumberStates() {
+        boolean result = true;
+        SSHService node0 = sshNodes.get(0);
+        int node0StateNumber = node0.getNumberOfSignedStates();
+        log.info(MARKER, "Important Node 0 generated {} states", node0StateNumber);
+        for (int i = 1; i < sshNodes.size() - 1; i++) {
+            int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
+            log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
+            if (stateNumber != node0StateNumber) {
+                log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
+                        0, i, node0StateNumber, stateNumber);
+                result = false;
             }
-        } catch (IOException e) {
-            log.error(ERROR, "Could not download files", e);
         }
+        return result;
     }
 
-    Collection<File> getListOfFiles(ArrayList<String> extension, int node) {
-        final ArrayList<String> ext = ChangeExtensionToBeNodeSpecific(extension, node);
-        final IOFileFilter filter;
-        if (ext == null) {
-            filter = TrueFileFilter.INSTANCE;
-        } else {
-            filter = new SuffixFileFilter(ext);
-        }
+	/**
+	 * Delete last few saved states from all nodes.
+	 * The number of deleted states are random generated based on current number
+	 * of saved states
+	 */
+	public boolean randomDeleteLastNSignedStates() {
+		SSHService node0 = sshNodes.get(0);
+		int savedStatesAmount = node0.getNumberOfSignedStates();
+		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
+		if (savedStatesAmount > 1) {
+			// random generate an amount and delete such amount of signed state
+			// at least leave one of the original signed state
+			int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
+			log.info(MARKER, "Random delete {} signed state", randNum);
 
-        return listFiles(new File("./"), filter,
-                false ? TrueFileFilter.INSTANCE : FalseFileFilter.INSTANCE);
-    }
+			deleteLastNSignedStates(randNum);
+		}
+		if (savedStatesAmount == 0) {
+			log.error(ERROR, "no signed state saved, cannot continue recover test");
+			return false;
+		}
+		return true;
+	}
 
-    private ArrayList<String> ChangeExtensionToBeNodeSpecific(ArrayList<String> extension, int node) {
-        final ArrayList<String> returnArray = new ArrayList<>();
-        for (final String ext : extension) {
-            returnArray.add(ext.replace("*", Integer.toString(node)));
-        }
-        return returnArray;
-    }
+	/**
+	 * Delete last few saved signed states from disk
+	 *
+	 * @param deleteNumber
+	 * 		number of signed state to be deleted
+	 */
+	public void deleteLastNSignedStates(int deleteNumber) {
+		for (SSHService node : sshNodes) {
+			List<SavedStatePathInfo> stateList = node.getSavedStatesDirectories();
+			node.deleteLastNSignedStates(deleteNumber, stateList);
+		}
+	}
 
-    void setupTest(TestConfig experiment) {
-        this.testConfig = experiment;
+	/**
+	 * List names of signed state directories currently on disk
+	 *
+	 * @param memo
+	 * 		Memo string
+	 */
+	public void displaySignedStates(String memo) {
+		for (SSHService node : sshNodes) {
+			node.displaySignedStates(memo);
+		}
+	}
 
-        setExperimentTime();
-        configFile = new ConfigBuilder(regConfig, testConfig);
-        settingsFile = new SettingsBuilder(testConfig);
-    }
+	/**
+	 * Restore database from backup file
+	 */
+	public void recoverDatabase() {
+		for (SSHService node : sshNodes) {
+			node.recoverDatabase();
+		}
+	}
 
-    public TestConfig getTestConfig() {
-        return testConfig;
-    }
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	public void backupSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.backupSavedSignedState(tempDir);
+		}
+	}
 
-    public SettingsBuilder getSettingsFile() {
-        return settingsFile;
-    }
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	public void restoreSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.restoreSavedSignedState(tempDir);
+		}
+	}
+	
+	/**
+	 * Compare event files generated during recover mode whether match original ones
+	 *
+	 * @param eventDir
+	 * @param originalDir
+	 * @return
+	 */
+	public boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
+		for (SSHService node : sshNodes) {
+			if (!node.checkRecoveredEventFiles(eventDir, originalDir)) {
+				return false;
+			}
+
+		}
+		return true;
+	}
 }

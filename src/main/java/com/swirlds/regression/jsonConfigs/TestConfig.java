@@ -20,6 +20,7 @@ package com.swirlds.regression.jsonConfigs;
 import com.swirlds.regression.RunType;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.FreezeConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.ReconnectConfig;
+import com.swirlds.regression.jsonConfigs.runTypeConfigs.RecoverConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.RestartConfig;
 import com.swirlds.regression.validators.ValidatorType;
 
@@ -49,6 +50,7 @@ public class TestConfig implements FileRequirement {
 	private ReconnectConfig reconnectConfig = null;
 	private RestartConfig restartConfig = null;
 	private FreezeConfig freezeConfig = null;
+	private RecoverConfig recoverConfig = null;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -57,6 +59,8 @@ public class TestConfig implements FileRequirement {
 			return RunType.FREEZE;
 		} else if (reconnectConfig != null) {
 			return RunType.RECONNECT;
+		} else if (recoverConfig != null) {
+			return RunType.RECOVER;
 		}
 		return RunType.STANDARD;
 	}
@@ -176,10 +180,18 @@ public class TestConfig implements FileRequirement {
 		this.freezeConfig = freezeConfig;
 	}
 
+	public RecoverConfig getRecoverConfig() {
+		return recoverConfig;
+	}
+
+	public void setRecoverConfig(RecoverConfig recoverConfig) {
+		this.recoverConfig = recoverConfig;
+	}
+
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
-		add(list, freezeConfig, app);
+		add(list, freezeConfig, recoverConfig, app);
 		return list;
 	}
 
