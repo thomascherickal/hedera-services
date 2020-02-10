@@ -31,19 +31,18 @@
 //	  "configs/testRestartCfg.json",
 //	  "configs/testRestartBlobCfg.json",
 //	  "configs/testFcmFreezeCfg.json",
-	  "configs/testFcmFreezeBlobCfg.json"
-	  ,
+	  "configs/testReconnectBlobCfg.json",
+	  "configs/testFcmFreezeBlobCfg.json",
 //	  "configs/testFcmCfg.json",
-	  "configs/testFcmMultisizeBlobCfg.json"
-  ,
+	  "configs/testFcmMultisizeBlobCfg.json",
 //	  "configs/testFcm10MBx10KBlobCfg.json",
 	  "configs/testFcm4kx100KBlobCfg.json"
-  ,
+//  ,
 //	  "configs/testFcmFreezeFCQCfg.json",
 //	  "configs/testFCM1KFCQCfg.json",
 //	  "configs/testReconnectFCMMultiReconnectCfg.json",
 //	  "configs/testReconnectFCQMultiReconnectCfg.json",
-	  "configs/testReconnectBlobCfg.json"
+
 //  ,
 //	  "configs/testFcm1kThrottlingCfg.json"
   ],
@@ -59,9 +58,9 @@
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression-test",
 	// "notifyOn" options: ALL, WARNING, ERROR
-	"notifyOn": "ERROR",
+	"notifyOn": "ALL",
 	"notifyChannel": false,
-	"notifyUserIds": [ "UA5K2LZ1D" ]
+	"notifyUserIds": [ "UA5K2LZ1D", "UA66NE2NT" ]
   },
 //	"jvmOptions":"-Xmx12g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=10 -XX:ZMarkStackSpaceLimit=8g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g",
   "uploadToSharePoint": true
