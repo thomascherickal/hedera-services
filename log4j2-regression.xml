@@ -19,6 +19,7 @@
   <Filters>
     <!-- In the following, enable a marker with onMatch="ACCEPT" and disable with onMatch="DENY". -->
     <!-- More markers can be added, but ensure that every onMismatch="NEUTRAL", except the last is "DENY". -->
+
     <!-- Exceptions -->
     <MarkerFilter marker="EXCEPTION"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="TESTING_EXCEPTIONS"     onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
@@ -26,20 +27,48 @@
     <MarkerFilter marker="TCP_CONNECT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
     <!-- Errors -->
     <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="INTAKE_EVENT_DISCARD"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT_DISCARD"   onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <!-- Other -->
-    <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_COPY_FROM_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_NODE_COORDINATOR"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_MERKLE_BUILDER"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_ISS" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+    <MarkerFilter marker="SYNC_START"             onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC_DONE"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC_ERROR"             onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC"                   onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="CREATE_EVENT"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="WATCH_EVENTS_SEND_REC"  onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="QUEUES"                 onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="HEARTBEAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_SIG"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="CERTIFICATES"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_FROM"          onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_TO"            onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_DEMO"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_FROM_DIFF"     onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_ISS"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FC_SERIALIZATION"       onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_FORCE_FLUSH"     onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_HASH"            onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_GENERATION"      onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_LOCKS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="LOCKS"                  onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TIME_MEASURE"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STARTUP"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_SIG_DIST"         onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="OPENCL_INIT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="ADV_CRYPTO_SYSTEM"      onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_STREAM"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="RECONNECT"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="DENY"/>
+    <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SNAPSHOT_MANAGER"       onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_TO_DISK"          onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_DELETER"          onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="PLATFORM_STATUS"        onMatch="ACCEPT"   onMismatch="DENY"/>
   </Filters>
 
   <Appenders>
