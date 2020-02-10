@@ -75,7 +75,7 @@ public class NodeMemoryTest {
 			"64GB, 31744, 63488, 60GB"
 	})
 	@DisplayName("Test Calculations made by constructor are correct")
-	public void testNodeMemoryContructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory,
+	public void testNodeMemoryConstructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory,
 			String jvmMemory) throws NumberFormatException {
 		NodeMemory testNM = new NodeMemory(totalMemory);
 		assertEquals(hugePageNumber, testNM.getHugePagesNumber());

@@ -504,10 +504,11 @@ public class SSHService {
 		log.info(MARKER, "**network revive exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
 	}
 
-	long checkTotalMemoryOnNode() {
+	String checkTotalMemoryOnNode() {
 		final Session.Command cmd = execCommand(RegressionUtilities.GET_TOTAL_MB_MEMORY_ON_NODE, "command to get total MB of memory on node", -1);
 		log.info(MARKER, "Check memory exit status:" + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
-		return Long.valueOf(getFirstLineOfStream(cmd.getInputStream()));
+		/* M is added because vmstat doesn't have a human readable option. but the -SM option forces it to report in MB */
+		return getFirstLineOfStream(cmd.getInputStream()) + "MB";
 	}
 
 	SSHClient buildSession() {

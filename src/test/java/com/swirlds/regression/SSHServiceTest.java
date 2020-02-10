@@ -259,10 +259,10 @@ public class SSHServiceTest {
 	@DisplayName("Get total amount of memory on node")
 	void testMemoryTotalOnNode(){
 		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
-		long expectedMemory = 161169;
-		long nodeMemory = ssh.checkTotalMemoryOnNode();
+		String expectedMemory = "161169M";
+		String nodeMemory = ssh.checkTotalMemoryOnNode();
 
-		assertTrue(expectedMemory == nodeMemory);
+		assertTrue(expectedMemory.equals(nodeMemory));
 	}
 
 }

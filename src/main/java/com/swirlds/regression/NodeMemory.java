@@ -53,7 +53,7 @@ public class NodeMemory {
 		huge pages though, so we need to calculate how much it might take and round that up to the nearest GB to make
 		sure the JVM and postgres play nice with memory */
 		MemoryType calculationType = MemoryType.GB; // JVM is called with GB for memory
-		double workingTotalMemory = hugePagesMemory.getAdjustedMemoryAmount(calculationType);
+		double workingTotalMemory = osReserve.getAdjustedMemoryAmount(calculationType) + hugePagesMemory.getAdjustedMemoryAmount(calculationType);
 		/* round postgres Mem up to nearest whole GB */
 		workingTotalMemory -= Math.ceil(totalPostgresMemoryNeeds(calculationType));
 		/* round JVMs allocation down to nearest GB */

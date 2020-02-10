@@ -79,6 +79,7 @@ public class Experiment {
     private boolean isFirstTestFinished = false;
     private CloudService cloud = null;
     private ArrayList<SSHService> sshNodes = new ArrayList<>();
+    NodeMemory nodeMemoryProfile;
 
     // Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
     // At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
@@ -510,6 +511,7 @@ public class Experiment {
 
             if (firstNode == null) {
                 firstNode = currentNode;
+                calculateNodeMemoryProfile(currentNode);
                 sendTarToNode(currentNode, addedFiles);
             } else {
                 firstNode.rsyncTo(addedFiles, currentNode.getIpAddress(), new File(testConfig.getLog4j2File()));
@@ -600,12 +602,16 @@ public class Experiment {
         killJavaProcess();
     }
 
+    private void calculateNodeMemoryProfile(SSHService currentNode) {
+        String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
+        nodeMemoryProfile = new NodeMemory(totalNodeMemory);
+    }
+
     void resetNodes() {
         for (final SSHService node : sshNodes) {
             node.reset();
             node.close();
         }
-
         sshNodes.clear();
     }
 
@@ -763,18 +769,17 @@ public class Experiment {
         }
         isFirstTestFinished = true;
         return process.exitValue();
-
     }
 
     private String getJVMOptionsString() {
         String javaOptions;
-        /* if the individual paremeters for jvm options are set create the appropriate string, if not use the default.
+        /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.
          */
         if(regConfig.getJvmOptionParametersConfig() != null){
             javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
         } else {
-            javaOptions = JVM_OPTIONS_DEFAULT;
+            javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
         }
         if (!"".equals(regConfig.getJvmOptions())) {
             javaOptions = regConfig.getJvmOptions();

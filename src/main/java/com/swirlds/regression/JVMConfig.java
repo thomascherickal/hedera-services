@@ -75,7 +75,7 @@ public class JVMConfig {
         standardJVMOptions = new ArrayList<>();
 
         if (jvmMemory == null) {
-            setupDefaultJMMemoryUsage(jvmMemory);
+            setupDefaultJVMemoryUsage(jvmMemory);
 
         } else {
             memoryBasedJVMOptions.put(JAVA_MAX_MEMORY_OPTION, jvmMemory);
@@ -109,7 +109,7 @@ public class JVMConfig {
         memoryBasedJVMOptions.put("-XX:MaxDirectMemorySize=", new MemoryAllocation(32, MemoryType.GB));
     }
 
-    private void setupDefaultJMMemoryUsage(MemoryAllocation jvmMemory) {
+    private void setupDefaultJVMemoryUsage(MemoryAllocation jvmMemory) {
         memoryBasedJVMOptions.put(JAVA_MAX_MEMORY_OPTION, new MemoryAllocation(100, MemoryType.GB));
         memoryBasedJVMOptions.put(JAVA_MIN_MEMORY_OPTION, new MemoryAllocation(8, MemoryType.GB));
     }
