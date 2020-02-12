@@ -1,9 +1,0 @@
-###############################################################################################
-# Swirlds configuration file, for automatically running multiple instances
-###############################################################################################
-swirld, 123
-app, PlatformTestingApp.jar, FCMReconnectExpiration.json
-address, FCM-Reconnect-Expiration0, FCM-Reconnect-Expiration0, 1250000000000000000, 172.31.40.61, 40124, 18.219.8.76, 40124
-address, FCM-Reconnect-Expiration1, FCM-Reconnect-Expiration1, 1250000000000000000, 172.31.47.213, 40125, 13.59.110.67, 40125
-address, FCM-Reconnect-Expiration2, FCM-Reconnect-Expiration2, 1250000000000000000, 172.31.32.68, 40126, 18.191.53.88, 40126
-address, FCM-Reconnect-Expiration3, FCM-Reconnect-Expiration3, 1250000000000000000, 172.31.47.96, 40127, 13.59.152.7, 40127
