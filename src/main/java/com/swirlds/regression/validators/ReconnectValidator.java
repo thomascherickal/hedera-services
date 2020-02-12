@@ -105,7 +105,7 @@ public class ReconnectValidator extends NodeValidator {
 		double minLastRoundSup = 0; //minimum last entry of roundSup among all node except the reconnected node
 		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node except the reconnected node
 
-		for (int i = 0; i <= nodeNum - 1; i++) {
+		for (int i = 0; i < nodeNum - 1; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
 			boolean isNotLoaded = false;

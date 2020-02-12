@@ -47,24 +47,4 @@ class ReconnectValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
-	// this test should fail ReconnectValidator
-	// because the node has two NullPointerException and didn't reconnect
-	@ParameterizedTest
-	@ValueSource(strings = {
-			"logs/reconnectFCM/4_NPE"
-	})
-	void validateReconnectLogsNPE(String testDir) throws IOException {
-		System.out.println("Dir: " + testDir);
-		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "PlatformTesting", 1);
-		NodeValidator validator = new ReconnectValidator(nodeData);
-		validator.validate();
-		for (String msg : validator.getInfoMessages()) {
-			System.out.println("INFO: " + msg);
-		}
-		for (String msg : validator.getErrorMessages()) {
-			System.out.println("ERROR: " + msg);
-		}
-		assertEquals(false, validator.isValid());
-	}
-
 }
