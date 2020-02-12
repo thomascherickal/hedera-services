@@ -36,6 +36,7 @@ import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
 import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
+import static com.swirlds.regression.RegressionUtilities.NULL_POINTER_EXCEPTION;
 import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
@@ -125,12 +126,12 @@ public class ReconnectValidator extends NodeValidator {
 			int socketExceptions = 0;
 			int invalidEvent = 0;
 			int unexpectedErrors = 0;
-			int errors =0;
+			int npe =0;
 			for (LogEntry e : nodeLog.getExceptions()) {
 				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
-				} else if(e.getMarker() == PlatformLogMarker.EXCEPTION){
-					errors++;
+				} else if(e.getLogEntry().contains(NULL_POINTER_EXCEPTION)){
+					npe++;
 					isValid = false;
 				}else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
 					invalidEvent++;
@@ -142,8 +143,8 @@ public class ReconnectValidator extends NodeValidator {
 					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
 				}
 			}
-			if(errors > 0){
-				addError(String.format("Node %d has %d errors!", i, errors));
+			if(npe > 0){
+				addError(String.format("Node %d has %d Null Pointer Exceptions!", i, npe));
 			}
 			if (socketExceptions > 0) {
 				addInfo(String.format("Node %d has %d socket exceptions. Some are expected for Reconnect.", i,
