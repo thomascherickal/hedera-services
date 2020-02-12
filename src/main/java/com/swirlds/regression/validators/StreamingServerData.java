@@ -34,6 +34,7 @@ public class StreamingServerData {
 	private ArrayList<String> sha1Events = null;
 	private boolean sha1EventsRead = false;
 	private final List<String> evtsSigEvents;
+	private InputStream recoverEventMatchLog = null;
 
 	public StreamingServerData(InputStream sha1sumStream) {
 		this(null, sha1sumStream, null);
@@ -43,10 +44,41 @@ public class StreamingServerData {
 		this(null, sha1sumStream, sha1EventStream);
 	}
 
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream, final InputStream sha1EventStream) {
+	/**
+	 *
+	 * @param evtsSigStream
+	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sha1sumStream
+	 * 		The input stream contains the hash value of the list of hash values of event stream files
+	 * @param sha1EventStream
+	 * 		The input stream contains the list of hash values of event stream files
+	 * 	stream files a with previous generated event stream files
+	 */
+	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
+			final InputStream sha1EventStream) {
 		evtsSigEvents = readEventsFile(evtsSigStream);
 		this.sha1sumStream = sha1sumStream;
 		getSha1Events(sha1EventStream);
+	}
+
+	/**
+	 *
+	 * @param evtsSigStream
+	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sha1sumStream
+	 * 		The input stream contains the hash value of the list of hash values of event stream files
+	 * @param sha1EventStream
+	 * 		The input stream contains the list of hash values of event stream files
+	 * @param recoverEventMatchLog
+	 * 		The input stream contains the comparison result of comparing hashes of recovered event
+	 * 	stream files a with previous generated event stream files
+	 */
+	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
+			final InputStream sha1EventStream, InputStream recoverEventMatchLog) {
+		evtsSigEvents = readEventsFile(evtsSigStream);
+		this.sha1sumStream = sha1sumStream;
+		getSha1Events(sha1EventStream);
+		this.recoverEventMatchLog = recoverEventMatchLog;
 	}
 
 	private void getSha1Events(InputStream sha1EventStream) {
@@ -110,5 +142,9 @@ public class StreamingServerData {
 
 	public EventSigEvent getEvtsSigEvents() {
 		return new EventSigEvent(this.evtsSigEvents);
+	}
+
+	public InputStream getRecoverEventMatchLog() {
+		return recoverEventMatchLog;
 	}
 }

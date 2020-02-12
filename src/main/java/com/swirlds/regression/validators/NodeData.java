@@ -36,4 +36,5 @@ public class NodeData {
 	public CsvReader getCsvReader() {
 		return csvReader;
 	}
+
 }
