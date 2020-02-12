@@ -48,7 +48,7 @@ class ReconnectValidatorTest {
 	}
 
 	// this test should fail ReconnectValidator
-	// because node3 has two NullPointerException and didn't reconnect
+	// because the node has two NullPointerException and didn't reconnect
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"logs/reconnectFCM/4_NPE"
