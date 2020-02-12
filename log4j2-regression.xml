@@ -27,7 +27,7 @@
     <MarkerFilter marker="TCP_CONNECT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
     <!-- Errors -->
     <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="INTAKE_EVENT_DISCARD"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT_DISCARD"   onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <!-- Other -->
     <MarkerFilter marker="SYNC_START"             onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="SYNC_DONE"              onMatch="DENY"     onMismatch="NEUTRAL"/>
@@ -59,14 +59,15 @@
     <MarkerFilter marker="ADV_CRYPTO_SYSTEM"      onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="EVENT_STREAM"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="RECONNECT"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="DEMO_INFO"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="SNAPSHOT_MANAGER"       onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STATE_TO_DISK"          onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="STATE_DELETER"          onMatch="DENY"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_PARSER"           onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_DELETER"          onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="PLATFORM_STATUS"        onMatch="ACCEPT"   onMismatch="DENY"/>
   </Filters>
 
