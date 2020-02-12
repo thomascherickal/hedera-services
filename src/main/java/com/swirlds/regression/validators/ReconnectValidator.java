@@ -125,18 +125,25 @@ public class ReconnectValidator extends NodeValidator {
 			int socketExceptions = 0;
 			int invalidEvent = 0;
 			int unexpectedErrors = 0;
+			int errors =0;
 			for (LogEntry e : nodeLog.getExceptions()) {
 				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
-				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
+				} else if(e.getMarker() == PlatformLogMarker.EXCEPTION){
+					errors++;
+					isValid = false;
+				}else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
 					invalidEvent++;
-				} else if (isWarning(e)) {
+				}  else if (isWarning(e)) {
 					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
 				} else {
 					unexpectedErrors++;
 					isValid = false;
 					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
 				}
+			}
+			if(errors > 0){
+				addError(String.format("Node %d has %d errors!", i, errors));
 			}
 			if (socketExceptions > 0) {
 				addInfo(String.format("Node %d has %d socket exceptions. Some are expected for Reconnect.", i,
@@ -210,8 +217,8 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber " +
-								"%d",
+				addError(String.format("Node %d 's last Entry of roundSup %.0f is less than savedStateStartRoundNumber " +
+								"%.0f",
 						nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
