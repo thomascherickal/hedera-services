@@ -107,8 +107,6 @@ public class RegressionUtilities {
 
 	public static String OLD_EVENT_PARENT = "will not use old otherParent";
 
-	public static String NULL_POINTER_EXCEPTION = "java.lang.NullPointerException";
-
 	public static String INVALID_PARENT = "has invalid otherParent";
 
 	public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
