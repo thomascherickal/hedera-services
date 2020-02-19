@@ -19,6 +19,7 @@ package com.swirlds.regression;
 
 import com.swirlds.regression.testRunners.FreezeRun;
 import com.swirlds.regression.testRunners.ReconnectRun;
+import com.swirlds.regression.testRunners.RecoverStateRun;
 import com.swirlds.regression.testRunners.RestartRun;
 import com.swirlds.regression.testRunners.StandardRun;
 import com.swirlds.regression.testRunners.TestRun;
@@ -27,7 +28,8 @@ public enum RunType {
 	STANDARD(new StandardRun()),
 	RESTART(new RestartRun()),
 	RECONNECT(new ReconnectRun()),
-	FREEZE(new FreezeRun());
+	FREEZE(new FreezeRun()),
+	RECOVER(new RecoverStateRun());
 
 	private final TestRun testRun;
 

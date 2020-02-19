@@ -36,13 +36,21 @@ import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
+import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -631,6 +639,34 @@ public class SSHService {
 		return true;
 	}
 
+	/**
+	 * Search a lists of messages in the log file and
+	 * return the total number of occurrences of all messages
+	 * Or return -1 if error happened
+	 *
+	 * @param msgList
+	 * 		A list of message to search for
+	 * @param fileName
+	 * 		File name to search for the message
+	 */
+	int countSpecifiedMsg(List<String> msgList, String fileName) {
+		String joined = String.join("|", msgList);
+		String searchCmd =  "egrep " + " \"" + joined + "\" " + fileName;
+		final Session.Command cmd = execCommand(searchCmd,
+				"Check specified msg", -1);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String out : output) {
+			if (out.contains("No such file or directory")) {
+				log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+				return -1;
+			}
+		}
+		if (output.get(0).isEmpty()) {
+			return -1;
+		}
+		return output.size();
+	}
+
 	public void close() {
 		try {
 			ssh.close();
@@ -766,6 +802,206 @@ public class SSHService {
 							description, cmd.getExitStatus(), output
 					)
 			);
+		}
+	}
+
+	/**
+	 * Read a list of directories of signed state from file system, parse them to a list of SavedStatePathInfo
+	 * instances
+	 *
+	 * Example of returned string value from ls command
+	 *
+	 * [remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/185,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/30,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/351,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/515,
+	 *  remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/674]
+	 *
+	 *
+	 * @return
+	 * 		A list of SavedStatePathInfo instances
+	 */
+	public List<SavedStatePathInfo> getSavedStatesDirectories() {
+		List<SavedStatePathInfo> dirList = new ArrayList<>();
+		String listCmd =
+				"ls -d " + getSavedStateDirectory() + "/*";
+		Session.Command cmd = executeCmd(listCmd);
+		if (cmd.getExitStatus() == 0) {
+			String cmdResultString = readCommandOutput(cmd).toString();
+			cmdResultString = cmdResultString.replace("[", "").replace("]", ""); //remove bracket
+			String[] directories = cmdResultString.split(" ");
+			for (String dir : directories) {
+				SavedStatePathInfo result = parseSavedStatPath(dir.replace(",", ""));
+				if (result != null) {
+					dirList.add(result);
+				}
+			}
+			log.info(MARKER, "Saved states are {}", dirList.toString());
+		} else {
+			log.error(ERROR, "Exception running getSavedStatesDirectories command {} cmd result {}",
+					cmd, readCommandOutput(cmd).toString());
+		}
+		//sorting by round number
+		dirList = dirList.stream().sorted(Comparator.comparingLong(SavedStatePathInfo::getRoundNumber)).collect(
+				Collectors.toList());
+		;
+		return dirList;
+	}
+
+	/**
+	 * Parse saved signed state path and return its main class name, nodeId, swirds name in a SavedStatePathInfo
+	 * instance
+	 *
+	 * @param path
+	 * 		A file system path of an saved signed state. It contains the main class name of swirlds App,
+	 * 		node ID, swirlds name and round number of the signed state
+	 *
+	 * 		An example is : com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/33
+	 *
+	 * @return An SavedStatePathInfo instance contains the parsed results
+	 */
+	private SavedStatePathInfo parseSavedStatPath(String path) {
+		String pathWithoutBase = path.replace(REMOTE_STATE_LOCATION, "");
+		String[] segments = pathWithoutBase.split("/");
+
+		try {
+			SavedStatePathInfo result = new SavedStatePathInfo(path, Long.parseLong(segments[3]),
+					Long.parseLong(segments[1]), segments[2], segments[0]);
+
+			return result;
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Parsing saved state path {} -> {} error ", path, Arrays.toString(segments), e);
+			return null;
+		}
+
+	}
+
+	private String getSavedStateDirectory() {
+		return SAVED_STATE_LOCATION;
+	}
+
+	/**
+	 * List names of signed state directories currently on disk
+	 *
+	 * @param memo
+	 * 		Memo string
+	 */
+	void displaySignedStates(String memo) {
+		String displayCmd =
+				"ls -tr " + getSavedStateDirectory();
+		Session.Command cmd = executeCmd(displayCmd);
+		log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
+	}
+
+	/**
+	 * Restore database from backup file
+	 */
+	void recoverDatabase() {
+		var list = getSavedStatesDirectories();
+		String targetDir = list.get(list.size() - 1).getFullPath();
+		// get the last state directory
+		String restoreCmd = "cd " + targetDir + "; tar -xf PostgresBackup.tar.gz; pwd  ";
+		Session.Command cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Unzip data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+
+		restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION  + "drop_database.psql\" ";
+		cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Drop data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+		restoreCmd = "cd " + targetDir + ";  sudo -u postgres createdb fcfs ; "+
+				" chmod 666 * ;" +  // enable access
+				" sudo -u postgres pg_restore  --format=d --dbname=fcfs ./ ; cd -";
+
+		log.info(MARKER, "Before run cmd {}:", restoreCmd);
+		cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+	}
+
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	void backupSavedSignedState(String tempDir){
+		String cpCmd = "cp -r " + REMOTE_STATE_LOCATION + " " + tempDir;
+		Session.Command cmd = executeCmd(cpCmd);
+	}
+
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	void restoreSavedSignedState(String tempDir){
+		String rmCmd = " rm -rf " + REMOTE_STATE_LOCATION + "/* ; ";
+		String cpCmd = "cp -r " + tempDir + "/* " + REMOTE_STATE_LOCATION + " ; ";
+		String lsCmd = " ls " + REMOTE_STATE_LOCATION;
+		Session.Command cmd = executeCmd(rmCmd + cpCmd + lsCmd);
+	}
+
+	private void deleteSignedState(SavedStatePathInfo state) {
+		deleteRemoteFileOrDirectory(state.getFullPath());
+	}
+
+	public boolean deleteRemoteFileOrDirectory(String path) {
+		String rmStatesCmd = "rm -r " + path;
+		Session.Command cmd = executeCmd(rmStatesCmd);
+		if (cmd.getExitStatus() != 0) {
+			log.error(ERROR, "Exception running rm command {}", rmStatesCmd);
+			return false;
+		} else {
+			log.info(MARKER, "Delete {} is OK", path);
+			return true;
+		}
+	}
+
+	/**
+	 * Find how many signed state subdirectories have been created
+	 */
+	int getNumberOfSignedStates() {
+		List<SavedStatePathInfo> result = getSavedStatesDirectories();
+		return result.size();
+	}
+
+	/**
+	 * Delete multiple signed state saved on disk
+	 */
+	void deleteLastNSignedStates(int deleteAmount, List<SavedStatePathInfo> currentStates) {
+		int size = currentStates.size();
+		displaySignedStates("BEFORE deleting States");
+		for (int i = size - deleteAmount; i < size; i++) {
+			deleteSignedState(currentStates.get(i));
+		}
+		displaySignedStates("AFTER deleting States");
+	}
+
+	/**
+	 * Compare event files generated during recover mode whether match original ones
+	 */
+	boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
+
+		// compare generated event stream files with original ones, ignore only files exist in original ones
+		String compareCmd = "diff  " + REMOTE_EXPERIMENT_LOCATION + eventDir
+				+ " " + REMOTE_EXPERIMENT_LOCATION + originalDir + " | grep diff | wc -l";
+
+		Session.Command cmd = executeCmd(compareCmd);
+
+		// return string is a number with bracket
+		String cmdResult = readCommandOutput(cmd).toString();
+		cmdResult = cmdResult.replace("[", "").replace("]", ""); //remove bracket
+
+		try {
+			if (Integer.parseInt(cmdResult) == 0) {
+				log.info(MARKER, "Found NO difference in recovered event files and original ones");
+				executeCmd("echo \"" + EVENT_MATCH_MSG + "\"  >> " +
+						REMOTE_EXPERIMENT_LOCATION + EVENT_MATCH_LOG_NAME);
+				return true; // no difference found
+			} else {
+				log.info(MARKER, "Found difference in recovered event files and original ones");
+				return false;
+			}
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Exception ", e);
+			return false;
 		}
 	}
 

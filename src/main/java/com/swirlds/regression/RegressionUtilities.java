@@ -78,21 +78,24 @@ public class RegressionUtilities {
 	static final String OS_RESERVE_MEMORY = "2GB";
 	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "1536MB";
 
-
 	public static final int SHA1_DIVISOR = 25;
 	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis
 	public static final int MB = 1024 * 1024;
 	public static final String CHECK_JAVA_PROC_COMMAND = "pgrep -fl java";
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
+
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
     public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
+	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
+
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
 	public static final long POSTGRES_WAIT_MILLIS = 30000;
 	public static final int MILLIS = 1000;
+	public static final int MS_TO_NS = 1000_000;
 
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
@@ -102,6 +105,9 @@ public class RegressionUtilities {
 			"extension crypto;\"";
 	public static final String DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
 			"database fcfs;\"";
+	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
+			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
+
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";
 	static final String DROP_DATABASE_FCFS_KNOWN_RESPONCE = "ERROR:  database \"fcfs\" is being accessed by other " +
@@ -116,6 +122,7 @@ public class RegressionUtilities {
 
     // caused by InterruptedException | ExecutionException
     public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
+
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
@@ -142,6 +149,10 @@ public class RegressionUtilities {
 	static final boolean CHECK_BRANCH_CHANNEL = true;
 	static final String REG_GIT_USER_EMAIL = "swirlds-test@swirlds.org";
 	static final boolean CHECK_USER_EMAIL_CHANNEL = true;
+
+	static final String SWIRLDS_NAME = "123";
+	static final String SAVED_STATE_LOCATION = REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
+	public static final String EVENT_MATCH_MSG = "Recovered file match original ones";
 
 	static final boolean USE_STAKES_IN_CONFIG = true;
 	// total stakes are the same as the number of the number of tinybars in existence
@@ -329,12 +340,12 @@ public class RegressionUtilities {
 		}
 		return Arrays.stream(dir.listFiles()).filter(File::isFile)
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
-	}
-
-	public static boolean isWindows() {
-        return OS.indexOf("win") >= 0;
     }
 
+    public static boolean isWindows() {
+        return OS.indexOf("win") >= 0;
+    }
+ 
     public static String getPythonExecutable() {
         String pythonExecutable = "python3";
         if (isWindows()) {
