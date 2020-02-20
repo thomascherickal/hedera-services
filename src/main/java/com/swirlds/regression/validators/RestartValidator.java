@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -112,7 +112,7 @@ public class RestartValidator extends NodeValidator {
 			int socketExceptions = 0;
 			int unexpectedErrors = 0;
 			for (LogEntry e : nodeLog.getExceptions()) {
-				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
 				} else if (e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
 					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));

@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
@@ -27,12 +27,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import static com.swirlds.common.PlatformLogMessages.PTD_SUCCESS;
 import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.regression.RegressionUtilities.MB;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
 import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
@@ -83,7 +81,7 @@ public class PtdValidator extends NodeValidator {
 
 			if (nodeLog.getExceptionCount() > 0) {
 				for (LogEntry le : nodeLog.getExceptions()) {
-					if (le.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
 					} else if (le.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
 						addWarning(String.format("Node %d has exception:[ %s ]", i, le.getLogEntry()));

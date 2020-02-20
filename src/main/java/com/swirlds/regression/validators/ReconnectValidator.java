@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
@@ -27,11 +27,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.swirlds.common.PlatformLogMessages.FINISHED_RECONNECT;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_ERROR;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
-import static com.swirlds.common.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
-import static com.swirlds.common.PlatformLogMessages.START_RECONNECT;
+import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
+import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
@@ -126,9 +126,9 @@ public class ReconnectValidator extends NodeValidator {
 			int invalidEvent = 0;
 			int unexpectedErrors = 0;
 			for (LogEntry e : nodeLog.getExceptions()) {
-				if (e.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
-				} else if (e.getMarker() == PlatformLogMarker.INVALID_EVENT_ERROR) {
+				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
 					invalidEvent++;
 				} else if (isWarning(e)) {
 					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
@@ -210,7 +210,7 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %d is less than savedStateStartRoundNumber " +
+				addError(String.format("Node %d 's last Entry of roundSup  %d is less than savedStateStartRoundNumber " +
 								"%d",
 						nodeNum - 1, roundSup, savedStateStartRoundNumber));
 				isValid = false;
@@ -236,7 +236,7 @@ public class ReconnectValidator extends NodeValidator {
 
 	private boolean isWarning(LogEntry e)
 	{
-		return e.getMarker() == PlatformLogMarker.INTAKE_EVENT_DISCARD
+		return e.getMarker() == LogMarkerInfo.INTAKE_EVENT_DISCARD
 				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
 				|| e.getLogEntry().contains(INVALID_PARENT)
 				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)

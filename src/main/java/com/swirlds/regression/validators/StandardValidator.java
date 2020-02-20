@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.common.PlatformLogMarker;
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-
-import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
-import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 
 /**
  * Reads in swirlds.log file
@@ -54,7 +51,7 @@ public class StandardValidator extends NodeValidator {
 			int badExceptions = 0;
 			Instant nodeEnd = nodeLog.getLastEntryRead().getTime();
 			for (LogEntry ex : nodeLog.getExceptions()) {
-				if (ex.getMarker() == PlatformLogMarker.SOCKET_EXCEPTIONS) {
+				if (ex.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					Duration dur = Duration.between(ex.getTime(), nodeEnd);
 					if (dur.toSeconds() < 10) {
 						// if the socket exceptions happen at the end, that's ok
