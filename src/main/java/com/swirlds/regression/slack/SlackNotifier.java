@@ -80,7 +80,7 @@ public class SlackNotifier {
         return messageChannel(message, false);
     }
 
-    public ChatPostMessageResponse messageChannel(SlackTestMsg message) {
+    public ChatPostMessageResponse messageChannel(SlackMsg message) {
         try {
             Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
                     message.build(channel)

@@ -30,6 +30,7 @@ import com.swirlds.regression.AWSServerCheck;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+// TODO this should inherit from SlackMsg
 public class SlackServerCheckMsg {
 
 	private String channel;

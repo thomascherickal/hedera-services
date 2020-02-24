@@ -48,13 +48,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.*;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +61,6 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
@@ -95,7 +93,6 @@ import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_S
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
 import static com.swirlds.regression.RegressionUtilities.*;
-import static com.swirlds.regression.validators.StreamingServerValidator.*;
 import static org.apache.commons.io.FileUtils.listFiles;
 
 public class Experiment {
@@ -123,6 +120,22 @@ public class Experiment {
     // Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
     // At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
     private double savedStateStartRoundNumber = 0;
+
+    protected boolean warnings = false;
+    protected boolean errors = false;
+    protected boolean exceptions = false;
+
+    public boolean hasWarnings() {
+        return warnings;
+    }
+
+    public boolean hasErrors() {
+        return errors;
+    }
+
+    public boolean hasExceptions() {
+        return exceptions;
+    }
 
     void setExperimentTime() {
         this.experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0));
@@ -160,6 +173,10 @@ public class Experiment {
             slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
                     regConfig.getSlack().getChannel());
         }
+    }
+
+    public String getName() {
+        return testConfig.getName();
     }
 
     public void runLocalExperiment(GitInfo git) {
@@ -534,11 +551,16 @@ public class Experiment {
                 slackMsg.addValidatorException(item, e);
             }
         }
-
         sendSlackMessage(slackMsg);
-        log.info(MARKER, slackMsg.getPlainText());
+        log.info(MARKER, slackMsg.getPlaintext());
         createStatsFile(getExperimentFolder());
         sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
+
+        // TODO Experiments only communicate failures over the slack message
+        // TODO This should be fixed
+        warnings = warnings || slackMsg.hasWarnings();
+        errors = errors || slackMsg.hasErrors();
+        exceptions = exceptions || slackMsg.hasExceptions();
     }
 
     private void createStatsFile(String resultsFolder) {
