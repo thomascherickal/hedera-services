@@ -201,7 +201,6 @@ public class RegressionMain {
 				summary.registerException(t);
 			}
 		}
-		// TODO send summary message!
 
 		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
 				regConfig.getSlack().getChannel());
