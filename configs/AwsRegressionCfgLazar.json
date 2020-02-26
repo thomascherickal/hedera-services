@@ -16,15 +16,20 @@
       {"region": "us-west-2", "numberOfNodes": 4}
     ]
   },
-  "eventFilesWriters": 0,
+  "eventFilesWriters": 4,
   "log": {
     "uri":"testing/logs/"
   },
   "experiments": [
-    //"configs/testSigningDemoCfg.json"
-    //"configs/testRestartCfg.json"
-    "configs/testFcm1KCfg.json"
-    //"configs/testFcmFreezeBlobCfg.json"
+    "configs/testSigningDemoCfg.json",
+    "configs/testFcmMultipleOperationsCfg.json",
+    "configs/testRestartCfg.json",
+    "configs/testFcmFreezeBlobCfg.json",
+    "configs/testFcm4kx100KBlobCfg.json",
+    "configs/testFcmFreezeFCQCfg.json",
+    "configs/testReconnectFCMMultiReconnectCfg.json",
+    "configs/testReconnectBlobCfg.json",
+    "configs/testFcm1kThrottlingCfg.json"
   ],
   "db": {
     "type": "postgresql",
