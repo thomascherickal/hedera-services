@@ -23,6 +23,8 @@ import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,8 +117,8 @@ public class SlackSummaryMsg extends SlackMsg {
 		// Passing tests
 		if (successes.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			bold(stringBuilder, "- Tests that passed -");
-			newline(stringBuilder);
+			bold(sb, "Tests that passed");
+			newline(sb);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: successes) {
 				sb.append("- " + experiment.getName());
@@ -130,8 +132,8 @@ public class SlackSummaryMsg extends SlackMsg {
 		// Tests with warnings
 		if (warnings.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			bold(stringBuilder, "- Tests with warnings -");
-			newline(stringBuilder);
+			bold(sb, "Tests with warnings");
+			newline(sb);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: warnings) {
 				sb.append("- " + experiment.getName());
@@ -145,8 +147,8 @@ public class SlackSummaryMsg extends SlackMsg {
 		// Tests with errors
 		if (failures.size() > 0) {
 			StringBuilder sb = new StringBuilder();
-			bold(stringBuilder, "- Tests with errors -");
-			newline(stringBuilder);
+			bold(sb, "Tests with errors");
+			newline(sb);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: failures) {
 				sb.append("- " + experiment.getName());
@@ -161,8 +163,11 @@ public class SlackSummaryMsg extends SlackMsg {
 		// Exceptions
 		for (Throwable t: exceptionList) {
 			Attachment.Builder attachment = Attachment.builder();
-			attachment.setText(t.getStackTrace().toString());
-			attachment.setColor("##FF0000");
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			t.printStackTrace(pw);
+			attachment.setText(sw.toString());
+			attachment.setColor("#FF0000");
 			attachments.add(attachment.build());
 		}
 
