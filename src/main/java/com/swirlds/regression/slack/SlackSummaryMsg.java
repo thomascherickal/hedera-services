@@ -74,6 +74,34 @@ public class SlackSummaryMsg extends SlackMsg {
 		exceptionList.add(e);
 	}
 
+	protected Attachment generateAttachment(String description, List<Experiment> experiments, String color) {
+		List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add("Test");
+		columnHeaders.add("Unique Identifier");
+
+		if (experiments.size() > 0) {
+			Attachment.Builder attachment = Attachment.builder();
+			StringBuilder sb = new StringBuilder();
+			bold(sb, description);
+			newline(sb);
+			List<List<String>> rows = new ArrayList<>();
+			rows.add(columnHeaders);
+			for (Experiment experiment: experiments) {
+				List<String> row = new ArrayList<>();
+				row.add(experiment.getName());
+				row.add(experiment.getUniqueId());
+				rows.add(row);
+			}
+			table(sb, rows);
+
+			attachment.setText(sb.toString());
+			attachment.setColor(color);
+
+			return attachment.build();
+		}
+		return null;
+	}
+
 	@Override
 	public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
 
@@ -91,10 +119,6 @@ public class SlackSummaryMsg extends SlackMsg {
 		bold(stringBuilder, "Commit:");
 		stringBuilder.append(" " + gitInfo.getGitInfo(true));
 		newline(stringBuilder);
-
-		// TODO write test result folder, maybe give link to results
-		// TODO link to each individual test results
-		// TODO add total test time
 
 		List<Experiment> successes = new ArrayList<>();
 		List<Experiment> warnings = new ArrayList<>();
@@ -115,81 +139,33 @@ public class SlackSummaryMsg extends SlackMsg {
 
 		List<Attachment> attachments = new ArrayList<>();
 
-		List<String> columnHeaders = new ArrayList<>();
-		columnHeaders.add("Test");
-		columnHeaders.add("Unique Identifier");
-
 		// Passing tests
-		if (successes.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			bold(sb, "Tests that passed");
-			newline(sb);
-			List<List<String>> rows = new ArrayList<>();
-			rows.add(columnHeaders);
-			Attachment.Builder attachment = Attachment.builder();
-			for (Experiment experiment: successes) {
-				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
-				row.add(resultFolder + "-" + experiment.getName());
-				rows.add(row);
-			}
-			table(sb, rows);
-
-			attachment.setText(sb.toString());
-			attachment.setColor("#00FF00");
-			attachments.add(attachment.build());
+		Attachment attachment = generateAttachment("Tests that passed", successes, "#00FF00");
+		if (attachment != null) {
+			attachments.add(attachment);
 		}
 
 		// Tests with warnings
-		if (warnings.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			bold(sb, "Tests with warnings");
-			newline(sb);
-			List<List<String>> rows = new ArrayList<>();
-			rows.add(columnHeaders);
-			Attachment.Builder attachment = Attachment.builder();
-			for (Experiment experiment: warnings) {
-				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
-				row.add(resultFolder + "-" + experiment.getName());
-				rows.add(row);
-			}
-			table(sb, rows);
-			attachment.setText(sb.toString());
-			attachment.setColor("#FFFF00");
-			attachments.add(attachment.build());
+		attachment = generateAttachment("Tests with warnings", successes, "#FFFF00");
+		if (attachment != null) {
+			attachments.add(attachment);
 		}
 
-		// Tests with errors
-		if (failures.size() > 0) {
-			StringBuilder sb = new StringBuilder();
-			bold(sb, "Tests with errors");
-			newline(sb);
-			List<List<String>> rows = new ArrayList<>();
-			rows.add(columnHeaders);
-			Attachment.Builder attachment = Attachment.builder();
-			for (Experiment experiment: failures) {
-				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
-				row.add(resultFolder + "-" + experiment.getName());
-				rows.add(row);
-			}
-			table(sb, rows);
-			attachment.setText(sb.toString());
-			attachment.setColor("#FF0000");
-			attachments.add(attachment.build());
-
+		// Failing tests
+		attachment = generateAttachment("Tests with errors", successes, "#FF0000");
+		if (attachment != null) {
+			attachments.add(attachment);
 		}
 
 		// Exceptions
 		for (Throwable t: exceptionList) {
-			Attachment.Builder attachment = Attachment.builder();
+			Attachment.Builder ab = Attachment.builder();
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			t.printStackTrace(pw);
-			attachment.setText(sw.toString());
-			attachment.setColor("#FF0000");
-			attachments.add(attachment.build());
+			ab.setText(sw.toString());
+			ab.setColor("#FF0000");
+			attachments.add(ab.build());
 		}
 
 		return attachments;

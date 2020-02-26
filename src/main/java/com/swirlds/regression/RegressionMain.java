@@ -216,7 +216,7 @@ public class RegressionMain {
 		if (test != null) {
 			tc = test.getTestConfig();
 		}
-		SlackTestMsg msg = new SlackTestMsg(regConfig, tc, null, git);
+		SlackTestMsg msg = new SlackTestMsg(null, regConfig, tc, null, git);
 		msg.addExceptions(t);
 		slacker.messageChannel(msg);
 	}

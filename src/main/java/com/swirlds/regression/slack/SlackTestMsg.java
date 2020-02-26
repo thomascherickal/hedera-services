@@ -45,20 +45,24 @@ public class SlackTestMsg extends SlackMsg {
 	private List<String> Warnings = new LinkedList<>();
 	private List<Throwable> Exceptions = new LinkedList<>();
 
-	public SlackTestMsg(RegressionConfig regConfig, TestConfig testConfig, String resultsFolder, GitInfo gitInfo) {
+	private String uniqueId;
+
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig, TestConfig testConfig,
+			String resultsFolder, GitInfo gitInfo) {
 		super(regConfig.getSlack());
 		this.regConfig = regConfig;
 		this.testConfig = testConfig;
 		this.resultsFolder = resultsFolder;
 		this.gitInfo = gitInfo;
+		this.uniqueId = uniqueId;
 	}
 
-	public SlackTestMsg(RegressionConfig regConfig, TestConfig testConfig) {
-		this(regConfig, testConfig, null, null);
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig, TestConfig testConfig) {
+		this(uniqueId, regConfig, testConfig, null, null);
 	}
 
-	public SlackTestMsg(RegressionConfig regConfig) {
-		this(regConfig, null, null, null);
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig) {
+		this(uniqueId, regConfig, null, null, null);
 	}
 
 	public void addValidatorInfo(Validator v) {
@@ -143,6 +147,9 @@ public class SlackTestMsg extends SlackMsg {
 		}
 		if (resultsFolder != null) {
 			s.append("*Results Folder:* ").append(resultsFolder).append(NEWLINE);
+		}
+		if (uniqueId != null) {
+			s.append("*Unique Identifier:* ").append(uniqueId).append(NEWLINE);
 		}
 		if (gitInfo != null) {
 			s.append("*Git:* ")

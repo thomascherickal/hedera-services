@@ -424,6 +424,15 @@ public class Experiment {
                 folderName) + "/";
     }
 
+    /**
+     * Generate a unique code that can be used to search for this test in slack.
+     */
+    public String getUniqueId() {
+        Integer hash = (RegressionUtilities.getExperimentTimeFormatedString(getExperimentTime()) + "-" +
+                getName()).hashCode();
+        return hash.toString();
+    }
+
     private InputStream getInputStream(String filename) {
         InputStream inputStream = null;
         if (!new File(filename).exists()) {
@@ -481,6 +490,7 @@ public class Experiment {
 
     private void validateTest() {
         SlackTestMsg slackMsg = new SlackTestMsg(
+                getUniqueId(),
                 regConfig,
                 testConfig,
                 getResultsFolder(experimentTime, testConfig.getName()),
@@ -558,7 +568,7 @@ public class Experiment {
         sendSlackMessage(slackMsg);
         log.info(MARKER, slackMsg.getPlaintext());
         createStatsFile(getExperimentFolder());
-        sendSlackStatsFile(new SlackTestMsg(regConfig, testConfig), "./multipage_pdf.pdf");
+        sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
 
         // TODO Experiments only communicate failures over the slack message
         // TODO This should be fixed
@@ -640,7 +650,7 @@ public class Experiment {
     }
 
     public void sendSlackMessage(String error) {
-        SlackTestMsg msg = new SlackTestMsg(regConfig, testConfig);
+        SlackTestMsg msg = new SlackTestMsg(getUniqueId(), regConfig, testConfig);
         msg.addError(error);
         slacker.messageChannel(msg);
     }
