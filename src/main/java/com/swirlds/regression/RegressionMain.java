@@ -182,6 +182,8 @@ public class RegressionMain {
 		SlackSummaryMsg summary = new SlackSummaryMsg(regConfig.getSlack(), regConfig, git,
 				RegressionUtilities.getExperimentTimeFormatedString(regressionTestStart));
 		Experiment currentTest = null;
+		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
+				regConfig.getSlack().getChannel());
 		for (int i = 0; i < regConfig.getExperiments().size(); i++) {
 			try {
 				currentTest = new Experiment(regConfig, regConfig.getExperiments().get(i));
@@ -200,11 +202,10 @@ public class RegressionMain {
 				reportErrorToSlack(t, currentTest);
 				summary.registerException(t);
 			}
+			// TODO this should go outside the for loop
+			// I put it here so that I can see the results much more quickly during testing
+			slacker.messageChannel(summary);
 		}
-
-		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-				regConfig.getSlack().getChannel());
-		slacker.messageChannel(summary);
 	}
 
 	void reportErrorToSlack(Throwable t, Experiment test) {

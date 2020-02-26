@@ -21,6 +21,7 @@ import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.Attachment;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 
+import java.util.ArrayList;
 import java.util.List;
 
 abstract public class SlackMsg {
@@ -66,6 +67,56 @@ abstract public class SlackMsg {
 	 */
 	public static void newline(StringBuilder s) {
 		s.append(NEWLINE);
+	}
+
+	/**
+	 * Generate a tiny ASCII table.
+	 */
+	public static void table(StringBuilder s, List<List<String>> rows) {
+
+		final int columnPadding = 3;
+
+		if (rows.size() == 0) {
+			return;
+		}
+
+		s.append("```");
+		newline(s);
+
+		// Assert that each row has the same number of columns
+		int columns = rows.get(0).size();
+		for (List<String> row: rows) {
+			if (row.size() != columns) {
+				s.append("ERROR: Invalid table: not all rows have the same number of columns");
+				return;
+			}
+		}
+
+		// Compute the width of each column
+		List<Integer> columnWidths = new ArrayList<>();
+		for (int columnIndex = 0; columnIndex < columns; columnIndex++) {
+			columnWidths.add(0);
+			for(List<String> row: rows) {
+				if (row.get(columnIndex).length() > columnWidths.get(columnIndex)) {
+					columnWidths.set(columnIndex, row.get(columnIndex).length());
+				}
+			}
+		}
+
+		// Build the table
+		for (List<String> row: rows) {
+			for (int columnIndex = 0; columnIndex < columns; columnIndex++) {
+				String column = row.get(columnIndex);
+				s.append(column);
+				int padding = columnWidths.get(columnIndex) - column.length() + columnPadding;
+				for (int i = 0; i < padding; i++) {
+					s.append(" ");
+				}
+			}
+			newline(s);
+		}
+
+		s.append("```");
 	}
 
 	public enum NotifyOn {

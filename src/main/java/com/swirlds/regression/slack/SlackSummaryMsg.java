@@ -25,6 +25,7 @@ import com.swirlds.regression.jsonConfigs.SlackConfig;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,16 +115,29 @@ public class SlackSummaryMsg extends SlackMsg {
 
 		List<Attachment> attachments = new ArrayList<>();
 
+		List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add("Test");
+		columnHeaders.add("Unique Identifier");
+		columnHeaders.add("Test Start Time");
+
 		// Passing tests
 		if (successes.size() > 0) {
 			StringBuilder sb = new StringBuilder();
 			bold(sb, "Tests that passed");
 			newline(sb);
+			List<List<String>> rows = new ArrayList<>();
+			rows.add(columnHeaders);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: successes) {
-				sb.append("- " + experiment.getName());
-				newline(sb);
+				List<String> row = new ArrayList<>();
+				row.add(experiment.getName());
+				row.add(experiment.getName() + "-" + resultFolder);
+				ZonedDateTime time = experiment.getExperimentTime();
+				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				rows.add(row);
 			}
+			table(sb, rows);
+
 			attachment.setText(sb.toString());
 			attachment.setColor("#00FF00");
 			attachments.add(attachment.build());
@@ -134,11 +148,18 @@ public class SlackSummaryMsg extends SlackMsg {
 			StringBuilder sb = new StringBuilder();
 			bold(sb, "Tests with warnings");
 			newline(sb);
+			List<List<String>> rows = new ArrayList<>();
+			rows.add(columnHeaders);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: warnings) {
-				sb.append("- " + experiment.getName());
-				newline(sb);
+				List<String> row = new ArrayList<>();
+				row.add(experiment.getName());
+				row.add(experiment.getName() + "-" + resultFolder);
+				ZonedDateTime time = experiment.getExperimentTime();
+				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				rows.add(row);
 			}
+			table(sb, rows);
 			attachment.setText(sb.toString());
 			attachment.setColor("#FFFF00");
 			attachments.add(attachment.build());
@@ -149,11 +170,18 @@ public class SlackSummaryMsg extends SlackMsg {
 			StringBuilder sb = new StringBuilder();
 			bold(sb, "Tests with errors");
 			newline(sb);
+			List<List<String>> rows = new ArrayList<>();
+			rows.add(columnHeaders);
 			Attachment.Builder attachment = Attachment.builder();
 			for (Experiment experiment: failures) {
-				sb.append("- " + experiment.getName());
-				newline(sb);
+				List<String> row = new ArrayList<>();
+				row.add(experiment.getName());
+				row.add(experiment.getName() + "-" + resultFolder);
+				ZonedDateTime time = experiment.getExperimentTime();
+				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				rows.add(row);
 			}
+			table(sb, rows);
 			attachment.setText(sb.toString());
 			attachment.setColor("#FF0000");
 			attachments.add(attachment.build());

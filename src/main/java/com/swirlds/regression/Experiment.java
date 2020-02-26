@@ -141,6 +141,10 @@ public class Experiment {
         this.experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0));
     }
 
+    public ZonedDateTime getExperimentTime() {
+        return experimentTime;
+    }
+
     public void setExperimentTime(ZonedDateTime regressionStart) {
         this.experimentTime = regressionStart;
     }
