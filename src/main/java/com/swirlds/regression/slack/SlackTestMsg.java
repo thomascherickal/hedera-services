@@ -88,6 +88,10 @@ public class SlackTestMsg extends SlackMsg {
 		Warnings.add(warning);
 	}
 
+	public String getUniqueId() {
+		return uniqueId == null ? "" : uniqueId;
+	}
+
 	@Override
 	public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
 		addTestSummary(stringBuilder);

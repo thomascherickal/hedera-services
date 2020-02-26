@@ -430,6 +430,9 @@ public class Experiment {
     public String getUniqueId() {
         Integer hash = (RegressionUtilities.getExperimentTimeFormatedString(getExperimentTime()) + "-" +
                 getName()).hashCode();
+        if (hash < 0) {
+            hash *= -1;
+        }
         return hash.toString();
     }
 

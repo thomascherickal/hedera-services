@@ -146,13 +146,13 @@ public class SlackSummaryMsg extends SlackMsg {
 		}
 
 		// Tests with warnings
-		attachment = generateAttachment("Tests with warnings", successes, "#FFFF00");
+		attachment = generateAttachment("Tests with warnings", warnings, "#FFFF00");
 		if (attachment != null) {
 			attachments.add(attachment);
 		}
 
 		// Failing tests
-		attachment = generateAttachment("Tests with errors", successes, "#FF0000");
+		attachment = generateAttachment("Tests with errors", failures, "#FF0000");
 		if (attachment != null) {
 			attachments.add(attachment);
 		}
