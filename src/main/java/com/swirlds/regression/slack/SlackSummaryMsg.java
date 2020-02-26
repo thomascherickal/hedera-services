@@ -118,7 +118,6 @@ public class SlackSummaryMsg extends SlackMsg {
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Test");
 		columnHeaders.add("Unique Identifier");
-		columnHeaders.add("Test Start Time");
 
 		// Passing tests
 		if (successes.size() > 0) {
@@ -131,9 +130,7 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Experiment experiment: successes) {
 				List<String> row = new ArrayList<>();
 				row.add(experiment.getName());
-				row.add(experiment.getName() + "-" + resultFolder);
-				ZonedDateTime time = experiment.getExperimentTime();
-				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				row.add(resultFolder + "-" + experiment.getName());
 				rows.add(row);
 			}
 			table(sb, rows);
@@ -154,9 +151,7 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Experiment experiment: warnings) {
 				List<String> row = new ArrayList<>();
 				row.add(experiment.getName());
-				row.add(experiment.getName() + "-" + resultFolder);
-				ZonedDateTime time = experiment.getExperimentTime();
-				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				row.add(resultFolder + "-" + experiment.getName());
 				rows.add(row);
 			}
 			table(sb, rows);
@@ -176,9 +171,7 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Experiment experiment: failures) {
 				List<String> row = new ArrayList<>();
 				row.add(experiment.getName());
-				row.add(experiment.getName() + "-" + resultFolder);
-				ZonedDateTime time = experiment.getExperimentTime();
-				row.add(time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
+				row.add(resultFolder + "-" + experiment.getName());
 				rows.add(row);
 			}
 			table(sb, rows);
