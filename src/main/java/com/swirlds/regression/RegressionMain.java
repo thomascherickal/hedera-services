@@ -202,10 +202,8 @@ public class RegressionMain {
 				reportErrorToSlack(t, currentTest);
 				summary.registerException(t);
 			}
-			// TODO this should go outside the for loop
-			// I put it here so that I can see the results much more quickly during testing
-			slacker.messageChannel(summary);
 		}
+		slacker.messageChannel(summary);
 	}
 
 	void reportErrorToSlack(Throwable t, Experiment test) {
