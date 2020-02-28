@@ -80,7 +80,7 @@ public class SlackNotifier {
         return messageChannel(message, false);
     }
 
-    public ChatPostMessageResponse messageChannel(SlackTestMsg message) {
+    public ChatPostMessageResponse messageChannel(SlackMsg message) {
         try {
             Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
                     message.build(channel)
@@ -109,8 +109,10 @@ public class SlackNotifier {
     }
 
     public static String[] buildCurlString(SlackTestMsg message, String fileLocation, String experimentName) {
+        // TODO Why is this using CURL? Shouldn't we be using the slack API?
+        // TODO eventually there should be a SlackMsg subtype that builds this message
         String fileOption = String.format(CURL_FILE_OPTION, fileLocation);
-        String commentOption = String.format(CURL_INITIAL_COMMENT_OPTION, experimentName);
+        String commentOption = String.format(CURL_INITIAL_COMMENT_OPTION, experimentName + "\n" + message.getUniqueId());
         String channelOption = String.format(CURL_CHANNELS, message.slackConfig.getChannel());
         String botAuthToken = String.format(CURL_AUTHORIZATION_TOKEN, message.slackConfig.getBotToken());
 

@@ -310,12 +310,12 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
-	protected static String getExperimentTimFormatedString(ZonedDateTime timeToFormat) {
+	public static String getExperimentTimeFormatedString(ZonedDateTime timeToFormat) {
 		return timeToFormat.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
 	}
 
 	protected static String getResultsFolder(ZonedDateTime timeToFormat, String testName) {
-		return getExperimentTimFormatedString(timeToFormat) + "-" + testName;
+		return getExperimentTimeFormatedString(timeToFormat) + "-" + testName;
 	}
 
 	public static String getRemoteSavedStatePath(String mainClass, long nodeId, String swirldName, long round) {

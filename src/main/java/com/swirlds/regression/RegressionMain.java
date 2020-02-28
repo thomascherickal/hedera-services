@@ -22,6 +22,7 @@ import com.swirlds.regression.jsonConfigs.RegionList;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.slack.SlackNotifier;
+import com.swirlds.regression.slack.SlackSummaryMsg;
 import com.swirlds.regression.slack.SlackTestMsg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -178,7 +179,11 @@ public class RegressionMain {
 
 	void runExperiments(CloudService cloud) {
 		ZonedDateTime regressionTestStart = ZonedDateTime.now(ZoneOffset.ofHours(0));
+		SlackSummaryMsg summary = new SlackSummaryMsg(regConfig.getSlack(), regConfig, git,
+				RegressionUtilities.getExperimentTimeFormatedString(regressionTestStart));
 		Experiment currentTest = null;
+		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
+				regConfig.getSlack().getChannel());
 		for (int i = 0; i < regConfig.getExperiments().size(); i++) {
 			try {
 				currentTest = new Experiment(regConfig, regConfig.getExperiments().get(i));
@@ -190,12 +195,15 @@ public class RegressionMain {
 				} else {
 					currentTest.runRemoteExperiment(cloud, git);
 				}
+				summary.addExperiment(currentTest);
 				sleep(CLOUD_WAIT_MILLIS); // add time between tests to allow for connections to reset, memory to free up
 			} catch (Throwable t) {
 				log.error(ERROR, "Exception while running experiment:", t);
 				reportErrorToSlack(t, currentTest);
+				summary.registerException(t);
 			}
 		}
+		slacker.messageChannel(summary);
 	}
 
 	void reportErrorToSlack(Throwable t, Experiment test) {
@@ -206,7 +214,7 @@ public class RegressionMain {
 		if (test != null) {
 			tc = test.getTestConfig();
 		}
-		SlackTestMsg msg = new SlackTestMsg(regConfig, tc, null, git);
+		SlackTestMsg msg = new SlackTestMsg(null, regConfig, tc, null, git);
 		msg.addExceptions(t);
 		slacker.messageChannel(msg);
 	}

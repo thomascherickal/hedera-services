@@ -24,9 +24,14 @@
   },
   "experiments": [
 	"configs/testSigningDemoCfg.json",
-	"configs/testFcm1KCfg.json",
-	"configs/testFcmBlob1KCfg.json",
-	"configs/testRestartCfg.json"
+	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testRestartCfg.json",
+	"configs/testFcmFreezeBlobCfg.json",
+	"configs/testFcm4kx100KBlobCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectBlobCfg.json",
+	"configs/testFcm1kThrottlingCfg.json"
   ],
   "db": {
 	"type": "postgresql",
