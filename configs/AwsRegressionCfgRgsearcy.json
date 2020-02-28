@@ -1,5 +1,5 @@
 {
-  "name":"regression-TestMultiRegionIssues",
+  "name":"AUTOSIZE JVM TEST",
   "result": {
 	"uri":"results"
   },
@@ -13,10 +13,11 @@
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
-	  { "region":"us-west-2",    "numberOfNodes": 4,
-		  "instanceList": [
-			  "i-022662854f5ad0975", "i-08cc94b4d1d2f0e69","i-0a2c2e63b4d9e9128","i-0ce02df52f40f9d60"
-		  ]
+	  { "region":"us-west-2",    "numberOfNodes": 4
+		  //,
+//		  "instanceList": [
+//			  "i-022662854f5ad0975", "i-08cc94b4d1d2f0e69","i-0a2c2e63b4d9e9128","i-0ce02df52f40f9d60"
+//		  ]
 	  } // Oregon
 	]
   },
@@ -57,12 +58,12 @@
   "slack":{
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "regression-test",
+	"channel": "UA5K2LZ1D",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
 	"notifyUserIds": [ "UA5K2LZ1D" ]
   },
-	"jvmOptions":"-Xmx12g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=10 -XX:ZMarkStackSpaceLimit=8g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g",
+//	"jvmOptions":"-Xmx12g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=10 -XX:ZMarkStackSpaceLimit=8g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g",
   "uploadToSharePoint": false
 }

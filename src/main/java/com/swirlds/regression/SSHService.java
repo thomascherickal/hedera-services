@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.amazonaws.services.costexplorer.model.EC2InstanceDetails;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -684,6 +685,26 @@ public class SSHService {
 			return false;
 		}
 		return true;
+	}
+
+	public void setupNodeMemory(String instanceType) {
+		String MemorySize = GetMemory();
+		setHugePagesOnNodes();
+		setPostgresConfOnNodes();
+	}
+
+	private String GetMemory() {
+		EC2InstanceDetails instanceDetails = new EC2InstanceDetails();
+
+		return "";
+
+	}
+
+	private void setPostgresConfOnNodes() {
+	}
+
+	private void setHugePagesOnNodes() {
+
 	}
 
 	private String getFirstLineOfStream(InputStream is) {

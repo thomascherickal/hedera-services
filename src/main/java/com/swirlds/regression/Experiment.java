@@ -624,20 +624,7 @@ public class Experiment {
         slacker.uploadFile(msg, fileLocation, testConfig.getName());
     }
 
-    void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
-        //TODO: unit test for null cld
-        if (cld == null) {
-            log.error(ERROR, "Cloud instance was null, cannot run test!");
-            sendSlackMessage("Cloud instance was null, cannot start test!");
-            return;
-        }
-        this.cloud = cld;
-        this.git = git;
-        this.cloud.setInstanceNames(testConfig.getName());
-        exportIPAddressFiles();
-
-        setIPsAndStakesInConfig();
-
+    void setupSSHServices() throws IOException {
         String login = regConfig.getCloud().getLogin();
         File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
         //TODO multi-thread this perhaps?
@@ -656,6 +643,40 @@ public class Experiment {
             }
             currentNode.reset();
 
+            sshNodes.add(currentNode);
+
+
+        }
+    }
+
+    void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
+        //TODO: unit test for null cld
+        if (cld == null) {
+            log.error(ERROR, "Cloud instance was null, cannot run test!");
+            sendSlackMessage("Cloud instance was null, cannot start test!");
+            return;
+        }
+        this.cloud = cld;
+        this.git = git;
+        this.cloud.setInstanceNames(testConfig.getName());
+        exportIPAddressFiles();
+
+        setIPsAndStakesInConfig();
+
+        setupSSHServices();
+        SSHService firstNode = null;
+        int nodeNumber = sshNodes.size();
+        for (int i = 0; i < nodeNumber; i++) {
+            SSHService currentNode = sshNodes.get(i);
+            //TODO Unit test for this must change the files name of the pem file to prevent connections
+            if (currentNode == null) {
+                cloud.destroyInstances();
+                log.error(ERROR, "Could not start/ or connect to node, exiting regression test.");
+                uploadFilesToSharepoint();
+                throw new SocketException("Node: " + currentNode.getIpAddress() + " returned as null on initialization.");
+            }
+            currentNode.reset();
+
             ArrayList<File> addedFiles = buildAdditionalFileList();
             //currentNode.buildSession();
 
@@ -666,7 +687,6 @@ public class Experiment {
             } else {
                 firstNode.rsyncTo(addedFiles, currentNode.getIpAddress(), new File(testConfig.getLog4j2File()));
             }
-            sshNodes.add(currentNode);
 
             // copy a saved state if set in config
             SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
@@ -999,6 +1019,7 @@ public class Experiment {
 	}
 
 	void setupTest(TestConfig experiment) {
+
 		this.testConfig = experiment;
 
 		setExperimentTime();

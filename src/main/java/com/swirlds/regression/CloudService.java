@@ -455,23 +455,5 @@ class CloudService {
         return instResult.getReservations();
     }
 
-    public void setupNodeMemory(String instanceType) {
-        String MemorySize = GetMemory();
-            setHugePagesOnNodes();
-            setPostgresConfOnNodes();
-    }
 
-    private String GetMemory() {
-        EC2InstanceDetails instanceDetails = new EC2InstanceDetails();
-
-        return "";
-
-    }
-
-    private void setPostgresConfOnNodes() {
-    }
-
-    private void setHugePagesOnNodes() {
-
-    }
 }
