@@ -56,27 +56,11 @@ public class SlackNotifierTester {
         //testSendFile(sn);
     }
 
-    private static void testNoExperiment(SlackNotifier sn) {
-        SlackTestMsg msg = new SlackTestMsg(
-                getRegConfig());
-        msg.addError("No test found");
-        sn.messageChannel(msg);
-    }
-
-    private static void testFailedExperiment(SlackNotifier sn) {
-        SlackTestMsg msg = new SlackTestMsg(
-                getRegConfig(),
-                getTestConfig()
-        );
-        msg.addError("An error has occurred while running the test");
-
-        sn.messageChannel(msg);
-    }
-
     private static void testAllFeatures(SlackNotifier sn) {
         GitInfo gi = new GitInfo();
         gi.gitVersionInfo();
         SlackTestMsg msg = new SlackTestMsg(
+                null,
                 getRegConfig(),
                 getTestConfig(),
                 SLACK_TEST_FILE_LOCATION,
@@ -119,7 +103,9 @@ public class SlackNotifierTester {
     }
 
     private static void slackFileUpload() {
-        String[] uploadFileToSlackCmd = SlackNotifier.buildCurlString(new SlackTestMsg(getRegConfig(), getTestConfig()), SLACK_FILE_TO_UPLOAD, SLACK_EXPERIMENT_NAME);
+        String[] uploadFileToSlackCmd = SlackNotifier.buildCurlString(
+                new SlackTestMsg(null, getRegConfig(), getTestConfig()),
+                SLACK_FILE_TO_UPLOAD, SLACK_EXPERIMENT_NAME);
         ExecStreamReader.outputProcessStreams(uploadFileToSlackCmd);
     }
 
