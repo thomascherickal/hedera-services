@@ -66,6 +66,13 @@ public class MemoryAllocation {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		MemoryAllocation that = (MemoryAllocation) o;
+		/* if memory types are different compare the amount of memory for the memory type of this object to confirm they
+		are the same.
+		 */
+		if(memoryType != that.memoryType){
+			return getAdjustedMemoryAmount(memoryType) == that.getAdjustedMemoryAmount(memoryType);
+		}
+		/* if memory types are the same return direct comparison of memory amount and memory type */
 		return memoryAmount == that.memoryAmount &&
 				memoryType == that.memoryType;
 	}

@@ -64,6 +64,11 @@
 	"notifyChannel": false,
 	"notifyUserIds": [ "UA5K2LZ1D" ]
   },
+	"jvmOptionParametersConfig" : {
+		"maxMemory": 12,
+		"minMemory": 8,
+		"maxDirectMemory": 8
+	},
 //	"jvmOptions":"-Xmx12g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=10 -XX:ZMarkStackSpaceLimit=8g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g",
   "uploadToSharePoint": false
 }

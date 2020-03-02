@@ -300,8 +300,6 @@ public class RegressionMain {
 			return null;
 		}
 
-		service.setupNodeMemory(service.cloudConfig.getInstanceType());
-
 
 /*		try {
 			sleep(30000);

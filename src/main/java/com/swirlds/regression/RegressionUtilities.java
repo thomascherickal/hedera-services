@@ -69,6 +69,15 @@ public class RegressionUtilities {
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
 	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", $1 }' | sed 's/^[[:space:]]*//g'";
 	/* this section is for dynamic allocation of huge pages and memory of instances */
+	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
+	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
+	public static final String CHANGE_HUGEPAGE_NUMBER = "sysctl -w vm.nr_hugepages=%d";
+	public static final String CHANGE_POSTGRES_MEMORY_ALLOCATION = "sudo sed -i 's/shared_buffers = [0-9]*MB/shared_buffers = %dMB/g\n" +
+			"s/temp_buffers = [0-9]*MB/temp_buffers = %dMB/g\n" +
+			"s/max_prepared_transactions = [0-9]*/max_prepared_transactions = %d/g\n" +
+			"s/work_mem = [0-9]*MB/work_mem = %dMB/g\n" +
+			"s/maintenance_work_mem = [0-9]*MB/maintenance_work_mem = %dMB/g\n" +
+			"s/autovacuum_work_mem = [0-9]*MB/autovacuum_work_mem = %dMB/g' /etc/postgresql/10/main/postgresql.conf";
 
 	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
 	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
@@ -76,7 +85,7 @@ public class RegressionUtilities {
 	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
 	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
 	static final String OS_RESERVE_MEMORY = "2GB";
-	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "1536MB";
+	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "512MB";
 
 	public static final int SHA1_DIVISOR = 25;
 	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis

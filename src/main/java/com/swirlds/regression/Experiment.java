@@ -67,7 +67,6 @@ import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
-import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_DEFAULT;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
@@ -681,10 +680,10 @@ public class Experiment {
                 throw new SocketException("Node: " + pubIP + " returned as null on initialization.");
             }
             currentNode.reset();
+            cloud.memoryNeedsForAllNodes = new NodeMemory(currentNode.checkTotalMemoryOnNode());
+            currentNode.adjustNodeMemoryAllocations(cloud.memoryNeedsForAllNodes);
 
             sshNodes.add(currentNode);
-
-
         }
     }
 

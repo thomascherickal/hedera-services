@@ -70,23 +70,32 @@ public class NodeMemoryTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			// totalmemory, hugepage number, hugepage memory, JVM Memory
-			"32GB, 15360, 30720, 28GB",
-			"64GB, 31744, 63488, 60GB"
+			/* totalmemory, hugepage number, hugepage memory, JVM Memory, temp buffers, prep transactions, work memory
+			   maint work memory, autov work memory*/
+			"4GB, 1024, 2048, 1GB, 64MB, 100, 64MB, 32MB, 32MB, 512MB",
+			"6GB, 1024, 2048, 1GB, 64MB, 100, 64MB, 32MB, 32MB, 512MB",
+			"8GB, 3604, 7208, 5GB, 256MB, 100, 256MB, 128MB, 128MB, 1024MB",
+			"16GB, 7208, 14416, 10GB, 256MB, 100, 256MB, 128MB, 128MB, 2GB",
+			"32GB, 14417, 28834, 20GB, 256MB, 100, 256MB, 128MB, 128MB, 4GB",
+			"64GB, 28835, 57670, 40GB, 256MB, 100, 256MB, 128MB, 128MB, 8GB",
+			"128GB, 57671, 115342, 80GB, 4GB, 500, 4GB, 2GB, 2GB, 16GB",
+			"160GB, 72089, 144178, 100GB, 4GB, 500, 4GB, 2GB, 2GB, 20GB",
+			"192GB, 72089, 144178, 100GB, 4GB, 500, 4GB, 2GB, 2GB, 20GB"
 	})
 	@DisplayName("Test Calculations made by constructor are correct")
 	public void testNodeMemoryConstructorCalculations(String totalMemory, int hugePageNumber, int hugePageKBMemory,
-			String jvmMemory) throws NumberFormatException {
+			String jvmMemory, String tempBuffers, int prepTransactions, String workMemory, String maintWorkMemory,
+		    String autovWorkMemory, String sharedBuffers) throws NumberFormatException {
 		NodeMemory testNM = new NodeMemory(totalMemory);
 		assertEquals(hugePageNumber, testNM.getHugePagesNumber());
 		assertEquals(hugePageKBMemory, (int) testNM.getHugePagesMemory().getAdjustedMemoryAmount(MemoryType.MB));
-		assertEquals(RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS,
-				testNM.getPostgresMaxPreparedTransaction());
-		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_TEMP_BUFFERS),
-				testNM.getPostgresTempBuffers());
-		assertEquals(new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM), testNM.getPostgresWorkMem());
+		assertEquals(prepTransactions, testNM.getPostgresMaxPreparedTransaction());
+		assertEquals(new MemoryAllocation(tempBuffers), testNM.getPostgresTempBuffers());
+		assertEquals(new MemoryAllocation(workMemory), testNM.getPostgresWorkMem());
 		assertEquals(new MemoryAllocation(jvmMemory), testNM.getJvmMemory());
-		/* TODO test postgres Shared_buffer */
+		assertEquals(new MemoryAllocation(maintWorkMemory), testNM.getPostgresMaintWorkMem());
+		assertEquals(new MemoryAllocation(autovWorkMemory), testNM.getPostgresAutovWorkMem());
+		assertEquals(new MemoryAllocation(sharedBuffers), testNM.getPostgresSharedBuffers());
 	}
 
 }

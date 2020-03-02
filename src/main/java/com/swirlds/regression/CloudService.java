@@ -455,5 +455,23 @@ class CloudService {
         return instResult.getReservations();
     }
 
+    public void setupNodeMemory(SSHService node) {
+        memoryNeedsForAllNodes = GetMemory(node);
+        setHugePagesOnNodes();
+        setPostgresConfOnNodes();
+    }
+
+    private NodeMemory GetMemory(SSHService node) {
+        String totalMemoryReturned = node.checkTotalMemoryOnNode();
+        return new NodeMemory(totalMemoryReturned);
+    }
+
+    private void setPostgresConfOnNodes() {
+    }
+
+    private void setHugePagesOnNodes() {
+
+    }
+
 
 }
