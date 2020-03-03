@@ -6,8 +6,8 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"saveStatePeriod", "value":"15"},
-    {"name":"signedStateDisk", "value":"100"},
+    {"name":"state.saveStatePeriod", "value":"15"},
+    {"name":"state.signedStateDisk", "value":"100"},
     {"name":"enableEventStreaming", "value":"true"},
     {"name":"eventsLogDir", "value":"data/eventStream"}
   ],
