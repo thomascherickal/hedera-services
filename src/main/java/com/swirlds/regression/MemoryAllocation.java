@@ -43,6 +43,10 @@ public class MemoryAllocation {
 		return Math.pow(1024,Integer.valueOf(difference).doubleValue());
 	}
 
+	public double getMemoryAmount(){
+		return getAdjustedMemoryAmount(this.memoryType);
+	}
+
 
 	public void setMemoryAmount(int memoryAmount) {
 		this.memoryAmount = memoryAmount;

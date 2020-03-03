@@ -131,7 +131,9 @@ public class JVMConfig {
                 returnString.append(option + convertToJavaMemoryOptionString(memoryAlloc));
             } else {
                 memoryAlloc = resizeMemoryAllocationIfTooBig(memoryAlloc, maxMem);
-                returnString.append(option + convertToJavaMemoryOptionString(memoryAlloc));
+                if(memoryAlloc.getMemoryAmount() != 0) {
+                    returnString.append(option + convertToJavaMemoryOptionString(memoryAlloc));
+                }
             }
 
             returnString.append(" ");
@@ -144,12 +146,18 @@ public class JVMConfig {
         if (memoryAlloc.getAdjustedMemoryAmount(maxMem.getMemoryType()) <= maxMem.getRawMemoryAmount()) {
             return memoryAlloc;
         } else {
-            return new MemoryAllocation((int) Math.floor((double) maxMem.getRawMemoryAmount() * 0.75), maxMem.getMemoryType());
+            MemoryAllocation returnAllocation = new MemoryAllocation((int) Math.floor((double) maxMem.getRawMemoryAmount() * 0.75), maxMem.getMemoryType());
+            while(returnAllocation.getRawMemoryAmount() == 0 && !returnAllocation.getMemoryType().equals(MemoryType.KB)){
+                //move memory type down one value GB -> MB -> KB
+                int returnAllocationOrdinalValue = returnAllocation.getMemoryType().ordinal() - 1;
+                returnAllocation.setMemoryType(MemoryType.values()[returnAllocationOrdinalValue - 1]);
+            }
+            return returnAllocation;
         }
     }
 
     private String convertToJavaMemoryOptionString(MemoryAllocation memoryAlloc) {
-        int memory = memoryAlloc.getRawMemoryAmount();
+        int memory = (int)memoryAlloc.getMemoryAmount();
         MemoryType type = memoryAlloc.getMemoryType();
 
         String returnString = String.valueOf(memory) + type.name().substring(0, 1).toLowerCase();

@@ -1007,20 +1007,18 @@ public class SSHService {
 //                "s/maintenance_work_mem = [0-9]*MB/maintenance_work_mem = %dMB/g\n" +
 //                "s/autovacuum_work_mem = [0-9]*MB/autovacuum_work_mem = %dMB/g' /etc/postgresql/10/main/postgresql.conf";
         MemoryType mb = MemoryType.MB;
-        String adjustPostgresMemoryCommand = String.format(CHANGE_POSTGRES_MEMORY_ALLOCATION,postgresMemoryReqs.getPostgresSharedBuffers().getAdjustedMemoryAmount(mb)
-        , postgresMemoryReqs.getPostgresTempBuffers().getAdjustedMemoryAmount(mb), postgresMemoryReqs.getPostgresMaxPreparedTransaction()
-        , postgresMemoryReqs.getPostgresWorkMem().getAdjustedMemoryAmount(mb), postgresMemoryReqs.getPostgresMaintWorkMem().getAdjustedMemoryAmount(mb)
-        , postgresMemoryReqs.getPostgresAutovWorkMem().getAdjustedMemoryAmount(mb));
-        String stopPostgresCommand = STOP_POSTGRESQL_SERVICE;
-        String startPostgresCommand = START_POSTGRESQL_SERVICE;
+        String adjustPostgresMemoryCommand = String.format(CHANGE_POSTGRES_MEMORY_ALLOCATION,(int)postgresMemoryReqs.getPostgresSharedBuffers().getAdjustedMemoryAmount(mb)
+        , (int)postgresMemoryReqs.getPostgresTempBuffers().getAdjustedMemoryAmount(mb), postgresMemoryReqs.getPostgresMaxPreparedTransaction()
+        , (int)postgresMemoryReqs.getPostgresWorkMem().getAdjustedMemoryAmount(mb), (int)postgresMemoryReqs.getPostgresMaintWorkMem().getAdjustedMemoryAmount(mb)
+        , (int)postgresMemoryReqs.getPostgresAutovWorkMem().getAdjustedMemoryAmount(mb));
 
-        Session.Command cmd = execCommand(stopPostgresCommand, "stopping postgresql");
+        Session.Command cmd = execCommand(STOP_POSTGRESQL_SERVICE, "stopping postgresql");
         throwIfExitCodeBad(cmd, "stopping postgresql");
 
         cmd = execCommand(adjustPostgresMemoryCommand, "Adjusting postgres memory");
         throwIfExitCodeBad(cmd, "adjusting postgres memory");
 
-        cmd = execCommand(startPostgresCommand, "restarting postgresql");
+        cmd = execCommand(START_POSTGRESQL_SERVICE, "restarting postgresql");
         throwIfExitCodeBad(cmd, "restarting postgresql");
 
 	}

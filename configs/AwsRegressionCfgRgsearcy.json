@@ -7,16 +7,16 @@
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
 	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11-R2",
-	"instanceType": "M4Xlarge",
+	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.12-BADGERIZE-V13",
+	"instanceType": "M4Large",
 	"instanceKey": "ATF-Key",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
 	  { "region":"us-west-2",    "numberOfNodes": 4
-		  //,
+//		  ,
 //		  "instanceList": [
-//			  "i-022662854f5ad0975", "i-08cc94b4d1d2f0e69","i-0a2c2e63b4d9e9128","i-0ce02df52f40f9d60"
+//			  "i-00ced7e65ff67f563","i-01053a0bbb31c191a","i-0f7859550a858bb73","i-0159e7c4c9ca0fd80"
 //		  ]
 	  } // Oregon
 	]
@@ -27,24 +27,24 @@
   },
   "experiments": [
 	  "configs/testSigningDemoCfg.json"
-//  ,
-//	  "configs/testSigningDemo4KCfg.json",
-//	  "configs/testFcmMultipleOperationsCfg.json",
-//	  "configs/testRestartCfg.json"
-//  ,
-//	  "configs/testRestartBlobCfg.json",
-//	  "configs/testFcmFreezeCfg.json",
-//	  "configs/testFcmFreezeBlobCfg.json",
+  ,
+	  "configs/testSigningDemo4KCfg.json",
+	  "configs/testFcmMultipleOperationsCfg.json",
+	  "configs/testRestartCfg.json"
+  ,
+	  "configs/testRestartBlobCfg.json",
+	  "configs/testFcmFreezeCfg.json",
+	  "configs/testFcmFreezeBlobCfg.json",
 //	  "configs/testFcmCfg.json",
 //	  "configs/testFcm3MCfg.json",
 //	  "configs/testFcmMultisizeBlobCfg.json",
-//	  "configs/testFcmFreezeFCQCfg.json",
-//	  "configs/testFCM1KFCQCfg.json",
+	  "configs/testFcmFreezeFCQCfg.json",
+	  "configs/testFCM1KFCQCfg.json",
 //	  //	"configs/testExperimentFCQCfg.json",
-//	  "configs/testReconnectFCMMultiReconnectCfg.json",
-//	  "configs/testReconnectFCQMultiReconnectCfg.json",
+	  "configs/testReconnectFCMMultiReconnectCfg.json",
+	  "configs/testReconnectFCQMultiReconnectCfg.json",
 //	  //	"configs/testReconnectFCQCfg.json",
-//	  "configs/testFcm1kThrottlingCfg.json"
+	  "configs/testFcm1kThrottlingCfg.json"
 //	  //	  "configs/testFcmCfg.json",
 //	  //	  "configs/testFcm3MCfg.json"
   ],
@@ -64,11 +64,6 @@
 	"notifyChannel": false,
 	"notifyUserIds": [ "UA5K2LZ1D" ]
   },
-	"jvmOptionParametersConfig" : {
-		"maxMemory": 12,
-		"minMemory": 8,
-		"maxDirectMemory": 8
-	},
 //	"jvmOptions":"-Xmx12g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=10 -XX:ZMarkStackSpaceLimit=8g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g",
   "uploadToSharePoint": false
 }

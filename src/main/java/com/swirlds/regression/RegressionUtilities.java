@@ -71,13 +71,15 @@ public class RegressionUtilities {
 	/* this section is for dynamic allocation of huge pages and memory of instances */
 	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
 	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
-	public static final String CHANGE_HUGEPAGE_NUMBER = "sysctl -w vm.nr_hugepages=%d";
-	public static final String CHANGE_POSTGRES_MEMORY_ALLOCATION = "sudo sed -i 's/shared_buffers = [0-9]*MB/shared_buffers = %dMB/g\n" +
+	public static final String CHANGE_HUGEPAGE_NUMBER = "sudo sysctl -w vm.nr_hugepages=%d";
+	public static final String CHANGE_POSTGRES_MEMORY_ALLOCATION = "sudo sed -i " +
+			"'s/shared_buffers = [0-9]*MB/shared_buffers = %dMB/g\n" +
 			"s/temp_buffers = [0-9]*MB/temp_buffers = %dMB/g\n" +
 			"s/max_prepared_transactions = [0-9]*/max_prepared_transactions = %d/g\n" +
 			"s/work_mem = [0-9]*MB/work_mem = %dMB/g\n" +
 			"s/maintenance_work_mem = [0-9]*MB/maintenance_work_mem = %dMB/g\n" +
-			"s/autovacuum_work_mem = [0-9]*MB/autovacuum_work_mem = %dMB/g' /etc/postgresql/10/main/postgresql.conf";
+			"s/autovacuum_work_mem = [0-9]*MB/autovacuum_work_mem = %dMB/g' " +
+			"/etc/postgresql/10/main/postgresql.conf";
 
 	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
 	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
