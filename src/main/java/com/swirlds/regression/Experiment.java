@@ -114,7 +114,7 @@ public class Experiment {
     private boolean isFirstTestFinished = false;
     private CloudService cloud = null;
     private ArrayList<SSHService> sshNodes = new ArrayList<>();
-    NodeMemory nodeMemoryProfile;
+    private NodeMemory nodeMemoryProfile;
 
     // Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
     // At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
