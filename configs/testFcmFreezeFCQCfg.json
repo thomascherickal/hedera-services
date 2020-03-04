@@ -6,7 +6,7 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"saveStatePeriod", "value":"300"}
+    {"name":"state.saveStatePeriod", "value":"300"}
   ],
   "freezeConfig": {
     "freezeTiming": 1,
