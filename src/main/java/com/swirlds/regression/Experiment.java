@@ -661,11 +661,14 @@ public class Experiment {
         slacker.uploadFile(msg, fileLocation, testConfig.getName());
     }
 
+    /**
+     * Confirms that all nodes can be connected to, and that sets them up and prepares them for the experiment.
+     * @throws IOException - SocketException (child of IOException) is thrown if unable to connect to node.
+     */
     void setupSSHServices() throws IOException {
         String login = regConfig.getCloud().getLogin();
         File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
         //TODO multi-thread this perhaps?
-        SSHService firstNode = null;
         ArrayList<String> publicIPList = cloud.getPublicIPList();
         int nodeNumber = publicIPList.size();
         for (int i = 0; i < nodeNumber; i++) {
@@ -699,20 +702,11 @@ public class Experiment {
         exportIPAddressFiles();
 
         setIPsAndStakesInConfig();
-
         setupSSHServices();
         SSHService firstNode = null;
         int nodeNumber = sshNodes.size();
         for (int i = 0; i < nodeNumber; i++) {
-            SSHService currentNode = sshNodes.get(i);
-            //TODO Unit test for this must change the files name of the pem file to prevent connections
-            if (currentNode == null) {
-                cloud.destroyInstances();
-                log.error(ERROR, "Could not start/ or connect to node, exiting regression test.");
-                uploadFilesToSharepoint();
-                throw new SocketException("Node: " + currentNode.getIpAddress() + " returned as null on initialization.");
-            }
-            currentNode.reset();
+            SSHService currentNode = sshNodes.get(i);;
 
             ArrayList<File> addedFiles = buildAdditionalFileList();
             //currentNode.buildSession();
@@ -809,6 +803,11 @@ public class Experiment {
         killJavaProcess();
     }
 
+    /**
+     * Calls the node to get total memory, and then sets nodeMemoryProfile to that amount.
+     * This assumes all nodes are the same type of instance.
+     * @param currentNode - the node to be profiled
+     */
     private void calculateNodeMemoryProfile(SSHService currentNode) {
         String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
         nodeMemoryProfile = new NodeMemory(totalNodeMemory);
@@ -978,6 +977,14 @@ public class Experiment {
         return process.exitValue();
     }
 
+    /**
+     * Creates a strong to be used for JVM options when starting an experiment on each node.
+     * If the regression config has a specific JVMOption parameter set it will be used. If not then build the string
+     * based on the memory of the instance used.
+     * if jvm options were set specifically in the regression config those will overwrite the standard defaults
+     *
+     * @return string containing JVM options
+     */
     private String getJVMOptionsString() {
         String javaOptions;
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.

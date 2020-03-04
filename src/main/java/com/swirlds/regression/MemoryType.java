@@ -24,9 +24,10 @@ public enum MemoryType {
 
 	private String memoryIdentifier;
 
-	MemoryType(String identifer) {
-		this.memoryIdentifier = identifer;
+	MemoryType(String identifier) {
+		this.memoryIdentifier = identifier;
 	}
+
 
 	public String getMemoryIdent() {
 		return memoryIdentifier;

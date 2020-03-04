@@ -26,23 +26,33 @@ public class NodeMemory {
 
 
 	/**
+	 * Constructor for node memory, receives total memory to base all calculations on.
 	 * @param totalMem
 	 * 		- passed in parameter must be in the format amount, MemoryType ie. 8GB, 8192MB,  8388608KB
 	 * @throws IllegalArgumentException
-	 * 		- anything not in amount memorytype format, or having a memorytype that is not contained in the MemroyType
-	 * 		enum
-	 * 		will cause this funciton to throw.
+	 * 		- anything not in memory type format, or having a memory type that is not contained in the MemoryType
+	 * 		enum will cause this function to throw.
 	 */
-	//TODO: call with MemoryAllocation totalMem, not string
 	public NodeMemory(String totalMem) throws IllegalArgumentException {
-		this.totalMemory = new MemoryAllocation(totalMem);
+		this(new MemoryAllocation(totalMem));
+	}
 
+	/**
+	 * Constructor for node memory, receives total memory to base all calculations on.
+	 * @param memory = Memory Allocation object representing total memory of node
+	 */
+	public NodeMemory(MemoryAllocation memory) {
+		this.totalMemory = memory;
 		setPostgresDefaultValues();
 		calculateHugePages();
 		calculateJVMMemory();
 		calculatePostgresMemory();
 	}
 
+	/**
+	 * Sets postgres default values from Regression Utilities to make sure all postgres values
+	 *     are set before calculations are made
+	 */
 	private void setPostgresDefaultValues() {
 		postgresWorkMem = new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_WORK_MEM);
 		postgresMaxPreparedTransaction = RegressionUtilities.POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS;
@@ -50,17 +60,22 @@ public class NodeMemory {
 		postgresSharedBuffers = new MemoryAllocation(RegressionUtilities.POSTGRES_DEFAULT_SHARED_BUFFERS);
 	}
 
+	/**
+	 * Calculates the number of Huge pages needed based on total memory
+	 */
 	private void calculateHugePages() {
 		MemoryType calculationType = MemoryType.KB; // hugePage sizes are stored in sysctl.conf using KB
 		double workingTotalMemory = totalMemory.getAdjustedMemoryAmount(calculationType);
+		/* Machines less than the lowest tier we plan for will receive 2GB of huge pages */
 		if(workingTotalMemory < LOWEST_TIER_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)){
 			workingTotalMemory = new MemoryAllocation("2GB").getAdjustedMemoryAmount(calculationType);
 		}
+		/* use our standard calculation for machine with in planned for parameters */
 		else if(workingTotalMemory >= LOWEST_TIER_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)
 				&& workingTotalMemory < MAIN_NET_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)) {
 			workingTotalMemory = workingTotalMemory * HUGEPAGE_PERCENT_OF_TOTAL_MEMORY;
 		}
-		/* max out memory based on HIGHEst_TIER_MACHINE_SIZE to make sure more memory than main net is not used */
+		/* max out memory based on HIGHEST_TIER_MACHINE_SIZE to make sure more memory than main net is not used */
 		else{
 			workingTotalMemory = MAIN_NET_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType) * HUGEPAGE_PERCENT_OF_TOTAL_MEMORY;
 		}
@@ -74,20 +89,25 @@ public class NodeMemory {
 				MemoryType.KB);
 	}
 
+	/**
+	 * Calculate the maximum JVM memory based on total memory size of node.
+	 */
 	private void calculateJVMMemory() {
 		/* since the OS already has 2GB outside of the hugePages it is not used in this calculation. Postgres will use
 		huge pages though, so we need to calculate how much it might take and round that up to the nearest GB to make
 		sure the JVM and postgres play nice with memory */
 		MemoryType calculationType = MemoryType.GB; // JVM is called with GB for memory
 		double workingTotalMemory = totalMemory.getAdjustedMemoryAmount(calculationType);
+		/* If the node is smaller than the lowest planed for node size still use 1GB for maximum java size */
 		if(workingTotalMemory < LOWEST_TIER_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)){
 			workingTotalMemory = new MemoryAllocation("1GB").getAdjustedMemoryAmount(calculationType);
 		}
+		/* use normal calcuations ofr nodes of expected sizes */
 		else if(workingTotalMemory >= LOWEST_TIER_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)
 				&& workingTotalMemory < MAIN_NET_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)) {
 			workingTotalMemory = workingTotalMemory * JVM_PERCENT_OF_TOTAL_MEMORY;
 		}
-		/* max out memory based on HIGHEst_TIER_MACHINE_SIZE to make sure more memory than main net is not used */
+		/* max out memory based on HIGHEST_TIER_MACHINE_SIZE to make sure more memory than main net is not used */
 		else {
 			workingTotalMemory = MAIN_NET_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType) * JVM_PERCENT_OF_TOTAL_MEMORY;
 		}
@@ -95,17 +115,19 @@ public class NodeMemory {
 		jvmMemory = new MemoryAllocation((int) Math.floor(workingTotalMemory), calculationType);
 	}
 
-/*	Setting        |   R < 8GB   |   8GB <= R < 64GB   |   R >= 160GB
--------------------|-------------|---------------------|-------------
-	temp_buffers   |    64 MB    |        256 MB       |     4 GB
-	prep_trans     |    100      |        100          |     500
-	work_mem       |    64 MB    |        256 MB       |     4 GB
-	maint_work_mem |    32 MB    |        128 MB       |     2 GB
-	autov_work_mem |    32 MB    |        128 MB       |     2 GB*/
-
+	/**
+	 *  Set up postgres variables based on total memory size, chart bellow outlines the calculations
+	 *
+	 *    Setting        |   R < 8GB   |   8GB <= R < 64GB   |   R >= 160GB
+	 *-------------------|-------------|---------------------|-------------
+	 *    temp_buffers   |    64 MB    |        256 MB       |     4 GB
+	 *    prep_trans     |    100      |        100          |     500
+	 *    work_mem       |    64 MB    |        256 MB       |     4 GB
+	 *    maint_work_mem |    32 MB    |        128 MB       |     2 GB
+	 *    autov_work_mem |    32 MB    |        128 MB       |     2 GB
+	 */
 	private void calculatePostgresMemory(){
 		MemoryType calculationType = MemoryType.MB; // JVM is called with GB for memory
-
 
 		double workingTotalMemory = totalMemory.getAdjustedMemoryAmount(calculationType);
 		if(workingTotalMemory < LOWEST_TIER_MACHINE_SIZE.getAdjustedMemoryAmount(calculationType)){
@@ -136,16 +158,6 @@ public class NodeMemory {
 			postgresSharedBuffers = new MemoryAllocation((int) Math.floor(workingTotalMemory), calculationType);
 		}
 		// there is no else since the default memory for postgres will be used for anything less than 8GB
-	}
-
-	private double totalPostgresMemoryNeeds(MemoryType calculationType) {
-		double total = 0.0;
-
-		total += this.postgresSharedBuffers.getAdjustedMemoryAmount(calculationType);
-		total += this.postgresTempBuffers.getAdjustedMemoryAmount(calculationType);
-		total += this.postgresWorkMem.getAdjustedMemoryAmount(calculationType);
-
-		return total;
 	}
 
 	public MemoryAllocation getTotalMemory() {
@@ -188,8 +200,5 @@ public class NodeMemory {
 		return postgresAutovWorkMem;
 	}
 
-	public MemoryAllocation getOsReserve() {
-		return osReserve;
-	}
 }
 
