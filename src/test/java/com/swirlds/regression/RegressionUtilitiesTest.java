@@ -27,17 +27,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class RegressionUtilitiesTest {
-    String ExpectedString = "-Xmx32g -Xms4g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-            "-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=8g";
+    String ExpectedString = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+            "-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
 
-    @Test
+        @ParameterizedTest
+        @CsvSource({
+			/* int maxMemory = 32; int minMemory = 4; int maxDirectMemory = 8;*/
+                "32,4,8",
+                "1,1,1",
+                "10, 1, 2"
+        })
     @DisplayName("Test building jvm options string based on parameters")
-    public void testBuildParameterStringWithParameters() {
-        int maxMemory = 32;
-        int minMemory = 4;
-        int maxDirectMemory = 8;
+    public void testBuildParameterStringWithParameters(int maxMemory, int minMemory, int maxDirectMemory) {
+        String currentExpectedString = String.format(ExpectedString,maxMemory,minMemory, maxDirectMemory);
 
-        assertTrue(ExpectedString.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
+        assertTrue(currentExpectedString.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
     }
 
     @DisplayName("build options string with bad params")
@@ -47,15 +51,23 @@ public class RegressionUtilitiesTest {
         assertTrue(RegressionUtilities.JVM_OPTIONS_DEFAULT.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource({
+            /* int maxMemory = 32; int minMemory = 4; int maxDirectMemory = 8;*/
+            "32,4,8",
+            "1,1,1",
+            "10, 1, 2"
+    })
     @DisplayName("Test building jvm options string based on json config")
-    public void testBuildParametersStringWithConfig(){
+    public void testBuildParametersStringWithConfig(int maxMemory,int minMemory, int maxDirectMemory){
         JvmOptionParametersConfig config = new JvmOptionParametersConfig();
-        config.setMaxMemory(32);
-        config.setMinMemory(4);
-        config.setMaxDirectMemory(8);
+        config.setMaxMemory(maxMemory);
+        config.setMinMemory(minMemory);
+        config.setMaxDirectMemory(maxDirectMemory);
 
-        assertTrue(ExpectedString.equals(RegressionUtilities.buildParameterString(config)));
+        String currentExpectedString = String.format(ExpectedString,maxMemory,minMemory, maxDirectMemory);
+
+        assertTrue(currentExpectedString.equals(RegressionUtilities.buildParameterString(config)));
     }
 
     @Test
@@ -74,6 +86,8 @@ public class RegressionUtilitiesTest {
         config.setMaxDirectMemory(maxDirectMemory);
         assertTrue(RegressionUtilities.JVM_OPTIONS_DEFAULT.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
     }
+
+
 
 
 }

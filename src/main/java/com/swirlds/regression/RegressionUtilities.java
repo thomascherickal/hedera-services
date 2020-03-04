@@ -179,7 +179,7 @@ public class RegressionUtilities {
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
 
-	protected static TestConfig importExperimentConfig() {
+	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
 	}
 
@@ -331,12 +331,12 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
-	protected static String getExperimentTimeFormatedString(ZonedDateTime timeToFormat) {
+	protected static String getExperimentTimeFormattedString(ZonedDateTime timeToFormat) {
 		return timeToFormat.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
 	}
 
 	protected static String getResultsFolder(ZonedDateTime timeToFormat, String testName) {
-		return getExperimentTimeFormatedString(timeToFormat) + "-" + testName;
+		return getExperimentTimeFormattedString(timeToFormat) + "-" + testName;
 	}
 
 	public static String getRemoteSavedStatePath(String mainClass, long nodeId, String swirldName, long round) {
@@ -353,11 +353,20 @@ public class RegressionUtilities {
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
     }
 
-    public static boolean isWindows() {
+	/**
+	 * Is the current OS windows?
+	 * @return return true if windows, false if not
+	 */
+	public static boolean isWindows() {
         return OS.indexOf("win") >= 0;
     }
- 
-    public static String getPythonExecutable() {
+
+	/**
+	 * Get the executable to call on the node based on os type.
+	 * @return - python3 for unix flavors, python for windows flavors
+	 */
+
+	public static String getPythonExecutable() {
         String pythonExecutable = "python3";
         if (isWindows()) {
             pythonExecutable = "python";
@@ -365,6 +374,15 @@ public class RegressionUtilities {
         return pythonExecutable;
     }
 
+	/**
+	 * Build the java parameter string to call the java function with based on the memory variables passed in
+	 * @param maxMemory - maximum memory allowed for the JVM
+	 * @param minMemory - minimum memory allowed for the JVM
+	 * @param maxDirectMemory
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
+	 *   EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 */
     public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
 
 		/* parameter string: "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
@@ -377,6 +395,13 @@ public class RegressionUtilities {
 		}
 	}
 
+	/**
+	 *
+	 * @param jvmOptionParametersConfig - Object with JVM option parameters loaded from the experiment JSON file
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
+	 * 	  EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 	 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 */
 	public static String buildParameterString(JvmOptionParametersConfig jvmOptionParametersConfig) {
 		if(jvmOptionParametersConfig == null) { return JVM_OPTIONS_DEFAULT; }
 		int maxMemory = jvmOptionParametersConfig.getMaxMemory();

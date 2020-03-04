@@ -53,7 +53,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -428,7 +427,7 @@ public class Experiment {
      * Generate a unique code that can be used to search for this test in slack.
      */
     public String getUniqueId() {
-        Integer hash = (RegressionUtilities.getExperimentTimeFormatedString(getExperimentTime()) + "-" +
+        Integer hash = (RegressionUtilities.getExperimentTimeFormattedString(getExperimentTime()) + "-" +
                 getName()).hashCode();
         if (hash < 0) {
             hash *= -1;
