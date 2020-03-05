@@ -782,7 +782,7 @@ public class Experiment {
             //BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
             for (int i = 0; i < sshNodes.size(); i++) {
                 SSHService node = sshNodes.get(i);
-                node.scpFrom(getExperimentResultsFolderForNode(i), blobStateScpList);
+                node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
             }
         }
 
