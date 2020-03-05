@@ -33,6 +33,10 @@ module com.swirlds.regression {
 	requires slack.java.client;
 	requires algebra;
 	requires com.google.guice;
+	requires com.swirlds.platform;
+	requires com.swirlds.demo.platform;
+	requires com.swirlds.fcmap;
+	requires java.sql;
 
 	exports com.swirlds.regression.jsonConfigs;
 	exports com.swirlds.regression.jsonConfigs.runTypeConfigs;

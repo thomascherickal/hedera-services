@@ -165,19 +165,39 @@ public class SSHService {
 
 	Collection<String> getListOfFiles(ArrayList<String> extension) {
 		Collection<String> returnCollection = new ArrayList<>();
+		int extensionCount = 0;
+		int dataExtensionCount = 0;
 		String extensions = "\\( ";
+		String dataExtensions = "";
 		for (int i = 0; i < extension.size(); i++) {
-			if (i > 0) {
-				extensions += " -o ";
+			if (!extension.get(i).contains("data/")) {
+				if (extensionCount++ > 0) {
+					extensions += " -o ";
+				}
+				extensions += "-name \"" + extension.get(i) + "\"";
 			}
-			extensions += "-name \"" + extension.get(i) + "\"";
+			else {
+				dataExtensionCount++;
+				dataExtensions += "-e \"" + extension.get(i) + "\" ";
+			}
 		}
 		extensions += " \\) ";
-		String pruneDirectory = "-not -path \"*/data/*\"";
-		String commandStr = "find . " + extensions + pruneDirectory;
-		final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
-		log.info(MARKER, "Extensions to look for on node {}: ", ipAddress, extensions);
-		returnCollection = readCommandOutput(cmd);
+
+		if (extensionCount > 0) {
+			String commandStr = "find . " + extensions;
+			String pruneDirectory = "-not -path \"*/data/*\"";
+			commandStr += pruneDirectory;
+			final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
+			returnCollection.addAll(readCommandOutput(cmd));
+		}
+
+		if (dataExtensionCount > 0) {
+			String dataCommandStr = "find . | grep " + dataExtensions;
+			final Session.Command dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1);
+			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
+			returnCollection.addAll(readCommandOutput(dataCmd));
+		}
 
 		return returnCollection;
 	}
