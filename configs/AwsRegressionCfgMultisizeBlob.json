@@ -6,7 +6,7 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	  "instanceKey": "regression-key",,
+	  "instanceKey": "regression-key",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
