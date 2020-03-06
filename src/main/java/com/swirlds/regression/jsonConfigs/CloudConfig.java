@@ -22,9 +22,8 @@ import java.util.List;
 public class CloudConfig {
 	private String service;
 	private String securityGroup;
-	private String securityGroupID;
-	private String instanceName;
-	private String instanceType;
+	private String instanceName = "ATF-U18.04-OJDK12.0.1-PSQL10.12-BADGERIZE-V13";
+	private String instanceType = "M4Xlarge";
 	private String instanceKey;
 	private String keyLocation;
 	private String login;
@@ -37,7 +36,6 @@ public class CloudConfig {
 		}
 		if (this.service == null || this.service.isEmpty()
 				|| this.securityGroup == null || this.securityGroup.isEmpty()
-				|| this.securityGroupID == null || this.securityGroupID.isEmpty()
 				|| this.instanceName == null || this.instanceName.isEmpty()
 				|| this.instanceType == null || this.instanceType.isEmpty()
 				|| this.instanceKey == null || this.instanceKey.isEmpty()
@@ -78,14 +76,6 @@ public class CloudConfig {
 
 	public void setSecurityGroup(String securityGroup) {
 		this.securityGroup = securityGroup;
-	}
-
-	public String getSecurityGroupID() {
-		return securityGroupID;
-	}
-
-	public void setSecurityGroupID(String securityGroupID) {
-		this.securityGroupID = securityGroupID;
 	}
 
 	public String getInstanceName() {
