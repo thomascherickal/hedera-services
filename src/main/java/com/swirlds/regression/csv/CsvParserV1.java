@@ -47,7 +47,9 @@ public class CsvParserV1 implements CsvParser {
 	@Override
 	public boolean addNextData(Supplier<String> lineSupplier, CsvStat[] columns) {
 		String line = lineSupplier.get();
-		if ((line == null || line.isEmpty())) {
+		if(line == null) {
+			return false;
+		} else if (line.isEmpty()) {
 			// Allow two empty lines in the csv file because when node kill reconnect testis performed,
 			// it generates two empty lines after node restarts
 			if(emptyLineCounter < 2) {
