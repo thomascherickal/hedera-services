@@ -51,7 +51,7 @@ class ReconnectValidatorTest {
 
 	@Test
 	public void csvValidatorForNodeKillReconnect() throws IOException {
-		List<NodeData> nodeData = loadNodeData("logs/results");
+		List<NodeData> nodeData = loadNodeData("logs/PTD-NodeKillReconnect");
 		NodeValidator validator = new ReconnectValidator(nodeData);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
