@@ -40,6 +40,7 @@ public class AWSNode {
 	private ArrayList<String> privateIPList;
 	private String amiid;
 	private boolean isExistingInstance = false;
+	private NodeMemory nodeMemory;
 
 	public AWSNode(RegionList rl) throws NullPointerException {
 		if (rl == null) {
@@ -53,6 +54,7 @@ public class AWSNode {
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
 			isExistingInstance = true;
 		}
+
 	}
 
 /*	public AWSNode(String region, int totalNodes, AmazonEC2 ec2) {

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import org.apache.logging.log4j.LogManager;
@@ -64,19 +65,42 @@ public class RegressionUtilities {
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
+	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
+	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", $1 }' | sed 's/^[[:space:]]*//g'";
+	/* this section is for dynamic allocation of huge pages and memory of instances */
+	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
+	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
+	public static final String CHANGE_HUGEPAGE_NUMBER = "sudo sysctl -w vm.nr_hugepages=%d";
+	public static final String CHANGE_POSTGRES_MEMORY_ALLOCATION = "sudo sed -i " +
+			"'s/shared_buffers = [0-9]*MB/shared_buffers = %dMB/g\n" +
+			"s/temp_buffers = [0-9]*MB/temp_buffers = %dMB/g\n" +
+			"s/max_prepared_transactions = [0-9]*/max_prepared_transactions = %d/g\n" +
+			"s/work_mem = [0-9]*MB/work_mem = %dMB/g\n" +
+			"s/maintenance_work_mem = [0-9]*MB/maintenance_work_mem = %dMB/g\n" +
+			"s/autovacuum_work_mem = [0-9]*MB/autovacuum_work_mem = %dMB/g' " +
+			"/etc/postgresql/10/main/postgresql.conf";
+
+	/* the huge pages on ubuntu are 2MB this information is needed for calculation to the number of huge pages. */
+	static final int UBUNTU_HUGE_PAGE_SIZE_DIVISOR = 2048;
+	static final String POSTGRES_DEFAULT_WORK_MEM = "256MB";
+	static final int POSTGRES_DEFAULT_MAX_PREPARED_TRANSACTIONS = 100;
+	static final String POSTGRES_DEFAULT_TEMP_BUFFERS = "64MB";
+	static final String OS_RESERVE_MEMORY = "2GB";
+	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "512MB";
+
 	public static final int SHA1_DIVISOR = 25;
 	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis
 	public static final int MB = 1024 * 1024;
 	public static final String CHECK_JAVA_PROC_COMMAND = "pgrep -fl java";
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
-	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
+	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+    public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
-	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS " +
-			"FINISHED|TEST" +
-			" " +
-			"ERROR\" " + REMOTE_SWIRLDS_LOG;
+
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -84,19 +108,17 @@ public class RegressionUtilities {
 	public static final int MILLIS = 1000;
 	public static final int MS_TO_NS = 1000_000;
 
-	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
-			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension crypto;" +
-			" " +
-			"drop database fcfs; create database fcfs with owner = swirlds;\"";
+			" drop database fcfs; create database fcfs with owner = swirlds;\"";
 	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop " +
-			"extension" +
-			" crypto;\"";
+			"extension crypto;\"";
 	public static final String DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
-			"database" +
-			" fcfs;\"";
+			"database fcfs;\"";
+	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
+			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
+
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";
 	static final String DROP_DATABASE_FCFS_KNOWN_RESPONCE = "ERROR:  database \"fcfs\" is being accessed by other " +
@@ -106,13 +128,12 @@ public class RegressionUtilities {
 	static final String CREATE_DATABASE_FCFS_EXPECTED_RESPONCE = "CREATE DATABASE";
 
 	public static String OLD_EVENT_PARENT = "will not use old otherParent";
-
 	public static String INVALID_PARENT = "has invalid otherParent";
+    public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
 
-	public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
+    // caused by InterruptedException | ExecutionException
+    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
 
-	// caused by InterruptedException | ExecutionException
-	public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
@@ -120,7 +141,7 @@ public class RegressionUtilities {
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
-    public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
     public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -156,9 +177,9 @@ public class RegressionUtilities {
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
 
-    private static final String OS = System.getProperty("os.name").toLowerCase();
+	private static final String OS = System.getProperty("os.name").toLowerCase();
 
-	protected static TestConfig importExperimentConfig() {
+	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
 	}
 
@@ -310,12 +331,12 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
-	public static String getExperimentTimeFormatedString(ZonedDateTime timeToFormat) {
+	protected static String getExperimentTimeFormattedString(ZonedDateTime timeToFormat) {
 		return timeToFormat.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
 	}
 
 	protected static String getResultsFolder(ZonedDateTime timeToFormat, String testName) {
-		return getExperimentTimeFormatedString(timeToFormat) + "-" + testName;
+		return getExperimentTimeFormattedString(timeToFormat) + "-" + testName;
 	}
 
 	public static String getRemoteSavedStatePath(String mainClass, long nodeId, String swirldName, long round) {
@@ -332,15 +353,65 @@ public class RegressionUtilities {
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
     }
 
-    public static boolean isWindows() {
+	/**
+	 * Is the current OS windows?
+	 * @return return true if windows, false if not
+	 */
+	public static boolean isWindows() {
         return OS.indexOf("win") >= 0;
     }
- 
-    public static String getPythonExecutable() {
+
+	/**
+	 * Get the executable to call on the node based on os type.
+	 * @return - python3 for unix flavors, python for windows flavors
+	 */
+
+	public static String getPythonExecutable() {
         String pythonExecutable = "python3";
         if (isWindows()) {
             pythonExecutable = "python";
         }
         return pythonExecutable;
     }
+
+	/**
+	 * Build the java parameter string to call the java function with based on the memory variables passed in
+	 * @param maxMemory - maximum memory allowed for the JVM
+	 * @param minMemory - minimum memory allowed for the JVM
+	 * @param maxDirectMemory
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
+	 *   EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 */
+    public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
+
+		/* parameter string: "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg"
+		 */
+		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+			return JVM_OPTIONS_DEFAULT;
+		} else {
+			return String.format(JVM_OPTIONS_PARAMETER_STRING, maxMemory, minMemory, maxDirectMemory);
+		}
+	}
+
+	/**
+	 *
+	 * @param jvmOptionParametersConfig - Object with JVM option parameters loaded from the experiment JSON file
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
+	 * 	  EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 	 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 */
+	public static String buildParameterString(JvmOptionParametersConfig jvmOptionParametersConfig) {
+		if(jvmOptionParametersConfig == null) { return JVM_OPTIONS_DEFAULT; }
+		int maxMemory = jvmOptionParametersConfig.getMaxMemory();
+		int minMemory = jvmOptionParametersConfig.getMinMemory();
+		int maxDirectMemory = jvmOptionParametersConfig.getMaxDirectMemory();
+		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+			return JVM_OPTIONS_DEFAULT;
+		}
+		else {
+			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
+		}
+	}
 }
