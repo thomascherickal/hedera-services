@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -17,12 +17,14 @@
 
 package com.swirlds.regression.validators;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.util.List;
 
+import static com.swirlds.regression.validators.RestartValidatorTest.loadNodeData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReconnectValidatorTest {
@@ -45,6 +47,21 @@ class ReconnectValidatorTest {
 			System.out.println("ERROR: " + msg);
 		}
 		assertEquals(true, validator.isValid());
+	}
+
+	@Test
+	public void csvValidatorForNodeKillReconnect() throws IOException {
+		List<NodeData> nodeData = loadNodeData("logs/results");
+		NodeValidator validator = new ReconnectValidator(nodeData);
+		validator.validate();
+		for (String msg : validator.getInfoMessages()) {
+			System.out.println(msg);
+		}
+		for (String msg : validator.getErrorMessages()) {
+			System.out.println(msg);
+		}
+		assertEquals(true, validator.isValid());
+		assertEquals(0, validator.getErrorMessages().size());
 	}
 
 }
