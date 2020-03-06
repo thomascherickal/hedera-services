@@ -236,7 +236,7 @@ public class ReconnectValidator extends NodeValidator {
 
 	private boolean isWarning(LogEntry e)
 	{
-		return e.getMarker() == LogMarkerInfo.INTAKE_EVENT_DISCARD
+		return e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT
 				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
 				|| e.getLogEntry().contains(INVALID_PARENT)
 				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
