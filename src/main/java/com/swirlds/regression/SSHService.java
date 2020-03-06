@@ -165,19 +165,39 @@ public class SSHService {
 
 	Collection<String> getListOfFiles(ArrayList<String> extension) {
 		Collection<String> returnCollection = new ArrayList<>();
+		int extensionCount = 0;
+		int dataExtensionCount = 0;
 		String extensions = "\\( ";
+		String dataExtensions = "";
 		for (int i = 0; i < extension.size(); i++) {
-			if (i > 0) {
-				extensions += " -o ";
+			if (!extension.get(i).contains("data/")) {
+				if (extensionCount++ > 0) {
+					extensions += " -o ";
+				}
+				extensions += "-name \"" + extension.get(i) + "\"";
 			}
-			extensions += "-name \"" + extension.get(i) + "\"";
+			else {
+				dataExtensionCount++;
+				dataExtensions += "-e \"" + extension.get(i) + "\" ";
+			}
 		}
 		extensions += " \\) ";
-		String pruneDirectory = "-not -path \"*/data/*\"";
-		String commandStr = "find . " + extensions + pruneDirectory;
-		final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
-		log.info(MARKER, "Extensions to look for on node {}: ", ipAddress, extensions);
-		returnCollection = readCommandOutput(cmd);
+
+		if (extensionCount > 0) {
+			String commandStr = "find . " + extensions;
+			String pruneDirectory = "-not -path \"*/data/*\"";
+			commandStr += pruneDirectory;
+			final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
+			returnCollection.addAll(readCommandOutput(cmd));
+		}
+
+		if (dataExtensionCount > 0) {
+			String dataCommandStr = "find . | grep " + dataExtensions;
+			final Session.Command dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1);
+			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
+			returnCollection.addAll(readCommandOutput(dataCmd));
+		}
 
 		return returnCollection;
 	}
@@ -209,47 +229,61 @@ public class SSHService {
 			log.info(MARKER, "top level folder: {}", topLevelFolders);
 			Collection<String> foundFiles = getListOfFiles(
 					RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
-			log.info(MARKER, "total files found:{}", foundFiles.size());
-			for (String file : foundFiles) {
-				String currentLine = file;
-				/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
-				. */
-				String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-				int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
-
-				log.info(MARKER,
-						String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
-										"'%s'.",
-								cutOff, currentLine, cutOffString));
-
-				if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
-					currentLine = currentLine.substring(cutOff);
-				} else {
-					log.error(MARKER,
-							String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
-											"'%s'.",
-									cutOff, currentLine, cutOffString));
-				}
-
-				currentLine = topLevelFolders + currentLine;
-
-				File fileToSplit = new File(currentLine);
-				if (!fileToSplit.exists()) {
-
-					/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
-					of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
-					and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
-					.jar
-					 */
-					fileToSplit.getParentFile().mkdirs();
-
-				}
-				log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
-						fileToSplit.getPath());
-				ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
-			}
+			scpFilesFromList(topLevelFolders, foundFiles);
 		} catch (IOException | StringIndexOutOfBoundsException e) {
 			log.error(ERROR, "Could not download files", e);
+		}
+	}
+
+	void scpFromListOnly(String topLevelFolders, ArrayList<String> patternsToMatch) {
+		try {
+			log.info(MARKER, "top level folder: {}", topLevelFolders);
+			Collection<String> foundFiles = getListOfFiles(patternsToMatch);
+			scpFilesFromList(topLevelFolders, foundFiles);
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files", e);
+		}
+	}
+
+	private void scpFilesFromList(String topLevelFolders, Collection<String> foundFiles) throws IOException {
+		log.info(MARKER, "total files found:{}", foundFiles.size());
+		for (String file : foundFiles) {
+			String currentLine = file;
+			/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
+			. */
+			String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+			int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+
+			log.info(MARKER,
+					String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+									"'%s'.",
+							cutOff, currentLine, cutOffString));
+
+			if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
+				currentLine = currentLine.substring(cutOff);
+			} else {
+				log.error(MARKER,
+						String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
+										"'%s'.",
+								cutOff, currentLine, cutOffString));
+			}
+
+			currentLine = topLevelFolders + currentLine;
+
+			File fileToSplit = new File(currentLine);
+			if (!fileToSplit.exists()) {
+
+				/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
+				of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
+				and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
+				.jar
+				 */
+				fileToSplit.getParentFile().mkdirs();
+
+			}
+			log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
+					fileToSplit.getPath());
+			ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
 		}
 	}
 

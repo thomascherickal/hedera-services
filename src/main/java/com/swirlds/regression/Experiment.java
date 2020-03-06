@@ -542,7 +542,7 @@ public class Experiment {
                         regConfig.getTotalNumberOfNodes(),
                         nodeData.size()));
             }
-            requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
+			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig, getExperimentFolder()));
         }
 
         // Add stream server validator if event streaming is configured
@@ -774,6 +774,18 @@ public class Experiment {
             node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
             log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
         }
+
+        if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
+            ArrayList<String> blobStateScpList = new ArrayList<>();
+            blobStateScpList.add("data/saved$");
+
+            //BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
+            for (int i = 0; i < sshNodes.size(); i++) {
+                SSHService node = sshNodes.get(i);
+                node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
+            }
+        }
+
         for (int i = 0; i < sshNodes.size(); i++) {
             SSHService node = sshNodes.get(i);
             node.scpFrom(getExperimentResultsFolderForNode(i), (ArrayList<String>) testConfig.getResultFiles());
