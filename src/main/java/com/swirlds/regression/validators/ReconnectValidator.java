@@ -34,10 +34,6 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEP
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
-import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
-import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
-import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class ReconnectValidator extends NodeValidator {
 
@@ -130,9 +126,7 @@ public class ReconnectValidator extends NodeValidator {
 					socketExceptions++;
 				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
 					invalidEvent++;
-				} else if (isWarning(e)) {
-					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
-				} else {
+				} else if (!isAcceptable(e)) {
 					unexpectedErrors++;
 					isValid = false;
 					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
@@ -234,12 +228,8 @@ public class ReconnectValidator extends NodeValidator {
 		return isValidated && isValid;
 	}
 
-	private boolean isWarning(LogEntry e)
+	private boolean isAcceptable(LogEntry e)
 	{
-		return e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT
-				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
-				|| e.getLogEntry().contains(INVALID_PARENT)
-				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
-				|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG);
+		return e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT;
 	}
 }
