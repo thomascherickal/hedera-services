@@ -995,7 +995,7 @@ public class Experiment {
         } else {
             javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
         }
-        if (regConfig.getJvmOptions().isEmpty()) {
+        if (!regConfig.getJvmOptions().isEmpty()) {
             javaOptions = regConfig.getJvmOptions();
         }
         return javaOptions;
