@@ -20,7 +20,7 @@ package com.swirlds.regression.csv;
 import java.util.function.Supplier;
 
 public class CsvParserV1 implements CsvParser {
-	static int emptyLineCounter = 0;
+	private int emptyLineCounter = 0;
 
 	public CsvStat[] getColumns(Supplier<String> lineSupplier) {
 		CsvStat columns[] = null;
