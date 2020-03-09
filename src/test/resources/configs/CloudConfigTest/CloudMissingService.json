@@ -1,6 +1,5 @@
 {
   "securityGroup":"SwirldsSecGroup",
-  "securityGroupID":"sg-7214c20b",
   "instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V9",
   "instanceType": "T2Micro",
   "instanceKey": "regression-key",
