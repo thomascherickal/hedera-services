@@ -137,7 +137,6 @@ public class CloudConfigTest {
 			"configs/CloudConfigTest/CloudMissingLogin.json",
 			"configs/CloudConfigTest/CloudMissingRegionList.json",
 			"configs/CloudConfigTest/CloudMissingSecurityGroup.json",
-			"configs/CloudConfigTest/CloudMissingSecurityGroupID.json",
 			"configs/CloudConfigTest/CloudMissingService.json"
 	})
 	@DisplayName("Test Malformed config json file parsing")
