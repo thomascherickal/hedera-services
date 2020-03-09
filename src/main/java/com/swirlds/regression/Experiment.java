@@ -745,57 +745,85 @@ public class Experiment {
 
 		setIPsAndStakesInConfig();
 		setupSSHServices();
-		SSHService firstNode = null;
 		int nodeNumber = sshNodes.size();
-		for (int i = 0; i < nodeNumber; i++) {
-            SSHService currentNode = sshNodes.get(i);;
+		ArrayList<File> addedFiles = buildAdditionalFileList();
 
-			ArrayList<File> addedFiles = buildAdditionalFileList();
-			//currentNode.buildSession();
+		//Step 1, send tar to node 0
+		List<Runnable> tasks = new ArrayList<>();
+		final SSHService firstNode = sshNodes.get(0);
+		calculateNodeMemoryProfile(firstNode);
+		sendTarToNode(firstNode, addedFiles);
 
-			if (firstNode == null) {
-				firstNode = currentNode;
-				calculateNodeMemoryProfile(currentNode);
-				sendTarToNode(currentNode, addedFiles);
-			} else {
-				firstNode.rsyncTo(addedFiles, currentNode.getIpAddress(), new File(testConfig.getLog4j2File()));
-			}
-
-			// copy a saved state if set in config
-			SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
-			if (savedState != null) {
-				double thisSavedStateRoundNum = savedState.getRound();
-				if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
-					savedStateStartRoundNumber = thisSavedStateRoundNum;
+		//Step 2, node 0 use rsync to send files to other nodes in parallel mode
+		for (int nodeID = 0; nodeID < nodeNumber; nodeID++) {
+			final int i = nodeID;
+			SSHService currentNode = sshNodes.get(i);
+			final SSHService firstNodeFinal = firstNode;
+			Runnable runnable = () -> {
+				if (i != 0) { //if not first node, sync files from first node to this node
+					firstNodeFinal.rsyncTo(addedFiles, currentNode.getIpAddress(),
+							new File(testConfig.getLog4j2File()));
 				}
 
-				String ssPath = RegressionUtilities.getRemoteSavedStatePath(
-						savedState.getMainClass(),
-						i,
-						savedState.getSwirldName(),
-						savedState.getRound()
-				);
-				FileLocationType locationType = savedState.getLocationType();
-				switch (locationType) {
-					case AWS_S3:
-						log.info(MARKER, "Downloading saved state for S3 to node {}", i);
-						currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
-						// list files in destination directory for validation
-						currentNode.listDirFiles(ssPath);
-						break;
-					case LOCAL:
-						log.info(MARKER, "Uploading local saved state to node {}", i);
-						currentNode.scpFilesToRemoteDir(
-								RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
-								ssPath
-						);
-						break;
-				}
-				if (savedState.isRestoreDb()) {
-					currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
-				}
-			}
+			};
+			tasks.add(runnable);
 		}
+		// on linux default has smaller outgoing ssh session limit
+		threadPoolService(tasks, 4);
+		tasks.clear();
+		log.info(MARKER, "upload to nodes has finished");
+
+		//Step 3, copy saved state to nodes if necessary
+		for (int nodeID = 0; nodeID < nodeNumber; nodeID++) {
+			final int i = nodeID;
+			SSHService currentNode = sshNodes.get(i);
+			Runnable runnable = () -> {
+				// copy a saved state if set in config
+				SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
+				if (savedState != null) {
+					double thisSavedStateRoundNum = savedState.getRound();
+					if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
+						savedStateStartRoundNumber = thisSavedStateRoundNum;
+					}
+
+					String ssPath = RegressionUtilities.getRemoteSavedStatePath(
+							savedState.getMainClass(),
+							i,
+							savedState.getSwirldName(),
+							savedState.getRound()
+					);
+					FileLocationType locationType = savedState.getLocationType();
+					switch (locationType) {
+						case AWS_S3:
+							log.info(MARKER, "Downloading saved state for S3 to node {}", i);
+							currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
+							// list files in destination directory for validation
+							currentNode.listDirFiles(ssPath);
+							break;
+						case LOCAL:
+							log.info(MARKER, "Uploading local saved state to node {}", i);
+							try {
+								currentNode.scpFilesToRemoteDir(
+										RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
+										ssPath
+								);
+							} catch (IOException e) {
+								log.error(ERROR, "Fail to scp saved state from local ", e);
+							}
+							break;
+					}
+					if (savedState.isRestoreDb()) {
+						currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
+					}
+				}
+			};
+			tasks.add(runnable);
+		}
+		threadPoolService(tasks, tasks.size());
+		if (tasks.size() > 0) {
+			log.info(MARKER, "Copy saved state has finished");
+		}
+
 		log.info(MARKER, "upload to nodes has finished");
 
 		log.info(MARKER, "Sleeping for {} seconds to allow PostGres to start", POSTGRES_WAIT_MILLIS / MILLIS);
