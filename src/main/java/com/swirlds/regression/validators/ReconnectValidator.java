@@ -224,7 +224,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param e
 	 * @return
 	 */
-	private boolean isAcceptable(final LogEntry e, final int nodeId) {
+	boolean isAcceptable(final LogEntry e, final int nodeId) {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
 			return true;
 		}
@@ -244,7 +244,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param nodeId
 	 * @return
 	 */
-	private boolean nodeLogIsNull(final LogReader nodeLog, final int nodeId) {
+	boolean nodeLogIsNull(final LogReader nodeLog, final int nodeId) {
 		if (nodeLog == null) {
 			addError("could not load log, exiting validation for node " + nodeId);
 			return true;
@@ -259,7 +259,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param nodeId
 	 * @return
 	 */
-	private boolean nodeCsvIsNull(final CsvReader nodeCsv, final int nodeId) {
+	boolean nodeCsvIsNull(final CsvReader nodeCsv, final int nodeId) {
 		if (nodeCsv == null) {
 			addError("could not load csv, exiting validation for node " + nodeId);
 			return true;
@@ -274,7 +274,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param nodeId
 	 * @return
 	 */
-	private boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
+	boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
 		int socketExceptions = 0;
 		int unexpectedErrors = 0;
 		for (LogEntry e : nodeLog.getExceptions()) {

@@ -26,6 +26,8 @@ import java.util.List;
 
 import static com.swirlds.regression.validators.RestartValidatorTest.loadNodeData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReconnectValidatorTest {
 
@@ -62,6 +64,40 @@ class ReconnectValidatorTest {
 		}
 		assertEquals(true, validator.isValid());
 		assertEquals(0, validator.getErrorMessages().size());
+	}
+
+	/**
+	 * node0 and node3 miss swirlds.log file
+	 */
+	@Test
+	public void nodeLogIsNullTest() {
+		List<NodeData> nodeData = loadNodeData("logs/PTD-MissLog03");
+		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		assertFalse(validator.nodeLogIsNull(nodeData.get(1).getLogReader(), 1));
+		assertFalse(validator.nodeLogIsNull(nodeData.get(2).getLogReader(), 2));
+
+		assertTrue(validator.nodeLogIsNull(nodeData.get(0).getLogReader(), 0));
+		assertTrue(validator.nodeLogIsNull(nodeData.get(3).getLogReader(), 3));
+
+		assertEquals(false, validator.isValid());
+		assertEquals(2, validator.getErrorMessages().size());
+	}
+
+	/**
+	 * node0 and node2 miss csv file
+	 */
+	@Test
+	public void nodeCsvIsNullTest() {
+		List<NodeData> nodeData = loadNodeData("logs/PTD-MissCsv02");
+		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		assertFalse(validator.nodeCsvIsNull(nodeData.get(1).getCsvReader(), 1));
+		assertFalse(validator.nodeCsvIsNull(nodeData.get(3).getCsvReader(), 3));
+
+		assertTrue(validator.nodeCsvIsNull(nodeData.get(0).getCsvReader(), 0));
+		assertTrue(validator.nodeCsvIsNull(nodeData.get(2).getCsvReader(), 2));
+
+		assertEquals(false, validator.isValid());
+		assertEquals(2, validator.getErrorMessages().size());
 	}
 
 }
