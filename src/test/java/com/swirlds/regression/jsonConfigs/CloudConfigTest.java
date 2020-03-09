@@ -47,7 +47,6 @@ public class CloudConfigTest {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 		objectMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES,false);
-		//objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
 
 		CloudConfig regCofig = objectMapper.readValue(jsonData, CloudConfig.class);
 
