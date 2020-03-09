@@ -232,7 +232,8 @@ public class ReconnectValidator extends NodeValidator {
 		// only when current node is the reconnect node, and it was killed before reconnect,
 		// exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE are acceptable
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE) {
-			return nodeId == nodeData.size() - 1 && killNetworkReconnect;
+			return nodeId == nodeData.size() - 1 	// lastNode
+					&& !killNetworkReconnect;		// node was killed
 		}
 		return false;
 	}
