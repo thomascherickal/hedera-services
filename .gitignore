@@ -55,6 +55,7 @@ Icon\r
 *.log
 *.pfx
 *.hprof
+*.ppk
 
 # Maven Files
 target/
@@ -141,6 +142,7 @@ regression.jar
 regression/lib
 results
 remoteExperiment.tar.gz
+multipage_pdf.pdf
 
 # GitKeep
 .gitkeep

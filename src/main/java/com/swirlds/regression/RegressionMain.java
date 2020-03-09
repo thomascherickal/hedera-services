@@ -180,7 +180,7 @@ public class RegressionMain {
 	void runExperiments(CloudService cloud) {
 		ZonedDateTime regressionTestStart = ZonedDateTime.now(ZoneOffset.ofHours(0));
 		SlackSummaryMsg summary = new SlackSummaryMsg(regConfig.getSlack(), regConfig, git,
-				RegressionUtilities.getExperimentTimeFormatedString(regressionTestStart));
+				RegressionUtilities.getExperimentTimeFormattedString(regressionTestStart));
 		Experiment currentTest = null;
 		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
 				regConfig.getSlack().getChannel());

@@ -30,6 +30,7 @@ public class RegressionConfig {
 	private LocalConfig local = null;
 	private List<String> experiments;
 	private SlackConfig slack;
+	private JvmOptionParametersConfig jvmOptionParametersConfig = null;
 
 	private String name;
 	private int eventFilesWriters = 0;
@@ -160,5 +161,13 @@ public class RegressionConfig {
 
 	public void setJvmOptions(String jvmOptions) {
 		this.jvmOptions = jvmOptions;
+	}
+
+	public JvmOptionParametersConfig getJvmOptionParametersConfig() {
+		return jvmOptionParametersConfig;
+	}
+
+	public void setJvmOptionParametersConfig(JvmOptionParametersConfig jvmOptionParametersConfig) {
+		this.jvmOptionParametersConfig = jvmOptionParametersConfig;
 	}
 }

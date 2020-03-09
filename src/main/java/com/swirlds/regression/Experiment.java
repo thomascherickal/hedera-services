@@ -53,7 +53,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +66,6 @@ import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
-import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_DEFAULT;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
@@ -116,6 +114,7 @@ public class Experiment {
     private boolean isFirstTestFinished = false;
     private CloudService cloud = null;
     private ArrayList<SSHService> sshNodes = new ArrayList<>();
+    private NodeMemory nodeMemoryProfile;
 
     // Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
     // At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
@@ -200,7 +199,7 @@ public class Experiment {
 
     public void startAllSwirlds() {
         for (SSHService node : sshNodes) {
-            node.execWithProcessID(regConfig.getJvmOptions());
+            node.execWithProcessID(getJVMOptionsString());
             log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
         }
     }
@@ -225,7 +224,7 @@ public class Experiment {
         if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
             nodeToReconnect.reviveNetwork();
         } else {
-            nodeToReconnect.execWithProcessID(regConfig.getJvmOptions());
+            nodeToReconnect.execWithProcessID(getJVMOptionsString());
         }
     }
 
@@ -428,7 +427,7 @@ public class Experiment {
      * Generate a unique code that can be used to search for this test in slack.
      */
     public String getUniqueId() {
-        Integer hash = (RegressionUtilities.getExperimentTimeFormatedString(getExperimentTime()) + "-" +
+        Integer hash = (RegressionUtilities.getExperimentTimeFormattedString(getExperimentTime()) + "-" +
                 getName()).hashCode();
         if (hash < 0) {
             hash *= -1;
@@ -664,24 +663,14 @@ public class Experiment {
         slacker.uploadFile(msg, fileLocation, testConfig.getName());
     }
 
-    void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
-        //TODO: unit test for null cld
-        if (cld == null) {
-            log.error(ERROR, "Cloud instance was null, cannot run test!");
-            sendSlackMessage("Cloud instance was null, cannot start test!");
-            return;
-        }
-        this.cloud = cld;
-        this.git = git;
-        this.cloud.setInstanceNames(testConfig.getName());
-        exportIPAddressFiles();
-
-        setIPsAndStakesInConfig();
-
+    /**
+     * Confirms that all nodes can be connected to, and that sets them up and prepares them for the experiment.
+     * @throws IOException - SocketException (child of IOException) is thrown if unable to connect to node.
+     */
+    void setupSSHServices() throws IOException {
         String login = regConfig.getCloud().getLogin();
         File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
         //TODO multi-thread this perhaps?
-        SSHService firstNode = null;
         ArrayList<String> publicIPList = cloud.getPublicIPList();
         int nodeNumber = publicIPList.size();
         for (int i = 0; i < nodeNumber; i++) {
@@ -695,17 +684,42 @@ public class Experiment {
                 throw new SocketException("Node: " + pubIP + " returned as null on initialization.");
             }
             currentNode.reset();
+            cloud.memoryNeedsForAllNodes = new NodeMemory(currentNode.checkTotalMemoryOnNode());
+            currentNode.adjustNodeMemoryAllocations(cloud.memoryNeedsForAllNodes);
+
+            sshNodes.add(currentNode);
+        }
+    }
+
+    void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
+        //TODO: unit test for null cld
+        if (cld == null) {
+            log.error(ERROR, "Cloud instance was null, cannot run test!");
+            sendSlackMessage("Cloud instance was null, cannot start test!");
+            return;
+        }
+        this.cloud = cld;
+        this.git = git;
+        this.cloud.setInstanceNames(testConfig.getName());
+        exportIPAddressFiles();
+
+        setIPsAndStakesInConfig();
+        setupSSHServices();
+        SSHService firstNode = null;
+        int nodeNumber = sshNodes.size();
+        for (int i = 0; i < nodeNumber; i++) {
+            SSHService currentNode = sshNodes.get(i);;
 
             ArrayList<File> addedFiles = buildAdditionalFileList();
             //currentNode.buildSession();
 
             if (firstNode == null) {
                 firstNode = currentNode;
+                calculateNodeMemoryProfile(currentNode);
                 sendTarToNode(currentNode, addedFiles);
             } else {
                 firstNode.rsyncTo(addedFiles, currentNode.getIpAddress(), new File(testConfig.getLog4j2File()));
             }
-            sshNodes.add(currentNode);
 
             // copy a saved state if set in config
             SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
@@ -791,12 +805,21 @@ public class Experiment {
         killJavaProcess();
     }
 
+    /**
+     * Calls the node to get total memory, and then sets nodeMemoryProfile to that amount.
+     * This assumes all nodes are the same type of instance.
+     * @param currentNode - the node to be profiled
+     */
+    private void calculateNodeMemoryProfile(SSHService currentNode) {
+        String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
+        nodeMemoryProfile = new NodeMemory(totalNodeMemory);
+    }
+
     void resetNodes() {
         for (final SSHService node : sshNodes) {
             node.reset();
             node.close();
         }
-
         sshNodes.clear();
     }
 
@@ -932,10 +955,7 @@ public class Experiment {
         String javaBin = javaHome +
                 File.separator + "bin" +
                 File.separator + "java";
-        String javaOptions = JVM_OPTIONS_DEFAULT;
-        if (!"".equals(regConfig.getJvmOptions())) {
-            javaOptions = regConfig.getJvmOptions();
-        }
+        String javaOptions = getJVMOptionsString();
 
         ProcessBuilder builder = new ProcessBuilder(
                 javaBin, javaOptions, "-jar", "swirlds.jar");
@@ -957,7 +977,30 @@ public class Experiment {
         }
         isFirstTestFinished = true;
         return process.exitValue();
+    }
 
+    /**
+     * Creates a strong to be used for JVM options when starting an experiment on each node.
+     * If the regression config has a specific JVMOption parameter set it will be used. If not then build the string
+     * based on the memory of the instance used.
+     * if jvm options were set specifically in the regression config those will overwrite the standard defaults
+     *
+     * @return string containing JVM options
+     */
+    private String getJVMOptionsString() {
+        String javaOptions;
+        /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
+        If a jvm options string was given in the regression config use that instead.
+         */
+        if(regConfig.getJvmOptionParametersConfig() != null){
+            javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
+        } else {
+            javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
+        }
+        if (!regConfig.getJvmOptions().isEmpty()) {
+            javaOptions = regConfig.getJvmOptions();
+        }
+        return javaOptions;
     }
 
     void scpFrom(int node, ArrayList<String> downloadExtensions) {
@@ -1022,6 +1065,7 @@ public class Experiment {
 	}
 
 	void setupTest(TestConfig experiment) {
+
 		this.testConfig = experiment;
 
 		setExperimentTime();

@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.amazonaws.services.costexplorer.model.EC2InstanceDetails;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
@@ -46,6 +47,7 @@ class CloudService {
     RunInstancesRequest runInstanceRequest;
     ArrayList<Instance> instances;
     ArrayList<AWSNode> ec2List;
+    NodeMemory memoryNeedsForAllNodes;
 
     boolean instancesRunning = false;
 
@@ -399,8 +401,9 @@ class CloudService {
                     image.getImageId(), image.getImageLocation(), image.getName());
         }
         return images.get(0).getImageId();
-
     }
+
+
 
 
     /**
@@ -451,4 +454,5 @@ class CloudService {
 
         return instResult.getReservations();
     }
+
 }
