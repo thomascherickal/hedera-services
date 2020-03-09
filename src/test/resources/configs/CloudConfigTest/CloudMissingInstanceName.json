@@ -1,7 +1,6 @@
 {
   "service":"aws",
   "securityGroup":"SwirldsSecGroup",
-  "securityGroupID":"sg-7214c20b",
   "instanceType": "T2Micro",
   "instanceKey": "regression-key",
   "keyLocation":"./testing/my-key",
