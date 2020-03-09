@@ -47,7 +47,6 @@ public class CloudConfigTest {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 		objectMapper.configure(JsonParser.Feature.ALLOW_MISSING_VALUES,false);
-		//objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
 
 		CloudConfig regCofig = objectMapper.readValue(jsonData, CloudConfig.class);
 
@@ -74,7 +73,6 @@ public class CloudConfigTest {
 		assertNotNull(cloud.getInstanceType());
 		assertNotNull(cloud.getLogin());
 		assertNotNull(cloud.getSecurityGroup());
-		assertNotNull(cloud.getSecurityGroupID());
 		assertNotNull(cloud.getService());
 
 		assertNotEquals("", cloud.getKeyLocation());
@@ -83,7 +81,6 @@ public class CloudConfigTest {
 		assertNotEquals("", cloud.getInstanceType());
 		assertNotEquals("", cloud.getLogin());
 		assertNotEquals("", cloud.getSecurityGroup());
-		assertNotEquals("", cloud.getSecurityGroupID());
 		assertNotEquals("", cloud.getService());
 	}
 
@@ -106,12 +103,10 @@ public class CloudConfigTest {
 		assertNotNull(cloud.getInstanceType());
 		assertNotNull(cloud.getLogin());
 		assertNotNull(cloud.getSecurityGroup());
-		assertNotNull(cloud.getSecurityGroupID());
 		assertNotNull(cloud.getService());
 
 		assertEquals("aws", cloud.getService());
 		assertEquals("SwirldsSecGroup", cloud.getSecurityGroup());
-		assertEquals("sg-7214c20b", cloud.getSecurityGroupID());
 		assertEquals("ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V9", cloud.getInstanceName());
 		assertEquals("T2Micro",cloud.getInstanceType());
 		assertEquals("regression-key", cloud.getInstanceKey());
