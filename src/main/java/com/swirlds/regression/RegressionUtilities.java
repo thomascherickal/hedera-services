@@ -107,6 +107,7 @@ public class RegressionUtilities {
 	public static final long POSTGRES_WAIT_MILLIS = 30000;
 	public static final int MILLIS = 1000;
 	public static final int MS_TO_NS = 1000_000;
+	public static final int WAIT_NODES_READY_TIMES = 50;
 
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
@@ -132,7 +133,7 @@ public class RegressionUtilities {
     public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
 
     // caused by InterruptedException | ExecutionException
-    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
+    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";
 
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
