@@ -37,6 +37,7 @@ class ReconnectValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
+			"logs/reconnectFCM/2_killNode",
 			"logs/reconnectFCM/3_disable_enable_network"
 	})
 	void validateReconnectLogs(String testDir) throws IOException {
