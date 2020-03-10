@@ -37,13 +37,11 @@ class ReconnectValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/reconnectFCM/1_restart_no_state_on_disk",
-			"logs/reconnectFCM/2_restart_with_state_on_disk",
 			"logs/reconnectFCM/3_disable_enable_network"
 	})
 	void validateReconnectLogs(String testDir) throws IOException {
 		System.out.println("Dir: " + testDir);
-		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "ReconnectStats", 1);
+		List<NodeData> nodeData = loadNodeData(testDir);
 		NodeValidator validator = new ReconnectValidator(nodeData);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {

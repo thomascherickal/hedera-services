@@ -156,13 +156,9 @@ public class ReconnectValidator extends NodeValidator {
 			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
-			} else {
-				if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
-					addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
-					continue; // try to find next START_RECONNECT
-				} else if (start.isException()) {
-
-				}
+			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
+				addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
+				continue; // try to find next START_RECONNECT
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
@@ -207,7 +203,7 @@ public class ReconnectValidator extends NodeValidator {
 						reconnectNodeId, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
-
+		// check last node's exceptions
 		isValidated = checkExceptions(nodeLog, reconnectNodeId);
 	}
 
@@ -232,8 +228,8 @@ public class ReconnectValidator extends NodeValidator {
 		// only when current node is the reconnect node, and it was killed before reconnect,
 		// exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE are acceptable
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE) {
-			return nodeId == nodeData.size() - 1 	// lastNode
-					&& !killNetworkReconnect;		// node was killed
+			return nodeId == nodeData.size() - 1    // lastNode
+					&& !killNetworkReconnect;        // node was killed
 		}
 		return false;
 	}

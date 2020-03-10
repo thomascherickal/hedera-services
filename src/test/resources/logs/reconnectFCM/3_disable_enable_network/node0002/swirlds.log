@@ -1,45 +1,92 @@
-2019-03-14 15:49:50.666 STARTUP    636 main Browser main() started
-2019-03-14 15:49:50.683 STARTUP    653 main About to run startPlatforms()
-2019-03-14 15:49:50.688 STARTUP    658 main About do crypto instantiation
-2019-03-14 15:49:50.693 STARTUP    663 main About start loading keys
-2019-03-14 15:49:51.598 STARTUP   1568 main Done loading keys
-2019-03-14 15:49:51.598 STARTUP   1568 main About to start creating Crypto objects
-2019-03-14 15:49:52.413 STARTUP   2383 main Done creating Crypto objects
-2019-03-14 15:49:52.413 STARTUP   2383 main Done with crypto instantiation
-2019-03-14 15:49:52.415 STARTUP   2385 main Starting platforms
-2019-03-14 15:49:52.608 STARTUP   2578 main Done with starting platforms
-2019-03-14 15:49:52.626 STARTUP   2596 <     platformRun  2  2> Initializing FCMapStatsDemoMain
-2019-03-14 15:49:52.640 STARTUP   2610 main Browser main() finished
-2019-03-14 15:49:53.507 STARTUP   3477 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory initializing
-2019-03-14 15:49:53.520 STARTUP   3490 <       stateHash  2   > Adv Crypto Subsystem: No supported GPU acceleration device found
-2019-03-14 15:49:53.593 STARTUP   3563 <       stateHash  2   > Adv Crypto Subsystem: CpuCryptoEngine initialized
-2019-03-14 15:49:53.593 STARTUP   3563 <       stateHash  2   > Adv Crypto Subsystem: CryptoFactory startup complete
-2019-03-14 15:50:55.033 SOCKET_EXCEPTIONS  65003 <    syncListener  2  3> 2 didn't receive anything from 3 for 5006 ms. Disconnecting...
-2019-03-14 15:50:55.170 SOCKET_EXCEPTIONS  65140 <      syncCaller  2  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+2020-03-09 22:43:30.375 STARTUP 1 main Browser main() started
+2020-03-09 22:43:31.101 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-03-09 22:43:31.368 STARTUP 1 main About to run startPlatforms()
+2020-03-09 22:43:31.377 STARTUP 1 main About do crypto instantiation
+2020-03-09 22:43:31.454 STARTUP 1 main About start loading keys
+2020-03-09 22:43:33.153 STARTUP 1 main Done loading keys
+2020-03-09 22:43:33.153 STARTUP 1 main About to start creating Crypto objects
+2020-03-09 22:43:34.010 STARTUP 1 main Done creating Crypto objects
+2020-03-09 22:43:34.010 STARTUP 1 main Done with crypto instantiation
+2020-03-09 22:43:34.016 STARTUP 1 main Starting platforms
+2020-03-09 22:43:34.465 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-09 22:43:34.466 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-09 22:43:35.402 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-09 22:43:35.402 STARTUP 1 main Done with starting platforms
+2020-03-09 22:43:35.603 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UseZGC
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -XX:ConcGCThreads=14
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UseLargePages
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -Xmx98g
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -Xms10g
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-09 22:43:35.604 STARTUP 39 <     platformRun  2   > Parsing JSON FCMReconnectFCQ.json
+2020-03-09 22:43:35.687 DEMO_INFO 39 <     platformRun  2   >  insertSeq         = true
+2020-03-09 22:43:35.687 DEMO_INFO 39 <     platformRun  2   >  appendSig         = true
+2020-03-09 22:43:35.688 DEMO_INFO 39 <     platformRun  2   >  variedSize        = false
+2020-03-09 22:43:35.688 DEMO_INFO 39 <     platformRun  2   >  payloadByteSize   = 100
+2020-03-09 22:43:35.688 DEMO_INFO 39 <     platformRun  2   >  maxByteSize       = 100
+2020-03-09 22:43:35.688 DEMO_INFO 39 <     platformRun  2   >  type              = TYPE_RANDOM_BYTES
+2020-03-09 22:43:35.688 DEMO_INFO 39 <     platformRun  2   > Size distribution  = [100]
+2020-03-09 22:43:35.689 DEMO_INFO 39 <     platformRun  2   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-09 22:43:35.689 DEMO_INFO 39 <     platformRun  2   > Ratio distribution = [100.0]
+2020-03-09 22:43:35.694 DEMO_INFO 39 <     platformRun  2   > Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2020-03-09 22:43:35.696 STARTUP 39 <     platformRun  2   > PlatformTestingDemo: Public Key -> hex('0x3EFA5C4BA850EEDBD9DAFC825FB737EBBC334836A3FFB24049C3C8467B189BDC')
+2020-03-09 22:43:35.700 DEMO_INFO 39 <     platformRun  2   > This test will generate sequential FCM payload:
+2020-03-09 22:43:35.700 DEMO_INFO 39 <     platformRun  2   > Set data account counter as 0
+2020-03-09 22:43:35.700 DEMO_INFO 39 <     platformRun  2   > Set FCQ account counter as 0
+2020-03-09 22:43:35.700 DEMO_INFO 39 <     platformRun  2   > Set Blob account counter as 0
+2020-03-09 22:43:35.743 DEMO_INFO 51 <      appMainRun  2   > Node 2 starts transactions ........
+2020-03-09 22:43:35.754 STARTUP 1 main Browser main() finished
+2020-03-09 22:43:35.796 STARTUP 51 <      appMainRun  2   > PlatformTestingDemo: Signed Message { publicKey = '0x3EFA5C4BA850EEDBD9DAFC825FB737EBBC334836A3FFB24049C3C8467B189BDC', privateKey ='0xC2D9AD4A4FB84CA47527A81F5AFFAB97C8906BF942D1BF8CF4DE210A69BFE8243EFA5C4BA850EEDBD9DAFC825FB737EBBC334836A3FFB24049C3C8467B189BDC', signature = '0xFC50FBE0F64A34AA4194564C7B1888C661789FCF6C44507334BB2DE6EAA405003906ADB8FE140BA215114E4CD3A6C60D16DD4F080793B9822CE83BF09A402D0F', message = '0x1A739A01700802100220A08D063264D8AFC76671532EA6E011F26A4548B6219B31A2DF96CC0CECF5CB5B06A54DCF1FDBA5FC1346996C120692B3CADA5347396B5877395B26F0F3F142A2C36215AB3426D2E9084860C2B60A0E93F2DC7FD7A5235A7B0D396E0AB277794CB8CADD400D27D6255E3801' }
+2020-03-09 22:43:35.996 PLATFORM_STATUS 68 sync_server_1 Platform status changed to: STARTING_UP
+2020-03-09 22:43:35.997 STARTUP 68 sync_server_1 Platform Status Change STARTING_UP 
+2020-03-09 22:43:36.132 PLATFORM_STATUS 36 < pollIntakeQueue  2   > Platform status changed to: ACTIVE
+2020-03-09 22:43:36.133 STARTUP 36 < pollIntakeQueue  2   > Platform Status Change ACTIVE 
+2020-03-09 22:46:00.415 SOCKET_EXCEPTIONS 66 <    syncListener  2  3> 2 didn't receive anything from 3 for 5007 ms. Disconnecting...
+2020-03-09 22:46:00.457 SOCKET_EXCEPTIONS 70 <    syncCaller-0  2   > SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
 java.net.SocketTimeoutException: Read timed out
 	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
-	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
-	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
-	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:115) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:168) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:140) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:448) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:68) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1132) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:828) ~[?:?]
 	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
 	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
 	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
-	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
-	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
 	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-	at java.lang.Thread.run(Thread.java:844) [?:?]
-2019-03-14 15:51:50.742 SOCKET_EXCEPTIONS 120712 sync_server_3 2 got new connection from 3, disconnecting old one
-2019-03-14 15:51:50.838 INVALID_EVENT_ERROR 120808 <tp caller events  2  3> 2 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
-2019-03-14 15:51:50.848 RECONNECT 120818 <      syncCaller  2  1> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
- selfCounts: [<node0: 8021>, <node1: 8049>, <node2: 8024>, <node3: 3838>] 
- otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
-2019-03-14 15:52:07.541 RECONNECT 137511 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8866. 
- selfCounts: [<node0: 9126>, <node1: 9105>, <node2: 9119>, <node3: 3838>] 
- otherCounts: [<node0: 8865>, <node1: 8862>, <node2: 8869>, <node3: 3838>]
-2019-03-14 15:53:50.325 STARTUP 240295 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-09 22:48:25.863 SOCKET_EXCEPTIONS 165 sync_server_3 2 got new connection from 3, disconnecting old one
+2020-03-09 22:48:25.934 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 91 event_intake_13 Error: Received an event (3,5239) other (2,5177) whose selfParent's event is old, and otherParent's event is null or old, discarding it.
+2020-03-09 22:48:25.934 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 36 < pollIntakeQueue  2   > Error, null event in intake queue: (3,5239) other (2,5177)
+2020-03-09 22:48:25.934 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 121 event_intake_33 Self parent returned null, event: (3,5240) other (1,5160)
+2020-03-09 22:48:25.935 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 36 < pollIntakeQueue  2   > Error, null event in intake queue: (3,5240) other (1,5160)
+2020-03-09 22:48:25.942 RECONNECT 66 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 5109. 
+ selfCounts: [<node0: 11121>, <node1: 11270>, <node2: 11340>, <node3: 5238>] 
+ otherCounts: [<node0: 5108>, <node1: 5160>, <node2: 5177>, <node3: 5240>]
+2020-03-09 22:48:25.948 RECONNECT 66 <    syncListener  2  3> 2 got commStateRequest from 3
+2020-03-09 22:48:25.949 RECONNECT 66 <    syncListener  2  3> 2 started sending SignedState to 3
+2020-03-09 22:48:25.954 DEMO_INFO 66 <    syncListener  2  3> Starts FCMFamily diffCopyTo
+2020-03-09 22:48:25.958 DEMO_INFO 66 <    syncListener  2  3> Root Hash for Storage map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-09 22:48:25.959 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCMap map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-09 22:48:33.429 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCQ map 6db1bfbb5783739196ab5ad1e64361c898c19a39f84107df63bc6cfe6ad50bd51acb6405697e0105bcc12ba114857c84
+2020-03-09 22:48:33.429 DEMO_INFO 66 <    syncListener  2  3> Finished FCMFamily diffCopyTo
+2020-03-09 22:48:33.429 RECONNECT 66 <    syncListener  2  3> 2 done sending SignedState to 3
+2020-03-09 22:48:34.345 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 91 event_intake_13 event (new)(otherId:3)objHash:384999438 has otherParent (3,5240) other (1,5160) whose event is null. Choosing as other parent: [(id,seq) for self/selfP/otherP:(3,5238)/(3,5237)/(1,5158),#trans:0,gen:6593,time:2020-03-09T22:45:55.358541Z,sig[0..3]:1217 db14]
+2020-03-09 23:01:56.159 DEMO_INFO 51 <      appMainRun  2   > Generated enough FCM test for sequential mode, stop generating 5 >= 5
+2020-03-09 23:01:56.160 DEMO_INFO 51 <      appMainRun  2   > Stop generating transactions 
+2020-03-09 23:01:56.163 DEMO_INFO 51 <      appMainRun  2   > node2 sent ENTER_PAUSE Message
+2020-03-09 23:01:56.163 DEMO_INFO 51 <      appMainRun  2   > TRANSACTIONS FINISHED
+2020-03-09 23:01:56.619 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 1
+2020-03-09 23:01:56.620 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 2
+2020-03-09 23:01:56.620 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 3
+2020-03-09 23:01:56.620 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 4
+2020-03-09 23:01:56.620 DEMO_INFO 44 <      threadCons  2   > TEST PAUSE Finished processing all transactions
