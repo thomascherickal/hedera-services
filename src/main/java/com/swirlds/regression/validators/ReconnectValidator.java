@@ -215,7 +215,6 @@ public class ReconnectValidator extends NodeValidator {
 	/**
 	 * Check if the exception contained in a LogEntry is acceptable
 	 * In reconnect test, exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT marker are acceptable;
-	 * if the reconnect node was killed, exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE are acceptable;
 	 *
 	 * @param e
 	 * @return
@@ -223,13 +222,6 @@ public class ReconnectValidator extends NodeValidator {
 	boolean isAcceptable(final LogEntry e, final int nodeId) {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
 			return true;
-		}
-		// in Reconnect test, the last node is the reconnect node;
-		// only when current node is the reconnect node, and it was killed before reconnect,
-		// exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE are acceptable
-		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE) {
-			return nodeId == nodeData.size() - 1    // lastNode
-					&& !killNetworkReconnect;        // node was killed
 		}
 		return false;
 	}

@@ -26,7 +26,6 @@
     <MarkerFilter marker="SOCKET_EXCEPTIONS"      onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="TCP_CONNECT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <!-- Errors -->
     <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="INTAKE_EVENT_DISCARD"   onMatch="ACCEPT"   onMismatch="NEUTRAL"/>

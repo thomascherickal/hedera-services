@@ -120,15 +120,6 @@ class ReconnectValidatorTest {
 				true);
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
-
-		LogEntry killNodeAcceptable = new LogEntry(Instant.now(),
-				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE,
-				0, "thread",
-				"Exceptions acceptable for killed node",
-				true);
-		// this exception should only be acceptable for the killed node
-		assertFalse(validator.isAcceptable(killNodeAcceptable, firstId));
-		assertTrue(validator.isAcceptable(killNodeAcceptable, lastId));
 	}
 
 	@Test
@@ -149,15 +140,6 @@ class ReconnectValidatorTest {
 				true);
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
-
-		LogEntry killNodeAcceptable = new LogEntry(Instant.now(),
-				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_KILL_NODE,
-				0, "thread",
-				"Exceptions acceptable for killed node",
-				true);
-		// this exception should not be acceptable for all nodes, because no node was killed
-		assertFalse(validator.isAcceptable(killNodeAcceptable, firstId));
-		assertFalse(validator.isAcceptable(killNodeAcceptable, lastId));
 	}
 
 	/**
