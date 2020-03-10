@@ -55,15 +55,8 @@ public class ReconnectValidator extends NodeValidator {
 	boolean isValidated = false;
 	boolean isValid = true;
 
-	// whether reconnect by killing network or killing node
-	private boolean killNetworkReconnect = false;
-
 	public void setSavedStateStartRoundNumber(double savedStateStartRoundNumber) {
 		this.savedStateStartRoundNumber = savedStateStartRoundNumber;
-	}
-
-	public void setKillNetworkReconnect(boolean killNetworkReconnect) {
-		this.killNetworkReconnect = killNetworkReconnect;
 	}
 
 	/**
@@ -222,6 +215,12 @@ public class ReconnectValidator extends NodeValidator {
 	boolean isAcceptable(final LogEntry e, final int nodeId) {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
 			return true;
+		}
+		// in Reconnect test, the last node is the reconnect node;
+		// only when current node is the reconnect node,
+		// exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE are acceptable
+		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE) {
+			return nodeId == nodeData.size() - 1;    // lastNode
 		}
 		return false;
 	}

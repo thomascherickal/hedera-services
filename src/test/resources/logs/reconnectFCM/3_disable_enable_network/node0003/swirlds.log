@@ -76,6 +76,16 @@ java.net.SocketTimeoutException: Read timed out
 2020-03-09 22:48:25.946 STARTUP 68 <    syncCaller-0  3   > Platform Status Change BEHIND 
 2020-03-09 22:48:25.946 RECONNECT 68 <    syncCaller-0  3   > 3 has fallen behind, will stop and clear EventFlow and Hashgraph
 2020-03-09 22:48:25.946 RECONNECT 44 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2020-03-09 22:48:25.946 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE 201 <       stateHash  3   > error while verifying signature:
+java.lang.InterruptedException: null
+	at java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418) ~[?:?]
+	at java.util.concurrent.FutureTask.get(FutureTask.java:190) ~[?:?]
+	at com.swirlds.platform.state.SignedStateManager.addSigInfo(SignedStateManager.java:559) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.state.SignedStateManager.recordStateSig(SignedStateManager.java:496) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.state.SignedStateManager.newSelfSigned(SignedStateManager.java:437) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.EventFlow.stateHashSign(EventFlow.java:1002) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.EventFlow$EventFlowRunnable.run(EventFlow.java:1287) [swirlds-platform-core-0.6.5.jar:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
 2020-03-09 22:48:25.946 RECONNECT 43 <       stateHash  3   > stateHashSign() interrupted
 2020-03-09 22:48:25.946 RECONNECT 45 <      threadCurr  3   > takeHandlePut() fromQueue.poll() interrupted
 2020-03-09 22:48:25.951 RECONNECT 68 <    syncCaller-0  3   > 3 has fallen behind, will try to reconnect with [2, 0]

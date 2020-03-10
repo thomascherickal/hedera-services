@@ -564,8 +564,6 @@ public class Experiment {
             try {
                 if (item instanceof ReconnectValidator) {
                     ((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
-                    ((ReconnectValidator) item).setKillNetworkReconnect(
-                            testConfig.getReconnectConfig().isKillNetworkReconnect());
                 }
                 item.validate();
                 slackMsg.addValidatorInfo(item);

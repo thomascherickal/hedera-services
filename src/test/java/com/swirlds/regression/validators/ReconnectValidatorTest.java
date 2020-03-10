@@ -105,14 +105,12 @@ class ReconnectValidatorTest {
 
 
 	@Test
-	public void isAcceptableKillNodeTest() {
+	public void isAcceptableTest() {
 		final int nodesNum = 4;
 		final int firstId = 0;
 		final int lastId = nodesNum - 1;
-		// ReconnectValidator.killNetworkReconnect is false by default,
-		// which means the last node would be killed before reconnect
+
 		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
-		validator.setKillNetworkReconnect(false);
 
 		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
@@ -121,26 +119,15 @@ class ReconnectValidatorTest {
 				true);
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
-	}
 
-	@Test
-	public void isAcceptableKillNetworkTest() {
-		final int nodesNum = 4;
-		final int firstId = 0;
-		final int lastId = nodesNum - 1;
-
-		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
-		// set killNetworkReconnect to be true
-		// which means the last node's network would be killed before reconnect
-		validator.setKillNetworkReconnect(true);
-
-		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
-				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
+		LogEntry reconnectNodeAcceptable = new LogEntry(Instant.now(),
+				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE,
 				0, "thread",
-				"Exceptions acceptable at reconnect",
+				"Exceptions acceptable for reconnect node",
 				true);
-		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
-		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
+		// this exception should only be acceptable for the reconnect node
+		assertFalse(validator.isAcceptable(reconnectNodeAcceptable, firstId));
+		assertTrue(validator.isAcceptable(reconnectNodeAcceptable, lastId));
 	}
 
 	/**
