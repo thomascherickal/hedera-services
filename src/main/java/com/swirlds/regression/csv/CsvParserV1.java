@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -20,6 +20,8 @@ package com.swirlds.regression.csv;
 import java.util.function.Supplier;
 
 public class CsvParserV1 implements CsvParser {
+	private int emptyLineCounter = 0;
+
 	public CsvStat[] getColumns(Supplier<String> lineSupplier) {
 		CsvStat columns[] = null;
 		while (true) {
@@ -45,8 +47,17 @@ public class CsvParserV1 implements CsvParser {
 	@Override
 	public boolean addNextData(Supplier<String> lineSupplier, CsvStat[] columns) {
 		String line = lineSupplier.get();
-		if (line == null || line.isEmpty()) {
+		if(line == null) {
 			return false;
+		} else if (line.isEmpty()) {
+			// Allow two empty lines in the csv file because when node kill reconnect testis performed,
+			// it generates two empty lines after node restarts
+			if(emptyLineCounter < 2) {
+				emptyLineCounter++;
+				return true;
+			}else{
+				return false;
+			}
 		}
 		String data[] = line.substring(2).split(",");
 		for (int i = 0; i < data.length; i++) {
@@ -58,5 +69,6 @@ public class CsvParserV1 implements CsvParser {
 	@Override
 	public void addAllData(Supplier<String> lineSupplier, CsvStat[] columns) {
 		while (addNextData(lineSupplier, columns)) ;
+		emptyLineCounter=0;
 	}
 }
