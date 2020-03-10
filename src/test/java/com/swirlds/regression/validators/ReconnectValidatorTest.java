@@ -109,9 +109,10 @@ class ReconnectValidatorTest {
 		final int nodesNum = 4;
 		final int firstId = 0;
 		final int lastId = nodesNum - 1;
-		// killNetworkReconnect is false by default,
+		// ReconnectValidator.killNetworkReconnect is false by default,
 		// which means the last node would be killed before reconnect
 		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
+		validator.setKillNetworkReconnect(false);
 
 		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
