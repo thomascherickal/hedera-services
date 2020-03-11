@@ -53,7 +53,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -350,6 +352,95 @@ public class Experiment {
     }
 
     /**
+     * Whether all node find defined number of messages in log file
+     *
+     * @param fileName
+     * 		File name to search for the message
+     * @return return true if the time that the message appeared is equal or larger than messageAmount
+     */
+    public boolean isAllNodesBackedUpLastRound(String fileName) {
+        boolean allNodesCompletedSameRound = false;
+        Long maxRoundSeen = -1L;
+        Boolean allCompleteMaxRound = true;
+        ArrayList<HashMap<Long,Boolean>> nodeRounds = new ArrayList<>();
+        HashMap<Integer,SSHService> nodesStillSaving = new HashMap<>();
+
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            nodeRounds.add(i,node.checkSavedStateProgress(fileName));
+
+            for(Map.Entry<Long,Boolean> entry : nodeRounds.get(i).entrySet()) {
+                Long roundNum = entry.getKey();
+                Boolean roundComplete = entry.getValue();
+
+                //reset tracking for max round seen
+                if (roundNum > maxRoundSeen) {
+                    maxRoundSeen = roundNum;
+                    allCompleteMaxRound = roundComplete;
+
+                    nodesStillSaving = new HashMap<>();
+                }
+
+                if (roundNum == maxRoundSeen) {
+                    allCompleteMaxRound &= roundComplete;
+                    if (roundComplete == false) {
+                        nodesStillSaving.put(i,node);
+                    }
+                }
+            }
+        }
+
+        //kill java process on nodes that have finished the last round
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            if (nodeRounds.get(i).containsKey(maxRoundSeen)) {
+                //value looked up is the boolean value telling whether the round is completed
+                if (nodeRounds.get(i).get(maxRoundSeen)) {
+                    //kill completed nodes
+                    node.killJavaProcess();
+                }
+            } else {
+                nodesStillSaving.put(i,node);
+            }
+        }
+
+        if (allCompleteMaxRound == false) {
+            //retry all nodes that had not completed saving the final round
+            allCompleteMaxRound = true;
+
+            try {
+                log.trace(MARKER, "sleeping for {} seconds ", testConfig::getSaveStateCheckWait);
+                Thread.sleep(testConfig.getSaveStateCheckWait());
+            } catch (InterruptedException e) {
+                log.error(ERROR, "could not sleep.", e);
+            }
+
+            for (Map.Entry<Integer,SSHService> entry : nodesStillSaving.entrySet()) {
+                Integer nodeNum = entry.getKey();
+                SSHService node = entry.getValue();
+                HashMap<Long,Boolean> nodeSaveStatus = node.checkSavedStateProgress(fileName);
+
+                if (nodeSaveStatus.containsKey(maxRoundSeen)) {
+                    if (!nodeSaveStatus.get(maxRoundSeen)) {
+                        log.error(ERROR,"node {} did not contain saved state and postgres backup for round {}", nodeNum, maxRoundSeen);
+                        allCompleteMaxRound = false;
+                    }
+                } else {
+                    allCompleteMaxRound = false;
+                }
+            }
+        }
+
+        if (allCompleteMaxRound) {
+            log.info(MARKER,"All nodes finishes saving up to round " + maxRoundSeen);
+        } else {
+            log.error(ERROR,"Not all nodes finished saving for round " + maxRoundSeen);
+        }
+
+        return true;
+    }
+
+    /**
      * Whether test finished message can be found at least twice in the log file
      */
     public boolean isFoundTwoPTDFinishMessage() {
@@ -582,7 +673,7 @@ public class Experiment {
     private void createStatsFile(String resultsFolder) {
         String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
         ExecStreamReader.outputProcessStreams(insightCmd);
-        
+
     }
 
 	public void sendSettingFileToNodes() {
@@ -770,6 +861,14 @@ public class Experiment {
         testRun.runTest(testConfig, this);
 
         //TODO maybe move the kill to the TestRun
+        if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
+        	if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
+        		log.error(ERROR,"Not all nodes successfully backed up last round");
+			}
+
+            scpSavedFolder();
+        }
+
         stopAllSwirlds();
 
         // call badgerize.sh that tars all the database logs
@@ -789,16 +888,6 @@ public class Experiment {
             log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
         }
 
-        if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
-            ArrayList<String> blobStateScpList = new ArrayList<>();
-            blobStateScpList.add("data/saved$");
-
-            //BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
-            for (int i = 0; i < sshNodes.size(); i++) {
-                SSHService node = sshNodes.get(i);
-                node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
-            }
-        }
 
         for (int i = 0; i < sshNodes.size(); i++) {
             SSHService node = sshNodes.get(i);
@@ -824,6 +913,17 @@ public class Experiment {
         String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
         nodeMemoryProfile = new NodeMemory(totalNodeMemory);
     }
+
+    void scpSavedFolder() {
+		ArrayList<String> blobStateScpList = new ArrayList<>();
+		blobStateScpList.add("data/saved$");
+
+		//BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
+		}
+	}
 
     void resetNodes() {
         for (final SSHService node : sshNodes) {
@@ -1189,7 +1289,7 @@ public class Experiment {
 			node.restoreSavedSignedState(tempDir);
 		}
 	}
-	
+
 	/**
 	 * Compare event files generated during recover mode whether match original ones
 	 *

@@ -46,6 +46,7 @@ public class TestConfig implements FileRequirement {
 	private List<SavedState> startSavedStates = null;
 
 	private boolean downloadDbLogFiles = false;
+	private int saveStateCheckWait = 180;
 
 	private ReconnectConfig reconnectConfig = null;
 	private RestartConfig restartConfig = null;
@@ -126,6 +127,10 @@ public class TestConfig implements FileRequirement {
 
 	public boolean getDownloadDbLogFiles() {
 		return downloadDbLogFiles;
+	}
+
+	public int getSaveStateCheckWait() {
+		return saveStateCheckWait;
 	}
 
 	public void setDownloadDbLogFiles(boolean downloadDbLogFiles) {

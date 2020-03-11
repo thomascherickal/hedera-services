@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -231,42 +232,43 @@ public class SSHService {
 	private void scpFilesFromList(String topLevelFolders, Collection<String> foundFiles) throws IOException {
 		log.info(MARKER, "total files found:{}", foundFiles.size());
 		for (String file : foundFiles) {
-			String currentLine = file;
+            String currentLine = file;
 			/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
 			. */
-			String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-			int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+            String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+            int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
 
-			log.info(MARKER,
-					String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
-									"'%s'.",
-							cutOff, currentLine, cutOffString));
+            log.info(MARKER,
+                    String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+                                    "'%s'.",
+                            cutOff, currentLine, cutOffString));
 
-			if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
-				currentLine = currentLine.substring(cutOff);
-			} else {
-				log.error(MARKER,
-						String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
-										"'%s'.",
-								cutOff, currentLine, cutOffString));
-			}
+            if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
+                currentLine = currentLine.substring(cutOff);
+            } else {
+                log.error(MARKER,
+                        String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
+                                        "'%s'.",
+                                cutOff, currentLine, cutOffString));
+            }
 
-			currentLine = topLevelFolders + currentLine;
+            currentLine = topLevelFolders + currentLine;
 
-			File fileToSplit = new File(currentLine);
-			if (!fileToSplit.exists()) {
+            File fileToSplit = new File(currentLine);
+            if (!fileToSplit.exists()) {
 
 				/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
 				of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
 				and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
 				.jar
 				 */
-				fileToSplit.getParentFile().mkdirs();
+                fileToSplit.getParentFile().mkdirs();
 
-			}
-			log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
-					fileToSplit.getPath());
-			ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
+            }
+            log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
+                    fileToSplit.getPath());
+            ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
+        }
     }
 
     void scpTo(ArrayList<File> additionalFiles) {
@@ -679,6 +681,72 @@ public class SSHService {
             return -1;
         }
         return output.size();
+    }
+
+    /**
+     * Search a lists of messages in the log file and
+     * return the total number of occurrences of all messages
+     * Or return -1 if error happened
+     *
+     * @param fileName File name to search for the message
+     */
+    HashMap<Long,Boolean> checkSavedStateProgress(String fileName) {
+        HashMap<Long,Boolean> retMap = new HashMap<>();
+
+        final Session.Command cmd = execCommand(CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE,
+                "Get all state manager queuing messages", -1);;
+        ArrayList<String> output = readCommandOutput(cmd);
+        try {
+            for (String out : output) {
+                if (out.contains("No such file or directory")) {
+                    log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+                    return null;
+                }
+
+                Long roundNum = null;
+                Boolean complete = null;
+
+                String[] keyVals = out.split(", \\[");
+                for (String keyVal : keyVals) {
+                    String[] parts = keyVal.split("=", 2);
+                    if (parts.length != 2) {
+                        if (parts[0].contentEquals("roundNumber")) {
+                            roundNum = Long.parseLong(parts[1]);
+                        } else if (parts[0].contentEquals("complete")) {
+                            if (parts[1].contentEquals("false")) {
+                                complete = false;
+                            } else if (parts[1].contentEquals("true")) {
+                                complete = true;
+                            } else {
+                                throw new NumberFormatException();
+                            }
+                        }
+                    }
+                }
+
+                if ((roundNum != null) && (complete != null)) {
+                    if (complete == false) {
+                        if (retMap.containsKey(roundNum)) {
+                            //already know this round completed
+                            continue;
+                        } else {
+                            retMap.put(roundNum, false);
+                        }
+                    } else {
+                        //round number completed
+                        retMap.put(roundNum, true);
+                    }
+                } else {
+                    throw new SSHException("invalid line read");
+                }
+            }
+        } catch (NumberFormatException | SSHException e) {
+            log.error("State message manager improperly formed");
+        }
+        if (retMap.size() == 0) {
+            return null;
+        }
+        return retMap;
     }
 
     public void close() {

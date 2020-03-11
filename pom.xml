@@ -74,6 +74,16 @@
 			<groupId>com.hierynomus</groupId>
 			<artifactId>sshj</artifactId>
 			<version>0.27.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-io -->
@@ -93,7 +103,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.5</version>
+			<version>3.9</version>
 		</dependency>
 
 		<dependency>
@@ -223,21 +233,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
-			<artifactId>swirlds-platform-core</artifactId>
+			<artifactId>swirlds-fcmap</artifactId>
 			<version>0.6.5</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.swirlds</groupId>
-			<artifactId>swirlds-platform-core</artifactId>
-			<version>0.6.5</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.swirlds</groupId>
-			<artifactId>PlatformTestingApp</artifactId>
-			<version>0.6.5</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
