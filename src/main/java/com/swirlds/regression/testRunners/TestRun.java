@@ -27,7 +27,7 @@ import org.apache.logging.log4j.MarkerManager;
 public interface TestRun {
 	static final Logger log = LogManager.getLogger(TestRun.class);
 	static final Marker MARKER = MarkerManager.getMarker("TEST_RUN");
-	
+
 	default void preRun(TestConfig testConfig, Experiment experiment) {
 	}
 
