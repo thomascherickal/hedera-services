@@ -1,0 +1,9 @@
+###############################################################################################
+# Swirlds configuration file, for automatically running multiple instances
+###############################################################################################
+swirld, 123
+app, PlatformTestingApp.jar, FCMMultiReconnectFCQ.json
+address, Multi-Reconnect-FC-Queue0, Multi-Reconnect-FC-Queue0, 1250000000000000000, 172.31.39.82, 40124, 3.19.222.6, 40124
+address, Multi-Reconnect-FC-Queue1, Multi-Reconnect-FC-Queue1, 1250000000000000000, 172.31.41.89, 40125, 3.20.223.65, 40125
+address, Multi-Reconnect-FC-Queue2, Multi-Reconnect-FC-Queue2, 1250000000000000000, 172.31.44.67, 40126, 18.191.50.229, 40126
+address, Multi-Reconnect-FC-Queue3, Multi-Reconnect-FC-Queue3, 1250000000000000000, 172.31.38.87, 40127, 18.223.2.8, 40127
