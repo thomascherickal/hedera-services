@@ -132,7 +132,7 @@ public class RegressionUtilities {
     public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
 
     // caused by InterruptedException | ExecutionException
-    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
+    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";
 
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
