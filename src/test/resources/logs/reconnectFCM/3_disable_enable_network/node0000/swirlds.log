@@ -1,45 +1,84 @@
-2019-03-14 15:49:50.633 STARTUP    635 main Browser main() started
-2019-03-14 15:49:50.650 STARTUP    652 main About to run startPlatforms()
-2019-03-14 15:49:50.654 STARTUP    656 main About do crypto instantiation
-2019-03-14 15:49:50.659 STARTUP    661 main About start loading keys
-2019-03-14 15:49:51.492 STARTUP   1494 main Done loading keys
-2019-03-14 15:49:51.493 STARTUP   1495 main About to start creating Crypto objects
-2019-03-14 15:49:52.440 STARTUP   2442 main Done creating Crypto objects
-2019-03-14 15:49:52.440 STARTUP   2442 main Done with crypto instantiation
-2019-03-14 15:49:52.442 STARTUP   2444 main Starting platforms
-2019-03-14 15:49:52.632 STARTUP   2634 main Done with starting platforms
-2019-03-14 15:49:52.653 STARTUP   2655 <     platformRun  0  0> Initializing FCMapStatsDemoMain
-2019-03-14 15:49:52.667 STARTUP   2669 main Browser main() finished
-2019-03-14 15:49:53.499 STARTUP   3501 <       stateHash  0   > Adv Crypto Subsystem: CryptoFactory initializing
-2019-03-14 15:49:53.516 STARTUP   3518 <       stateHash  0   > Adv Crypto Subsystem: No supported GPU acceleration device found
-2019-03-14 15:49:53.611 STARTUP   3613 <       stateHash  0   > Adv Crypto Subsystem: CpuCryptoEngine initialized
-2019-03-14 15:49:53.611 STARTUP   3613 <       stateHash  0   > Adv Crypto Subsystem: CryptoFactory startup complete
-2019-03-14 15:50:55.085 SOCKET_EXCEPTIONS  65087 <    syncListener  0  3> 0 didn't receive anything from 3 for 5006 ms. Disconnecting...
-2019-03-14 15:50:55.154 SOCKET_EXCEPTIONS  65156 <      syncCaller  0  1> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 0 listening for 3:
+2020-03-09 22:43:30.389 STARTUP 1 main Browser main() started
+2020-03-09 22:43:31.086 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-03-09 22:43:31.349 STARTUP 1 main About to run startPlatforms()
+2020-03-09 22:43:31.359 STARTUP 1 main About do crypto instantiation
+2020-03-09 22:43:31.479 STARTUP 1 main About start loading keys
+2020-03-09 22:43:33.228 STARTUP 1 main Done loading keys
+2020-03-09 22:43:33.228 STARTUP 1 main About to start creating Crypto objects
+2020-03-09 22:43:34.090 STARTUP 1 main Done creating Crypto objects
+2020-03-09 22:43:34.091 STARTUP 1 main Done with crypto instantiation
+2020-03-09 22:43:34.096 STARTUP 1 main Starting platforms
+2020-03-09 22:43:34.520 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-09 22:43:34.521 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-09 22:43:35.390 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-09 22:43:35.390 STARTUP 1 main Done with starting platforms
+2020-03-09 22:43:35.599 STARTUP 39 <     platformRun  0   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-09 22:43:35.599 STARTUP 39 <     platformRun  0   > JVM arg: -XX:+UseZGC
+2020-03-09 22:43:35.599 STARTUP 39 <     platformRun  0   > JVM arg: -XX:ConcGCThreads=14
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -XX:+UseLargePages
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -Xmx98g
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -Xms10g
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-09 22:43:35.600 STARTUP 39 <     platformRun  0   > Parsing JSON FCMReconnectFCQ.json
+2020-03-09 22:43:35.684 DEMO_INFO 39 <     platformRun  0   >  insertSeq         = true
+2020-03-09 22:43:35.684 DEMO_INFO 39 <     platformRun  0   >  appendSig         = true
+2020-03-09 22:43:35.684 DEMO_INFO 39 <     platformRun  0   >  variedSize        = false
+2020-03-09 22:43:35.684 DEMO_INFO 39 <     platformRun  0   >  payloadByteSize   = 100
+2020-03-09 22:43:35.685 DEMO_INFO 39 <     platformRun  0   >  maxByteSize       = 100
+2020-03-09 22:43:35.685 DEMO_INFO 39 <     platformRun  0   >  type              = TYPE_RANDOM_BYTES
+2020-03-09 22:43:35.685 DEMO_INFO 39 <     platformRun  0   > Size distribution  = [100]
+2020-03-09 22:43:35.685 DEMO_INFO 39 <     platformRun  0   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-09 22:43:35.686 DEMO_INFO 39 <     platformRun  0   > Ratio distribution = [100.0]
+2020-03-09 22:43:35.691 DEMO_INFO 39 <     platformRun  0   > Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2020-03-09 22:43:35.693 STARTUP 39 <     platformRun  0   > PlatformTestingDemo: Public Key -> hex('0x33D69FB12DAEF1D43BB939AA1EAE462E4192515CA95205ABAE23D58B9056C7E1')
+2020-03-09 22:43:35.696 DEMO_INFO 39 <     platformRun  0   > This test will generate sequential FCM payload:
+2020-03-09 22:43:35.696 DEMO_INFO 39 <     platformRun  0   > Set data account counter as 0
+2020-03-09 22:43:35.696 DEMO_INFO 39 <     platformRun  0   > Set FCQ account counter as 0
+2020-03-09 22:43:35.696 DEMO_INFO 39 <     platformRun  0   > Set Blob account counter as 0
+2020-03-09 22:43:35.720 STARTUP 1 main Browser main() finished
+2020-03-09 22:43:35.728 DEMO_INFO 52 <      appMainRun  0   > Node 0 starts transactions ........
+2020-03-09 22:43:35.790 STARTUP 52 <      appMainRun  0   > PlatformTestingDemo: Signed Message { publicKey = '0x33D69FB12DAEF1D43BB939AA1EAE462E4192515CA95205ABAE23D58B9056C7E1', privateKey ='0x69E81B85FF2215D965545C4BA96E2B49CA0443944292EDAB6B9B2423CE5BF33833D69FB12DAEF1D43BB939AA1EAE462E4192515CA95205ABAE23D58B9056C7E1', signature = '0x0EFC9B49602CAC79049C7B3A352F23B567C9EA3EBB01CEF384C2674DAD32C3AC21D512202DB29E502221DCEFC627E3ECB5E6F3DC5E77A217B3C332056E360C03', message = '0x1A6F9A016C20A08D063264C38B29C5CBE3AA6EC1EEB414A83A5C2716DE8CDEFE724975F3A04C932369F599F98AE29A0D371ACD03D7ACB270286072886847EF43BAECB720F2C9069DB56064DEB6F2031DFCD945ABC5495A2D2CC814C778D1D1E7ED0AE00D013238600D3CD3BA23B22A3801' }
+2020-03-09 22:43:35.994 PLATFORM_STATUS 65 <       heartbeat  0  2> Platform status changed to: STARTING_UP
+2020-03-09 22:43:35.994 STARTUP 65 <       heartbeat  0  2> Platform Status Change STARTING_UP 
+2020-03-09 22:43:36.131 PLATFORM_STATUS 36 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-03-09 22:43:36.132 STARTUP 36 < pollIntakeQueue  0   > Platform Status Change ACTIVE 
+2020-03-09 22:46:00.308 SOCKET_EXCEPTIONS 66 <    syncListener  0  3> 0 didn't receive anything from 3 for 5007 ms. Disconnecting...
+2020-03-09 22:46:00.457 SOCKET_EXCEPTIONS 68 <    syncCaller-0  0   > SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 0 listening for 3:
 java.net.SocketTimeoutException: Read timed out
 	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
-	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
-	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
-	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:115) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:168) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:140) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:448) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:68) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1132) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:828) ~[?:?]
 	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
 	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
 	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
-	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
-	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
 	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-	at java.lang.Thread.run(Thread.java:844) [?:?]
-2019-03-14 15:51:50.799 INVALID_EVENT_ERROR 120801 <tp caller events  0  3> 0 failed to instantiate new Event because otherParent(0,3791) of (3,3839) is missing
-2019-03-14 15:51:50.808 RECONNECT 120810 <      syncCaller  0  0> node0 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 3792. 
- selfCounts: [<node0: 8022>, <node1: 8047>, <node2: 8022>, <node3: 3838>] 
- otherCounts: [<node0: 3791>, <node1: 3818>, <node2: 3802>, <node3: 3839>]
-2019-03-14 15:51:50.959 SOCKET_EXCEPTIONS 120961 sync_server_2 0 got new connection from 3, disconnecting old one
-2019-03-14 15:52:04.075 RECONNECT 134077 <    syncListener  0  3> node0 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 8013. 
- selfCounts: [<node0: 8883>, <node1: 8875>, <node2: 8885>, <node3: 3838>] 
- otherCounts: [<node0: 8012>, <node1: 8037>, <node2: 8013>, <node3: 3838>]
-2019-03-14 15:53:50.351 STARTUP 240353 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-09 22:48:25.828 SOCKET_EXCEPTIONS 167 sync_server_3 0 got new connection from 3, disconnecting old one
+2020-03-09 22:48:25.912 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 114 event_intake_28 Error: Received an event (3,5239) other (2,5177) whose selfParent's event is old, and otherParent's event is null or old, discarding it.
+2020-03-09 22:48:25.913 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 36 < pollIntakeQueue  0   > Error, null event in intake queue: (3,5239) other (2,5177)
+2020-03-09 22:48:25.913 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 131 event_intake_39 Self parent returned null, event: (3,5240) other (1,5160)
+2020-03-09 22:48:25.913 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 36 < pollIntakeQueue  0   > Error, null event in intake queue: (3,5240) other (1,5160)
+2020-03-09 22:48:25.919 RECONNECT 66 <    syncListener  0  3> node0 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 5109. 
+ selfCounts: [<node0: 11121>, <node1: 11268>, <node2: 11338>, <node3: 5238>] 
+ otherCounts: [<node0: 5108>, <node1: 5160>, <node2: 5177>, <node3: 5240>]
+2020-03-09 22:48:33.920 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT 97 event_intake_18 event (new)(otherId:3)objHash:878414882 has otherParent (3,5240) other (1,5160) whose event is null. Choosing as other parent: [(id,seq) for self/selfP/otherP:(3,5238)/(3,5237)/(1,5158),#trans:0,gen:6593,time:2020-03-09T22:45:55.358541Z,sig[0..3]:1217 db14]
+2020-03-09 23:01:56.197 DEMO_INFO 52 <      appMainRun  0   > Generated enough FCM test for sequential mode, stop generating 5 >= 5
+2020-03-09 23:01:56.197 DEMO_INFO 52 <      appMainRun  0   > Stop generating transactions 
+2020-03-09 23:01:56.201 DEMO_INFO 52 <      appMainRun  0   > node0 sent ENTER_PAUSE Message
+2020-03-09 23:01:56.201 DEMO_INFO 52 <      appMainRun  0   > TRANSACTIONS FINISHED
+2020-03-09 23:01:57.962 DEMO_INFO 44 <      threadCons  0   > collectedStartPauseMsg 1
+2020-03-09 23:01:57.962 DEMO_INFO 44 <      threadCons  0   > collectedStartPauseMsg 2
+2020-03-09 23:01:57.962 DEMO_INFO 44 <      threadCons  0   > collectedStartPauseMsg 3
+2020-03-09 23:01:57.963 DEMO_INFO 44 <      threadCons  0   > collectedStartPauseMsg 4
+2020-03-09 23:01:57.963 DEMO_INFO 44 <      threadCons  0   > TEST PAUSE Finished processing all transactions

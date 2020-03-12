@@ -1,0 +1,25 @@
+Reading the settings from the file:        /home/ubuntu/remoteExperiment/settings.txt
+Reading the configuration from the file:   /home/ubuntu/remoteExperiment/config.txt
+Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx
+This computer has an internal IP address:  172.31.44.67
+2020-03-10 16:10:47,315 <    syncListener  2  3> ERROR Could not find class in ReflectionUtil.getCallerClass(2). java.lang.ClassNotFoundException: com.swirlds.fcmap.internal.copydiff.DiffCopyTo
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:521)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:332)
+	at org.apache.logging.log4j.util.LoaderUtil.loadClass(LoaderUtil.java:141)
+	at org.apache.logging.log4j.util.ReflectionUtil.getCallerClass(ReflectionUtil.java:141)
+	at org.apache.logging.log4j.LogManager.getLogger(LogManager.java:537)
+	at com.swirlds.fcmap.internal.copydiff.DiffCopyTo.<clinit>(DiffCopyTo.java:39)
+	at com.swirlds.fcmap.FCMap.diffCopyTo(FCMap.java:990)
+	at com.swirlds.demo.platform.fcm.FCMFamily.diffCopyTo(FCMFamily.java:132)
+	at com.swirlds.demo.platform.PlatformTestingDemoState.diffCopyTo(PlatformTestingDemoState.java:273)
+	at com.swirlds.platform.state.SignedState.diffCopyTo(SignedState.java:582)
+	at com.swirlds.platform.SyncUtils.sendSignedState(SyncUtils.java:1182)
+	at com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:264)
+	at com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:131)
+	at com.swirlds.platform.SyncListener.run(SyncListener.java:90)
+	at java.base/java.lang.Thread.run(Thread.java:835)
+
+Could not load libOpenCL.so, error libOpenCL.so: cannot open shared object file: No such file or directory
