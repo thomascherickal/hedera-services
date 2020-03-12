@@ -13,7 +13,7 @@
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-          "i-09ee53ca2f4d22259", "i-098090dc9273cad03","i-0ffa30714389e48ad","i-0196e8bd46993dfc1"
+			"i-04223a00a2884931c","i-08eafb29a6b39dc22","i-0bd743f1d8bff2fd7","i-0a80c3d91ce61c5f0"
 	    ]
 	  }
 	]
@@ -30,16 +30,16 @@
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
 	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcmCfg.json",
 	"configs/testFcmMultisizeBlobCfg.json",
-	"configs/testFcm10MBx10KBlobCfg.json",
-	"configs/testFcm4kx100KBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
 	"configs/testFCM1KFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
 	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testFcm1kThrottlingCfg.json",
+	  "configs/testFcmCfg.json",
+	  "configs/testFcm10MBx10KBlobCfg.json",
+	  "configs/testFcm4kx100KBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",
