@@ -27,17 +27,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
+import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
-import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
-import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.regression.RegressionUtilities.ERROR_WHEN_VERIFY_SIG;
-import static com.swirlds.regression.RegressionUtilities.INVALID_PARENT;
-import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
-import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class ReconnectValidator extends NodeValidator {
 
@@ -101,62 +97,32 @@ public class ReconnectValidator extends NodeValidator {
 	@Override
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
+		final int reconnectNodeId = nodeNum - 1;
 
 		double minLastRoundSup = 0; //minimum last entry of roundSup among all node except the reconnected node
 		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node except the reconnected node
 
-		for (int i = 0; i < nodeNum - 1; i++) {
+		for (int i = 0; i < reconnectNodeId; i++) {
 			LogReader nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
-			boolean isNotLoaded = false;
-			if (nodeLog == null) {
-				log.error(MARKER, "could not load log, exiting validation for node {}", i);
-				isNotLoaded = true;
-			}
-			if (nodeCsv == null) {
-				log.error(MARKER, "could not load csv file, exiting validation for node {}", i);
-				isNotLoaded = true;
-			}
-			if (isNotLoaded) {
+
+			if (nodeLogIsNull(nodeLog, i)) {
+				isValid = false;
 				continue;
 			}
 
 			nodeLog.readFully();
-			int socketExceptions = 0;
-			int invalidEvent = 0;
-			int unexpectedErrors = 0;
-			for (LogEntry e : nodeLog.getExceptions()) {
-				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
-					socketExceptions++;
-				} else if (e.getMarker() == LogMarkerInfo.INVALID_EVENT_ERROR) {
-					invalidEvent++;
-				} else if (isWarning(e)) {
-					addWarning(String.format("Node %d has exception:[ %s ]", i, e.getLogEntry()));
-				} else {
-					unexpectedErrors++;
-					isValid = false;
-					addError(String.format("Node %d has unexpected error: [%s]", i, e.getLogEntry()));
-				}
-			}
-			if (socketExceptions > 0) {
-				addInfo(String.format("Node %d has %d socket exceptions. Some are expected for Reconnect.", i,
-						socketExceptions));
-			}
-			if (invalidEvent > 0) {
-				addInfo(String.format("Node %d has %d invalid event errors. Some are expected for Reconnect.", i,
-						invalidEvent));
-			}
-			if (unexpectedErrors > 0) {
-				addError(String.format("Node %d has %d unexpected errors!", i, unexpectedErrors));
-			}
-			if (nodeCsv != null) {
-				log.info(MARKER, "nodecsv is not null");
-				if (nodeCsv.getColumn(TRANSACTIONS_HANDLED_PER_SECOND) == null) {
-					log.error(MARKER, "{} is returning null", TRANSACTIONS_HANDLED_PER_SECOND);
-				}
-			} else {
+
+			isValid = checkExceptions(nodeLog, i);
+
+			if (nodeCsvIsNull(nodeCsv, i)) {
 				isValid = false;
-				log.error(MARKER, "nodecsv is null, that's an issue");
+				continue;
+			}
+
+			log.info(MARKER, "nodecsv is not null");
+			if (nodeCsv.getColumn(TRANSACTIONS_HANDLED_PER_SECOND) == null) {
+				addError(TRANSACTIONS_HANDLED_PER_SECOND + " is returning null");
 			}
 
 			if (i == 0) {
@@ -169,18 +135,23 @@ public class ReconnectValidator extends NodeValidator {
 			}
 		}
 
-		LogReader nodeLog = nodeData.get(nodeNum - 1).getLogReader();
-		CsvReader nodeCsv = nodeData.get(nodeNum - 1).getCsvReader();
+		// check the reconnect node's log and csv
+		LogReader nodeLog = nodeData.get(reconnectNodeId).getLogReader();
+		CsvReader nodeCsv = nodeData.get(reconnectNodeId).getCsvReader();
+
+		if (nodeLogIsNull(nodeLog, reconnectNodeId) || nodeCsvIsNull(nodeCsv, reconnectNodeId)) {
+			isValid = false;
+			return;
+		}
+
 		boolean nodeReconnected = false;
 		while (true) {
 			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
-			} else {
-				if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
-					addError(String.format("Node %d hash mismatch of received hash", nodeNum - 1));
-					continue; // try to find next START_RECONNECT
-				}
+			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
+				addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
+				continue; // try to find next START_RECONNECT
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
@@ -188,7 +159,7 @@ public class ReconnectValidator extends NodeValidator {
 			LogEntry end = nodeLog.nextEntryContaining(
 					Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
-				addError(String.format("Node %d started a reconnect, but did not finish!", nodeNum - 1));
+				addError(String.format("Node %d started a reconnect, but did not finish!", reconnectNodeId));
 				isValid = false;
 				break;
 			}
@@ -196,9 +167,9 @@ public class ReconnectValidator extends NodeValidator {
 			if (end.getLogEntry().contains(FINISHED_RECONNECT)) {
 				nodeReconnected = true;
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
-				addInfo(String.format("Node %d reconnected, time taken %dms", nodeNum - 1, time));
+				addInfo(String.format("Node %d reconnected, time taken %dms", reconnectNodeId, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
-				addError(String.format("Node %d error during receiving SignedState", nodeNum - 1));
+				addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
 				isValid = false;
 			}
 		}
@@ -210,9 +181,9 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup  %d is less than savedStateStartRoundNumber " +
-								"%d",
-						nodeNum - 1, roundSup, savedStateStartRoundNumber));
+				addError(String.format("Node %d 's last Entry of roundSup %d is less than " +
+								"savedStateStartRoundNumber %d",
+						reconnectNodeId, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
 
@@ -222,11 +193,11 @@ public class ReconnectValidator extends NodeValidator {
 						"Difference of last roundSup between reconnected Node %d with other nodes exceeds " +
 								"lastRoundSupDiffLimit %.0f. maxLastRoundSup: %.0f; minLastRoundSup: %.0f; " +
 								"reconnected node's last roundSup: %.0f.",
-						nodeNum - 1, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
+						reconnectNodeId, lastRoundSupDiffLimit, maxLastRoundSup, minLastRoundSup, roundSup));
 			}
 		}
-
-		isValidated = true;
+		// check last node's exceptions
+		isValidated = checkExceptions(nodeLog, reconnectNodeId);
 	}
 
 	@Override
@@ -234,12 +205,86 @@ public class ReconnectValidator extends NodeValidator {
 		return isValidated && isValid;
 	}
 
-	private boolean isWarning(LogEntry e)
-	{
-		return e.getMarker() == LogMarkerInfo.INTAKE_EVENT_DISCARD
-				|| e.getLogEntry().contains(OLD_EVENT_PARENT)
-				|| e.getLogEntry().contains(INVALID_PARENT)
-				|| e.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)
-				|| e.getLogEntry().contains(ERROR_WHEN_VERIFY_SIG);
+	/**
+	 * Check if the exception contained in a LogEntry is acceptable
+	 * In reconnect test, exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT marker are acceptable;
+	 *
+	 * @param e
+	 * @return
+	 */
+	boolean isAcceptable(final LogEntry e, final int nodeId) {
+		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
+			return true;
+		}
+		// in Reconnect test, the last node is the reconnect node;
+		// only when current node is the reconnect node,
+		// exceptions with TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE are acceptable
+		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE) {
+			return nodeId == nodeData.size() - 1;    // lastNode
+		}
+		return false;
 	}
+
+	/**
+	 * check whether nodeLog is null, if it is, log an error
+	 *
+	 * @param nodeLog
+	 * @param nodeId
+	 * @return
+	 */
+	boolean nodeLogIsNull(final LogReader nodeLog, final int nodeId) {
+		if (nodeLog == null) {
+			addError("could not load log, exiting validation for node " + nodeId);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * check whether nodeCsv is null, if it is, log an error
+	 *
+	 * @param nodeCsv
+	 * @param nodeId
+	 * @return
+	 */
+	boolean nodeCsvIsNull(final CsvReader nodeCsv, final int nodeId) {
+		if (nodeCsv == null) {
+			addError("could not load csv, exiting validation for node " + nodeId);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check exceptions in nodeLog and log the result
+	 *
+	 * @param nodeLog
+	 * @param nodeId
+	 * @return
+	 */
+	boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
+		int socketExceptions = 0;
+		int unexpectedErrors = 0;
+		for (LogEntry e : nodeLog.getExceptions()) {
+			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
+				socketExceptions++;
+			} else if (!isAcceptable(e, nodeId)) {
+				unexpectedErrors++;
+				isValid = false;
+				addError(String.format("Node %d has unexpected error: [%s]", nodeId, e.getLogEntry()));
+			}
+		}
+		if (socketExceptions > 0) {
+			addInfo(String.format("Node %d has %d socket exceptions. Some are expected for Reconnect.",
+					nodeId,
+					socketExceptions));
+		}
+
+		if (unexpectedErrors > 0) {
+			addError(String.format("Node %d has %d unexpected errors!", nodeId, unexpectedErrors));
+			return false;
+		}
+		return true;
+	}
+
 }
