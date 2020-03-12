@@ -17,9 +17,6 @@
 
 package com.swirlds.regression;
 
-import com.swirlds.demo.platform.fcm.MapKey;
-import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -56,9 +53,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -128,7 +123,6 @@ public class Experiment {
     protected boolean warnings = false;
     protected boolean errors = false;
     protected boolean exceptions = false;
-    Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 
     public boolean hasWarnings() {
         return warnings;
@@ -591,15 +585,15 @@ public class Experiment {
 
     }
 
-    public void sendSettingFileToNodes() {
-        if (regConfig.getEventFilesWriters() == 0) {
-            sendSettingToNonStreamingNodes();
-        } else {
-            sendSettingToStreamingNodes();
-        }
-    }
+	public void sendSettingFileToNodes() {
+		if (regConfig.getEventFilesWriters() == 0) {
+			sendSettingToNonStreamingNodes();
+		} else {
+			sendSettingToStreamingNodes();
+		}
+	}
 
-    private void sendSettingToStreamingNodes() {
+	private void sendSettingToStreamingNodes() {
 		/* since the contents of the file change, but not the location of the file this can be set up outside the for
 		loop */
         ArrayList<File> newUploads = new ArrayList<>();
@@ -1035,60 +1029,60 @@ public class Experiment {
 					and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
 					.jar
 					 */
-                    fileToSplit.getParentFile().mkdirs();
+					fileToSplit.getParentFile().mkdirs();
 
-                }
-                Files.copy(fromFile, toFile, options);
-                log.info(MARKER, "downloading {} from node {} putting it in {}", fromFile.toString(), node,
-                        toFile.toString());
-            }
-        } catch (IOException e) {
-            log.error(ERROR, "Could not download files", e);
-        }
-    }
+				}
+				Files.copy(fromFile, toFile, options);
+				log.info(MARKER, "downloading {} from node {} putting it in {}", fromFile.toString(), node,
+						toFile.toString());
+			}
+		} catch (IOException e) {
+			log.error(ERROR, "Could not download files", e);
+		}
+	}
 
-    Collection<File> getListOfFiles(ArrayList<String> extension, int node) {
-        final ArrayList<String> ext = ChangeExtensionToBeNodeSpecific(extension, node);
-        final IOFileFilter filter;
-        if (ext == null) {
-            filter = TrueFileFilter.INSTANCE;
-        } else {
-            filter = new SuffixFileFilter(ext);
-        }
+	Collection<File> getListOfFiles(ArrayList<String> extension, int node) {
+		final ArrayList<String> ext = ChangeExtensionToBeNodeSpecific(extension, node);
+		final IOFileFilter filter;
+		if (ext == null) {
+			filter = TrueFileFilter.INSTANCE;
+		} else {
+			filter = new SuffixFileFilter(ext);
+		}
 
-        return listFiles(new File("./"), filter,
-                false ? TrueFileFilter.INSTANCE : FalseFileFilter.INSTANCE);
-    }
+		return listFiles(new File("./"), filter,
+				false ? TrueFileFilter.INSTANCE : FalseFileFilter.INSTANCE);
+	}
 
-    private ArrayList<String> ChangeExtensionToBeNodeSpecific(ArrayList<String> extension, int node) {
-        final ArrayList<String> returnArray = new ArrayList<>();
-        for (final String ext : extension) {
-            returnArray.add(ext.replace("*", Integer.toString(node)));
-        }
-        return returnArray;
-    }
+	private ArrayList<String> ChangeExtensionToBeNodeSpecific(ArrayList<String> extension, int node) {
+		final ArrayList<String> returnArray = new ArrayList<>();
+		for (final String ext : extension) {
+			returnArray.add(ext.replace("*", Integer.toString(node)));
+		}
+		return returnArray;
+	}
 
-    void setupTest(TestConfig experiment) {
+	void setupTest(TestConfig experiment) {
 
-        this.testConfig = experiment;
+		this.testConfig = experiment;
 
-        setExperimentTime();
-        configFile = new ConfigBuilder(regConfig, testConfig);
-        settingsFile = new SettingsBuilder(testConfig);
-    }
+		setExperimentTime();
+		configFile = new ConfigBuilder(regConfig, testConfig);
+		settingsFile = new SettingsBuilder(testConfig);
+	}
 
-    public TestConfig getTestConfig() {
-        return testConfig;
-    }
+	public TestConfig getTestConfig() {
+		return testConfig;
+	}
 
-    public SettingsBuilder getSettingsFile() {
-        return settingsFile;
-    }
+	public SettingsBuilder getSettingsFile() {
+		return settingsFile;
+	}
 
-    public int getNumberOfSignedStates(){
-        SSHService node0 = sshNodes.get(0);
-        return node0.getNumberOfSignedStates();
-    }
+	public int getNumberOfSignedStates(){
+		SSHService node0 = sshNodes.get(0);
+		return node0.getNumberOfSignedStates();
+	}
 
     /** check if all nodes generated same number of states */
     public boolean generatedSameNumberStates() {
@@ -1108,114 +1102,96 @@ public class Experiment {
         return result;
     }
 
-    /**
-     * Delete last few saved states from all nodes.
-     * The number of deleted states are random generated based on current number
-     * of saved states
-     */
-    public boolean randomDeleteLastNSignedStates() {
-        SSHService node0 = sshNodes.get(0);
-        int savedStatesAmount = node0.getNumberOfSignedStates();
-        log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
-        if (savedStatesAmount > 1) {
-            // random generate an amount and delete such amount of signed state
-            // at least leave one of the original signed state
-            int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
-            log.info(MARKER, "Random delete {} signed state", randNum);
+	/**
+	 * Delete last few saved states from all nodes.
+	 * The number of deleted states are random generated based on current number
+	 * of saved states
+	 */
+	public boolean randomDeleteLastNSignedStates() {
+		SSHService node0 = sshNodes.get(0);
+		int savedStatesAmount = node0.getNumberOfSignedStates();
+		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
+		if (savedStatesAmount > 1) {
+			// random generate an amount and delete such amount of signed state
+			// at least leave one of the original signed state
+			int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
+			log.info(MARKER, "Random delete {} signed state", randNum);
 
-            deleteLastNSignedStates(randNum);
-        }
-        if (savedStatesAmount == 0) {
-            log.error(ERROR, "no signed state saved, cannot continue recover test");
-            return false;
-        }
-        return true;
-    }
+			deleteLastNSignedStates(randNum);
+		}
+		if (savedStatesAmount == 0) {
+			log.error(ERROR, "no signed state saved, cannot continue recover test");
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * Delete last few saved signed states from disk
-     *
-     * @param deleteNumber
-     * 		number of signed state to be deleted
-     */
-    public void deleteLastNSignedStates(int deleteNumber) {
-        for (SSHService node : sshNodes) {
-            List<SavedStatePathInfo> stateList = node.getSavedStatesDirectories();
-            node.deleteLastNSignedStates(deleteNumber, stateList);
-        }
-    }
+	/**
+	 * Delete last few saved signed states from disk
+	 *
+	 * @param deleteNumber
+	 * 		number of signed state to be deleted
+	 */
+	public void deleteLastNSignedStates(int deleteNumber) {
+		for (SSHService node : sshNodes) {
+			List<SavedStatePathInfo> stateList = node.getSavedStatesDirectories();
+			node.deleteLastNSignedStates(deleteNumber, stateList);
+		}
+	}
 
-    /**
-     * List names of signed state directories currently on disk
-     *
-     * @param memo
-     * 		Memo string
-     */
-    public void displaySignedStates(String memo) {
-        for (SSHService node : sshNodes) {
-            node.displaySignedStates(memo);
-        }
-    }
+	/**
+	 * List names of signed state directories currently on disk
+	 *
+	 * @param memo
+	 * 		Memo string
+	 */
+	public void displaySignedStates(String memo) {
+		for (SSHService node : sshNodes) {
+			node.displaySignedStates(memo);
+		}
+	}
 
-    /**
-     * Restore database from backup file
-     */
-    public void recoverDatabase() {
-        for (SSHService node : sshNodes) {
-            node.recoverDatabase();
-        }
-    }
+	/**
+	 * Restore database from backup file
+	 */
+	public void recoverDatabase() {
+		for (SSHService node : sshNodes) {
+			node.recoverDatabase();
+		}
+	}
 
-    /**
-     * Backup signed state to a temp directory
-     */
-    public void backupSavedSignedState(String tempDir) {
-        for (SSHService node : sshNodes) {
-            node.backupSavedSignedState(tempDir);
-        }
-    }
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	public void backupSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.backupSavedSignedState(tempDir);
+		}
+	}
 
-    /**
-     * Restore signed state from a temp directory
-     */
-    public void restoreSavedSignedState(String tempDir) {
-        for (SSHService node : sshNodes) {
-            node.restoreSavedSignedState(tempDir);
-        }
-    }
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	public void restoreSavedSignedState(String tempDir) {
+		for (SSHService node : sshNodes) {
+			node.restoreSavedSignedState(tempDir);
+		}
+	}
 
-    /**
-     * Compare event files generated during recover mode whether match original ones
-     *
-     * @param eventDir
-     * @param originalDir
-     * @return
-     */
-    public boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
-        for (SSHService node : sshNodes) {
-            if (!node.checkRecoveredEventFiles(eventDir, originalDir)) {
-                return false;
-            }
+	/**
+	 * Compare event files generated during recover mode whether match original ones
+	 *
+	 * @param eventDir
+	 * @param originalDir
+	 * @return
+	 */
+	public boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
+		for (SSHService node : sshNodes) {
+			if (!node.checkRecoveredEventFiles(eventDir, originalDir)) {
+				return false;
+			}
 
-        }
-        return true;
-    }
-
-    private boolean validateExpectedMap(){
-        deserializeExpectedMaps();
-
-        return false;
-    }
-    private void deserializeExpectedMaps(){
-        expectedMaps = new HashMap<>();
-        for (int i = 0; i < sshNodes.size(); i++) {
-            SSHService node = sshNodes.get(i);
-            Map<MapKey, ExpectedValue> map = new HashMap<>();
-            String s = "/data/expectedmap"+i+"_ExpectedMap.json";
-            if(new File(s).exists()){
-                map = SaveExpectedMapHandler.deserialize(i);
-            }
-            expectedMaps.put(i, map);
-        }
-    }
+		}
+		return true;
+	}
 }

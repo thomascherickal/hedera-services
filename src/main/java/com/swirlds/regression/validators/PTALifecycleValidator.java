@@ -17,21 +17,51 @@
 
 package com.swirlds.regression.validators;
 
-import java.io.IOException;
+import com.swirlds.demo.platform.fcm.MapKey;
+import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
+import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
+
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 public class PTALifecycleValidator extends NodeValidator {
+	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+	private static String expectedMapPath = "/data/expectedmap";
+	private static boolean isValid;
+
 	public PTALifecycleValidator(List<NodeData> nodeData) {
 		super(nodeData);
+		expectedMaps = new HashMap<>();
+		isValid = false;
 	}
 
 	@Override
-	public void validate() throws IOException {
-
+	public void validate() {
+		int nodeNum = nodeData.size();
+		for (int i = 0; i < nodeNum; i++) {
+			deserializeExpectedMaps(i);
+			boolean isValid = validateExpectedMap();
+		}
+		isValid = validateExpectedMap();
 	}
 
 	@Override
 	public boolean isValid() {
+		return isValid;
+	}
+
+	private boolean validateExpectedMap(){
 		return false;
 	}
+	private void deserializeExpectedMaps(int i){
+		Map<MapKey, ExpectedValue> map = new HashMap<>();
+//			if(new File(s).exists()){
+//				map = SaveExpectedMapHandler.deserialize(i);
+//			}
+			expectedMaps.put(i, map);
+		}
+
 }

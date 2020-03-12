@@ -56,6 +56,8 @@ public class ValidatorFactory {
 				return new ThrottleValidator(nodeData);
 			case PTA_THROTTLE:
 				return new PTAThrottleValidator(nodeData, testConfig);
+			case LIFECYCLE:
+				return new PTALifecycleValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}
