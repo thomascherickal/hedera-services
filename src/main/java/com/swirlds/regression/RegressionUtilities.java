@@ -107,7 +107,7 @@ public class RegressionUtilities {
 	public static final long POSTGRES_WAIT_MILLIS = 30000;
 	public static final int MILLIS = 1000;
 	public static final int MS_TO_NS = 1000_000;
-	public static final int WAIT_NODES_READY_TIMES = 50;
+	public static final int WAIT_NODES_READY_TIMES = 9;
 
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));

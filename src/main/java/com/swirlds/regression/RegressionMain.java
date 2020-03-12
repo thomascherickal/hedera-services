@@ -286,7 +286,8 @@ public class RegressionMain {
 		}
 		//TODO: made retry constant in RegressionUtlities and use that
 		int counter = 0;
-		while (!service.isInstanceReady() && counter < WAIT_NODES_READY_TIMES) { // old value 10 is too short for 100 node network
+		int wait_retry_times = WAIT_NODES_READY_TIMES + regConfig.getTotalNumberOfRegions();
+		while (!service.isInstanceReady() && counter < wait_retry_times) { // old value 10 is too short for multiregion network
 			log.info(MARKER, "instances still not ready...");
 			try {
 				sleep(10000);
@@ -297,7 +298,7 @@ public class RegressionMain {
 		}
 
 		/* instance not ready after an extended time period, something went wrong */
-		if (counter >= WAIT_NODES_READY_TIMES) {
+		if (counter >= wait_retry_times) {
 			log.error(ERROR, "Could not setup cloud service due to instances not ready after waiting.");
 			return null;
 		}
