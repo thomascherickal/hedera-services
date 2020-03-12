@@ -1,0 +1,127 @@
+2020-03-10 16:04:49.668 STARTUP 1 main Browser main() started
+2020-03-10 16:04:50.522 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-03-10 16:04:50.759 STARTUP 1 main About to run startPlatforms()
+2020-03-10 16:04:50.769 STARTUP 1 main About do crypto instantiation
+2020-03-10 16:04:50.895 STARTUP 1 main About start loading keys
+2020-03-10 16:04:52.741 STARTUP 1 main Done loading keys
+2020-03-10 16:04:52.742 STARTUP 1 main About to start creating Crypto objects
+2020-03-10 16:04:53.600 STARTUP 1 main Done creating Crypto objects
+2020-03-10 16:04:53.600 STARTUP 1 main Done with crypto instantiation
+2020-03-10 16:04:53.606 STARTUP 1 main Starting platforms
+2020-03-10 16:04:54.123 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-10 16:04:54.124 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-10 16:04:55.130 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-10 16:04:55.130 STARTUP 1 main Done with starting platforms
+2020-03-10 16:04:55.368 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-10 16:04:55.369 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UseZGC
+2020-03-10 16:04:55.369 STARTUP 39 <     platformRun  2   > JVM arg: -XX:ConcGCThreads=14
+2020-03-10 16:04:55.369 STARTUP 39 <     platformRun  2   > JVM arg: -XX:+UseLargePages
+2020-03-10 16:04:55.369 STARTUP 39 <     platformRun  2   > JVM arg: -Xmx98g
+2020-03-10 16:04:55.370 STARTUP 39 <     platformRun  2   > JVM arg: -Xms10g
+2020-03-10 16:04:55.370 STARTUP 39 <     platformRun  2   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-10 16:04:55.370 STARTUP 39 <     platformRun  2   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-10 16:04:55.370 STARTUP 39 <     platformRun  2   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-10 16:04:55.370 STARTUP 39 <     platformRun  2   > Parsing JSON FCMMultiReconnectFCQ.json
+2020-03-10 16:04:55.459 DEMO_INFO 39 <     platformRun  2   >  insertSeq         = true
+2020-03-10 16:04:55.459 DEMO_INFO 39 <     platformRun  2   >  appendSig         = true
+2020-03-10 16:04:55.459 DEMO_INFO 39 <     platformRun  2   >  variedSize        = false
+2020-03-10 16:04:55.459 DEMO_INFO 39 <     platformRun  2   >  payloadByteSize   = 100
+2020-03-10 16:04:55.460 DEMO_INFO 39 <     platformRun  2   >  maxByteSize       = 100
+2020-03-10 16:04:55.460 DEMO_INFO 39 <     platformRun  2   >  type              = TYPE_RANDOM_BYTES
+2020-03-10 16:04:55.460 DEMO_INFO 39 <     platformRun  2   > Size distribution  = [100]
+2020-03-10 16:04:55.460 DEMO_INFO 39 <     platformRun  2   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-10 16:04:55.461 DEMO_INFO 39 <     platformRun  2   > Ratio distribution = [100.0]
+2020-03-10 16:04:55.466 DEMO_INFO 39 <     platformRun  2   > Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2020-03-10 16:04:55.468 STARTUP 39 <     platformRun  2   > PlatformTestingDemo: Public Key -> hex('0xEEA380F6A9C5D08EB14AB51DDB5D926A8192A316F703192F4894EA1EA946E336')
+2020-03-10 16:04:55.471 DEMO_INFO 39 <     platformRun  2   > This test will generate sequential FCM payload:
+2020-03-10 16:04:55.471 DEMO_INFO 39 <     platformRun  2   > Set data account counter as 0
+2020-03-10 16:04:55.471 DEMO_INFO 39 <     platformRun  2   > Set FCQ account counter as 0
+2020-03-10 16:04:55.472 DEMO_INFO 39 <     platformRun  2   > Set Blob account counter as 0
+2020-03-10 16:04:55.503 DEMO_INFO 51 <      appMainRun  2   > Node 2 starts transactions ........
+2020-03-10 16:04:55.514 STARTUP 1 main Browser main() finished
+2020-03-10 16:04:55.557 STARTUP 51 <      appMainRun  2   > PlatformTestingDemo: Signed Message { publicKey = '0xEEA380F6A9C5D08EB14AB51DDB5D926A8192A316F703192F4894EA1EA946E336', privateKey ='0x6E8E37D540E96C2B9111FC191F59E56B526B50CC41494C7A0E262BD24647BAB5EEA380F6A9C5D08EB14AB51DDB5D926A8192A316F703192F4894EA1EA946E336', signature = '0xD65D490FA574474F64168CEE0468845BEDC95B6215A276DAAE31348271388C05FE4D0D1DE1360A2D148A766E73AB15B7A4AA1CED42C197B92954E18115FF5A09', message = '0x1A739A01700802100220A08D063264E7490A8183115C9DA1C1956297FB1423B731B901F6CA7266D1B6B65BED113565872F788221B8B9B0C727B9FDB1A81E3502E6B5E86F793BBF11FEA7AC57374B36B526A734B304AA161F2A247B914F44D7E176863C6CAB3094396622523CD7860B928D860E3801' }
+2020-03-10 16:04:55.757 PLATFORM_STATUS 68 sync_server_1 Platform status changed to: STARTING_UP
+2020-03-10 16:04:55.758 STARTUP 68 sync_server_1 Platform Status Change STARTING_UP 
+2020-03-10 16:04:56.138 PLATFORM_STATUS 36 < pollIntakeQueue  2   > Platform status changed to: ACTIVE
+2020-03-10 16:04:56.138 STARTUP 36 < pollIntakeQueue  2   > Platform Status Change ACTIVE 
+2020-03-10 16:07:43.603 SOCKET_EXCEPTIONS 66 <    syncListener  2  3> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 2 listening for 3:
+java.io.EOFException: null
+	at java.io.DataInputStream.readByte(DataInputStream.java:272) ~[?:?]
+	at com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:131) [swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncListener.run(SyncListener.java:90) [swirlds-platform-core-0.6.5.jar:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-10 16:07:43.605 SOCKET_EXCEPTIONS 69 <    syncCaller-0  2   > SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+javax.net.ssl.SSLException: Connection reset
+	at sun.security.ssl.Alert.createSSLException(Alert.java:127) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:320) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:263) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:258) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1342) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:844) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+	Suppressed: java.net.SocketException: Broken pipe (Write failed)
+		at java.net.SocketOutputStream.socketWrite0(Native Method) ~[?:?]
+		at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:110) ~[?:?]
+		at java.net.SocketOutputStream.write(SocketOutputStream.java:150) ~[?:?]
+		at sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:351) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:263) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:258) ~[?:?]
+		at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1342) ~[?:?]
+		at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:844) ~[?:?]
+		at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+		at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+		at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+		at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+		at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
+		at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+		at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+		at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+		at java.lang.Thread.run(Thread.java:835) [?:?]
+Caused by: java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:186) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:140) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:448) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:68) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1132) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:828) ~[?:?]
+	... 9 more
+2020-03-10 16:10:47.235 SOCKET_EXCEPTIONS 167 sync_server_3 2 got new connection from 3, disconnecting old one
+2020-03-10 16:10:47.277 RECONNECT 66 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 0. 
+ selfCounts: [<node0: 13614>, <node1: 13750>, <node2: 13701>, <node3: 6044>] 
+ otherCounts: [<node0: -1>, <node1: -1>, <node2: -1>, <node3: -1>]
+2020-03-10 16:10:47.302 RECONNECT 66 <    syncListener  2  3> 2 got commStateRequest from 3
+2020-03-10 16:10:47.303 RECONNECT 66 <    syncListener  2  3> 2 started sending SignedState to 3
+2020-03-10 16:10:47.313 DEMO_INFO 66 <    syncListener  2  3> Starts FCMFamily diffCopyTo
+2020-03-10 16:10:47.318 DEMO_INFO 66 <    syncListener  2  3> Root Hash for Storage map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-10 16:10:47.319 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCMap map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-10 16:10:57.574 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCQ map 1d26dd0a303434e6ad92835a86ebeaeeb016868c0f6cf4a6b42bc79af6695c1a240bd737f9ef46d065644085946419d1
+2020-03-10 16:10:57.574 DEMO_INFO 66 <    syncListener  2  3> Finished FCMFamily diffCopyTo
+2020-03-10 16:10:57.574 RECONNECT 66 <    syncListener  2  3> 2 done sending SignedState to 3
+2020-03-10 16:10:58.069 RECONNECT 66 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 13604. 
+ selfCounts: [<node0: 14065>, <node1: 14152>, <node2: 14134>, <node3: 6044>] 
+ otherCounts: [<node0: 13603>, <node1: 13739>, <node2: 13688>, <node3: 6044>]
+2020-03-10 16:10:58.092 RECONNECT 66 <    syncListener  2  3> 2 got commStateRequest from 3
+2020-03-10 16:10:58.093 RECONNECT 66 <    syncListener  2  3> 2 started sending SignedState to 3
+2020-03-10 16:10:58.096 DEMO_INFO 66 <    syncListener  2  3> Starts FCMFamily diffCopyTo
+2020-03-10 16:10:58.096 DEMO_INFO 66 <    syncListener  2  3> Root Hash for Storage map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-10 16:10:58.096 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCMap map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-10 16:10:59.336 DEMO_INFO 66 <    syncListener  2  3> Root Hash for FCQ map b680d7fd5908b6c394e5fc341153041daac61c8bb92e12a51c654172a0ddb87204b2d6202fcd9cfb6705a3cd651b7075
+2020-03-10 16:10:59.336 DEMO_INFO 66 <    syncListener  2  3> Finished FCMFamily diffCopyTo
+2020-03-10 16:10:59.336 RECONNECT 66 <    syncListener  2  3> 2 done sending SignedState to 3
+2020-03-10 16:34:56.178 DEMO_INFO 51 <      appMainRun  2   > Generated enough FCM test for sequential mode, stop generating 6 >= 6
+2020-03-10 16:34:56.178 DEMO_INFO 51 <      appMainRun  2   > Stop generating transactions 
+2020-03-10 16:34:56.181 DEMO_INFO 51 <      appMainRun  2   > node2 sent ENTER_PAUSE Message
+2020-03-10 16:34:56.181 DEMO_INFO 51 <      appMainRun  2   > TRANSACTIONS FINISHED
+2020-03-10 16:34:56.472 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 1
+2020-03-10 16:34:56.472 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 2
+2020-03-10 16:34:56.474 DEMO_INFO 44 <      threadCons  2   > collectedStartPauseMsg 3

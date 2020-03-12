@@ -127,14 +127,6 @@ public class RegressionUtilities {
 			"database fcfs with owner = swirlds;\"";
 	static final String CREATE_DATABASE_FCFS_EXPECTED_RESPONCE = "CREATE DATABASE";
 
-	public static String OLD_EVENT_PARENT = "will not use old otherParent";
-	public static String INVALID_PARENT = "has invalid otherParent";
-    public static String SIGNED_STATE_DELETE_QUEUE_TOO_BIG = "Signed state delete queue too big";
-
-    // caused by InterruptedException | ExecutionException
-    public static String ERROR_WHEN_VERIFY_SIG = "error while verifying signature";	
-
-
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
 	public static final int EXCEPTIONS_SIZE = 1000;
