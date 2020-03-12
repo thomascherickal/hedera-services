@@ -221,6 +221,12 @@
 			<artifactId>algebra</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.swirlds</groupId>
+			<artifactId>PlatformTestingApp</artifactId>
+			<version>0.6.5</version>
+			<scope>compile</scope>
+		</dependency>
 
 
 	</dependencies>

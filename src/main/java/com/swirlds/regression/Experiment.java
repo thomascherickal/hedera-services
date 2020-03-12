@@ -17,6 +17,8 @@
 
 package com.swirlds.regression;
 
+import com.google.inject.multibindings.MapKey;
+import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -54,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -1194,4 +1197,13 @@ public class Experiment {
 		}
 		return true;
 	}
+
+	private boolean validateExpectedMap(List<File> jsonFiles){
+	    for(SSHService node :sshNodes){
+	        if(new File("/data/expectedmap").exists()){
+	            
+            }
+        }
+	    return false;
+    }
 }
