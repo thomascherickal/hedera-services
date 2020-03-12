@@ -1,39 +1,55 @@
 {
-  "name": "Nathan_FCM_Multiple_Operations_TEST",
+  "name": "Nathan-1620-Crypto-Branch",
   "result": {
 	"uri": "results"
   },
   "cloud": {
 	"service": "aws",
 	"securityGroup": "SwirldsSecGroup",
-	  "instanceType": "M4Xlarge",
+	"instanceType": "M410xlarge",
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
-	//	"regionList": [
-	//	  {
-	//		"region": "us-west-2",
-	//		"numberOfNodes": 4
-	//	  }
-	//	]
 	"regionList": [
 	  {
 		"region": "us-west-2",
-		"instanceList": [
-		  "i-0bd1b4cfad2edfeae",
-		  "i-0079b250fe9ffa68b",
-		  "i-00610640b4c749276",
-		  "i-0b3a7ec82f4b9b84c"
-		]
+		"numberOfNodes": 4
 	  }
 	]
+	//	"regionList": [
+	//	  {
+	//		"region": "us-west-2",
+	//		"instanceList": [
+	//		  "i-0bd1b4cfad2edfeae",
+	//		  "i-0079b250fe9ffa68b",
+	//		  "i-00610640b4c749276",
+	//		  "i-0b3a7ec82f4b9b84c"
+	//		]
+	//	  }
+	//	]
   },
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testFcmMultipleOperationsCfg.json"
+	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json",
+	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testRestartCfg.json",
+	"configs/testRestartBlobCfg.json",
+	"configs/testFcmFreezeCfg.json",
+	"configs/testFcmFreezeBlobCfg.json",
+	"configs/testFcmMultisizeBlobCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectFCQMultiReconnectCfg.json",
+	"configs/testReconnectBlobCfg.json",
+	"configs/testFcm1kThrottlingCfg.json"
+	//	"configs/testFcmCfg.json",
+	//	"configs/testFcm10MBx10KBlobCfg.json",
+	//	"configs/testFcm4kx100KBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -44,9 +60,11 @@
   },
   "slack": {
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
-	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "regression-test",
-	"notifyUserIds": ["UA66NE2NT"],
+	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	"channel": "regression-pcr",
+	"notifyUserIds": [
+	  "UA66NE2NT"
+	],
 	"notifyOn": "ALL"
   }
 }
