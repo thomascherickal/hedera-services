@@ -23,6 +23,7 @@ import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,7 +33,7 @@ import java.util.List;
 
 public class SlackSummaryMsg extends SlackMsg {
 
-	private List<ExperimentSummary> experiments;
+	private List<Pair<ExperimentSummary, List<ExperimentSummary>>> experimentsWithHistorical;
 
 	private List<Throwable> exceptionList;
 
@@ -45,7 +46,7 @@ public class SlackSummaryMsg extends SlackMsg {
 	public SlackSummaryMsg(SlackConfig slackConfig, RegressionConfig regressionConfig,
 			GitInfo gitInfo, String resultFolder) {
 		super(slackConfig);
-		experiments = new ArrayList<>();
+		experimentsWithHistorical = new ArrayList<>();
 		exceptionList = new ArrayList<>();
 		this.regressionConfig = regressionConfig;
 		this.gitInfo = gitInfo;
@@ -56,6 +57,13 @@ public class SlackSummaryMsg extends SlackMsg {
 	 * Add an experiment to this summary.
 	 */
 	public void addExperiment(ExperimentSummary experiment) {
+		addExperiment(experiment, null);
+	}
+
+	/**
+	 * Add an experiment to this summary with historical data.
+	 */
+	public void addExperiment(ExperimentSummary experiment, List<ExperimentSummary> historical) {
 		if (experiment.hasWarnings()) {
 			warnings = true;
 		}
@@ -65,7 +73,7 @@ public class SlackSummaryMsg extends SlackMsg {
 		if (experiment.hasExceptions()) {
 			exceptions = true;
 		}
-		experiments.add(experiment);
+		experimentsWithHistorical.add(Pair.of(experiment, historical));
 	}
 
 	/**
@@ -75,10 +83,12 @@ public class SlackSummaryMsg extends SlackMsg {
 		exceptionList.add(e);
 	}
 
-	protected Attachment generateAttachment(String description, List<ExperimentSummary> experiments, String color) {
+	protected Attachment generateAttachment(String description,
+			List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Test");
 		columnHeaders.add("Unique Identifier");
+		columnHeaders.add("Historical");
 
 		if (experiments.size() > 0) {
 			Attachment.Builder attachment = Attachment.builder();
@@ -87,10 +97,24 @@ public class SlackSummaryMsg extends SlackMsg {
 			newline(sb);
 			List<List<String>> rows = new ArrayList<>();
 			rows.add(columnHeaders);
-			for (ExperimentSummary experiment: experiments) {
+			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
+				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
 				row.add(experiment.getName());
 				row.add(experiment.getUniqueId());
+				StringBuilder hist = new StringBuilder();
+				if (pair.getRight() != null) {
+					for (ExperimentSummary experimentSummary : pair.getRight()) {
+						if (experimentSummary.hasErrors() || experimentSummary.hasExceptions()) {
+							hist.append('E');
+						} else if (experimentSummary.hasWarnings()) {
+							hist.append('W');
+						} else {
+							hist.append('P');
+						}
+					}
+				}
+				row.add(hist.toString());
 				rows.add(row);
 			}
 			table(sb, rows);
@@ -121,20 +145,21 @@ public class SlackSummaryMsg extends SlackMsg {
 		stringBuilder.append(" " + gitInfo.getGitInfo(true));
 		newline(stringBuilder);
 
-		List<ExperimentSummary> successes = new ArrayList<>();
-		List<ExperimentSummary> warnings = new ArrayList<>();
-		List<ExperimentSummary> failures = new ArrayList<>();
+		List<Pair<ExperimentSummary, List<ExperimentSummary>>> successes = new ArrayList<>();
+		List<Pair<ExperimentSummary, List<ExperimentSummary>>> warnings = new ArrayList<>();
+		List<Pair<ExperimentSummary, List<ExperimentSummary>>> failures = new ArrayList<>();
 
 		// TODO maybe sort experiments alphabetically
 
 		// Sort experiments
-		for (ExperimentSummary experiment: experiments) {
+		for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experimentsWithHistorical) {
+			ExperimentSummary experiment = pair.getLeft();
 			if (experiment.hasExceptions() || experiment.hasErrors()) {
-				failures.add(experiment);
+				failures.add(pair);
 			} else if (experiment.hasWarnings()) {
-				warnings.add(experiment);
+				warnings.add(pair);
 			} else {
-				successes.add(experiment);
+				successes.add(pair);
 			}
 		}
 
@@ -159,7 +184,7 @@ public class SlackSummaryMsg extends SlackMsg {
 		}
 
 		// Exceptions
-		for (Throwable t: exceptionList) {
+		for (Throwable t : exceptionList) {
 			Attachment.Builder ab = Attachment.builder();
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
