@@ -20,6 +20,7 @@ package com.swirlds.regression.slack;
 import com.hubspot.slack.client.models.Attachment;
 import com.swirlds.regression.Experiment;
 import com.swirlds.regression.GitInfo;
+import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 
@@ -31,7 +32,7 @@ import java.util.List;
 
 public class SlackSummaryMsg extends SlackMsg {
 
-	private List<Experiment> experiments;
+	private List<ExperimentSummary> experiments;
 
 	private List<Throwable> exceptionList;
 
@@ -54,7 +55,7 @@ public class SlackSummaryMsg extends SlackMsg {
 	/**
 	 * Add an experiment to this summary.
 	 */
-	public void addExperiment(Experiment experiment) {
+	public void addExperiment(ExperimentSummary experiment) {
 		if (experiment.hasWarnings()) {
 			warnings = true;
 		}
@@ -74,7 +75,7 @@ public class SlackSummaryMsg extends SlackMsg {
 		exceptionList.add(e);
 	}
 
-	protected Attachment generateAttachment(String description, List<Experiment> experiments, String color) {
+	protected Attachment generateAttachment(String description, List<ExperimentSummary> experiments, String color) {
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Test");
 		columnHeaders.add("Unique Identifier");
@@ -86,7 +87,7 @@ public class SlackSummaryMsg extends SlackMsg {
 			newline(sb);
 			List<List<String>> rows = new ArrayList<>();
 			rows.add(columnHeaders);
-			for (Experiment experiment: experiments) {
+			for (ExperimentSummary experiment: experiments) {
 				List<String> row = new ArrayList<>();
 				row.add(experiment.getName());
 				row.add(experiment.getUniqueId());
@@ -120,14 +121,14 @@ public class SlackSummaryMsg extends SlackMsg {
 		stringBuilder.append(" " + gitInfo.getGitInfo(true));
 		newline(stringBuilder);
 
-		List<Experiment> successes = new ArrayList<>();
-		List<Experiment> warnings = new ArrayList<>();
-		List<Experiment> failures = new ArrayList<>();
+		List<ExperimentSummary> successes = new ArrayList<>();
+		List<ExperimentSummary> warnings = new ArrayList<>();
+		List<ExperimentSummary> failures = new ArrayList<>();
 
 		// TODO maybe sort experiments alphabetically
 
 		// Sort experiments
-		for (Experiment experiment: experiments) {
+		for (ExperimentSummary experiment: experiments) {
 			if (experiment.hasExceptions() || experiment.hasErrors()) {
 				failures.add(experiment);
 			} else if (experiment.hasWarnings()) {
