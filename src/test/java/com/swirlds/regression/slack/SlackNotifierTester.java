@@ -20,6 +20,7 @@ package com.swirlds.regression.slack;
 import com.swirlds.regression.ExecStreamReader;
 import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.RegressionUtilities;
+import com.swirlds.regression.experiment.ExperimentSummaryData;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
@@ -51,9 +52,53 @@ public class SlackNotifierTester {
                 SLACK_CHANNEL);
 
         //testNoExperiment(sn);
-        testAllFeatures(sn);
+        //testAllFeatures(sn);
+        testSummaryMsg(sn);
         //testFailedExperiment(sn);
         //testSendFile(sn);
+    }
+
+    private static void testSummaryMsg(SlackNotifier sn){
+        RegressionConfig regConfig = getRegConfig();
+        GitInfo gi = new GitInfo();
+        gi.gitVersionInfo();
+        SlackSummaryMsg summaryMsg = new SlackSummaryMsg(
+                regConfig.getSlack(),
+                regConfig,
+                gi,
+                "some-folder"
+        );
+
+        summaryMsg.addExperiment(new ExperimentSummaryData(
+                true,
+                true,
+                true,
+                "a bad test",
+                "1234"
+        ));
+        summaryMsg.addExperiment(new ExperimentSummaryData(
+                false,
+                false,
+                true,
+                "another bad test",
+                "12345"
+        ));
+        summaryMsg.addExperiment(new ExperimentSummaryData(
+                true,
+                false,
+                false,
+                "a warning test",
+                "123456"
+        ));
+        summaryMsg.addExperiment(new ExperimentSummaryData(
+                false,
+                false,
+                false,
+                "passed",
+                "1234567"
+        ));
+
+        sn.messageChannel(summaryMsg);
     }
 
     private static void testAllFeatures(SlackNotifier sn) {
