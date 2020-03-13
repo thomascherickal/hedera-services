@@ -557,10 +557,15 @@ public class Experiment {
                 String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
                 String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
                 InputStream csvInput = getInputStream(csvFilePath);
-                if (logInput != null && csvInput != null) {
-                    nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
-                            csvInput)));
+                LogReader logReader = null;
+                if (logInput != null) {
+                    logReader = LogReader.createReader(1, logInput);
                 }
+                CsvReader csvReader = null;
+                if (csvInput != null) {
+                    csvReader = CsvReader.createReader(1, csvInput);
+                }
+                nodeData.add(new NodeData(logReader, csvReader));
             }
         }
         return nodeData;

@@ -32,7 +32,6 @@ import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
-import static com.swirlds.regression.RegressionUtilities.SIGNED_STATE_DELETE_QUEUE_TOO_BIG;
 
 public class PtdValidator extends NodeValidator {
 	private boolean isValidated = false;
@@ -83,8 +82,6 @@ public class PtdValidator extends NodeValidator {
 				for (LogEntry le : nodeLog.getExceptions()) {
 					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
-					} else if (le.getLogEntry().contains(SIGNED_STATE_DELETE_QUEUE_TOO_BIG)) {
-						addWarning(String.format("Node %d has exception:[ %s ]", i, le.getLogEntry()));
 					} else {
 						numProblems++;
 						exceptionString += le.getLogEntry() + "\\r";
