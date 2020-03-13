@@ -119,8 +119,10 @@ public class Experiment {
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
 	private NodeMemory nodeMemoryProfile;
 
-    // Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of savedState the nodes start from;
-    // At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect is considered to be invalid
+	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
+	// savedState the nodes start from;
+	// At the end of the test, if the last entry of roundSup of reconnected node is less than this value, the reconnect
+	// is considered to be invalid
 	private double savedStateStartRoundNumber = 0;
 
 	protected boolean warnings = false;
@@ -498,10 +500,15 @@ public class Experiment {
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
 				String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
 				InputStream csvInput = getInputStream(csvFilePath);
-				if (logInput != null && csvInput != null) {
-					nodeData.add(new NodeData(LogReader.createReader(1, logInput), CsvReader.createReader(1,
-							csvInput)));
+				LogReader logReader = null;
+				if (logInput != null) {
+					logReader = LogReader.createReader(1, logInput);
 				}
+				CsvReader csvReader = null;
+				if (csvInput != null) {
+					csvReader = CsvReader.createReader(1, csvInput);
+				}
+				nodeData.add(new NodeData(logReader, csvReader));
 			}
 		}
 		return nodeData;
@@ -552,7 +559,8 @@ public class Experiment {
 			}
 		}
 
-        // If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the event streams wont be generated, which would cause mismatch in evts files on the nodes
+		// If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the
+		// event streams wont be generated, which would cause mismatch in evts files on the nodes
 		boolean reconnect = false;
 
 		// Build a lists of validator
@@ -612,7 +620,8 @@ public class Experiment {
 	}
 
 	private void createStatsFile(String resultsFolder) {
-        String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
+		String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(),
+				RegressionUtilities.INSIGHT_SCRIPT_LOCATION, resultsFolder).split(" ");
 		ExecStreamReader.outputProcessStreams(insightCmd);
 
 	}
@@ -705,7 +714,9 @@ public class Experiment {
 
 	/**
 	 * Confirms that all nodes can be connected to, and that sets them up and prepares them for the experiment.
-     * @throws IOException - SocketException (child of IOException) is thrown if unable to connect to node.
+	 *
+	 * @throws IOException
+	 * 		- SocketException (child of IOException) is thrown if unable to connect to node.
 	 */
 	void setupSSHServices() throws IOException {
 		String login = regConfig.getCloud().getLogin();

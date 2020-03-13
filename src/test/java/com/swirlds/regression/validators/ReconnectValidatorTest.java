@@ -17,27 +17,32 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.logs.LogEntry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.swirlds.regression.validators.RestartValidatorTest.loadNodeData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReconnectValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/reconnectFCM/1_restart_no_state_on_disk",
-			"logs/reconnectFCM/2_restart_with_state_on_disk",
+			"logs/reconnectFCM/2_killNode",
 			"logs/reconnectFCM/3_disable_enable_network"
 	})
 	void validateReconnectLogs(String testDir) throws IOException {
 		System.out.println("Dir: " + testDir);
-		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "ReconnectStats", 1);
+		List<NodeData> nodeData = loadNodeData(testDir);
 		NodeValidator validator = new ReconnectValidator(nodeData);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
@@ -62,6 +67,79 @@ class ReconnectValidatorTest {
 		}
 		assertEquals(true, validator.isValid());
 		assertEquals(0, validator.getErrorMessages().size());
+	}
+
+	/**
+	 * node0 and node3 miss swirlds.log file
+	 */
+	@Test
+	public void nodeLogIsNullTest() {
+		List<NodeData> nodeData = loadNodeData("logs/PTD-MissLog03");
+		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		assertFalse(validator.nodeLogIsNull(nodeData.get(1).getLogReader(), 1));
+		assertFalse(validator.nodeLogIsNull(nodeData.get(2).getLogReader(), 2));
+
+		assertTrue(validator.nodeLogIsNull(nodeData.get(0).getLogReader(), 0));
+		assertTrue(validator.nodeLogIsNull(nodeData.get(3).getLogReader(), 3));
+
+		assertEquals(false, validator.isValid());
+		assertEquals(2, validator.getErrorMessages().size());
+	}
+
+	/**
+	 * node0 and node2 miss csv file
+	 */
+	@Test
+	public void nodeCsvIsNullTest() {
+		List<NodeData> nodeData = loadNodeData("logs/PTD-MissCsv02");
+		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		assertFalse(validator.nodeCsvIsNull(nodeData.get(1).getCsvReader(), 1));
+		assertFalse(validator.nodeCsvIsNull(nodeData.get(3).getCsvReader(), 3));
+
+		assertTrue(validator.nodeCsvIsNull(nodeData.get(0).getCsvReader(), 0));
+		assertTrue(validator.nodeCsvIsNull(nodeData.get(2).getCsvReader(), 2));
+
+		assertEquals(false, validator.isValid());
+		assertEquals(2, validator.getErrorMessages().size());
+	}
+
+
+	@Test
+	public void isAcceptableTest() {
+		final int nodesNum = 4;
+		final int firstId = 0;
+		final int lastId = nodesNum - 1;
+
+		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
+
+		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
+				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
+				0, "thread",
+				"Exceptions acceptable at reconnect",
+				true);
+		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
+		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
+
+		LogEntry reconnectNodeAcceptable = new LogEntry(Instant.now(),
+				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE,
+				0, "thread",
+				"Exceptions acceptable for reconnect node",
+				true);
+		// this exception should only be acceptable for the reconnect node
+		assertFalse(validator.isAcceptable(reconnectNodeAcceptable, firstId));
+		assertTrue(validator.isAcceptable(reconnectNodeAcceptable, lastId));
+	}
+
+	/**
+	 * get a dummy ReconnectValidator with NodeData's size be defined
+	 * @return
+	 */
+	ReconnectValidator dummyReconnectValidator(final int nodesNum) {
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; i < nodesNum; i++) {
+			nodeData.add(new NodeData(null, null));
+		}
+		return new ReconnectValidator(nodeData);
 	}
 
 }

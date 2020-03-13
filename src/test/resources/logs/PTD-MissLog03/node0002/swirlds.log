@@ -1,0 +1,572 @@
+2020-03-06 17:23:54.443 STARTUP 1 main Browser main() started
+2020-03-06 17:23:54.476 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-03-06 17:23:54.558 STARTUP 1 main About to run startPlatforms()
+2020-03-06 17:23:54.565 STARTUP 1 main About do crypto instantiation
+2020-03-06 17:23:54.571 STARTUP 1 main About start loading keys
+2020-03-06 17:23:55.502 STARTUP 1 main Done loading keys
+2020-03-06 17:23:55.502 STARTUP 1 main About to start creating Crypto objects
+2020-03-06 17:23:56.384 STARTUP 1 main Done creating Crypto objects
+2020-03-06 17:23:56.384 STARTUP 1 main Done with crypto instantiation
+2020-03-06 17:23:56.389 STARTUP 1 main Starting platforms
+2020-03-06 17:23:56.625 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-06 17:23:56.626 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-06 17:23:57.217 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-06 17:23:57.217 STARTUP 1 main Done with starting platforms
+2020-03-06 17:23:57.240 STARTUP 1 main Browser main() finished
+2020-03-06 17:23:57.382 STARTUP 40 <     platformRun  2   > JVM arg: -Xmx100g
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -Xms8g
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:+UseZGC
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:ConcGCThreads=14
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:+UseLargePages
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-06 17:23:57.383 STARTUP 40 <     platformRun  2   > Parsing JSON FCMReconnectBlob.json
+2020-03-06 17:23:57.467 DEMO_INFO 40 <     platformRun  2   >  insertSeq         = true
+2020-03-06 17:23:57.468 DEMO_INFO 40 <     platformRun  2   >  appendSig         = true
+2020-03-06 17:23:57.468 DEMO_INFO 40 <     platformRun  2   >  variedSize        = false
+2020-03-06 17:23:57.468 DEMO_INFO 40 <     platformRun  2   >  payloadByteSize   = 100
+2020-03-06 17:23:57.468 DEMO_INFO 40 <     platformRun  2   >  maxByteSize       = 100
+2020-03-06 17:23:57.468 DEMO_INFO 40 <     platformRun  2   >  type              = TYPE_RANDOM_BYTES
+2020-03-06 17:23:57.469 DEMO_INFO 40 <     platformRun  2   > Size distribution  = [100]
+2020-03-06 17:23:57.469 DEMO_INFO 40 <     platformRun  2   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-06 17:23:57.469 DEMO_INFO 40 <     platformRun  2   > Ratio distribution = [100.0]
+2020-03-06 17:23:57.474 DEMO_INFO 40 <     platformRun  2   > Goal is TRANS_PER_SECOND_PER_NODE targe 10.0
+2020-03-06 17:23:57.477 STARTUP 40 <     platformRun  2   > PlatformTestingDemo: Public Key -> hex('0x60B47E40889C05E151195F708AAB19C0620167ECE882B75E6BEC27414D396E25')
+2020-03-06 17:23:57.480 DEMO_INFO 40 <     platformRun  2   > This test will generate sequential FCM payload:
+2020-03-06 17:23:57.480 DEMO_INFO 40 <     platformRun  2   > Set data account counter as 0
+2020-03-06 17:23:57.480 DEMO_INFO 40 <     platformRun  2   > Set FCQ account counter as 0
+2020-03-06 17:23:57.480 DEMO_INFO 40 <     platformRun  2   > Set Blob account counter as 0
+2020-03-06 17:23:57.498 DEMO_INFO 53 <      appMainRun  2   > Node 2 starts transactions ........
+2020-03-06 17:23:57.569 STARTUP 53 <      appMainRun  2   > PlatformTestingDemo: Signed Message { publicKey = '0x60B47E40889C05E151195F708AAB19C0620167ECE882B75E6BEC27414D396E25', privateKey ='0x4EC45E05C561C0B1965945F53F4F3ADFF89ECB38903DD30FBB8EDD6F6735EE6D60B47E40889C05E151195F708AAB19C0620167ECE882B75E6BEC27414D396E25', signature = '0xEB996540FD97C38F0C8ED7A9ADFD4933EA2807FAEFEB5C1137CED9C9CF4704FEC3F2D83647BA1EF77BEBCFBF20C3CD9A14E21B7888BB2C62809A25FB92679E0B', message = '0x1A8A205287200802100222802014B9E8846C2BF7EA31A525A5A7B2BB376D80A5D1365F4DF515329C1BCA8C4BCCB89DED9146D8FDD9AE0DC83CD33B1EB8756FBFE17E1343537275500CFA58D5BB173E57B2419C90438326FDE72868C23A0B7F9A97242D24CA5702D3EACD493429F8C3C59AE5A7BBC69BD943ABF07549B948DA737F9B189E295481D5738754424CE7DE78C42F38555547964265084730424B4A74800A2258CB9B9259F43F37932AB338A9260F31BFE3BC19050362BF408FB272DCE3CB372425819E32A5623F0D65EEF9EB00EB87512490C7FA15837360FC251ECCF9EE7C95860136C1B92E6064CC715ED2671B7EB7AC4192376D05A7166FCC9AF6ADB4ABE6BA38038A19389971B8D55937796AABC9A2AE73B941169B63B0D326D69614485ABBEA498A4EE6ACA0E3FA4BED999BD8AE759C75B4FBF82CC393ED6C300A39A27E39FCF76BCCF626EEB884C5BDE2E2A94D37324A27957FC47407CE10FE8901A9FF8BF845FB56F5B22F98595CEDEE671959E17D743A24969262D3B04B076D808CF0738CE77FF8C9C2A0912490B592C7C18130ED002C26BA1F425DCF98C7FE7B30B7430BCCDBAA2885ED7ED5BE669C92F895C7D6CDC9B97D2AC841ED716A72EE6E032CEA6E91901E2C362D1F2924A7CEB89AFBF063BC1604D609F4CF1BF3EC872A7CD644B8135D8B83C480F9066C32725D2701D85E24358A2865DDBD82E19A28310C01576D0156A3D76D181EACDDA5EC2B8E328D654CC7DBD98AA90627E63D68EEF87F05312E296C2BDBFB8DBCEFA49CAE9BCDF3B2715DD97183837A1977DF13EE2CE854149BAD43BF314D0971881A57DFF6D6532EE5C9FBB6C909EE07585DA62E6026EEB6C08758E7D5CB99EBA9B0E5216CC8D91307A2C96CD4A8BC596755D4430873A2F7CC932D324233099CA4FC820EAD4E152DDF066162A9DC405C428E03493A66E134B6EA1ADF2C2668B48184610C4FA27B9953B6F5D053935C7F925ACFA3E869421D4651CCA4756388AD97E624BC12F7E32640C44B0A588BF4A1159D8796266CFE0F7EE2C2C7957782DB7AD86632BE13093AF0403C777E12736EB303ABA25B7E740DF7D0CF808CFA2F12BC66310214640E47BD8035E68FFA45C731C874BB9001A6371F2D9BB381AFAF5927DB8817B1BDF5D9D3AEB929DDF25B435AC54C48411BBBE276B822F59888E6B274F3DF61DB9F272F61D3DC06ACB6AABAA2F751F759717B352FF033E2AEA6FAEB9C9E9D4E8BEDF05BAB7BC973E3A9ACE2AA90D75F4F97D659CCA3F2C5FAE9D784444BA1133A00FF06D6C03E26918EDDFA209DE37476295D3DAD9E5690CE8DABA3EEEDBAC93E79EAB055800B7222F73F89DFDCB0C7084FC7E19A25AC1CEF966A19EA492E57C466A88C533797776AFAD62656D52E9A7E3E6E3DC14B12C83E914B762AB4342AA22815E883185BA2CF772D5C8F567EC1286BCFABB36CFD57B436492E7F7B7AC3A100712431A264773AEBD08D65A3775834360EEE5E6BB330D81EA2CDDA5D9F10FB60E13E7D30D5B39F69D0F8B82D244282586FBB0AB0D2DB41835C3D9CF6BA9611DBEDE81BC663BB3FE042BFB85F447CFCBDDEE1CC41C7DECF7ABB170CDED16CBC070031078CD756F519C004913BC941533668F60FC258E193CACC0C80466306A3E1ECBAF05690C22D5FE61A10B35AFD4B32C0950F831B24AD90DE56D63FDFCD78D1638871D7FE0C64BED6BD1479D00B0CC0BB346C6CFC468B9A043F3B6E2A8F211B7E513AF828C5392CB560D7B6BC4E091CD48038E3BB5F532D94B16AED1DB208723A6DC65327F986B32B8A607FE08E8A77A95022756B606164AAE2DF4D0545353AF7495399A984FBDEE740BE13B2AEE1087C249998F5CD1F0FA602A51522D7E462F7751E2F6FAF2B5F1988CA0ADCACC914B336146E93C6AF24A902B5F22823B7D6E5372C5ECF1B22B1F7EB9437BE769263581CDA1055581B791D6921D9C089B4344BB718DA3205D132381EC1B9EB8A048099F5EBAF9F270C5D2A366E9B085CB9E41AB5B58597CEFCA39CA26CFBA76B2631492EF659A965403641D8D5270FF60FA126D476EB0FE1798B628B6D8070E14DDB5DCE6821FE1638EC953067795AA9433EA871EEFE3FDAD759CF45FC52720D27D8715A1900FDA9D4399DA72F78627776D1BA0DDD62E10AD46BAE761A8A114C9B60414410AC5BDDE4919451E377149CC354DE43959D42452D40CBE648DE63E7C15630EB6361A0F6D649F922B5C04FE878907853B65BC6FBB24D777F5E81B3994419C42C437FA5480B2B1035519269EC305F4F387F1F60AFA9E70757927600E0E18C278591B81C0A81605E1A2B5DABF2175A10533C811AAEDE8755CD0A787B1CF7B3A8BFB682087CD7F330439282D0C9E599CBA19173932105A73DB8830F0D893C7F3837845F4060DDB115723EC88A5F56807488A3D47C6D360521A0DDE7CEF91CFEEEA65199F1BF285C604046D0FD2A2B6D632960F31ADEAFE5660CA8858F6F53B8838AB30A19027182A7B2B1524267FFD8D54D6B96C8A6274AF5DFF884517AB8C5D70E6D950D52A53B47DD1A8AE61D798F68DE6E80713053ABBBC52233CC6B692C6A927FFEF355F93BDD980E416801A1A9A3EBD1631AB8780529AD1CDBE959B328E3B579FF49356272CE461F32BE176B786C4618B6563D2651B456AC6348F16B458DFC677F5CEF3D6DC0A5DBF8D134BAC690A86CD9D0C067A956F0A5EEBB17A296D5FC0810D2011F431FB61BA6FC4468B93E6D17A1C5D216720BC2D200C95ED0FBCE2027FE215FF6A199AE552691671D1B8CD9E34B87711DCA55EA505A2C46FB09ADF6397E15B515F4A200ED0C54D9FF10F1F4B5ADFB37C676B92A7E0F534E65214C11B1C04E03C43FF16CAD03FEAE860CC9F1D2671CDC733E40C4BFA2E1DAC23DAB788A03BF815E830128E411BB5FF94DD5259EBD76FD595AF763B9D72CE517436BAA160931D73FD5910EC92AAC1F6672B892CCC9AB4311406F1FC5B8BF7EA9E4512A0CB6BE9FE77B24EA29F7660A19577BFE5096F2CC20853D81BECFD823ADC6C9A24CFB56431C8882C5899A721DDE13099C82DF93ECD6077BA572E3EBDD9F266095FD993D1C013835512648CB0298ECB44340196C390BDA466647A31D366F29499BD6C28BED5A8F0D5895D863ABF5E1AE3B12A36FECA3A33E98EB8AC9F7DDE9DA35C70BABA97C1E9D43EC349EB950F891908CF6218FF853095722F0FFC2CE840C2F56B9DC8896E6BBB0A358D4BBFE62D8FD73011DFA6B02CF61FB9C006F5EACFE895CE3B36F61A70414A9DFD4369F81636667CB8FA3D7CFBF870A91C33CF8BD7103FE8E97A560A7556E50925C803004F7DC0FFDBA3DA2738924708474D9CDF24D22017244DB333553111825A269F599BC3C19DD72A59BE0E3ACC48FEF305D051CD8E8B54981B3B5E473706ECEB97546BD5175DDA320F816054B39EC4910EE918AB171BB8A6ED10FB416FAA87D7823D76B91ABE1C8EC04CA2C8B7F174898318BEB965491BED677ACB278EBF440086FFB1B6337FD741D70F91A184AC7E67F6D57B51C718BF190E00D901B912F1B11543083F83687CDCA3DFF94877800D226DD8D0164C12904AE1E3746981964063BA90741B6EC060C90C4DCE3364056EE7732D70E8BB948285FD4B98FC31F8D6FB8BC52542CD5AAFE594BC25437E4CDD29B6027BEADF466672C4F456AE2A41AB6A0075FA19E53B2868522E6B84ACE23487B1A62187651A61B7B84FF9AEE6CB4B01A02C36F1D3770194E52C1E5EF1A37CE11AF7EC43CE0107564A8C527EBEEFC25576230EB2D9A52408C38B1327FEA3017902D6B92B94494F7DB58AFDB484BAD525B5060A502DFAA19C4AFCEFF5609958A4EFB41F3436D18FA2597D4C65AFA3E689B58751144CAC6D78399842B18C1C9C18F45E07EA3C110299E0964BBDA247C0B65271E0869FE493E12E6109CF2E4CC0C13F98E6D702BE904CE3F8CD07DD8BBD319575B449F599D276D73A4BB016BBCEC76293B1D049ABA5FD3F297E2988A43CE39DB09E743F8B702985D47F5B82491986B12AE92F9E3C4E0167CE20FD59A43FC3DD23AF4EBDD7B4F3A9A003B6068EA7BB51C50F03D28468452FCF63AF4C728D242C8F0D5FC865E248EF90082A0BD11B3FF904503B1106A1AE8EC418AA5C888B882B411D4D4E41BAA9EE6BA4420DF6D947EE21EB8559835C687153AEB697AC48BA03B3CA18386C0A0D680E1FE2FA3742362BBE9A2123786802620CB8B8858961CC200B6D212F06DD7DEE842B0869DCB9C18352B76029575934445195E132D28AE7A0FD85E5E62DAB4CCDA52600E8CAFED60E62E8F5427B51E84CA6A9BFB2DF77C85A835227D95B3B1A0EF0397C0E0EA382DB1216BBD58BF968F4D213D36F8C13150FB385CB927BADB14203FE292FA9B55557AA22B771F0E4250153284F01AF86D5596183319C3A155BB62E25273DFCB4D1935CE17D222E1BE74E37971D424A7474798D72C773B80D46C7FB0FD54895EE073EC4F1855D27F7947009E4D5D65ADC609EC79B62A27DC220772057B4C1836003DB4A83D6E104E36D57AE9223CD40E677D19B5A040B4399C7BF67369BC7B7A541CACB636B3527C8F63D7BA40CCD0A49A19752D9D43BC5AB42D18AAE99164D7B64B7E7DDCB159966D37A6A3BA97AB054557B8BEC79458456FA1DE1B2091922AB6290456A750E2B591ABBC50E7EB2B6D3FEB4C661954798AE77971FCB7B1CE8C149CFAF536BFF2A80F970AAFE17D83A3D6D0D424F4D84034CAC74DFF5B8B24D84942F033CBF6A4EDCE034686091F625C4A24B9939BBA253AD9A766343ED22CCEFF77D706CCCA90FF0935E7EF81811B4C4FCDC9FAB7681D576A314B1393E37AC99427E60344893715D0FD2EA6B00C113D8FF93769D35351A4E7B4AB7215627F759C6CAD885F2B131688673124C2C1D1C3266775B4E0A520694D4AD8BA81E271605C0693D2F1152B4467A81EF52630A2CC247FC246B38A7027AEAF121B17A8135B509A1680F06950CEF969445E0E7A5E210F40755682088D09AF77CDEA1D715D82A5C68C5BF6E463429E5F81C4F268E8325EF842766B681C7D0B8832A95C536A7FBF043ADAC05147A1092D25CB0D9293E5FFD0166EEE2EE7F40EE88A3EA1A83102B55BF76DB1885CA8C29C762FDE8A41DCD2273FF36DA476811ADF613C3D0BE2BBD0E2CAA25000B4BEA5265AD1A92D20C22BBAFB25B3EDCB2E25637DDA8662EF2510141E05C5ED4CD661C6D22EF4ED3B5F549FB6B16AB4B1DB39D7055854FF2533A7EE7BF860F5087CFA2157D50A3D58D80813720CA35F6A8DF319773984C854A07BE900FA136B3543480035F17BFEBF56FA0F359953DCBC1805E43495797760FAA8B5E644F322CCB3760F7D309A0C00794CBA8060D0F5A157B576DC4196E4D197FCD0D572BAD1CDE483FB30A4FECCBD59189A18A9583E14095B9AAD42C56331B47AE8E67C48FD57F6C4D4AD2701D51BAEEBA5A7FA8A87C4E6E7ECA43FF330C193D80A7E751D7D58B160C68C1B449E5E79441D0CFBEAEAB4725880213091EC681600AB696EE18A00ADD31C74EE294BC3171A3354266162FC7C46C92FA01528E4689372EF41DD62597C6C9C9203587BBAEE5388B598BCF0346859DDD3217702869361E4B0607F749C90CE27BF033B30F9E44E760901285A56C1CF01ED8CB4D4237EF2CE9159DA2231AF73B6768B81C111E15A299859BC6CFFD5FA898CA94FEEF8A0008F0A8C23157214249B32759FE186F13C8B3C34F0D86F92C005DAC1CB619502FB21905835179C9E821AD1B44AB28A6DAEFD2A3E1E9AB41619C0DE6132E129538408FC2D0E8A88A681510AD6' }
+2020-03-06 17:23:57.684 PLATFORM_STATUS 64 <       heartbeat  2  0> Platform status changed to: STARTING_UP
+2020-03-06 17:23:57.685 STARTUP 64 <       heartbeat  2  0> Platform Status Change STARTING_UP 
+2020-03-06 17:23:57.817 PLATFORM_STATUS 36 < pollIntakeQueue  2   > Platform status changed to: ACTIVE
+2020-03-06 17:23:57.817 STARTUP 36 < pollIntakeQueue  2   > Platform Status Change ACTIVE 
+2020-03-06 17:24:00.311 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 21' to disk
+2020-03-06 17:24:00.325 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=21, snapshotId=00000003-00018006-1, timeStarted=2020-03-06T17:24:00.313886Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:24:00.333 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 9648 bytes; costs 4 ms
+2020-03-06 17:24:00.338 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 21' waiting for snapshotTask
+2020-03-06 17:24:00.532 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=21, snapshotId=00000003-00018006-1, timeStarted=2020-03-06T17:24:00.313886Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:24:00.533 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=21, snapshotId=00000003-00018006-1, timeStarted=2020-03-06T17:24:00.313886Z, timeCompleted=2020-03-06T17:24:00.532847Z, complete=true, error=false ]
+2020-03-06 17:24:00.533 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 21' to disk
+2020-03-06 17:26:00.328 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 1134' to disk
+2020-03-06 17:26:00.330 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=1134, snapshotId=00000003-0001800A-1, timeStarted=2020-03-06T17:26:00.328763Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:26:00.348 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 547360 bytes; costs 14 ms
+2020-03-06 17:26:00.357 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 1134' waiting for snapshotTask
+2020-03-06 17:26:02.839 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=1134, snapshotId=00000003-0001800A-1, timeStarted=2020-03-06T17:26:00.328763Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:26:02.839 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=1134, snapshotId=00000003-0001800A-1, timeStarted=2020-03-06T17:26:00.328763Z, timeCompleted=2020-03-06T17:26:02.839450Z, complete=true, error=false ]
+2020-03-06 17:26:02.839 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 1134' to disk
+2020-03-06 17:26:56.547 SOCKET_EXCEPTIONS 67 <    syncListener  2  3> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 2 listening for 3:
+java.io.EOFException: null
+	at java.io.DataInputStream.readByte(DataInputStream.java:272) ~[?:?]
+	at com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:218) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:131) [swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncListener.run(SyncListener.java:90) [swirlds-platform-core-0.6.5.jar:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-06 17:26:56.547 SOCKET_EXCEPTIONS 69 <    syncCaller-0  2   > SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 2 listening for 3:
+javax.net.ssl.SSLException: Connection reset
+	at sun.security.ssl.Alert.createSSLException(Alert.java:127) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:320) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:263) ~[?:?]
+	at sun.security.ssl.TransportContext.fatal(TransportContext.java:258) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1342) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:844) ~[?:?]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
+	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+	Suppressed: java.net.SocketException: Broken pipe (Write failed)
+		at java.net.SocketOutputStream.socketWrite0(Native Method) ~[?:?]
+		at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:110) ~[?:?]
+		at java.net.SocketOutputStream.write(SocketOutputStream.java:150) ~[?:?]
+		at sun.security.ssl.SSLSocketOutputRecord.encodeAlert(SSLSocketOutputRecord.java:81) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:351) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:263) ~[?:?]
+		at sun.security.ssl.TransportContext.fatal(TransportContext.java:258) ~[?:?]
+		at sun.security.ssl.SSLSocketImpl.handleException(SSLSocketImpl.java:1342) ~[?:?]
+		at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:844) ~[?:?]
+		at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
+		at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
+		at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
+		at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+		at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
+		at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
+		at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+		at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+		at java.lang.Thread.run(Thread.java:835) [?:?]
+Caused by: java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:186) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:140) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:448) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:68) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1132) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:828) ~[?:?]
+	... 9 more
+2020-03-06 17:28:00.931 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 2275' to disk
+2020-03-06 17:28:00.932 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=2275, snapshotId=00000003-000184DD-1, timeStarted=2020-03-06T17:28:00.932199Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:28:00.997 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 871936 bytes; costs 60 ms
+2020-03-06 17:28:01.006 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 2275' waiting for snapshotTask
+2020-03-06 17:28:05.168 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=2275, snapshotId=00000003-000184DD-1, timeStarted=2020-03-06T17:28:00.932199Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:28:05.168 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 2275' to disk
+2020-03-06 17:28:05.168 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=2275, snapshotId=00000003-000184DD-1, timeStarted=2020-03-06T17:28:00.932199Z, timeCompleted=2020-03-06T17:28:05.168494Z, complete=true, error=false ]
+2020-03-06 17:30:03.042 SOCKET_EXCEPTIONS 169 sync_server_2 2 got new connection from 3, disconnecting old one
+2020-03-06 17:30:03.135 RECONNECT 67 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 4798. 
+ selfCounts: [<node0: 15004>, <node1: 14803>, <node2: 14741>, <node3: 6859>] 
+ otherCounts: [<node0: 4797>, <node1: 4671>, <node2: 4686>, <node3: 4611>]
+2020-03-06 17:30:03.300 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 3431' to disk
+2020-03-06 17:30:03.301 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=3431, snapshotId=00000003-000184E2-1, timeStarted=2020-03-06T17:30:03.301030Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:30:03.320 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 871936 bytes; costs 16 ms
+2020-03-06 17:30:03.329 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 3431' waiting for snapshotTask
+2020-03-06 17:30:07.417 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=3431, snapshotId=00000003-000184E2-1, timeStarted=2020-03-06T17:30:03.301030Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:30:07.417 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=3431, snapshotId=00000003-000184E2-1, timeStarted=2020-03-06T17:30:03.301030Z, timeCompleted=2020-03-06T17:30:07.417379Z, complete=true, error=false ]
+2020-03-06 17:30:07.417 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 3431' to disk
+2020-03-06 17:30:07.418 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/21/SignedState.swh'
+2020-03-06 17:30:07.418 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/21/PostgresBackup.tar.gz'
+2020-03-06 17:30:07.418 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/21'
+2020-03-06 17:31:17.561 RECONNECT 67 <    syncListener  2  3> node2 sent commEventDiscarded to node3. The discarded event was created by node0, sequence number: 14981. 
+ selfCounts: [<node0: 18235>, <node1: 18029>, <node2: 17931>, <node3: 6859>] 
+ otherCounts: [<node0: 14980>, <node1: 14781>, <node2: 14722>, <node3: 6859>]
+2020-03-06 17:31:17.564 RECONNECT 67 <    syncListener  2  3> 2 got commStateRequest from 3
+2020-03-06 17:31:17.565 RECONNECT 67 <    syncListener  2  3> 2 started sending SignedState to 3
+2020-03-06 17:31:17.570 DEMO_INFO 67 <    syncListener  2  3> Starts FCMFamily diffCopyTo
+2020-03-06 17:31:42.357 DEMO_INFO 67 <    syncListener  2  3> Root Hash for Storage map [20, 102, -89, 121, -57, 10, -62, 82, 56, -76, 104, -7, -78, -100, 72, -94, -44, -53, -118, -121, 93, 109, -47, 37, -10, 32, 115, 61, -41, -51, -59, 7, 55, -61, 112, -113, -47, 109, 10, 3, -11, -67, -111, -5, -75, -17, -123, -55]
+2020-03-06 17:31:42.357 DEMO_INFO 67 <    syncListener  2  3> Root Hash for FCMap map [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+2020-03-06 17:31:42.357 DEMO_INFO 67 <    syncListener  2  3> Root Hash for FCQ map [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+2020-03-06 17:31:42.358 DEMO_INFO 67 <    syncListener  2  3> Finished FCMFamily diffCopyTo
+2020-03-06 17:31:42.358 RECONNECT 67 <    syncListener  2  3> 2 done sending SignedState to 3
+2020-03-06 17:32:16.873 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 4262' to disk
+2020-03-06 17:32:16.874 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4262, snapshotId=00000003-00018D30-1, timeStarted=2020-03-06T17:32:16.873903Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:32:16.894 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 871936 bytes; costs 16 ms
+2020-03-06 17:32:16.904 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 4262' waiting for snapshotTask
+2020-03-06 17:32:21.552 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4262, snapshotId=00000003-00018D30-1, timeStarted=2020-03-06T17:32:16.873903Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:32:21.553 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 4262' to disk
+2020-03-06 17:32:21.553 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4262, snapshotId=00000003-00018D30-1, timeStarted=2020-03-06T17:32:16.873903Z, timeCompleted=2020-03-06T17:32:21.553014Z, complete=true, error=false ]
+2020-03-06 17:32:22.229 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1134/SignedState.swh'
+2020-03-06 17:32:22.232 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1134/PostgresBackup.tar.gz'
+2020-03-06 17:32:22.232 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/1134'
+2020-03-06 17:34:18.470 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 4482' to disk
+2020-03-06 17:34:18.471 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4482, snapshotId=00000003-00018D35-1, timeStarted=2020-03-06T17:34:18.470840Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:34:18.492 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 871936 bytes; costs 19 ms
+2020-03-06 17:34:18.504 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 4482' waiting for snapshotTask
+2020-03-06 17:34:23.794 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4482, snapshotId=00000003-00018D35-1, timeStarted=2020-03-06T17:34:18.470840Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:34:23.794 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=4482, snapshotId=00000003-00018D35-1, timeStarted=2020-03-06T17:34:18.470840Z, timeCompleted=2020-03-06T17:34:23.794264Z, complete=true, error=false ]
+2020-03-06 17:34:23.794 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 4482' to disk
+2020-03-06 17:34:23.795 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2275/SignedState.swh'
+2020-03-06 17:34:23.799 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2275/PostgresBackup.tar.gz'
+2020-03-06 17:34:23.800 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/2275'
+2020-03-06 17:36:00.302 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 5301' to disk
+2020-03-06 17:36:00.304 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=5301, snapshotId=00000003-00018D37-1, timeStarted=2020-03-06T17:36:00.303350Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:36:00.322 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 912928 bytes; costs 16 ms
+2020-03-06 17:36:00.330 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 5301' waiting for snapshotTask
+2020-03-06 17:36:05.284 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=5301, snapshotId=00000003-00018D37-1, timeStarted=2020-03-06T17:36:00.303350Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:36:05.285 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=5301, snapshotId=00000003-00018D37-1, timeStarted=2020-03-06T17:36:00.303350Z, timeCompleted=2020-03-06T17:36:05.284705Z, complete=true, error=false ]
+2020-03-06 17:36:05.285 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 5301' to disk
+2020-03-06 17:36:05.285 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3431/SignedState.swh'
+2020-03-06 17:36:05.289 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3431/PostgresBackup.tar.gz'
+2020-03-06 17:36:05.289 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/3431'
+2020-03-06 17:37:17.728 DEMO_INFO 53 <      appMainRun  2   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2020-03-06 17:37:17.728 DEMO_INFO 53 <      appMainRun  2   > Stop generating transactions 
+2020-03-06 17:37:17.731 DEMO_INFO 53 <      appMainRun  2   > node2 sent ENTER_PAUSE Message
+2020-03-06 17:37:17.731 DEMO_INFO 53 <      appMainRun  2   > TRANSACTIONS FINISHED
+2020-03-06 17:37:17.964 DEMO_INFO 45 <      threadCons  2   > collectedStartPauseMsg 1
+2020-03-06 17:37:18.025 DEMO_INFO 45 <      threadCons  2   > collectedStartPauseMsg 2
+2020-03-06 17:37:18.025 DEMO_INFO 45 <      threadCons  2   > collectedStartPauseMsg 3
+2020-03-06 17:38:00.255 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 6513' to disk
+2020-03-06 17:38:00.256 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=6513, snapshotId=00000003-00018D39-1, timeStarted=2020-03-06T17:38:00.256011Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:38:00.277 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1047328 bytes; costs 18 ms
+2020-03-06 17:38:00.284 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 6513' waiting for snapshotTask
+2020-03-06 17:38:05.818 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=6513, snapshotId=00000003-00018D39-1, timeStarted=2020-03-06T17:38:00.256011Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:38:05.819 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=6513, snapshotId=00000003-00018D39-1, timeStarted=2020-03-06T17:38:00.256011Z, timeCompleted=2020-03-06T17:38:05.818628Z, complete=true, error=false ]
+2020-03-06 17:38:05.819 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 6513' to disk
+2020-03-06 17:38:05.819 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4262/SignedState.swh'
+2020-03-06 17:38:05.824 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4262/PostgresBackup.tar.gz'
+2020-03-06 17:38:05.824 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4262'
+2020-03-06 17:40:00.405 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 7715' to disk
+2020-03-06 17:40:00.406 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=7715, snapshotId=00000003-00018D3B-1, timeStarted=2020-03-06T17:40:00.406156Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:40:00.430 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 20 ms
+2020-03-06 17:40:00.437 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 7715' waiting for snapshotTask
+2020-03-06 17:40:06.187 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=7715, snapshotId=00000003-00018D3B-1, timeStarted=2020-03-06T17:40:00.406156Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:40:06.187 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=7715, snapshotId=00000003-00018D3B-1, timeStarted=2020-03-06T17:40:00.406156Z, timeCompleted=2020-03-06T17:40:06.187297Z, complete=true, error=false ]
+2020-03-06 17:40:06.187 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 7715' to disk
+2020-03-06 17:40:06.188 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4482/SignedState.swh'
+2020-03-06 17:40:06.195 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4482/PostgresBackup.tar.gz'
+2020-03-06 17:40:06.195 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/4482'
+2020-03-06 17:41:42.017 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1783) for update doesn't exist
+2020-03-06 17:41:42.017 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1784) for update doesn't exist
+2020-03-06 17:41:42.169 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1785) for update doesn't exist
+2020-03-06 17:41:42.374 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1786) for update doesn't exist
+2020-03-06 17:41:42.374 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1787) for update doesn't exist
+2020-03-06 17:41:42.476 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1788) for update doesn't exist
+2020-03-06 17:41:42.586 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1789) for update doesn't exist
+2020-03-06 17:41:42.727 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1790) for update doesn't exist
+2020-03-06 17:41:42.829 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1791) for update doesn't exist
+2020-03-06 17:41:42.946 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1792) for update doesn't exist
+2020-03-06 17:41:43.089 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1793) for update doesn't exist
+2020-03-06 17:41:43.090 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1794) for update doesn't exist
+2020-03-06 17:41:43.307 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1795) for update doesn't exist
+2020-03-06 17:41:43.307 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1796) for update doesn't exist
+2020-03-06 17:41:43.406 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1797) for update doesn't exist
+2020-03-06 17:41:43.549 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1798) for update doesn't exist
+2020-03-06 17:41:43.654 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1799) for update doesn't exist
+2020-03-06 17:41:43.804 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1800) for update doesn't exist
+2020-03-06 17:41:43.804 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1801) for update doesn't exist
+2020-03-06 17:41:43.906 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1802) for update doesn't exist
+2020-03-06 17:41:44.113 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1803) for update doesn't exist
+2020-03-06 17:41:44.113 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1804) for update doesn't exist
+2020-03-06 17:41:44.212 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1805) for update doesn't exist
+2020-03-06 17:41:44.314 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1806) for update doesn't exist
+2020-03-06 17:41:44.420 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1807) for update doesn't exist
+2020-03-06 17:41:44.525 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1808) for update doesn't exist
+2020-03-06 17:41:44.668 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1809) for update doesn't exist
+2020-03-06 17:41:44.778 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1810) for update doesn't exist
+2020-03-06 17:41:44.923 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1811) for update doesn't exist
+2020-03-06 17:41:44.923 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1812) for update doesn't exist
+2020-03-06 17:41:45.179 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1813) for update doesn't exist
+2020-03-06 17:41:45.179 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1814) for update doesn't exist
+2020-03-06 17:41:45.388 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1815) for update doesn't exist
+2020-03-06 17:41:45.389 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1816) for update doesn't exist
+2020-03-06 17:41:45.389 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1817) for update doesn't exist
+2020-03-06 17:41:45.496 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1818) for update doesn't exist
+2020-03-06 17:41:45.593 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1819) for update doesn't exist
+2020-03-06 17:41:45.700 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1820) for update doesn't exist
+2020-03-06 17:41:45.802 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1821) for update doesn't exist
+2020-03-06 17:41:45.944 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1822) for update doesn't exist
+2020-03-06 17:41:46.012 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1823) for update doesn't exist
+2020-03-06 17:41:46.109 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1824) for update doesn't exist
+2020-03-06 17:41:46.465 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1825) for update doesn't exist
+2020-03-06 17:41:46.465 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1826) for update doesn't exist
+2020-03-06 17:41:46.466 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1827) for update doesn't exist
+2020-03-06 17:41:46.466 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1828) for update doesn't exist
+2020-03-06 17:41:46.607 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1829) for update doesn't exist
+2020-03-06 17:41:46.767 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1830) for update doesn't exist
+2020-03-06 17:41:46.767 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1831) for update doesn't exist
+2020-03-06 17:41:46.915 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1832) for update doesn't exist
+2020-03-06 17:41:47.127 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1833) for update doesn't exist
+2020-03-06 17:41:47.127 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1834) for update doesn't exist
+2020-03-06 17:41:47.226 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1835) for update doesn't exist
+2020-03-06 17:41:47.329 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1836) for update doesn't exist
+2020-03-06 17:41:47.426 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1837) for update doesn't exist
+2020-03-06 17:41:47.528 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1838) for update doesn't exist
+2020-03-06 17:41:47.636 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1839) for update doesn't exist
+2020-03-06 17:41:47.636 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1840) for update doesn't exist
+2020-03-06 17:41:47.799 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1841) for update doesn't exist
+2020-03-06 17:41:47.942 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1842) for update doesn't exist
+2020-03-06 17:41:48.043 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1843) for update doesn't exist
+2020-03-06 17:41:48.116 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1844) for update doesn't exist
+2020-03-06 17:41:48.252 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1845) for update doesn't exist
+2020-03-06 17:41:48.252 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1846) for update doesn't exist
+2020-03-06 17:41:48.422 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1847) for update doesn't exist
+2020-03-06 17:41:48.553 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1848) for update doesn't exist
+2020-03-06 17:41:48.655 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1849) for update doesn't exist
+2020-03-06 17:41:48.731 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1850) for update doesn't exist
+2020-03-06 17:41:48.822 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1851) for update doesn't exist
+2020-03-06 17:41:48.935 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1852) for update doesn't exist
+2020-03-06 17:41:48.986 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1853) for update doesn't exist
+2020-03-06 17:41:49.116 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1854) for update doesn't exist
+2020-03-06 17:41:49.218 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1855) for update doesn't exist
+2020-03-06 17:41:49.320 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1856) for update doesn't exist
+2020-03-06 17:41:49.425 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1857) for update doesn't exist
+2020-03-06 17:41:49.646 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1858) for update doesn't exist
+2020-03-06 17:41:49.646 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1859) for update doesn't exist
+2020-03-06 17:41:49.646 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1860) for update doesn't exist
+2020-03-06 17:41:49.733 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1861) for update doesn't exist
+2020-03-06 17:41:49.836 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1862) for update doesn't exist
+2020-03-06 17:41:49.895 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1863) for update doesn't exist
+2020-03-06 17:41:50.044 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1864) for update doesn't exist
+2020-03-06 17:41:50.142 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1865) for update doesn't exist
+2020-03-06 17:41:50.262 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1866) for update doesn't exist
+2020-03-06 17:41:50.346 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1867) for update doesn't exist
+2020-03-06 17:41:50.452 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1868) for update doesn't exist
+2020-03-06 17:41:50.510 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1869) for update doesn't exist
+2020-03-06 17:41:50.613 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1870) for update doesn't exist
+2020-03-06 17:41:50.710 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1871) for update doesn't exist
+2020-03-06 17:41:50.870 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1872) for update doesn't exist
+2020-03-06 17:41:50.972 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1873) for update doesn't exist
+2020-03-06 17:41:51.073 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1874) for update doesn't exist
+2020-03-06 17:41:51.273 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1875) for update doesn't exist
+2020-03-06 17:41:51.274 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1876) for update doesn't exist
+2020-03-06 17:41:51.330 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1877) for update doesn't exist
+2020-03-06 17:41:51.425 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1878) for update doesn't exist
+2020-03-06 17:41:51.589 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1879) for update doesn't exist
+2020-03-06 17:41:51.590 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1880) for update doesn't exist
+2020-03-06 17:41:51.744 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1881) for update doesn't exist
+2020-03-06 17:41:51.744 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1882) for update doesn't exist
+2020-03-06 17:41:51.942 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1883) for update doesn't exist
+2020-03-06 17:41:52.038 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1884) for update doesn't exist
+2020-03-06 17:41:52.135 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1885) for update doesn't exist
+2020-03-06 17:41:52.222 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1886) for update doesn't exist
+2020-03-06 17:41:52.305 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1887) for update doesn't exist
+2020-03-06 17:41:52.396 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1888) for update doesn't exist
+2020-03-06 17:41:52.582 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1889) for update doesn't exist
+2020-03-06 17:41:52.700 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1890) for update doesn't exist
+2020-03-06 17:41:52.761 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1891) for update doesn't exist
+2020-03-06 17:41:52.863 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1892) for update doesn't exist
+2020-03-06 17:41:52.960 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1893) for update doesn't exist
+2020-03-06 17:41:53.044 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1894) for update doesn't exist
+2020-03-06 17:41:53.165 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1895) for update doesn't exist
+2020-03-06 17:41:53.227 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1896) for update doesn't exist
+2020-03-06 17:41:53.370 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1897) for update doesn't exist
+2020-03-06 17:41:53.422 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1898) for update doesn't exist
+2020-03-06 17:41:53.577 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1899) for update doesn't exist
+2020-03-06 17:41:53.577 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1900) for update doesn't exist
+2020-03-06 17:41:53.780 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1901) for update doesn't exist
+2020-03-06 17:41:53.888 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1902) for update doesn't exist
+2020-03-06 17:41:54.034 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1903) for update doesn't exist
+2020-03-06 17:41:54.148 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1904) for update doesn't exist
+2020-03-06 17:41:54.148 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1905) for update doesn't exist
+2020-03-06 17:41:54.420 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1906) for update doesn't exist
+2020-03-06 17:41:54.499 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1907) for update doesn't exist
+2020-03-06 17:41:54.499 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1908) for update doesn't exist
+2020-03-06 17:41:54.597 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1909) for update doesn't exist
+2020-03-06 17:41:54.684 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1910) for update doesn't exist
+2020-03-06 17:41:54.795 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1911) for update doesn't exist
+2020-03-06 17:41:54.882 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1912) for update doesn't exist
+2020-03-06 17:41:55.005 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1913) for update doesn't exist
+2020-03-06 17:41:55.108 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1914) for update doesn't exist
+2020-03-06 17:41:55.174 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1915) for update doesn't exist
+2020-03-06 17:41:55.309 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1916) for update doesn't exist
+2020-03-06 17:41:55.377 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1917) for update doesn't exist
+2020-03-06 17:41:55.475 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1918) for update doesn't exist
+2020-03-06 17:41:55.572 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1919) for update doesn't exist
+2020-03-06 17:41:55.675 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1920) for update doesn't exist
+2020-03-06 17:41:55.778 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1921) for update doesn't exist
+2020-03-06 17:41:55.882 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1922) for update doesn't exist
+2020-03-06 17:41:55.983 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1923) for update doesn't exist
+2020-03-06 17:41:56.044 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1924) for update doesn't exist
+2020-03-06 17:41:56.146 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1925) for update doesn't exist
+2020-03-06 17:41:56.394 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1926) for update doesn't exist
+2020-03-06 17:41:56.543 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1927) for update doesn't exist
+2020-03-06 17:41:56.543 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1928) for update doesn't exist
+2020-03-06 17:41:56.627 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1929) for update doesn't exist
+2020-03-06 17:41:56.706 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1930) for update doesn't exist
+2020-03-06 17:41:56.804 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1931) for update doesn't exist
+2020-03-06 17:41:56.952 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1932) for update doesn't exist
+2020-03-06 17:41:57.011 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1933) for update doesn't exist
+2020-03-06 17:41:57.117 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1934) for update doesn't exist
+2020-03-06 17:41:57.215 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1935) for update doesn't exist
+2020-03-06 17:41:57.317 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1936) for update doesn't exist
+2020-03-06 17:41:57.419 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1937) for update doesn't exist
+2020-03-06 17:41:57.496 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1938) for update doesn't exist
+2020-03-06 17:41:57.579 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1939) for update doesn't exist
+2020-03-06 17:41:57.680 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1940) for update doesn't exist
+2020-03-06 17:41:57.828 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1941) for update doesn't exist
+2020-03-06 17:41:57.982 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1942) for update doesn't exist
+2020-03-06 17:41:57.982 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1943) for update doesn't exist
+2020-03-06 17:41:58.141 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1944) for update doesn't exist
+2020-03-06 17:42:00.384 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 8769' to disk
+2020-03-06 17:42:00.386 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=8769, snapshotId=00000003-00018D3D-1, timeStarted=2020-03-06T17:42:00.385111Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:42:00.404 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 16 ms
+2020-03-06 17:42:00.412 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 8769' waiting for snapshotTask
+2020-03-06 17:42:06.174 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=8769, snapshotId=00000003-00018D3D-1, timeStarted=2020-03-06T17:42:00.385111Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:42:06.174 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=8769, snapshotId=00000003-00018D3D-1, timeStarted=2020-03-06T17:42:00.385111Z, timeCompleted=2020-03-06T17:42:06.174112Z, complete=true, error=false ]
+2020-03-06 17:42:06.174 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 8769' to disk
+2020-03-06 17:42:06.174 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/5301/SignedState.swh'
+2020-03-06 17:42:06.182 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/5301/PostgresBackup.tar.gz'
+2020-03-06 17:42:06.182 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/5301'
+2020-03-06 17:44:00.277 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 9951' to disk
+2020-03-06 17:44:00.278 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=9951, snapshotId=00000003-00018D40-1, timeStarted=2020-03-06T17:44:00.278023Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:44:00.298 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 17 ms
+2020-03-06 17:44:00.307 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 9951' waiting for snapshotTask
+2020-03-06 17:44:06.518 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=9951, snapshotId=00000003-00018D40-1, timeStarted=2020-03-06T17:44:00.278023Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:44:06.519 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=9951, snapshotId=00000003-00018D40-1, timeStarted=2020-03-06T17:44:00.278023Z, timeCompleted=2020-03-06T17:44:06.518441Z, complete=true, error=false ]
+2020-03-06 17:44:06.519 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 9951' to disk
+2020-03-06 17:44:06.519 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/6513/SignedState.swh'
+2020-03-06 17:44:06.527 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/6513/PostgresBackup.tar.gz'
+2020-03-06 17:44:06.527 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/6513'
+2020-03-06 17:45:02.060 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1783) for append doesn't exist
+2020-03-06 17:45:02.118 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1784) for append doesn't exist
+2020-03-06 17:45:02.226 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1785) for append doesn't exist
+2020-03-06 17:45:02.372 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1786) for append doesn't exist
+2020-03-06 17:45:02.534 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1787) for append doesn't exist
+2020-03-06 17:45:02.534 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1788) for append doesn't exist
+2020-03-06 17:45:02.534 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1789) for append doesn't exist
+2020-03-06 17:45:02.628 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1790) for append doesn't exist
+2020-03-06 17:45:02.774 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1791) for append doesn't exist
+2020-03-06 17:45:02.882 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1792) for append doesn't exist
+2020-03-06 17:45:02.983 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1793) for append doesn't exist
+2020-03-06 17:45:03.085 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1794) for append doesn't exist
+2020-03-06 17:45:03.238 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1795) for append doesn't exist
+2020-03-06 17:45:03.340 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1796) for append doesn't exist
+2020-03-06 17:45:03.602 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1797) for append doesn't exist
+2020-03-06 17:45:03.602 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1798) for append doesn't exist
+2020-03-06 17:45:03.602 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1799) for append doesn't exist
+2020-03-06 17:45:03.696 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1800) for append doesn't exist
+2020-03-06 17:45:03.755 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1801) for append doesn't exist
+2020-03-06 17:45:03.755 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1802) for append doesn't exist
+2020-03-06 17:45:03.908 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1803) for append doesn't exist
+2020-03-06 17:45:04.047 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1804) for append doesn't exist
+2020-03-06 17:45:04.264 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1805) for append doesn't exist
+2020-03-06 17:45:04.366 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1806) for append doesn't exist
+2020-03-06 17:45:04.456 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1807) for append doesn't exist
+2020-03-06 17:45:04.564 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1808) for append doesn't exist
+2020-03-06 17:45:04.564 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1809) for append doesn't exist
+2020-03-06 17:45:04.666 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1810) for append doesn't exist
+2020-03-06 17:45:04.769 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1811) for append doesn't exist
+2020-03-06 17:45:04.977 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1812) for append doesn't exist
+2020-03-06 17:45:04.977 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1813) for append doesn't exist
+2020-03-06 17:45:05.033 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1814) for append doesn't exist
+2020-03-06 17:45:05.135 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1815) for append doesn't exist
+2020-03-06 17:45:05.374 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1816) for append doesn't exist
+2020-03-06 17:45:05.485 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1817) for append doesn't exist
+2020-03-06 17:45:05.486 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1818) for append doesn't exist
+2020-03-06 17:45:05.843 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1819) for append doesn't exist
+2020-03-06 17:45:05.843 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1820) for append doesn't exist
+2020-03-06 17:45:05.844 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1821) for append doesn't exist
+2020-03-06 17:45:05.844 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1822) for append doesn't exist
+2020-03-06 17:45:06.015 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1823) for append doesn't exist
+2020-03-06 17:45:06.015 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1824) for append doesn't exist
+2020-03-06 17:45:06.252 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1825) for append doesn't exist
+2020-03-06 17:45:06.252 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1826) for append doesn't exist
+2020-03-06 17:45:06.461 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1827) for append doesn't exist
+2020-03-06 17:45:06.461 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1828) for append doesn't exist
+2020-03-06 17:45:06.622 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1829) for append doesn't exist
+2020-03-06 17:45:06.622 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1830) for append doesn't exist
+2020-03-06 17:45:06.763 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1831) for append doesn't exist
+2020-03-06 17:45:06.819 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1832) for append doesn't exist
+2020-03-06 17:45:06.924 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1833) for append doesn't exist
+2020-03-06 17:45:07.180 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1834) for append doesn't exist
+2020-03-06 17:45:07.180 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1835) for append doesn't exist
+2020-03-06 17:45:07.280 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1836) for append doesn't exist
+2020-03-06 17:45:07.280 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1837) for append doesn't exist
+2020-03-06 17:45:07.474 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1838) for append doesn't exist
+2020-03-06 17:45:07.586 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1839) for append doesn't exist
+2020-03-06 17:45:07.683 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1840) for append doesn't exist
+2020-03-06 17:45:07.783 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1841) for append doesn't exist
+2020-03-06 17:45:07.840 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1842) for append doesn't exist
+2020-03-06 17:45:07.987 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1843) for append doesn't exist
+2020-03-06 17:45:08.090 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1844) for append doesn't exist
+2020-03-06 17:45:08.090 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1845) for append doesn't exist
+2020-03-06 17:45:08.292 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1846) for append doesn't exist
+2020-03-06 17:45:08.500 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1847) for append doesn't exist
+2020-03-06 17:45:08.501 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1848) for append doesn't exist
+2020-03-06 17:45:08.608 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1849) for append doesn't exist
+2020-03-06 17:45:08.707 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1850) for append doesn't exist
+2020-03-06 17:45:08.808 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1851) for append doesn't exist
+2020-03-06 17:45:08.910 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1852) for append doesn't exist
+2020-03-06 17:45:09.010 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1853) for append doesn't exist
+2020-03-06 17:45:09.100 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1854) for append doesn't exist
+2020-03-06 17:45:09.213 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1855) for append doesn't exist
+2020-03-06 17:45:09.319 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1856) for append doesn't exist
+2020-03-06 17:45:09.411 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1857) for append doesn't exist
+2020-03-06 17:45:09.509 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1858) for append doesn't exist
+2020-03-06 17:45:09.718 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1859) for append doesn't exist
+2020-03-06 17:45:09.719 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1860) for append doesn't exist
+2020-03-06 17:45:09.782 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1861) for append doesn't exist
+2020-03-06 17:45:09.879 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1862) for append doesn't exist
+2020-03-06 17:45:09.981 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1863) for append doesn't exist
+2020-03-06 17:45:10.087 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1864) for append doesn't exist
+2020-03-06 17:45:10.185 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1865) for append doesn't exist
+2020-03-06 17:45:10.299 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1866) for append doesn't exist
+2020-03-06 17:45:10.384 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1867) for append doesn't exist
+2020-03-06 17:45:10.488 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1868) for append doesn't exist
+2020-03-06 17:45:10.642 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1869) for append doesn't exist
+2020-03-06 17:45:10.642 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1870) for append doesn't exist
+2020-03-06 17:45:10.845 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1871) for append doesn't exist
+2020-03-06 17:45:10.907 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1872) for append doesn't exist
+2020-03-06 17:45:10.907 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1873) for append doesn't exist
+2020-03-06 17:45:11.114 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1874) for append doesn't exist
+2020-03-06 17:45:11.215 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1875) for append doesn't exist
+2020-03-06 17:45:11.305 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1876) for append doesn't exist
+2020-03-06 17:45:11.373 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1877) for append doesn't exist
+2020-03-06 17:45:11.469 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1878) for append doesn't exist
+2020-03-06 17:45:11.573 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1879) for append doesn't exist
+2020-03-06 17:45:11.669 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1880) for append doesn't exist
+2020-03-06 17:45:11.726 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1881) for append doesn't exist
+2020-03-06 17:45:11.877 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1882) for append doesn't exist
+2020-03-06 17:45:11.962 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1883) for append doesn't exist
+2020-03-06 17:45:12.027 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1884) for append doesn't exist
+2020-03-06 17:45:12.123 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1885) for append doesn't exist
+2020-03-06 17:45:12.224 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1886) for append doesn't exist
+2020-03-06 17:45:12.388 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1887) for append doesn't exist
+2020-03-06 17:45:12.486 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1888) for append doesn't exist
+2020-03-06 17:45:12.486 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1889) for append doesn't exist
+2020-03-06 17:45:12.647 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1890) for append doesn't exist
+2020-03-06 17:45:12.749 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1891) for append doesn't exist
+2020-03-06 17:45:12.844 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1892) for append doesn't exist
+2020-03-06 17:45:13.098 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1893) for append doesn't exist
+2020-03-06 17:45:13.099 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1894) for append doesn't exist
+2020-03-06 17:45:13.150 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1895) for append doesn't exist
+2020-03-06 17:45:13.237 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1896) for append doesn't exist
+2020-03-06 17:45:13.313 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1897) for append doesn't exist
+2020-03-06 17:45:13.408 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1898) for append doesn't exist
+2020-03-06 17:45:13.467 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1899) for append doesn't exist
+2020-03-06 17:45:13.712 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1900) for append doesn't exist
+2020-03-06 17:45:13.770 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1901) for append doesn't exist
+2020-03-06 17:45:13.903 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1902) for append doesn't exist
+2020-03-06 17:45:14.005 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1903) for append doesn't exist
+2020-03-06 17:45:14.123 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1904) for append doesn't exist
+2020-03-06 17:45:14.231 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1905) for append doesn't exist
+2020-03-06 17:45:14.335 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1906) for append doesn't exist
+2020-03-06 17:45:14.439 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1907) for append doesn't exist
+2020-03-06 17:45:14.588 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1908) for append doesn't exist
+2020-03-06 17:45:14.588 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1909) for append doesn't exist
+2020-03-06 17:45:14.669 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1910) for append doesn't exist
+2020-03-06 17:45:14.771 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1911) for append doesn't exist
+2020-03-06 17:45:14.897 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1912) for append doesn't exist
+2020-03-06 17:45:14.998 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1913) for append doesn't exist
+2020-03-06 17:45:15.106 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1914) for append doesn't exist
+2020-03-06 17:45:15.202 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1915) for append doesn't exist
+2020-03-06 17:45:15.300 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1916) for append doesn't exist
+2020-03-06 17:45:15.454 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1917) for append doesn't exist
+2020-03-06 17:45:15.556 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1918) for append doesn't exist
+2020-03-06 17:45:15.618 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1919) for append doesn't exist
+2020-03-06 17:45:15.760 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1920) for append doesn't exist
+2020-03-06 17:45:15.817 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1921) for append doesn't exist
+2020-03-06 17:45:15.817 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1922) for append doesn't exist
+2020-03-06 17:45:16.072 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1923) for append doesn't exist
+2020-03-06 17:45:16.174 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1924) for append doesn't exist
+2020-03-06 17:45:16.174 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1925) for append doesn't exist
+2020-03-06 17:45:16.584 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1926) for append doesn't exist
+2020-03-06 17:45:16.585 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1927) for append doesn't exist
+2020-03-06 17:45:16.585 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1928) for append doesn't exist
+2020-03-06 17:45:16.590 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1929) for append doesn't exist
+2020-03-06 17:45:16.680 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1930) for append doesn't exist
+2020-03-06 17:45:16.782 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1931) for append doesn't exist
+2020-03-06 17:45:16.947 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1932) for append doesn't exist
+2020-03-06 17:45:17.043 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1933) for append doesn't exist
+2020-03-06 17:45:17.044 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1934) for append doesn't exist
+2020-03-06 17:45:17.292 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1935) for append doesn't exist
+2020-03-06 17:45:17.350 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1936) for append doesn't exist
+2020-03-06 17:45:17.350 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1937) for append doesn't exist
+2020-03-06 17:45:17.479 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1938) for append doesn't exist
+2020-03-06 17:45:17.582 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1939) for append doesn't exist
+2020-03-06 17:45:17.655 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1940) for append doesn't exist
+2020-03-06 17:45:17.757 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1941) for append doesn't exist
+2020-03-06 17:45:17.859 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1942) for append doesn't exist
+2020-03-06 17:45:17.961 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1943) for append doesn't exist
+2020-03-06 17:45:18.068 DEMO_INFO 45 <      threadCons  2   > Key (3,3,1944) for append doesn't exist
+2020-03-06 17:46:00.310 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 11175' to disk
+2020-03-06 17:46:00.311 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=11175, snapshotId=00000003-00018D42-1, timeStarted=2020-03-06T17:46:00.310722Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:46:00.329 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 16 ms
+2020-03-06 17:46:00.337 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 11175' waiting for snapshotTask
+2020-03-06 17:46:06.259 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=11175, snapshotId=00000003-00018D42-1, timeStarted=2020-03-06T17:46:00.310722Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:46:06.260 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=11175, snapshotId=00000003-00018D42-1, timeStarted=2020-03-06T17:46:00.310722Z, timeCompleted=2020-03-06T17:46:06.259747Z, complete=true, error=false ]
+2020-03-06 17:46:06.260 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 11175' to disk
+2020-03-06 17:46:06.260 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/7715/SignedState.swh'
+2020-03-06 17:46:06.268 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/7715/PostgresBackup.tar.gz'
+2020-03-06 17:46:06.268 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/7715'
+2020-03-06 17:48:00.228 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 12439' to disk
+2020-03-06 17:48:00.229 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=12439, snapshotId=00000003-00018D44-1, timeStarted=2020-03-06T17:48:00.228383Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:48:00.248 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 17 ms
+2020-03-06 17:48:00.255 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 12439' waiting for snapshotTask
+2020-03-06 17:48:06.192 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=12439, snapshotId=00000003-00018D44-1, timeStarted=2020-03-06T17:48:00.228383Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-06 17:48:06.192 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=12439, snapshotId=00000003-00018D44-1, timeStarted=2020-03-06T17:48:00.228383Z, timeCompleted=2020-03-06T17:48:06.192228Z, complete=true, error=false ]
+2020-03-06 17:48:06.192 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 12439' to disk
+2020-03-06 17:48:06.193 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/8769/SignedState.swh'
+2020-03-06 17:48:06.201 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/8769/PostgresBackup.tar.gz'
+2020-03-06 17:48:06.201 STATE_TO_DISK 37 <objectFileManager  2   > Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/2/123/8769'
+2020-03-06 17:48:43.564 DEMO_INFO 45 <      threadCons  2   > collectedStartPauseMsg 4
+2020-03-06 17:48:43.565 DEMO_INFO 45 <      threadCons  2   > TEST PAUSE Finished processing all transactions
+2020-03-06 17:50:00.350 STATE_TO_DISK 37 <objectFileManager  2   > Started writing 'Signed state for round 13634' to disk
+2020-03-06 17:50:00.351 SNAPSHOT_MANAGER 37 <objectFileManager  2   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=13634, snapshotId=00000003-00018D46-1, timeStarted=2020-03-06T17:50:00.350788Z, timeCompleted=null, complete=false, error=false ]
+2020-03-06 17:50:00.370 DEMO_INFO 37 <objectFileManager  2   > copyToExtra: has written 1095824 bytes; costs 17 ms
+2020-03-06 17:50:00.379 STATE_TO_DISK 37 <objectFileManager  2   > 'Signed state for round 13634' waiting for snapshotTask
+2020-03-06 17:50:05.104 STATE_TO_DISK 37 <objectFileManager  2   > Finished writing 'Signed state for round 13634' to disk
+2020-03-06 17:50:05.104 SNAPSHOT_MANAGER 164 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=2, roundNumber=13634, snapshotId=00000003-00018D46-1, timeStarted=2020-03-06T17:50:00.350788Z, timeCompleted=2020-03-06T17:50:05.104325Z, complete=true, error=false ]
