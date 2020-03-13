@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-1620-Crypto-Branch",
+  "name": "Nathan-1620-Crypto-Branch-RT",
   "result": {
 	"uri": "results"
   },
@@ -33,20 +33,21 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json",
-	"configs/testSigningDemo4KCfg.json",
-	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testRestartCfg.json",
-	"configs/testRestartBlobCfg.json",
-	"configs/testFcmFreezeCfg.json",
-	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcmMultisizeBlobCfg.json",
+	//	"configs/testSigningDemoCfg.json",
+	//	"configs/testSigningDemo4KCfg.json",
+	//	"configs/testFcmMultipleOperationsCfg.json",
+	//	"configs/testRestartCfg.json",
+	//	"configs/testRestartBlobCfg.json",
+	//	"configs/testFcmFreezeCfg.json",
+	//	"configs/testFcmFreezeBlobCfg.json",
+	//	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
-	"configs/testFCM1KFCQCfg.json",
+	//	"configs/testFCM1KFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testReconnectBlobCfg.json"
+	//	"configs/testFcm1kThrottlingCfg.json"
+
 	//	"configs/testFcmCfg.json",
 	//	"configs/testFcm10MBx10KBlobCfg.json",
 	//	"configs/testFcm4kx100KBlobCfg.json"
