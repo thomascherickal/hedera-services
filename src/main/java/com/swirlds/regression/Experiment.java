@@ -31,6 +31,7 @@ import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -362,14 +363,23 @@ public class Experiment {
         boolean allNodesCompletedSameRound = false;
         Long maxRoundSeen = -1L;
         Boolean allCompleteMaxRound = true;
-        ArrayList<HashMap<Long,Boolean>> nodeRounds = new ArrayList<>();
+        HashMap<Integer,HashMap<Long,Boolean>> nodeRounds = new HashMap<>();
         HashMap<Integer,SSHService> nodesStillSaving = new HashMap<>();
+
+        log.info(MARKER,"Checking if all nodes backed up last round");
 
         for (int i = 0; i < sshNodes.size(); i++) {
             SSHService node = sshNodes.get(i);
-            nodeRounds.add(i,node.checkSavedStateProgress(fileName));
+            HashMap<Long,Boolean> ssProgress = node.checkSavedStateProgress(fileName);
 
-            for(Map.Entry<Long,Boolean> entry : nodeRounds.get(i).entrySet()) {
+            if (ssProgress == null) {
+                log.info(MARKER,"no saved nodes found for node {}", i);
+                continue;
+            }
+
+            nodeRounds.put(i,ssProgress);
+
+            for(Map.Entry<Long,Boolean> entry : ssProgress.entrySet()) {
                 Long roundNum = entry.getKey();
                 Boolean roundComplete = entry.getValue();
 
@@ -391,16 +401,19 @@ public class Experiment {
         }
 
         //kill java process on nodes that have finished the last round
-        for (int i = 0; i < sshNodes.size(); i++) {
-            SSHService node = sshNodes.get(i);
-            if (nodeRounds.get(i).containsKey(maxRoundSeen)) {
+        for (Map.Entry<Integer,HashMap<Long,Boolean>> entry : nodeRounds.entrySet()) {
+            Integer nodeIndex = entry.getKey();
+            SSHService node = sshNodes.get(nodeIndex);
+            HashMap<Long,Boolean> nodeRoundMap = entry.getValue();
+
+            if (nodeRoundMap.containsKey(maxRoundSeen)) {
                 //value looked up is the boolean value telling whether the round is completed
-                if (nodeRounds.get(i).get(maxRoundSeen)) {
+                if (nodeRoundMap.get(maxRoundSeen)) {
                     //kill completed nodes
                     node.killJavaProcess();
                 }
             } else {
-                nodesStillSaving.put(i,node);
+                nodesStillSaving.put(nodeIndex,node);
             }
         }
 
@@ -437,7 +450,7 @@ public class Experiment {
             log.error(ERROR,"Not all nodes finished saving for round " + maxRoundSeen);
         }
 
-        return true;
+        return allCompleteMaxRound;
     }
 
     /**

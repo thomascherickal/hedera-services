@@ -698,6 +698,7 @@ public class SSHService {
         ArrayList<String> output = readCommandOutput(cmd);
         try {
             for (String out : output) {
+
                 if (out.contains("No such file or directory")) {
                     log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
                     return null;
@@ -706,10 +707,10 @@ public class SSHService {
                 Long roundNum = null;
                 Boolean complete = null;
 
-                String[] keyVals = out.split(", \\[");
+                String[] keyVals = out.split(", ");
                 for (String keyVal : keyVals) {
                     String[] parts = keyVal.split("=", 2);
-                    if (parts.length != 2) {
+                    if (parts.length == 2) {
                         if (parts[0].contentEquals("roundNumber")) {
                             roundNum = Long.parseLong(parts[1]);
                         } else if (parts[0].contentEquals("complete")) {
@@ -744,6 +745,7 @@ public class SSHService {
             log.error("State message manager improperly formed");
         }
         if (retMap.size() == 0) {
+            log.info("No saved rounds found for node");
             return null;
         }
         return retMap;

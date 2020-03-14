@@ -29,6 +29,7 @@ import com.swirlds.demo.platform.fcm.MapValueBlob;
 import com.swirlds.fcmap.FCMap;
 import com.swirlds.platform.SignedStateFileManager;
 import com.swirlds.platform.state.SignedState;
+import net.schmizz.sshj.common.SSHException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -137,6 +138,8 @@ public class BlobStateValidator extends NodeValidator {
 
 	public boolean checkStateMatchesDb(File roundDir) {
 		boolean retVal = true;
+		File signedStateFile = new File(roundDir, stateFileName);
+
 		//restore database
 		try {
 			SnapshotManager.restoreSnapshotFromFile(DEFAULT_SETTINGS_DIR + "data", roundDir);
@@ -146,28 +149,18 @@ public class BlobStateValidator extends NodeValidator {
 		}
 
 		//deserialize state and get storage map
-		File signedStateFile = new File(roundDir, stateFileName);
 		FCMap<MapKey, MapValueBlob> fcMap = recoverStorageMapFromSavedState(signedStateFile);
 
-		if (checkState(fcMap)) {
-			addInfo("state file check succeeded for: " + roundDir.getAbsolutePath());
-		} else {
+		if (!checkState(fcMap)) {
 			addError("state file check failed for: " + roundDir.getAbsolutePath());
 			retVal = false;
 		}
 
-		if (checkForDanglingLOs()) {
-			addInfo("no danglingLOs found for: " + roundDir.getAbsolutePath());
-		} else {
+		if (!checkForDanglingLOs()) {
 			addError("danglingLOs found for: " + roundDir.getAbsolutePath());
 			retVal = false;
 		}
 
-		if (retVal) {
-			addInfo("checkStateMatchesDb succeeded for: " + roundDir.getAbsolutePath());
-		} else {
-			addError("checkStateMatchesDb failed for: " + roundDir.getAbsolutePath());
-		}
 		return retVal;
 	}
 //
@@ -188,7 +181,6 @@ public class BlobStateValidator extends NodeValidator {
 				return false;
 			}
 		}
-		System.out.println("checkStateFiles succeeded for round: " + files[0].getParentFile().getName());
 		return true;
 	}
 
@@ -249,7 +241,7 @@ public class BlobStateValidator extends NodeValidator {
 
 			for (int i = 0; i < nodeList.size(); i++) {
 				stateFiles[i] = new File(nodeList.get(i), stateFileName);
-				if (stateFiles[i].exists() == false) {
+				if (!stateFiles[i].exists()) {
 					addError("State file not found: " + stateFiles[i].getAbsolutePath());
 					success = false;
 				}
@@ -273,6 +265,10 @@ public class BlobStateValidator extends NodeValidator {
 				}
 			}
 
+			if (success) {
+				log.info(MARKER,"All checks succeeded for round {}", () -> nodeList.get(0).getName());
+			}
+
 			retVal &= success;
 		}
 		return retVal;
@@ -280,5 +276,49 @@ public class BlobStateValidator extends NodeValidator {
 
 	public static void main (String[] arg) {
 		System.out.println("gotHere");
+
+		String out = "2020-03-12 18:26:27.994 SNAPSHOT_MANAGER 74 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=660, snapshotId=00000003-00000E86-1, timeStarted=2020-03-12T18:26:24.395262Z, timeCompleted=2020-03-12T18:26:27.993478Z, complete=true, error=false ]";
+
+		if (out.contains("No such file or directory")) {
+			log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+//			return null;
+		}
+
+		Long roundNum = null;
+		Boolean complete = null;
+
+		String[] keyVals = out.split(", ");
+		for (String keyVal : keyVals) {
+			String[] parts = keyVal.split("=", 2);
+			if (parts.length == 2) {
+				if (parts[0].contentEquals("roundNumber")) {
+					roundNum = Long.parseLong(parts[1]);
+				} else if (parts[0].contentEquals("complete")) {
+					if (parts[1].contentEquals("false")) {
+						complete = false;
+					} else if (parts[1].contentEquals("true")) {
+						complete = true;
+					} else {
+						throw new NumberFormatException();
+					}
+				}
+			}
+		}
+
+		if ((roundNum != null) && (complete != null)) {
+			if (complete == false) {
+//				if (retMap.containsKey(roundNum)) {
+//					//already know this round completed
+//					continue;
+//				} else {
+//					retMap.put(roundNum, false);
+//				}
+			} else {
+				//round number completed
+//				retMap.put(roundNum, true);
+			}
+		} else {
+//			throw new SSHException("invalid line read");
+		}
 	}
 }
