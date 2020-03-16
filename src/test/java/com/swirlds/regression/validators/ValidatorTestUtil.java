@@ -35,7 +35,7 @@ public abstract class ValidatorTestUtil {
 	public static ExpectedMapData loadExpectedMapData(String directory) {
 		ExpectedMapData data = new ExpectedMapData();
 
-		for (int i = 0; ; i++) {
+		for (int i = 0; i < 4 ; i++) {
 			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP,
 					directory, i);
 			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
