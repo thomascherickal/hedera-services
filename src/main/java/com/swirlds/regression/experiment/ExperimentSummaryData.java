@@ -17,6 +17,8 @@
 
 package com.swirlds.regression.experiment;
 
+import java.util.Objects;
+
 public class ExperimentSummaryData implements ExperimentSummary {
 	private boolean hasWarnings;
 	private boolean hasErrors;
@@ -79,5 +81,28 @@ public class ExperimentSummaryData implements ExperimentSummary {
 	@Override
 	public String getUniqueId() {
 		return uniqueId;
+	}
+
+	@Override
+	public String toString() {
+		return "ExperimentSummaryData{" +
+				"hasWarnings=" + hasWarnings +
+				", hasErrors=" + hasErrors +
+				", hasExceptions=" + hasExceptions +
+				", name='" + name + '\'' +
+				", uniqueId='" + uniqueId + '\'' +
+				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ExperimentSummaryData that = (ExperimentSummaryData) o;
+		return hasWarnings == that.hasWarnings &&
+				hasErrors == that.hasErrors &&
+				hasExceptions == that.hasExceptions &&
+				Objects.equals(name, that.name) &&
+				Objects.equals(uniqueId, that.uniqueId);
 	}
 }

@@ -17,11 +17,17 @@
 
 package com.swirlds.regression.experiment;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 public interface ExperimentSummary {
+
+	@JsonSerialize
 	boolean hasWarnings();
 
+	@JsonSerialize
 	boolean hasErrors();
 
+	@JsonSerialize
 	boolean hasExceptions();
 
 	String getName();
