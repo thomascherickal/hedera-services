@@ -89,7 +89,6 @@ public class ExperimentSummaryStorage {
 			}
 			testFile.file.delete();
 		}
-		;
 	}
 
 	private static List<SummaryFileInfo> getTestFiles(String name) {
@@ -112,7 +111,6 @@ public class ExperimentSummaryStorage {
 				list.add(new SummaryFileInfo(file, dateTime, testName));
 			}
 		}
-		;
 		return list;
 	}
 
