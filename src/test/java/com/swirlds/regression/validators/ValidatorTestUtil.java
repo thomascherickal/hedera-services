@@ -40,7 +40,7 @@ public abstract class ValidatorTestUtil {
 			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP,
 					directory, i);
 			if(new File(expectedMap).exists()) {
-				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
+				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
 				data.getExpectedMaps().put(i, map);
 			}else{
 				throw new RuntimeException(" expectedMap in node "+ i + "doesn't exist");

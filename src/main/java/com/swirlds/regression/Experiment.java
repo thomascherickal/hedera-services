@@ -56,7 +56,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -505,7 +504,7 @@ public class Experiment {
         final ExpectedMapData mapData = new ExpectedMapData();
         for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
             final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP;
-            Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
+            Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
             mapData.getExpectedMaps().put(i, map);
         }
         return mapData;
