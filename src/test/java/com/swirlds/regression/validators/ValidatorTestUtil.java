@@ -23,6 +23,7 @@ import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,12 @@ public abstract class ValidatorTestUtil {
 		for (int i = 0; i < 4 ; i++) {
 			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP,
 					directory, i);
-			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
-			data.getExpectedMaps().put(i, map);
+			if(new File(expectedMap).exists()) {
+				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
+				data.getExpectedMaps().put(i, map);
+			}else{
+				throw new RuntimeException(" expectedMap in node "+ i + "doesn't exist");
+			}
 		}
 
 		if (data.getExpectedMaps().size() == 0) {

@@ -17,29 +17,31 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.demo.platform.fcm.MapKey;
-import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.IOException;
-import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // test class for PTA LifecycleValidator
 public class PTALifeCycleValidatorTest {
 
-	@ParameterizedTest
-	@ValueSource(strings = {
-			"logs/Lifecycle"
-	})
-	void validateExpectedMaps(String testDir) {
-		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(testDir));
+	private static final String positiveTestDir =  "src/test/resources/logs/Lifecycle";
+	private static final String negativeTestDir =  "src/test/resources/logs/LifecycleNeg";
+
+	@Test
+	void validateExpectedMapsPositiveTest() {
+		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
 		validator.validate();
-		System.out.println("LOGS: " + testDir);
+		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
 		assertEquals(true, validator.isValid());
+	}
+
+	@Test
+	void validateExpectedMapsErrors() {
+		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
+		validator.validate();
+		System.out.println("LOGS: " + negativeTestDir);
+		System.out.println(validator.concatAllMessages());
+		assertEquals(false, validator.isValid());
 	}
 }
