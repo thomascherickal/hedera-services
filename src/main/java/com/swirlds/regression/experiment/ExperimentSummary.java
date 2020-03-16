@@ -19,6 +19,7 @@ package com.swirlds.regression.experiment;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+@JsonSerialize(as=ExperimentSummary.class)
 public interface ExperimentSummary {
 
 	@JsonSerialize
