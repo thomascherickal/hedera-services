@@ -75,8 +75,8 @@ public class SlackNotifierTester {
 				true,
 				true,
 				true,
-				"a bad test",
-				"1234"
+				"FCM-2.5MC-5MU-5MT-250KD-2.5KTPS",
+				"1916540190"
 		);
 		ExperimentSummaryData bad2 = new ExperimentSummaryData(
 				false,

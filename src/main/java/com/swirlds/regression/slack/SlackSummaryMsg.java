@@ -88,7 +88,7 @@ public class SlackSummaryMsg extends SlackMsg {
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Test");
 		columnHeaders.add("Unique Identifier");
-		columnHeaders.add("Historical");
+		columnHeaders.add("Historical (oldest first)");
 
 		if (experiments.size() > 0) {
 			Attachment.Builder attachment = Attachment.builder();
