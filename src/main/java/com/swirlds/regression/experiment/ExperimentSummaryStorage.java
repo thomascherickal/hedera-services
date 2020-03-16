@@ -62,44 +62,32 @@ public class ExperimentSummaryStorage {
 	public static List<ExperimentSummary> readSummaries(String name, int number) throws IOException {
 		List<ExperimentSummary> list = new ArrayList<>(number);
 		ObjectMapper mapper = new ObjectMapper();
-
-		File dir = new File(SUMMARY_DIR);
-
-		for (String filename : Objects.requireNonNull(dir.list())) {
+		
+		for (SummaryFileInfo testFile : getTestFiles(name)) {
 			if (number <= 0) {
 				break;
 			}
-			Pattern r = Pattern.compile(FILE_NAME_PATTERN);
-			Matcher m = r.matcher(filename);
-			if (!m.find()) {
-				continue;
-			}
 
-			String dateTime = m.group(1);
-			String testName = m.group(2);
-
-			if (!name.equals(testName)) {
-				continue;
-			}
-
-			ExperimentSummaryData obj = mapper.readValue(new File(filename), ExperimentSummaryData.class);
+			ExperimentSummaryData obj = mapper.readValue(testFile.getFile(), ExperimentSummaryData.class);
 			list.add(obj);
 			number--;
 		}
+
 		return list;
 	}
 
 	public static void deleteOldSummaries(String name, int keepLatest) throws IOException {
 		for (SummaryFileInfo testFile : getTestFiles(name)) {
-			if(keepLatest>0){
+			if (keepLatest > 0) {
 				keepLatest--;
 				continue;
 			}
 			testFile.file.delete();
-		};
+		}
+		;
 	}
 
-	private static List<SummaryFileInfo> getTestFiles(String name){
+	private static List<SummaryFileInfo> getTestFiles(String name) {
 		List<SummaryFileInfo> list = new LinkedList<>();
 		File dir = new File(SUMMARY_DIR);
 		for (File file : Objects.requireNonNull(dir.listFiles())) {
@@ -115,11 +103,12 @@ public class ExperimentSummaryStorage {
 			if (name.equals(testName)) {
 				list.add(new SummaryFileInfo(file, dateTime, testName));
 			}
-		};
+		}
+		;
 		return list;
 	}
 
-	private static class SummaryFileInfo{
+	private static class SummaryFileInfo {
 		private File file;
 		private String dateTime;
 		private String name;
