@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
 public class ExperimentSummaryStorage {
 	// date time format used for file names
 	private static SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS");
-	private static final String SUMMARY_DIR = "./";
+	private static final String SUMMARY_DIR = "./summaryHistory/";
 	private static final String FILE_NAME_PATTERN =
 			"([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3})_([^\\.]+)\\.json";
 
@@ -46,6 +47,10 @@ public class ExperimentSummaryStorage {
 		}
 		name = name.trim();
 
+		File dir = new File(SUMMARY_DIR);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
 		// Java object to JSON file
 		mapper.writeValue(
 				new File(
@@ -62,7 +67,7 @@ public class ExperimentSummaryStorage {
 	public static List<ExperimentSummary> readSummaries(String name, int number) throws IOException {
 		List<ExperimentSummary> list = new ArrayList<>(number);
 		ObjectMapper mapper = new ObjectMapper();
-		
+
 		for (SummaryFileInfo testFile : getTestFiles(name)) {
 			if (number <= 0) {
 				break;
@@ -90,6 +95,9 @@ public class ExperimentSummaryStorage {
 	private static List<SummaryFileInfo> getTestFiles(String name) {
 		List<SummaryFileInfo> list = new LinkedList<>();
 		File dir = new File(SUMMARY_DIR);
+		if (!dir.exists()) {
+			return list;
+		}
 		for (File file : Objects.requireNonNull(dir.listFiles())) {
 			Pattern r = Pattern.compile(FILE_NAME_PATTERN);
 			Matcher m = r.matcher(file.getName());
