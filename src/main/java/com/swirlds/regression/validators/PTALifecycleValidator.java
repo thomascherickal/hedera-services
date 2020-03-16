@@ -33,12 +33,12 @@ import java.util.stream.Collectors;
 
 
 public class PTALifecycleValidator extends Validator {
-	public static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 	public static boolean isValid;
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
-	public List<String> errorMessages = new ArrayList<>();
-	public List<String> mismatchErrors = new ArrayList<>();
+	private List<String> errorMessages = new ArrayList<>();
+	private List<String> mismatchErrors = new ArrayList<>();
 
 	void addError(String msg) {
 		errorMessages.add(msg);
@@ -52,6 +52,33 @@ public class PTALifecycleValidator extends Validator {
 		expectedMaps = mapData.getExpectedMaps();
 		isValid = false;
 	}
+
+	public static Map<Integer, Map<MapKey, ExpectedValue>> getExpectedMaps() {
+		return expectedMaps;
+	}
+
+	public static void setExpectedMaps(
+			Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
+		PTALifecycleValidator.expectedMaps = expectedMaps;
+	}
+
+	@Override
+	public List<String> getErrorMessages() {
+		return errorMessages;
+	}
+
+	public void setErrorMessages(List<String> errorMessages) {
+		this.errorMessages = errorMessages;
+	}
+
+	public List<String> getMismatchErrors() {
+		return mismatchErrors;
+	}
+
+	public void setMismatchErrors(List<String> mismatchErrors) {
+		this.mismatchErrors = mismatchErrors;
+	}
+
 
 	@Override
 	public void validate() {

@@ -20,6 +20,7 @@ package com.swirlds.regression.validators;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // test class for PTA LifecycleValidator
 public class PTALifeCycleValidatorTest {
@@ -40,8 +41,11 @@ public class PTALifeCycleValidatorTest {
 	void validateExpectedMapsErrors() {
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
-		System.out.println("LOGS: " + negativeTestDir);
-		System.out.println(validator.concatAllMessages());
+		assertTrue(validator.getErrorMessages().size() > 0);
+		assertTrue(validator.getMismatchErrors().size() > 0);
+		System.out.println("Error messages :"+validator.getErrorMessages());
+		System.out.println("Entity mismatch error messages :"+validator.getMismatchErrors());
+		assertTrue(validator.getMismatchErrors().contains("Entity:MapKey[0,0,11,Blob] has the field isErrored mismatched for the Nodes :0, 1"));
 		assertEquals(false, validator.isValid());
 	}
 }
