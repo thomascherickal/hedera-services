@@ -1,0 +1,18 @@
+{
+  "name":"FCMSmallBlob",
+  "description" : "platform testing demo - FCMBlob 4KB blobs",
+  "duration": 15000,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"}
+  ],
+  "app": {
+    "jar": "PlatformTestingApp.jar",
+    "parameterList": ["FCMSmallBlob.json"]
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+}
