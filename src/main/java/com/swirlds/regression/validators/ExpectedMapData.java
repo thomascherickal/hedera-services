@@ -19,10 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 
-import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

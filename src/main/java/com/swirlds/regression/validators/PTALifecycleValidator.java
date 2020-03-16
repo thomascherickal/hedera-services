@@ -23,6 +23,7 @@ import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
 import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 
 import java.io.File;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,8 +72,15 @@ public class PTALifecycleValidator extends Validator {
 			checkKeySet(baselineMap, mapToCompare, i);
 
 			for(MapKey key : baselineMap.keySet()){
-				if(mapToCompare.containsKey(key) && !baselineMap.get(key).equals(mapToCompare.get(key))){
-					compareValues(key, baselineMap.get(key), mapToCompare.get(key), i);
+				if(mapToCompare.containsKey(key)){
+					ExpectedValue baseValue = baselineMap.get(key);
+					ExpectedValue compareValue = mapToCompare.get(key);
+					 if(!baseValue.equals(compareValue)){
+						compareValues(key, baseValue, compareValue, i);
+					 }
+					 if(baseValue.isErrored() && compareValue.isErrored()){
+					 	checkErrorCause(key, compareValue, i);
+					 }
 				}
 			}
 		}
@@ -109,18 +117,15 @@ public class PTALifecycleValidator extends Validator {
 			for (MapKey compareKey : compareKeySet) {
 				if (!compareKeySet.contains(key)) {
 					addError("Key missing in ExpectedMap of node : " + nodeNum);
-				} else if(!key.equalsAllFields(compareKey)){
+				} else if(key.equals(compareKey) && !key.equalsAllFields(compareKey)){
 					addError("Entity type of keys doesn't match : Nodes : 0, " + nodeNum + " , Key :"+ key);
 				}
 			}
 		}
 	}
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
-		if(ev1.isErrored() != ev2.isErrored()) {
+		if(ev1.isErrored() != ev2.isErrored())
 			addMismatchError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
-		} else if(ev1.isErrored() && ev2.isErrored()){
-			checkErrorCause(key, ev2, nodeNum);
-		}
 		if(ev1.getHash() != ev2.getHash())
 			addMismatchError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
 		if(ev1.getLatestHandledStatus() != ev2.getLatestHandledStatus())
