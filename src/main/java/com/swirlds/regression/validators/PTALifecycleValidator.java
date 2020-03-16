@@ -19,45 +19,41 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
+import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
 import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class PTALifecycleValidator extends NodeValidator {
-	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
-	private static boolean isValid;
+public class PTALifecycleValidator extends Validator {
+	public static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+	public static boolean isValid;
+	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
-	List<String> errorMessages = new LinkedList<>();
-
-	void addInfo(String msg) {
-		infoMessages.add(msg);
-	}
-
-	void addWarning(String msg) { warnMessages.add(msg); }
+	public List<String> errorMessages = new ArrayList<>();
+	public List<String> mismatchErrors = new ArrayList<>();
 
 	void addError(String msg) {
 		errorMessages.add(msg);
 	}
 
-	public PTALifecycleValidator(List<NodeData> nodeData) {
-		super(nodeData);
-		expectedMaps = new HashMap<>();
+	void addMismatchError(String msg) {
+		mismatchErrors.add(msg);
+	}
+
+	public PTALifecycleValidator(ExpectedMapData mapData) {
+		expectedMaps = mapData.getExpectedMaps();
 		isValid = false;
 	}
 
 	@Override
 	public void validate() {
-		int nodeNum = nodeData.size();
-		for (int i = 0; i < nodeNum; i++) {
-			deserializeExpectedMaps(i);
-		}
 		isValid = validateExpectedMaps();
 	}
 
@@ -80,7 +76,7 @@ public class PTALifecycleValidator extends NodeValidator {
 				}
 			}
 		}
-		if(errorMessages.size() == 0)
+		if(errorMessages.size() == 0 && mismatchErrors.size() == 0)
 			isValid = true;
 
 		return isValid;
@@ -120,17 +116,44 @@ public class PTALifecycleValidator extends NodeValidator {
 		}
 	}
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
+		if(ev1.isErrored() != ev2.isErrored()) {
+			addMismatchError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
+		} else if(ev1.isErrored() && ev2.isErrored()){
+			checkErrorCause(key, ev2, nodeNum);
+		}
 		if(ev1.getHash() != ev2.getHash())
-			addError("MapKey:" +key+ "Nodes :0, "+nodeNum+ "hash mismatched");
+			addMismatchError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
 		if(ev1.getLatestHandledStatus() != ev2.getLatestHandledStatus())
-			addError("MapKey:" +key+ "Nodes :0, "+nodeNum+ "latestHandledStatus mismatched");
+			addMismatchError("Entity:" +key+ "has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
 		if(ev1.getLatestSubmitStatus() != ev2.getLatestSubmitStatus())
-			addError("MapKey:" +key+ "Nodes :0, "+nodeNum+ "latestSubmitStatus mismatched");
+			addMismatchError("Entity:" +key+ "has the field latestSubmitStatus mismatched for the Nodes :0, "+nodeNum);
 		if(ev1.getHistoryHandledStatus() != ev2.getHistoryHandledStatus())
-			addError("MapKey:" +key+ "Nodes :0, "+nodeNum+ "historyHandledStatus mismatched");
-		if(ev1.isErrored() != ev2.isErrored())
-			addError("MapKey:" +key+ "Nodes :0, "+nodeNum+ "isErrored mismatched");
+			addMismatchError("Entity:" +key+ "has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
+
 	}
+
+	private void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
+		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
+		switch (latestHandleStatus.getTransactionState()) {
+			case  INVALID_SIG:
+				addError("Signature is not valid for Entity "+ key +" while performing operation "
+						+ latestHandleStatus.getTransactionType() + " on Node "+ nodeNum);
+				break;
+			case  HANDLE_FAILED:
+				addError("Entity "+ key + "on Node "+ nodeNum + "has Error. Please look at the log for more details");
+				break;
+			case  HANDLE_REJECTED:
+				addError("Operation "+latestHandleStatus.getTransactionType()+ " on Entity "+ key
+						+ "in Node "+ nodeNum+ " failed as entity already exists");
+				break;
+			case  HANDLE_ENTITY_TYPE_MISMATCH:
+				addError("Operation "+ latestHandleStatus.getTransactionType()+
+						"failed as it is performed on wrong entity type"+ key.getEntityType());
+				break;
+			default:
+		}
+	}
+
 	boolean equalMaps(Map<MapKey,ExpectedValue>map1, Map<MapKey,ExpectedValue>map2, int nodeNum) {
 		if (map1.size() != map2.size())
 			return false;
@@ -139,13 +162,4 @@ public class PTALifecycleValidator extends NodeValidator {
 				return false;
 		return true;
 	}
-
-	private void deserializeExpectedMaps(int i){
-		Map<MapKey, ExpectedValue> map = new HashMap<>();
-			if(new File("ExpectedMap.json").exists()){
-				map = SaveExpectedMapHandler.deserialize();
-			}
-			expectedMaps.put(i, map);
-		}
-
 }

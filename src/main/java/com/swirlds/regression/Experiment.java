@@ -17,6 +17,9 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.demo.platform.fcm.MapKey;
+import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
+import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -53,7 +56,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -86,6 +91,7 @@ import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
@@ -495,6 +501,16 @@ public class Experiment {
         return nodeData;
     }
 
+    private ExpectedMapData loadExpectedMapData(String directory) {
+        final ExpectedMapData mapData = new ExpectedMapData();
+        for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
+            final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP;
+            Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
+            mapData.getExpectedMaps().put(i, map);
+        }
+        return mapData;
+    }
+
     private void validateTest() {
         SlackTestMsg slackMsg = new SlackTestMsg(
                 getUniqueId(),
@@ -558,6 +574,12 @@ public class Experiment {
             }
 
             requiredValidator.add(ssValidator);
+        }
+
+        if(regConfig.isUseLifecycleModel()){
+            PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+                    (loadExpectedMapData(testConfig.getName()));
+            requiredValidator.add(lifecycleValidator);
         }
 
         for (Validator item : requiredValidator) {

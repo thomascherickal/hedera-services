@@ -99,7 +99,7 @@ public class RegressionMain {
 			@Override
 			public void run() {
 				log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
-				cloud.destroyInstances();
+				//cloud.destroyInstances();
 				log.info(MARKER, "cloud instances destroyed");
 			}
 		}));
@@ -108,7 +108,7 @@ public class RegressionMain {
 			runExperiments(cloud);
 		} finally {
 			// always destroy instances if anything goes wrong
-			cloud.destroyInstances();
+			//cloud.destroyInstances();
 		}
 	}
 

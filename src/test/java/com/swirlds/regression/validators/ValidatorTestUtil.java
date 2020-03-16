@@ -17,16 +17,37 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.demo.platform.fcm.MapKey;
+import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
+import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 
 public abstract class ValidatorTestUtil {
+
+	public static ExpectedMapData loadExpectedMapData(String directory) {
+		ExpectedMapData data = new ExpectedMapData();
+
+		for (int i = 0; ; i++) {
+			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP,
+					directory, i);
+			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserializeJSON(expectedMap);
+			data.getExpectedMaps().put(i, map);
+		}
+
+		if (data.getExpectedMaps().size() == 0) {
+			throw new RuntimeException("Cannot find expectedMap files in: " + directory);
+		}
+		return data;
+	}
+
 	public static List<NodeData> loadNodeData(String directory, String csvName, int logVersion) {
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0; ; i++) {
