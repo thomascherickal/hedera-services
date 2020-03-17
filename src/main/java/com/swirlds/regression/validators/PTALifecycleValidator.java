@@ -121,7 +121,7 @@ public class PTALifecycleValidator extends Validator {
 				}
 			}
 		}
-		if(errorMessages.size() == 0 && fieldValuesMismatchErrors.size() == 0)
+		if(errorMessages.size() == 0 && fieldValuesMismatchErrors.size() == 0 && missingKeysErrors.size() ==0)
 			isValid = true;
 
 		return isValid;
