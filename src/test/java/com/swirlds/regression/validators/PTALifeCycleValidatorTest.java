@@ -39,15 +39,26 @@ public class PTALifeCycleValidatorTest {
 
 	@Test
 	void validateExpectedMapsErrors() {
+		// Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12,Crypto]
+		// [0,0,11,Blob],[0,0,17,Blob],[0,0,14,Blob],0,0,15,Blob] has 2 different fields compared to node 0.
+		// So that total errors will be 24
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
 		assertTrue(validator.getErrorMessages().size() > 0);
 		assertTrue(validator.getMismatchErrors().size() > 0);
 		System.out.println("Error messages :"+validator.getErrorMessages());
 		System.out.println("Entity mismatch error messages :"+validator.getMismatchErrors());
-		assertTrue(validator.getMismatchErrors().contains("Entity:MapKey[0,0,11,Blob] has the field isErrored mismatched for the Nodes :0, 1"));
+		assertTrue(validator.getMismatchErrors().contains("Entity:MapKey[0,0,11,Blob] has the field " +
+				"isErrored mismatched for the Nodes :0, 1"));
+		assertTrue(validator.getMismatchErrors().get(2).contains("[0,0,17,Blob]"));
+		assertTrue(validator.getMismatchErrors().get(4).contains("[0,0,14,Blob]"));
+		assertTrue(validator.getMismatchErrors().get(6).contains("[0,0,15,Blob]"));
+
 		assertEquals(24, validator.getMismatchErrors().size());
 		assertEquals(3, validator.getErrorMessages().size());
+		assertTrue(validator.getErrorMessages().get(0).contains("MapKey[0,0,12,Crypto]"));
+		assertTrue(validator.getErrorMessages().get(1).contains("MapKey[0,0,12,Crypto]"));
+		assertTrue(validator.getErrorMessages().get(2).contains("MapKey[0,0,12,Crypto]"));
 		assertEquals(false, validator.isValid());
 	}
 }
