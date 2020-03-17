@@ -23,7 +23,6 @@
     "configs/testFcmMultipleOperationsCfg.json",
     "configs/testRestartCfg.json",
     "configs/testFcmFreezeBlobCfg.json",
-    "configs/testFcm4kx100KBlobCfg.json",
     "configs/testFcmFreezeFCQCfg.json",
     "configs/testReconnectFCMMultiReconnectCfg.json",
     "configs/testReconnectBlobCfg.json",
