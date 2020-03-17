@@ -27,17 +27,38 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.swirlds.regression.RegressionUtilities.*;
+import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
+import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
+import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
+import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.*;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -158,8 +179,19 @@ public class SSHService {
         extensions += " \\) ";
         String pruneDirectory = "-not -path \"*/data/*\"";
         String commandStr = "find . " + extensions + pruneDirectory;
-        final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+
+        Session.Command cmd = null;
+        while (cmd == null) {
+            cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+            try {
+                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+                Thread.sleep(10000);
+            } catch (InterruptedException ie) {
+                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+            }
+        }
         log.info(MARKER, "Extensions to look for on node {}: ", ipAddress, extensions);
+
         returnCollection = readCommandOutput(cmd);
 
         return returnCollection;
@@ -187,7 +219,7 @@ public class SSHService {
         }
     }
 
-    void scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
+    boolean scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
         try {
             log.info(MARKER, "top level folder: {}", topLevelFolders);
             Collection<String> foundFiles = getListOfFiles(
@@ -231,8 +263,10 @@ public class SSHService {
                         fileToSplit.getPath());
                 ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
             }
+            return true;
         } catch (IOException | StringIndexOutOfBoundsException e) {
             log.error(ERROR, "Could not download files", e);
+            return false;
         }
     }
 
@@ -440,6 +474,7 @@ public class SSHService {
 
     private Session.Command execCommand(String command, String description, int joinSec, boolean reconnectIfNeeded) {
         int returnValue = -1;
+
         try {
             if (reconnectIfNeeded) {
                 reconnectIfNeeded();
@@ -474,6 +509,7 @@ public class SSHService {
                         ipAddress, description, e);
             }
         }
+
         return null;
     }
 
@@ -576,7 +612,7 @@ public class SSHService {
         if (lastExec.until(Instant.now(), SECONDS) > RegressionUtilities.SSH_TEST_CMD_AFTER_SEC) {
             execCommand("echo test", "test if connection broken", -1, false);
         }
-        if (ssh.isConnected()) {
+        if (isConnected()) {
             return;
         }
         close();
