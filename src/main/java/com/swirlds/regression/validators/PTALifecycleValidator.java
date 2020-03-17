@@ -153,14 +153,14 @@ public class PTALifecycleValidator extends Validator {
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
 		if(ev1.isErrored() != ev2.isErrored())
 			addMismatchError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
-		if(ev1.getHash() != ev2.getHash())
+		if(ev1.getHash()!=null && ev2.getHash()!=null && !ev1.getHash().equals(ev2.getHash()))
 			addMismatchError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
-		if(ev1.getLatestHandledStatus() != ev2.getLatestHandledStatus())
-			addMismatchError("Entity:" +key+ "has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
-		if(ev1.getLatestSubmitStatus() != ev2.getLatestSubmitStatus())
-			addMismatchError("Entity:" +key+ "has the field latestSubmitStatus mismatched for the Nodes :0, "+nodeNum);
-		if(ev1.getHistoryHandledStatus() != ev2.getHistoryHandledStatus())
-			addMismatchError("Entity:" +key+ "has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
+		if(ev1.getLatestHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
+				!ev1.getLatestHandledStatus().getTransactionState().equals(ev2.getLatestHandledStatus().getTransactionState()))
+			addMismatchError("Entity:" +key+ " has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
+		if(ev1.getHistoryHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
+				!ev1.getHistoryHandledStatus().getTransactionState().equals(ev2.getHistoryHandledStatus().getTransactionState()))
+			addMismatchError("Entity:" +key+ " has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
 
 	}
 

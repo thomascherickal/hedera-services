@@ -46,6 +46,8 @@ public class PTALifeCycleValidatorTest {
 		System.out.println("Error messages :"+validator.getErrorMessages());
 		System.out.println("Entity mismatch error messages :"+validator.getMismatchErrors());
 		assertTrue(validator.getMismatchErrors().contains("Entity:MapKey[0,0,11,Blob] has the field isErrored mismatched for the Nodes :0, 1"));
+		assertEquals(24, validator.getMismatchErrors().size());
+		assertEquals(3, validator.getErrorMessages().size());
 		assertEquals(false, validator.isValid());
 	}
 }
