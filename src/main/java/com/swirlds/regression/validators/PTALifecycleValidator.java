@@ -39,19 +39,9 @@ public class PTALifecycleValidator extends Validator {
 	 * List of errors
 	 */
 	private List<String> errorMessages = new ArrayList<>();
-	private List<String> fieldValuesMismatchErrors = new ArrayList<>();
-	private List<String> missingKeysErrors = new ArrayList<>();
 
 	void addError(String msg) {
 		errorMessages.add(msg);
-	}
-
-	void addMismatchError(String msg) {
-		fieldValuesMismatchErrors.add(msg);
-	}
-
-	void addMissingKeyError(String msg) {
-		missingKeysErrors.add(msg);
 	}
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
@@ -63,12 +53,6 @@ public class PTALifecycleValidator extends Validator {
 	public List<String> getErrorMessages() {
 		return errorMessages;
 	}
-
-	public List<String> getFieldValuesMismatchErrors() {
-		return fieldValuesMismatchErrors;
-	}
-
-	public List<String> getMissingKeysErrors() { return missingKeysErrors; }
 
 	/**
 	 * Validate the expectedMaps downloaded in the results folder after an experiment is completed
@@ -112,7 +96,7 @@ public class PTALifecycleValidator extends Validator {
 				}
 			}
 		}
-		if(errorMessages.size() == 0 && fieldValuesMismatchErrors.size() == 0 && missingKeysErrors.size() ==0)
+		if(errorMessages.size() == 0)
 			isValid = true;
 
 		return isValid;
@@ -144,7 +128,7 @@ public class PTALifecycleValidator extends Validator {
 				map(key -> key.toString()).
 				collect(Collectors.joining(","));
 		if(!missingKeysInCompare.isEmpty()) {
-			addMissingKeyError("KeySet size of Map of node " + nodeNum +
+			addError("KeySet size of Map of node " + nodeNum +
 					" doesn't match with Map of node 0. " +
 					"Missing keys :" + missingKeysInCompare);
 		}
@@ -157,7 +141,7 @@ public class PTALifecycleValidator extends Validator {
 				map(key -> key.toString()).
 				collect(Collectors.joining(","));;
 		if(!missingKeysInBase.isEmpty()){
-			addMissingKeyError("KeySet size of Map of node 0 doesn't match with Map of node " +nodeNum +
+			addError("KeySet size of Map of node 0 doesn't match with Map of node " +nodeNum +
 					". Missing keys :" + missingKeysInBase);
 		}
 	}
@@ -169,9 +153,7 @@ public class PTALifecycleValidator extends Validator {
 	private void checkEntityType(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum){
 		for(MapKey key : baseKeySet) {
 			for (MapKey compareKey : compareKeySet) {
-				if (!compareKeySet.contains(key)) {
-					addError("Key missing in ExpectedMap of node : " + nodeNum);
-				} else if(key.equals(compareKey) && !key.equalsAllFields(compareKey)){
+				if (compareKeySet.contains(key) && key.equals(compareKey) && !key.equalsAllFields(compareKey)) {
 					addError("Entity type of keys doesn't match : Nodes : 0, " + nodeNum + " , Key :"+ key);
 				}
 			}
@@ -184,15 +166,15 @@ public class PTALifecycleValidator extends Validator {
 	 */
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
 		if(ev1.isErrored() != ev2.isErrored())
-			addMismatchError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
+			addError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
 		if(ev1.getHash()!=null && ev2.getHash()!=null && !ev1.getHash().equals(ev2.getHash()))
-			addMismatchError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
+			addError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
 		if(ev1.getLatestHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
 				!ev1.getLatestHandledStatus().getTransactionState().equals(ev2.getLatestHandledStatus().getTransactionState()))
-			addMismatchError("Entity:" +key+ " has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
+			addError("Entity:" +key+ " has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
 		if(ev1.getHistoryHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
 				!ev1.getHistoryHandledStatus().getTransactionState().equals(ev2.getHistoryHandledStatus().getTransactionState()))
-			addMismatchError("Entity:" +key+ " has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
+			addError("Entity:" +key+ " has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
 
 	}
 

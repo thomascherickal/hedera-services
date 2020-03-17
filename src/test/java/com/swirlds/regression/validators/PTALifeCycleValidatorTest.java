@@ -35,6 +35,7 @@ public class PTALifeCycleValidatorTest {
 		validator.validate();
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
+		assertEquals(0, validator.getErrorMessages().size());
 		assertEquals(true, validator.isValid());
 	}
 
@@ -48,28 +49,18 @@ public class PTALifeCycleValidatorTest {
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
 
-		assertEquals(24, validator.getFieldValuesMismatchErrors().size());
-		assertEquals(3, validator.getErrorMessages().size());
-		assertEquals(3, validator.getMissingKeysErrors().size());
+		assertEquals(30, validator.getErrorMessages().size());
 
-		System.out.println("Error messages :"+validator.getErrorMessages());
-		System.out.println("Entity mismatch error messages :"+validator.getFieldValuesMismatchErrors());
-		System.out.println("Missing Key error messages :"+validator.getMissingKeysErrors());
+		System.out.println("Error messages : \n"+ String.join("\n",validator.getErrorMessages()));
 
-		assertTrue(validator.getFieldValuesMismatchErrors().contains("Entity:MapKey[0,0,11,Blob] has the field " +
+		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11,Blob] has the field " +
 				"isErrored mismatched for the Nodes :0, 1"));
-		assertTrue(validator.getFieldValuesMismatchErrors().get(2).contains("[0,0,17,Blob]"));
-		assertTrue(validator.getFieldValuesMismatchErrors().get(4).contains("[0,0,14,Blob]"));
-		assertTrue(validator.getFieldValuesMismatchErrors().get(6).contains("[0,0,15,Blob]"));
-
-		assertTrue(validator.getErrorMessages().get(0).contains("MapKey[0,0,12,Crypto]"));
-		assertTrue(validator.getErrorMessages().get(1).contains("MapKey[0,0,12,Crypto]"));
-		assertTrue(validator.getErrorMessages().get(2).contains("MapKey[0,0,12,Crypto]"));
-
-		assertTrue(validator.getMissingKeysErrors().get(0).contains("[0,0,19,Blob]"));
-		assertTrue(validator.getMissingKeysErrors().get(1).contains("[0,0,19,Blob]"));
-		assertTrue(validator.getMissingKeysErrors().get(2).contains("[0,0,19,Blob]"));
-
+		assertTrue(validator.getErrorMessages().contains("Entity type of keys doesn't match : Nodes : 0, 3 " +
+				", Key :MapKey[0,0,12,Crypto]"));
+		assertTrue(validator.getErrorMessages().contains("KeySet size of Map of node 0 doesn't match with " +
+				"Map of node 1. Missing keys :MapKey[0,0,19,Blob]"));
+		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11,Blob] has the field " +
+				"latestHandledStatus mismatched for the Nodes :0, 1"));
 		assertEquals(false, validator.isValid());
 	}
 }
