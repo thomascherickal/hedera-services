@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 

@@ -28,6 +28,5 @@ public enum ValidatorType {
 	STATS,
 	RECOVER_STATE,
 	THROTTLE,
-	PTA_THROTTLE,
-	LIFECYCLE
+	PTA_THROTTLE
 }
