@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 public class PTALifecycleValidator extends Validator {
 	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
-	public static boolean isValid;
+	private static boolean isValid;
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
 	/**
@@ -57,15 +57,6 @@ public class PTALifecycleValidator extends Validator {
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		expectedMaps = mapData.getExpectedMaps();
 		isValid = false;
-	}
-
-	public static Map<Integer, Map<MapKey, ExpectedValue>> getExpectedMaps() {
-		return expectedMaps;
-	}
-
-	public static void setExpectedMaps(
-			Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
-		PTALifecycleValidator.expectedMaps = expectedMaps;
 	}
 
 	@Override
