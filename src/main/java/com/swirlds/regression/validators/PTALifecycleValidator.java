@@ -27,12 +27,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
+/**
+ * Validator to validate lifecycle of all entities in ExpectedMap
+ */
 public class PTALifecycleValidator extends Validator {
 	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 	public static boolean isValid;
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
+	/**
+	 * List of errors
+	 */
 	private List<String> errorMessages = new ArrayList<>();
 	private List<String> fieldValuesMismatchErrors = new ArrayList<>();
 	private List<String> missingKeysErrors = new ArrayList<>();
@@ -74,16 +79,27 @@ public class PTALifecycleValidator extends Validator {
 
 	public List<String> getMissingKeysErrors() { return missingKeysErrors; }
 
+	/**
+	 * Validate the expectedMaps downloaded in the results folder after an experiment is completed
+	 */
 	@Override
 	public void validate() {
 		isValid = validateExpectedMaps();
 	}
 
+	/**
+	 * Check if the experiment completed successfully
+	 * @return Boolean that signifies there are no error messages while validating expectedMaps from all nodes
+	 */
 	@Override
 	public boolean isValid() {
 		return isValid;
 	}
 
+	/**
+	 * ExpectedMaps are valid if there are no error messages recorded while
+	 * expectedMaps from all nodes
+	 */
 	private boolean validateExpectedMaps(){
 		Map<MapKey, ExpectedValue> baselineMap = expectedMaps.get(0);
 
@@ -96,12 +112,12 @@ public class PTALifecycleValidator extends Validator {
 				if(mapToCompare.containsKey(key)){
 					ExpectedValue baseValue = baselineMap.get(key);
 					ExpectedValue compareValue = mapToCompare.get(key);
-					 if(!baseValue.equals(compareValue)){
+					if(!baseValue.equals(compareValue)){
 						compareValues(key, baseValue, compareValue, i);
-					 }
-					 if(baseValue.isErrored() && compareValue.isErrored()){
-					 	checkErrorCause(key, compareValue, i);
-					 }
+					}
+					if(baseValue.isErrored() && compareValue.isErrored()){
+						checkErrorCause(key, compareValue, i);
+					}
 				}
 			}
 		}
@@ -111,6 +127,10 @@ public class PTALifecycleValidator extends Validator {
 		return isValid;
 	}
 
+	/**
+	 * validate of the KeySet of maps is valid. Checks the size of keySet of all maps
+	 * and entity type of MapKeys are same
+	 */
 	private void checkKeySet(Map<MapKey, ExpectedValue> baselineMap, Map<MapKey, ExpectedValue> mapToCompare, int i) {
 		Set<MapKey> baseKeySet = baselineMap.keySet();
 		Set<MapKey> compareKeySet = mapToCompare.keySet();
@@ -121,16 +141,20 @@ public class PTALifecycleValidator extends Validator {
 		checkEntityType(baselineMap.keySet(), mapToCompare.keySet(), i);
 	}
 
+	/**
+	 * If the KeySet size of maps differ logs error with the missing keys
+	 */
 	private void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
 
 		String missingKeysInCompare = baseKeySet.
-							stream().
-							filter(x -> !compareKeySet.contains(x)).
-							collect(Collectors.toList()).stream().
-							map(key -> key.toString()).
-							collect(Collectors.joining(","));
+				stream().
+				filter(x -> !compareKeySet.contains(x)).
+				collect(Collectors.toList()).stream().
+				map(key -> key.toString()).
+				collect(Collectors.joining(","));
 		if(!missingKeysInCompare.isEmpty()) {
-			addMissingKeyError("KeySet size of Map of node " + nodeNum + " doesn't match with Map of node 0. " +
+			addMissingKeyError("KeySet size of Map of node " + nodeNum +
+					" doesn't match with Map of node 0. " +
 					"Missing keys :" + missingKeysInCompare);
 		}
 
@@ -147,6 +171,10 @@ public class PTALifecycleValidator extends Validator {
 		}
 	}
 
+	/**
+	 * Check entity type of all keys in corresponding maps are same.
+	 * If not logs error with differing entities
+	 */
 	private void checkEntityType(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum){
 		for(MapKey key : baseKeySet) {
 			for (MapKey compareKey : compareKeySet) {
@@ -158,6 +186,11 @@ public class PTALifecycleValidator extends Validator {
 			}
 		}
 	}
+
+	/**
+	 * If two ExpectedValues doesn't match checks all the fields of expectedValues
+	 * and logs which fields mismatch
+	 */
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
 		if(ev1.isErrored() != ev2.isErrored())
 			addMismatchError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
@@ -172,6 +205,10 @@ public class PTALifecycleValidator extends Validator {
 
 	}
 
+	/**
+	 * If isErrored flag is set to true on an ExpectedValue in expectedMap, it means some error
+	 * occurred during the experiment. Checks the causes for error.
+	 */
 	private void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
 		switch (latestHandleStatus.getTransactionState()) {
@@ -192,14 +229,5 @@ public class PTALifecycleValidator extends Validator {
 				break;
 			default:
 		}
-	}
-
-	boolean equalMaps(Map<MapKey,ExpectedValue>map1, Map<MapKey,ExpectedValue>map2, int nodeNum) {
-		if (map1.size() != map2.size())
-			return false;
-		for (MapKey key: map1.keySet())
-			if (!map1.get(key).equals(map2.get(key)))
-				return false;
-		return true;
 	}
 }

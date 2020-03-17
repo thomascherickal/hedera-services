@@ -28,6 +28,7 @@ public class PTALifeCycleValidatorTest {
 	private static final String positiveTestDir =  "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir =  "src/test/resources/logs/LifecycleNeg";
 
+	// Positive test where ExpectedMaps of all 4 nodes are the same
 	@Test
 	void validateExpectedMapsPositiveTest() {
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
@@ -37,12 +38,13 @@ public class PTALifeCycleValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
+	// Test to check errors
+	// 	Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12,Crypto]
+	//	[0,0,11,Blob],[0,0,17,Blob],[0,0,14,Blob],0,0,15,Blob] has 2 different fields compared to node 0.
+	//	So that total mismatch errors will be 24
+	//	[0,0,19,Blob] is missing in node 0 . So, total missing Keys will be 3
 	@Test
 	void validateExpectedMapsErrors() {
-		// Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12,Crypto]
-		// [0,0,11,Blob],[0,0,17,Blob],[0,0,14,Blob],0,0,15,Blob] has 2 different fields compared to node 0.
-		// So that total mismatch errors will be 24
-		// [0,0,19,Blob] is missing in node 0 . So, total missing Keys will be 3
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
 
