@@ -397,26 +397,5 @@
       "nodeId" : 18
     },
     "historyHandledStatus" : null
-  },
-  "MapKey[0,0,19,Blob]" : {
-    "hash" : {
-      "value" : "S12oLmSn48YOiYmCYAh7WDTKkUBf1IQLLWcJ2esmOXO8kaMAFs19zXPBKPTkXXGe",
-      "classId" : -854880720348154850,
-      "version" : 1
-    },
-    "isErrored" : false,
-    "latestHandledStatus" : {
-      "transactionState" : "HANDLED",
-      "transactionType" : "Update",
-      "timestamp" : 1584383118,
-      "nodeId" : 19
-    },
-    "latestSubmitStatus" : {
-      "transactionState" : "SUBMITTED",
-      "transactionType" : "Update",
-      "timestamp" : 1584383118,
-      "nodeId" : 19
-    },
-    "historyHandledStatus" : null
   }
 }

@@ -20,12 +20,8 @@ package com.swirlds.regression.validators;
 import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
 import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
-import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 
-import java.io.File;
-import java.security.Key;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,14 +34,19 @@ public class PTALifecycleValidator extends Validator {
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
 	private List<String> errorMessages = new ArrayList<>();
-	private List<String> mismatchErrors = new ArrayList<>();
+	private List<String> fieldValuesMismatchErrors = new ArrayList<>();
+	private List<String> missingKeysErrors = new ArrayList<>();
 
 	void addError(String msg) {
 		errorMessages.add(msg);
 	}
 
 	void addMismatchError(String msg) {
-		mismatchErrors.add(msg);
+		fieldValuesMismatchErrors.add(msg);
+	}
+
+	void addMissingKeyError(String msg) {
+		missingKeysErrors.add(msg);
 	}
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
@@ -67,18 +68,11 @@ public class PTALifecycleValidator extends Validator {
 		return errorMessages;
 	}
 
-	public void setErrorMessages(List<String> errorMessages) {
-		this.errorMessages = errorMessages;
+	public List<String> getFieldValuesMismatchErrors() {
+		return fieldValuesMismatchErrors;
 	}
 
-	public List<String> getMismatchErrors() {
-		return mismatchErrors;
-	}
-
-	public void setMismatchErrors(List<String> mismatchErrors) {
-		this.mismatchErrors = mismatchErrors;
-	}
-
+	public List<String> getMissingKeysErrors() { return missingKeysErrors; }
 
 	@Override
 	public void validate() {
@@ -111,7 +105,7 @@ public class PTALifecycleValidator extends Validator {
 				}
 			}
 		}
-		if(errorMessages.size() == 0 && mismatchErrors.size() == 0)
+		if(errorMessages.size() == 0 && fieldValuesMismatchErrors.size() == 0)
 			isValid = true;
 
 		return isValid;
@@ -122,20 +116,34 @@ public class PTALifecycleValidator extends Validator {
 		Set<MapKey> compareKeySet = mapToCompare.keySet();
 
 		if(baseKeySet.size() != compareKeySet.size()){
-			LogMissingkeys(baseKeySet,compareKeySet, i);
+			checkMissingKeys(baseKeySet,compareKeySet, i);
 		}
 		checkEntityType(baselineMap.keySet(), mapToCompare.keySet(), i);
 	}
 
-	private void LogMissingkeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
+	private void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
 
-		List<MapKey> missingKeys =baseKeySet.
+		String missingKeysInCompare = baseKeySet.
 							stream().
-							filter(x -> !compareKeySet.contains(x)).collect(
-							Collectors.toList());
-		if(missingKeys.size() > 0) {
-			addError("KeySet size of Map of node " + nodeNum + " doesn't match with Map of node 0. " +
-					"Missing keys :" + missingKeys);
+							filter(x -> !compareKeySet.contains(x)).
+							collect(Collectors.toList()).stream().
+							map(key -> key.toString()).
+							collect(Collectors.joining(","));
+		if(!missingKeysInCompare.isEmpty()) {
+			addMissingKeyError("KeySet size of Map of node " + nodeNum + " doesn't match with Map of node 0. " +
+					"Missing keys :" + missingKeysInCompare);
+		}
+
+		String missingKeysInBase = compareKeySet.
+				stream().
+				filter(x -> !baseKeySet.contains(x)).
+				collect(Collectors.toList()).
+				stream().
+				map(key -> key.toString()).
+				collect(Collectors.joining(","));;
+		if(!missingKeysInBase.isEmpty()){
+			addMissingKeyError("KeySet size of Map of node 0 doesn't match with Map of node " +nodeNum +
+					". Missing keys :" + missingKeysInBase);
 		}
 	}
 
