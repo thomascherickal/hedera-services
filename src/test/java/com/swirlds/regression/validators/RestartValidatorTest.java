@@ -19,6 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -71,7 +72,7 @@ class RestartValidatorTest {
 
 			LogReader logReader = null;
 			if (logInput != null) {
-				logReader = LogReader.createReader(1, logInput);
+				logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
 			}
 			CsvReader csvReader = null;
 			if (csvInput != null) {

@@ -38,13 +38,13 @@ public class LogReader {
 	LogEntry firstEntry = null;
 	LogEntry lastEntryRead = null;
 
-	private LogReader(BufferedReader fileReader, LogParser parser) {
-		this.fileReader = fileReader;
+	private LogReader(LogParser parser, InputStream fileStream) {
+		this.fileReader = new BufferedReader(new InputStreamReader(fileStream));
 		this.parser = parser;
 	}
 
-	public static LogReader createReader(int logVersion, InputStream fileStream) {
-		return new LogReader(new BufferedReader(new InputStreamReader(fileStream)), new LogParserV1());
+	public static LogReader createReader(LogParser parser, InputStream fileStream) {
+		return new LogReader(parser, fileStream);
 	}
 
 	public String nextLine() throws IOException {
@@ -84,9 +84,9 @@ public class LogReader {
 			if (entry == null) {
 				return null;
 			}
-			boolean result = strings.stream().anyMatch(x -> entry.getLogEntry().contains(x) );
-			if (result){
-				return  entry;
+			boolean result = strings.stream().anyMatch(x -> entry.getLogEntry().contains(x));
+			if (result) {
+				return entry;
 			}
 		}
 	}

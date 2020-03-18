@@ -24,6 +24,7 @@ import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
@@ -471,7 +472,7 @@ public class Experiment implements ExperimentSummary {
                 InputStream csvInput = getInputStream(csvFilePath);
                 LogReader logReader = null;
                 if (logInput != null) {
-                    logReader = LogReader.createReader(1, logInput);
+                    logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
                 }
                 CsvReader csvReader = null;
                 if (csvInput != null) {

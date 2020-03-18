@@ -29,7 +29,7 @@ class LogReaderTest {
 
 	@Test
 	void readLogFile() throws IOException {
-		LogReader logReader = LogReader.createReader(1,
+		LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1),
 				LogReaderTest.class.getClassLoader().getResourceAsStream("swirlds.log"));
 
 		LogEntry firstEntry = logReader.nextEntry();

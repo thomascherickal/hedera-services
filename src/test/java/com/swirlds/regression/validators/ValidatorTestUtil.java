@@ -19,6 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public abstract class ValidatorTestUtil {
 
 			nodeData.add(
 					new NodeData(
-							LogReader.createReader(logVersion, logInput),
+							LogReader.createReader(PlatformLogParser.createParser(logVersion), logInput),
 							CsvReader.createReader(csvVersion, csvInput)
 					));
 		}
