@@ -81,7 +81,9 @@ public class PTALifecycleValidator extends Validator {
 		for(int i=1; i< expectedMaps.size();i++){
 			Map<MapKey, ExpectedValue> mapToCompare = expectedMaps.get(i);
 
-			checkKeySet(baselineMap, mapToCompare, i);
+			if(baselineMap.keySet() != mapToCompare.keySet()){
+				checkMissingKeys(baselineMap.keySet(),mapToCompare.keySet(), i);
+			}
 
 			for(MapKey key : baselineMap.keySet()){
 				if(mapToCompare.containsKey(key)){
@@ -103,20 +105,6 @@ public class PTALifecycleValidator extends Validator {
 	}
 
 	/**
-	 * validate of the KeySet of maps is valid. Checks the size of keySet of all maps
-	 * and entity type of MapKeys are same
-	 */
-	private void checkKeySet(Map<MapKey, ExpectedValue> baselineMap, Map<MapKey, ExpectedValue> mapToCompare, int i) {
-		Set<MapKey> baseKeySet = baselineMap.keySet();
-		Set<MapKey> compareKeySet = mapToCompare.keySet();
-
-		if(baseKeySet.size() != compareKeySet.size()){
-			checkMissingKeys(baseKeySet,compareKeySet, i);
-		}
-		checkEntityType(baselineMap.keySet(), mapToCompare.keySet(), i);
-	}
-
-	/**
 	 * If the KeySet size of maps differ logs error with the missing keys
 	 */
 	private void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
@@ -128,8 +116,8 @@ public class PTALifecycleValidator extends Validator {
 				map(key -> key.toString()).
 				collect(Collectors.joining(","));
 		if(!missingKeysInCompare.isEmpty()) {
-			addError("KeySet size of Map of node " + nodeNum +
-					" doesn't match with Map of node 0. " +
+			addError("KeySet of the expectedMap of node " + nodeNum +
+					" doesn't match with expectedMap of node 0. " +
 					"Missing keys :" + missingKeysInCompare);
 		}
 
@@ -147,24 +135,12 @@ public class PTALifecycleValidator extends Validator {
 	}
 
 	/**
-	 * Check entity type of all keys in corresponding maps are same.
-	 * If not logs error with differing entities
-	 */
-	private void checkEntityType(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum){
-		for(MapKey key : baseKeySet) {
-			for (MapKey compareKey : compareKeySet) {
-				if (compareKeySet.contains(key) && key.equals(compareKey) && !key.equalsAllFields(compareKey)) {
-					addError("Entity type of keys doesn't match : Nodes : 0, " + nodeNum + " , Key :"+ key);
-				}
-			}
-		}
-	}
-
-	/**
 	 * If two ExpectedValues doesn't match checks all the fields of expectedValues
 	 * and logs which fields mismatch
 	 */
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
+		if(!ev1.getEntityType().equals(ev2.getEntityType()))
+			addError("Entity type of values doesn't match : Nodes : 0, " + nodeNum + " , Key :"+ key);
 		if(ev1.isErrored() != ev2.isErrored())
 			addError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
 		if(ev1.getHash()!=null && ev2.getHash()!=null && !ev1.getHash().equals(ev2.getHash()))
@@ -198,7 +174,7 @@ public class PTALifecycleValidator extends Validator {
 				break;
 			case  HANDLE_ENTITY_TYPE_MISMATCH:
 				addError("Operation "+ latestHandleStatus.getTransactionType()+
-						"failed as it is performed on wrong entity type"+ key.getEntityType());
+						"failed as it is performed on wrong entity type"+ ev2.getEntityType());
 				break;
 			default:
 		}

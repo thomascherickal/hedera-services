@@ -40,8 +40,8 @@ public class PTALifeCycleValidatorTest {
 	}
 
 	// Test to check errors
-	// 	Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12,Crypto]
-	//	[0,0,11,Blob],[0,0,17,Blob],[0,0,14,Blob],0,0,15,Blob] has 2 different fields compared to node 0.
+	// 	Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12]
+	//	[0,0,11],[0,0,17],[0,0,14],[0,0,15] has 2 different fields compared to node 0.
 	//	So that total mismatch errors will be 24
 	//	[0,0,19,Blob] is missing in node 0 . So, total missing Keys will be 3
 	@Test
@@ -53,13 +53,13 @@ public class PTALifeCycleValidatorTest {
 
 		System.out.println("Error messages : \n"+ String.join("\n",validator.getErrorMessages()));
 
-		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11,Blob] has the field " +
+		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11] has the field " +
 				"isErrored mismatched for the Nodes :0, 1"));
-		assertTrue(validator.getErrorMessages().contains("Entity type of keys doesn't match : Nodes : 0, 3 " +
-				", Key :MapKey[0,0,12,Crypto]"));
+		assertTrue(validator.getErrorMessages().contains("Entity type of values doesn't match : " +
+				"Nodes : 0, 1 , Key :MapKey[0,0,12]"));
 		assertTrue(validator.getErrorMessages().contains("KeySet size of Map of node 0 doesn't match with " +
-				"Map of node 1. Missing keys :MapKey[0,0,19,Blob]"));
-		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11,Blob] has the field " +
+				"Map of node 1. Missing keys :MapKey[0,0,19]"));
+		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,14] has the field " +
 				"latestHandledStatus mismatched for the Nodes :0, 1"));
 		assertEquals(false, validator.isValid());
 	}
