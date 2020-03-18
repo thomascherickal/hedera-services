@@ -37,9 +37,9 @@
 	"configs/testReconnectFCQMultiReconnectCfg.json",
 	"configs/testReconnectBlobCfg.json",
 	"configs/testFcm1kThrottlingCfg.json",
-	  "configs/testFcmCfg.json",
-	  "configs/testFcm10MBx10KBlobCfg.json",
-	  "configs/testFcm4kx100KBlobCfg.json"
+	"configs/testFcmCfg.json",
+	"configs/testFcmSmallBlobCfg.json",
+	"configs/testFcmLargeBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",

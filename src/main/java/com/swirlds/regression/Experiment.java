@@ -21,6 +21,7 @@ import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
 import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
@@ -98,7 +99,7 @@ import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_E
 import static com.swirlds.regression.RegressionUtilities.*;
 import static org.apache.commons.io.FileUtils.listFiles;
 
-public class Experiment {
+public class Experiment implements ExperimentSummary {
 
     private static final Logger log = LogManager.getLogger(Experiment.class);
     private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
@@ -129,14 +130,17 @@ public class Experiment {
     protected boolean errors = false;
     protected boolean exceptions = false;
 
+    @Override
     public boolean hasWarnings() {
         return warnings;
     }
 
+    @Override
     public boolean hasErrors() {
         return errors;
     }
 
+    @Override
     public boolean hasExceptions() {
         return exceptions;
     }
@@ -183,6 +187,7 @@ public class Experiment {
         }
     }
 
+    @Override
     public String getName() {
         return testConfig.getName();
     }
@@ -428,9 +433,7 @@ public class Experiment {
                 folderName) + "/";
     }
 
-    /**
-     * Generate a unique code that can be used to search for this test in slack.
-     */
+    @Override
     public String getUniqueId() {
         Integer hash = (RegressionUtilities.getExperimentTimeFormattedString(getExperimentTime()) + "-" +
                 getName()).hashCode();
