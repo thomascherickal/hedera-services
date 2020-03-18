@@ -46,4 +46,7 @@ public class NodeData {
 		return csvReader;
 	}
 
+	public LogReader<StdoutLogEntry> getStdoutReader() {
+		return stdoutReader;
+	}
 }
