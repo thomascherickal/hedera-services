@@ -28,11 +28,11 @@ public class StdoutLogEntry implements LogEntry {
 
 	@Override
 	public String getLogEntry() {
-		return null;
+		return line;
 	}
 
 	@Override
 	public boolean isException() {
-		return false;
+		return hasErrors;
 	}
 }
