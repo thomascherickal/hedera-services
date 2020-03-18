@@ -20,6 +20,8 @@ package com.swirlds.regression.validators;
 import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
 import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
+import com.swirlds.demo.platform.fcm.lifecycle.TransactionState;
+import com.swirlds.demo.platform.fcm.lifecycle.TransactionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +93,8 @@ public class PTALifecycleValidator extends Validator {
 					ExpectedValue compareValue = mapToCompare.get(key);
 					if(!baseValue.equals(compareValue)){
 						compareValues(key, baseValue, compareValue, i);
+					}else{
+						checkHandleRejectedStatus(key, baseValue, compareValue, i);
 					}
 					if(baseValue.isErrored() && compareValue.isErrored()){
 						checkErrorCause(key, compareValue, i);
@@ -102,6 +106,29 @@ public class PTALifecycleValidator extends Validator {
 			isValid = true;
 
 		return isValid;
+	}
+
+	private void checkHandleRejectedStatus(MapKey key, ExpectedValue baseValue, ExpectedValue compareValue, int i) {
+		TransactionState baseType = baseValue.getLatestHandledStatus().getTransactionState();
+		TransactionState compareType = compareValue.getLatestHandledStatus().getTransactionState();
+		TransactionType baseHistoryType = baseValue.getHistoryHandledStatus().getTransactionType();
+		TransactionType compareHistoryType = compareValue.getHistoryHandledStatus().getTransactionType();
+
+		if((baseType.equals(TransactionState.HANDLE_REJECTED) &&
+				!(baseHistoryType.equals(TransactionType.Delete) ||
+						baseHistoryType.equals(TransactionType.Expire)))){
+			addError("ExpectedValue of Key "+key+" has the latestHandledStatus as "
+					+baseType + ".But, the HistoryHandledStatus is not Deleted/Expired." +
+					" It is"+baseHistoryType);
+		}
+
+		if(compareType.equals(TransactionState.HANDLE_REJECTED) &&
+				!(compareHistoryType.equals(TransactionType.Delete) ||
+						compareHistoryType.equals(TransactionType.Expire))){
+				addError("ExpectedValue of Key "+key+" has the latestHandledStatus as "
+						+compareType + ".But, the HistoryHandledStatus is not Deleted/Expired." +
+						" It is"+compareHistoryType);
+			}
 	}
 
 	/**
@@ -160,6 +187,7 @@ public class PTALifecycleValidator extends Validator {
 	 */
 	private void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
+		LifecycleStatus latestSubmitStatus = ev2.getLatestSubmitStatus();
 		switch (latestHandleStatus.getTransactionState()) {
 			case  INVALID_SIG:
 				addError("Signature is not valid for Entity "+ key +" while performing operation "
@@ -175,6 +203,10 @@ public class PTALifecycleValidator extends Validator {
 			case  HANDLE_ENTITY_TYPE_MISMATCH:
 				addError("Operation "+ latestHandleStatus.getTransactionType()+
 						"failed as it is performed on wrong entity type"+ ev2.getEntityType());
+				break;
+			case  SUBMISSION_FAILED:
+				addError("Operation "+ latestSubmitStatus.getTransactionType()+
+						"failed to get successfully submitted on node "+ nodeNum + "for entity " +key);
 				break;
 			default:
 		}
