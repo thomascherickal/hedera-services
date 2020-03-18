@@ -29,24 +29,24 @@ class LogReaderTest {
 
 	@Test
 	void readLogFile() throws IOException {
-		LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1),
+		LogReader<PlatformLogEntry> logReader = LogReader.createReader(PlatformLogParser.createParser(1),
 				LogReaderTest.class.getClassLoader().getResourceAsStream("swirlds.log"));
 
-		LogEntry firstEntry = logReader.nextEntry();
+		PlatformLogEntry firstEntry = logReader.nextEntry();
 		assertEquals(618, firstEntry.getThreadId());
 		assertEquals(LogMarkerInfo.STARTUP, firstEntry.getMarker());
 		assertEquals("main Browser main() started", firstEntry.getLogEntry());
 
-		LogEntry fallenBehindEntry = logReader.nextEntryContaining("has fallen behind");
+		PlatformLogEntry fallenBehindEntry = logReader.nextEntryContaining("has fallen behind");
 		assertEquals(120825, fallenBehindEntry.getThreadId());
 		assertEquals(LogMarkerInfo.RECONNECT, fallenBehindEntry.getMarker());
 		assertEquals("3 has fallen behind, will stop and clear EventFlow and Hashgraph",
 				fallenBehindEntry.getLogEntry());
 
-		List<LogEntry> exceptions = logReader.getExceptions();
+		List<PlatformLogEntry> exceptions = logReader.getExceptions();
 		assertEquals(8, exceptions.size());
 
-		LogEntry exception = exceptions.get(0);
+		PlatformLogEntry exception = exceptions.get(0);
 		assertEquals(LogMarkerInfo.SOCKET_EXCEPTIONS, exception.getMarker());
 		assertEquals(true, exception.isException());
 		assertEquals("3 didn't receive anything from 1 for 5005 ms. Disconnecting...", exception.getLogEntry());

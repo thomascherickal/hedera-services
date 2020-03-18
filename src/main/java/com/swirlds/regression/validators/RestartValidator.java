@@ -18,7 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -71,8 +71,8 @@ public class RestartValidator extends NodeValidator {
 		HashMap<Long, ArrayList<String>> freezeRounds = new HashMap<>();
 		HashMap<Long, ArrayList<String>> unfreezeRounds = new HashMap<>();
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
-			LogEntry currentEntry;
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
+			PlatformLogEntry currentEntry;
 			/* build node specific search phrase for loading after freeze */
 			String loadRestartMessageForNode = String.format(LOAD_RESTART_MESSAGE, i);
 			ArrayList<String> keyedFreeze = new ArrayList<>();
@@ -109,7 +109,7 @@ public class RestartValidator extends NodeValidator {
 
 			int socketExceptions = 0;
 			int unexpectedErrors = 0;
-			for (LogEntry e : nodeLog.getExceptions()) {
+			for (PlatformLogEntry e : nodeLog.getExceptions()) {
 				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
 				} else {
@@ -174,7 +174,7 @@ public class RestartValidator extends NodeValidator {
 	 * 		- phrase to check
 	 * @return - map with a String from the search phrase and a key of the node which this log belongs to
 	 */
-	private String checkEntryForSearchString(LogEntry entry, int node, String searchPhrase) {
+	private String checkEntryForSearchString(PlatformLogEntry entry, int node, String searchPhrase) {
 		String returnStr = "";
 		if (entry.getLogEntry().contains(searchPhrase)) {
 			returnStr = getRoundNumber(searchPhrase, entry.getLogEntry());

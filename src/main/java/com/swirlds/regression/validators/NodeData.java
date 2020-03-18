@@ -19,17 +19,18 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogEntry;
 
 public class NodeData {
-	private LogReader logReader;
+	private LogReader<PlatformLogEntry> logReader;
 	private CsvReader csvReader;
 
-	public NodeData(LogReader logReader, CsvReader csvReader) {
+	public NodeData(LogReader<PlatformLogEntry> logReader, CsvReader csvReader) {
 		this.logReader = logReader;
 		this.csvReader = csvReader;
 	}
 
-	public LogReader getLogReader() {
+	public LogReader<PlatformLogEntry> getLogReader() {
 		return logReader;
 	}
 

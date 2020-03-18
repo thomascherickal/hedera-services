@@ -23,41 +23,40 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class LogReader {
+public class LogReader<T extends LogEntry> {
 	private BufferedReader fileReader;
-	private LogParser parser;
+	private LogParser<T> parser;
 
-	List<LogEntry> exceptions = new LinkedList<>();
+	List<T> exceptions = new LinkedList<>();
 	long exceptionCount = 0;
 
-	LogEntry firstEntry = null;
-	LogEntry lastEntryRead = null;
+	T firstEntry = null;
+	T lastEntryRead = null;
 
-	private LogReader(LogParser parser, InputStream fileStream) {
+	private LogReader(LogParser<T> parser, InputStream fileStream) {
 		this.fileReader = new BufferedReader(new InputStreamReader(fileStream));
 		this.parser = parser;
 	}
 
-	public static LogReader createReader(LogParser parser, InputStream fileStream) {
-		return new LogReader(parser, fileStream);
+	public static <T extends LogEntry> LogReader<T> createReader(LogParser<T> parser, InputStream fileStream) {
+		return new LogReader<T>(parser, fileStream);
 	}
 
 	public String nextLine() throws IOException {
 		return fileReader.readLine();
 	}
 
-	public LogEntry nextEntry() throws IOException {
+	public T nextEntry() throws IOException {
 		while (true) {
 			String line = nextLine();
 			if (line == null) {
 				return null;
 			}
-			LogEntry entry = parser.parse(line);
+			T entry = parser.parse(line);
 			if (entry != null) {
 				if (firstEntry == null) {
 					firstEntry = entry;
@@ -74,13 +73,13 @@ public class LogReader {
 		}
 	}
 
-	public LogEntry nextEntryContaining(String s) throws IOException {
+	public T nextEntryContaining(String s) throws IOException {
 		return nextEntryContaining(Arrays.asList(s));
 	}
 
-	public LogEntry nextEntryContaining(List<String> strings) throws IOException {
+	public T nextEntryContaining(List<String> strings) throws IOException {
 		while (true) {
-			LogEntry entry = nextEntry();
+			T entry = nextEntry();
 			if (entry == null) {
 				return null;
 			}
@@ -99,15 +98,15 @@ public class LogReader {
 		return exceptionCount;
 	}
 
-	public List<LogEntry> getExceptions() {
+	public List<T> getExceptions() {
 		return exceptions;
 	}
 
-	public LogEntry getFirstEntry() {
+	public T getFirstEntry() {
 		return firstEntry;
 	}
 
-	public LogEntry getLastEntryRead() {
+	public T getLastEntryRead() {
 		return lastEntryRead;
 	}
 }

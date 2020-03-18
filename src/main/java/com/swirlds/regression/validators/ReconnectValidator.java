@@ -19,7 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -136,7 +136,7 @@ public class ReconnectValidator extends NodeValidator {
 		}
 
 		// check the reconnect node's log and csv
-		LogReader nodeLog = nodeData.get(reconnectNodeId).getLogReader();
+		LogReader<PlatformLogEntry> nodeLog = nodeData.get(reconnectNodeId).getLogReader();
 		CsvReader nodeCsv = nodeData.get(reconnectNodeId).getCsvReader();
 
 		if (nodeLogIsNull(nodeLog, reconnectNodeId) || nodeCsvIsNull(nodeCsv, reconnectNodeId)) {
@@ -146,7 +146,7 @@ public class ReconnectValidator extends NodeValidator {
 
 		boolean nodeReconnected = false;
 		while (true) {
-			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
+			PlatformLogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
 			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
@@ -156,7 +156,7 @@ public class ReconnectValidator extends NodeValidator {
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
 
-			LogEntry end = nodeLog.nextEntryContaining(
+			PlatformLogEntry end = nodeLog.nextEntryContaining(
 					Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
 				addError(String.format("Node %d started a reconnect, but did not finish!", reconnectNodeId));
@@ -212,7 +212,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param e
 	 * @return
 	 */
-	boolean isAcceptable(final LogEntry e, final int nodeId) {
+	boolean isAcceptable(final PlatformLogEntry e, final int nodeId) {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
 			return true;
 		}
@@ -262,10 +262,10 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param nodeId
 	 * @return
 	 */
-	boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
+	boolean checkExceptions(final LogReader<PlatformLogEntry> nodeLog, final int nodeId) {
 		int socketExceptions = 0;
 		int unexpectedErrors = 0;
-		for (LogEntry e : nodeLog.getExceptions()) {
+		for (PlatformLogEntry e : nodeLog.getExceptions()) {
 			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 				socketExceptions++;
 			} else if (!isAcceptable(e, nodeId)) {

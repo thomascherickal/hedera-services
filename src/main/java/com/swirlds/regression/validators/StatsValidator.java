@@ -18,8 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.jsonConfigs.TestConfig;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -28,7 +27,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
-import static com.swirlds.common.PlatformStatNames.DISK_SPACE_FREE;
 import static com.swirlds.common.PlatformStatNames.DISK_SPACE_USED;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
@@ -59,7 +57,7 @@ public class StatsValidator extends NodeValidator {
 		double maxDiskSpaceUsed = -1;
 		double minFreeMem = Double.MAX_VALUE;
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
 
 			Instant nodeStart = nodeLog.nextEntry().getTime();
@@ -69,7 +67,7 @@ public class StatsValidator extends NodeValidator {
 
 			// this is the last log statement we check, we dont care about any exceptions after it
 			nodeLog.readFully();
-			LogEntry end = nodeLog.getLastEntryRead();
+			PlatformLogEntry end = nodeLog.getLastEntryRead();
 			if (endTime == null || end.getTime().isAfter(endTime)) {
 				endTime = end.getTime();
 			}

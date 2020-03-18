@@ -18,7 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -112,7 +112,7 @@ class ReconnectValidatorTest {
 
 		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
 
-		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
 				0, "thread",
 				"Exceptions acceptable at reconnect",
@@ -120,7 +120,7 @@ class ReconnectValidatorTest {
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
 
-		LogEntry reconnectNodeAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectNodeAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE,
 				0, "thread",
 				"Exceptions acceptable for reconnect node",
