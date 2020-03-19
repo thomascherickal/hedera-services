@@ -19,16 +19,12 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.crypto.Hash;
 import com.swirlds.demo.platform.fcm.MapKey;
-import com.swirlds.demo.platform.fcm.MapValue;
 import com.swirlds.demo.platform.fcm.MapValueData;
 import com.swirlds.demo.platform.fcm.lifecycle.EntityType;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
-import com.swirlds.platform.Crypto;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.sql.Blob;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,14 +64,16 @@ public class PTALifeCycleValidatorTest {
 
 		System.out.println("Error messages : \n"+ String.join("\n",validator.getErrorMessages()));
 
-		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,11] has the field " +
-				"isErrored mismatched for the Nodes :0, 1"));
-		assertTrue(validator.getErrorMessages().contains("Entity type of values doesn't match : " +
-				"Nodes : 0, 1 , Key :MapKey[0,0,12]"));
-		assertTrue(validator.getErrorMessages().contains("KeySet size of Map of node 0 doesn't match with " +
-				"Map of node 1. Missing keys :MapKey[0,0,19]"));
-		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,14] has the field " +
-				"latestHandledStatus mismatched for the Nodes :0, 1"));
+		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,11] has field isErrored mismatched. " +
+				"node0: true; node1: false"));
+		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,12] has field EntityType " +
+				"mismatched. node0: Crypto; node2: Blob"));
+		assertTrue(validator.getErrorMessages().contains("KeySet of the expectedMap of node 0 doesn't match " +
+				"with expectedMap of node 3. Missing keys: MapKey[0,0,19]"));
+		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,14] has field latestHandledStatus " +
+				"mismatched. node0: TransactionState: HANDLE_FAILED, TransactionType: Update, timestamp: 1584554112, " +
+				"nodeId: 14; node2: TransactionState: HANDLED, TransactionType: Update, timestamp: 1584554112, nodeId: " +
+				"14"));
 		assertEquals(false, validator.isValid());
 	}
 
