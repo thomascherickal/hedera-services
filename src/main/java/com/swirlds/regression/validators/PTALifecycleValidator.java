@@ -118,33 +118,55 @@ public class PTALifecycleValidator extends Validator {
 		return isValid;
 	}
 
-	private void checkHandleRejectedStatus(MapKey key, ExpectedValue baseValue, ExpectedValue compareValue, int i) {
-		TransactionState baseType = baseValue.getLatestHandledStatus().getTransactionState();
-		TransactionState compareType = compareValue.getLatestHandledStatus().getTransactionState();
-		TransactionType baseHistoryType = baseValue.getHistoryHandledStatus().getTransactionType();
-		TransactionType compareHistoryType = compareValue.getHistoryHandledStatus().getTransactionType();
+	/**
+	 * check if there are any entities that have latestHandledStatus as HANDLE_REJECTED
+	 * @param key key of the entity
+	 * @param baseValue expectedValue of entity in first node
+	 * @param compareValue expectedValue of entity in other node that is being compared
+	 * @param nodeNum Node number of the node on which entities are being compared
+	 */
+	private void checkHandleRejectedStatus(MapKey key, ExpectedValue baseValue, ExpectedValue compareValue, int nodeNum) {
+		LifecycleStatus baseLifecycle = baseValue.getLatestHandledStatus();
+		LifecycleStatus compareLifecycle = compareValue.getLatestHandledStatus();
+		LifecycleStatus baseHistory = baseValue.getHistoryHandledStatus();
+		LifecycleStatus compareHistory = compareValue.getHistoryHandledStatus();
 
-		if((baseType.equals(TransactionState.HANDLE_REJECTED) &&
-				!(baseHistoryType.equals(TransactionType.Delete) ||
-						baseHistoryType.equals(TransactionType.Expire)))){
-			addError("ExpectedValue of Key "+key+" has the latestHandledStatus as "
-					+baseType + ".But, the HistoryHandledStatus is not Deleted/Expired." +
-					" It is"+baseHistoryType);
+		if(baseValue.getLatestHandledStatus() == null && compareValue.getLatestHandledStatus() == null)
+			return;
+
+		if((baseLifecycle.getTransactionState().equals(TransactionState.HANDLE_REJECTED)))
+			checkHistory(key, baseHistory.getTransactionType(), 0);
+
+		if((compareLifecycle.getTransactionState().equals(TransactionState.HANDLE_REJECTED)))
+			checkHistory(key, compareHistory.getTransactionType(), nodeNum);
+	}
+
+	/**
+	 * Check the historyHandleStatus of an entity
+	 * @param key key of the entity
+	 * @param historyType TransactionType of historyHandleStatus
+	 * @param nodeNum Node number of the node on which entities are being compared
+	 */
+	private void checkHistory(MapKey key , TransactionType historyType, int nodeNum) {
+		if(historyType == null){
+			addError("ExpectedValue of Key "+key+" on node "+ nodeNum+ " has the latestHandledStatus TransactionState " +
+					"as HANDLE_REJECTED. But, the HistoryHandledStatus is null and not Deleted/Expired.");
+			return;
+		}else if(!(historyType.equals(TransactionType.Delete) ||
+				historyType.equals(TransactionType.Expire))){
+			addError("ExpectedValue of Key "+key+" on node "+ nodeNum+" has the latestHandledStatus TransactionState as "+
+					"HANDLE_REJECTED.But, the HistoryHandledStatus is not Deleted/Expired." +
+					" It is"+historyType);
 		}
-
-		if(compareType.equals(TransactionState.HANDLE_REJECTED) &&
-				!(compareHistoryType.equals(TransactionType.Delete) ||
-						compareHistoryType.equals(TransactionType.Expire))){
-				addError("ExpectedValue of Key "+key+" has the latestHandledStatus as "
-						+compareType + ".But, the HistoryHandledStatus is not Deleted/Expired." +
-						" It is"+compareHistoryType);
-			}
 	}
 
 	/**
 	 * If the KeySet size of maps differ logs error with the missing keys
+	 * @param baseKeySet KeySet of expectedMap of firstNode
+	 * @param compareKeySet KeySet of expectedMap on the node that is being compared
+	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
-	void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
+	public void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
 
 		String missingKeysInCompare = baseKeySet.
 				stream().
@@ -172,14 +194,14 @@ public class PTALifecycleValidator extends Validator {
 
 	/**
 	 * Build a String message to be used in compareValues()
-	 * @param key
-	 * @param base
-	 * @param other
-	 * @param nodeNum
-	 * @param fieldName
+	 * @param key key of the mismatched entity
+	 * @param base First object to be compared
+	 * @param other Other object to be compared
+	 * @param nodeNum Node number of the node on which entities are being compared
+	 * @param fieldName Field that is mismatched in the entity
 	 * @return
 	 */
-	static String buildFieldMissMatchMsg(final MapKey key, final Object base,
+	public static String buildFieldMissMatchMsg(final MapKey key, final Object base,
 			final Object other, final int nodeNum, final String fieldName) {
 		return String.format("Entity: %s has field %s mismatched. node0: %s; node%d: %s",
 				key, fieldName, base, nodeNum, other);
@@ -188,29 +210,33 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * If two ExpectedValues doesn't match checks all the fields of expectedValues
 	 * and logs which fields mismatch
+	 * @param key key of the entity
+	 * @param ev1 ExpectedValue to be compared
+	 * @param ev2 ExpectedValue of entity on other node to be compared
+	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
-		if (Objects.equals(ev1.getEntityType(), ev2.getEntityType())) {
+		if (!Objects.equals(ev1.getEntityType(), ev2.getEntityType())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getEntityType(),
 					ev2.getEntityType(), nodeNum, "EntityType"));
 		}
 
-		if (Objects.equals(ev1.isErrored(), ev2.isErrored())) {
+		if (!Objects.equals(ev1.isErrored(), ev2.isErrored())) {
 			addError(buildFieldMissMatchMsg(key, ev1.isErrored(),
 					ev2.isErrored(), nodeNum, "isErrored"));
 		}
 
-		if (Objects.equals(ev1.getHash(), ev2.getHash())) {
+		if (!Objects.equals(ev1.getHash(), ev2.getHash())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getHash(),
 					ev2.getHash(), nodeNum, "getHash"));
 		}
 
-		if (Objects.equals(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
+		if (!Objects.equals(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getLatestHandledStatus(),
 					ev2.getLatestHandledStatus(), nodeNum, "latestHandledStatus"));
 		}
 
-		if (Objects.equals(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
+		if (!Objects.equals(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
 					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
 		}
@@ -219,6 +245,9 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * If isErrored flag is set to true on an ExpectedValue in expectedMap, it means some error
 	 * occurred during the experiment. Checks the causes for error.
+	 * @param key key of the entity
+	 * @param ev2 ExpectedValue of the entity
+	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
 	private void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
