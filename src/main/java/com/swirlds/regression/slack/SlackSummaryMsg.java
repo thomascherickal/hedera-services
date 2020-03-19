@@ -145,6 +145,9 @@ public class SlackSummaryMsg extends SlackMsg {
 		stringBuilder.append(" " + gitInfo.getGitInfo(true));
 		newline(stringBuilder);
 
+		stringBuilder.append("Note: historical test data is displayed from left to right (oldest->newest).");
+		newline(stringBuilder);
+
 		List<Pair<ExperimentSummary, List<ExperimentSummary>>> successes = new ArrayList<>();
 		List<Pair<ExperimentSummary, List<ExperimentSummary>>> warnings = new ArrayList<>();
 		List<Pair<ExperimentSummary, List<ExperimentSummary>>> failures = new ArrayList<>();
