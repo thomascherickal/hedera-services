@@ -36,6 +36,13 @@ class ExperimentSummaryStorageTest {
 				"test1",
 				"1"
 		);
+		ExperimentSummaryData test1_1run1 = new ExperimentSummaryData(
+				false,
+				false,
+				false,
+				"test1.1",
+				"11"
+		);
 		ExperimentSummaryData test1run2 = new ExperimentSummaryData(
 				true,
 				false,
@@ -52,6 +59,7 @@ class ExperimentSummaryStorageTest {
 		);
 
 		ExperimentSummaryStorage.storeSummary(test1run1, new Date(123456));
+		ExperimentSummaryStorage.storeSummary(test1_1run1, new Date());
 		ExperimentSummaryStorage.storeSummary(test1run2, new Date());
 		ExperimentSummaryStorage.storeSummary(test2run1, new Date());
 
@@ -59,14 +67,20 @@ class ExperimentSummaryStorageTest {
 		assertEquals(test1run1, list1.get(0));
 		assertEquals(test1run2, list1.get(1));
 
+		List<ExperimentSummary> list1_1 = ExperimentSummaryStorage.readSummaries("test1.1", 10);
+		assertEquals(test1_1run1, list1_1.get(0));
+
 		List<ExperimentSummary> list2 = ExperimentSummaryStorage.readSummaries("test2", 10);
 		assertEquals(test2run1, list2.get(0));
 
 		ExperimentSummaryStorage.deleteOldSummaries("test1", 0);
+		ExperimentSummaryStorage.deleteOldSummaries("test1.1", 0);
 		ExperimentSummaryStorage.deleteOldSummaries("test2", 0);
 
 		list1 = ExperimentSummaryStorage.readSummaries("test1", 10);
 		assertEquals(0, list1.size());
+		list1_1 = ExperimentSummaryStorage.readSummaries("test1_1", 10);
+		assertEquals(0, list1_1.size());
 		list2 = ExperimentSummaryStorage.readSummaries("test2", 10);
 		assertEquals(0, list2.size());
 	}

@@ -36,7 +36,7 @@ public class ExperimentSummaryStorage {
 	private static SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS");
 	private static final String SUMMARY_DIR = "./summaryHistory/";
 	private static final String FILE_NAME_PATTERN =
-			"([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3})_([^\\.]+)\\.json";
+			"([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3})_(.*?)\\.json";
 
 	public static void storeSummary(ExperimentSummary summary, Date timeDate) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
