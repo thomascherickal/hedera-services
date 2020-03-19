@@ -26,6 +26,7 @@ import com.swirlds.demo.platform.fcm.lifecycle.TransactionType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,15 @@ public class PTALifecycleValidator extends Validator {
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		expectedMaps = mapData.getExpectedMaps();
+		isValid = false;
+	}
+
+	/**
+	 * only for unit test
+	 * @param expectedMaps
+	 */
+	PTALifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
+		this.expectedMaps = expectedMaps;
 		isValid = false;
 	}
 
@@ -134,31 +144,45 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * If the KeySet size of maps differ logs error with the missing keys
 	 */
-	private void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
+	void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
 
 		String missingKeysInCompare = baseKeySet.
 				stream().
 				filter(x -> !compareKeySet.contains(x)).
-				collect(Collectors.toList()).stream().
 				map(key -> key.toString()).
+				sorted().
 				collect(Collectors.joining(","));
 		if(!missingKeysInCompare.isEmpty()) {
 			addError("KeySet of the expectedMap of node " + nodeNum +
 					" doesn't match with expectedMap of node 0. " +
-					"Missing keys :" + missingKeysInCompare);
+					"Missing keys: " + missingKeysInCompare);
 		}
 
 		String missingKeysInBase = compareKeySet.
 				stream().
 				filter(x -> !baseKeySet.contains(x)).
-				collect(Collectors.toList()).
-				stream().
 				map(key -> key.toString()).
+				sorted().
 				collect(Collectors.joining(","));;
 		if(!missingKeysInBase.isEmpty()){
-			addError("KeySet size of Map of node 0 doesn't match with Map of node " +nodeNum +
-					". Missing keys :" + missingKeysInBase);
+			addError("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node " +nodeNum +
+					". Missing keys: " + missingKeysInBase);
 		}
+	}
+
+	/**
+	 * Build a String message to be used in compareValues()
+	 * @param key
+	 * @param base
+	 * @param other
+	 * @param nodeNum
+	 * @param fieldName
+	 * @return
+	 */
+	static String buildFieldMissMatchMsg(final MapKey key, final Object base,
+			final Object other, final int nodeNum, final String fieldName) {
+		return String.format("Entity: %s has field %s mismatched. node0: %s; node%d: %s",
+				key, fieldName, base, nodeNum, other);
 	}
 
 	/**
@@ -166,19 +190,30 @@ public class PTALifecycleValidator extends Validator {
 	 * and logs which fields mismatch
 	 */
 	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
-		if(!ev1.getEntityType().equals(ev2.getEntityType()))
-			addError("Entity type of values doesn't match : Nodes : 0, " + nodeNum + " , Key :"+ key);
-		if(ev1.isErrored() != ev2.isErrored())
-			addError("Entity:" + key + " has the field isErrored mismatched for the Nodes :0, " + nodeNum);
-		if(ev1.getHash()!=null && ev2.getHash()!=null && !ev1.getHash().equals(ev2.getHash()))
-			addError("Entity:" +key+ " has the field Hash mismatched for theNodes :0, "+nodeNum);
-		if(ev1.getLatestHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
-				!ev1.getLatestHandledStatus().getTransactionState().equals(ev2.getLatestHandledStatus().getTransactionState()))
-			addError("Entity:" +key+ " has the field latestHandledStatus mismatched for the Nodes :0, "+nodeNum);
-		if(ev1.getHistoryHandledStatus() !=null && ev2.getLatestHandledStatus() !=null &&
-				!ev1.getHistoryHandledStatus().getTransactionState().equals(ev2.getHistoryHandledStatus().getTransactionState()))
-			addError("Entity:" +key+ " has the field historyHandledStatus mismatched for the Nodes :0, "+nodeNum);
+		if (Objects.equals(ev1.getEntityType(), ev2.getEntityType())) {
+			addError(buildFieldMissMatchMsg(key, ev1.getEntityType(),
+					ev2.getEntityType(), nodeNum, "EntityType"));
+		}
 
+		if (Objects.equals(ev1.isErrored(), ev2.isErrored())) {
+			addError(buildFieldMissMatchMsg(key, ev1.isErrored(),
+					ev2.isErrored(), nodeNum, "isErrored"));
+		}
+
+		if (Objects.equals(ev1.getHash(), ev2.getHash())) {
+			addError(buildFieldMissMatchMsg(key, ev1.getHash(),
+					ev2.getHash(), nodeNum, "getHash"));
+		}
+
+		if (Objects.equals(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
+			addError(buildFieldMissMatchMsg(key, ev1.getLatestHandledStatus(),
+					ev2.getLatestHandledStatus(), nodeNum, "latestHandledStatus"));
+		}
+
+		if (Objects.equals(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
+			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
+					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
+		}
 	}
 
 	/**
