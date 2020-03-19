@@ -181,8 +181,8 @@ public class SSHService {
         String commandStr = "find . " + extensions + pruneDirectory;
 
         Session.Command cmd = null;
-        while (cmd == null) {
-            cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
+
             try {
                 log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
                 Thread.sleep(10000);
