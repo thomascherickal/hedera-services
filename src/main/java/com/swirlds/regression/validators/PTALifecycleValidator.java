@@ -134,6 +134,13 @@ public class PTALifecycleValidator extends Validator {
 		if(baseValue.getLatestHandledStatus() == null && compareValue.getLatestHandledStatus() == null)
 			return;
 
+		if(baseValue.getLatestHandledStatus() == null || compareValue.getLatestHandledStatus() == null){
+			addError("latestHandleStatus of one of the expectedValues is null . " +
+					"Node 0:"+ baseValue.getLatestHandledStatus() +
+					", Node "+nodeNum + ": "+ compareValue.getLatestHandledStatus());
+			return;
+		}
+
 		if((baseLifecycle.getTransactionState().equals(TransactionState.HANDLE_REJECTED)))
 			checkHistory(key, baseHistory.getTransactionType(), 0);
 
