@@ -17,7 +17,22 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.common.crypto.Hash;
+import com.swirlds.demo.platform.fcm.MapKey;
+import com.swirlds.demo.platform.fcm.MapValue;
+import com.swirlds.demo.platform.fcm.MapValueData;
+import com.swirlds.demo.platform.fcm.lifecycle.EntityType;
+import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
+import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
+import com.swirlds.platform.Crypto;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.sql.Blob;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,5 +77,67 @@ public class PTALifeCycleValidatorTest {
 		assertTrue(validator.getErrorMessages().contains("Entity:MapKey[0,0,14] has the field " +
 				"latestHandledStatus mismatched for the Nodes :0, 1"));
 		assertEquals(false, validator.isValid());
+	}
+
+
+	@Test
+	void buildFieldMissMatchMsgTest() throws IOException {
+		final MapKey key = new MapKey(0, 1, 2);
+
+		assertEquals("Entity: MapKey[0,1,2] has field entityType mismatched. node0: Blob; node1: Crypto",
+				PTALifecycleValidator.buildFieldMissMatchMsg(key, EntityType.Blob,
+				EntityType.Crypto, 1, "entityType"));
+
+		final Hash hash = new MapValueData().calculateHash();
+		assertEquals("Entity: MapKey[0,1,2] has field Hash mismatched. node0: null; node1: " + hash,
+				PTALifecycleValidator.buildFieldMissMatchMsg(key, null,
+						hash, 1, "Hash"));
+	}
+
+	@Test
+	void checkMissingKeyTest() {
+		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = new HashMap<>();
+		Map<MapKey, ExpectedValue> map0 = new ConcurrentHashMap<>();
+		Map<MapKey, ExpectedValue> map2 = new ConcurrentHashMap<>();
+		expectedMaps.put(0, map0);
+		expectedMaps.put(0, map2);
+		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+
+		// only in map0
+		MapKey key1 = new MapKey(0, 1, 2);
+		MapKey key2 = new MapKey(1, 2, 3);
+		map0.put(key1, new ExpectedValue());
+		map0.put(key2, new ExpectedValue());
+
+		// two equal keys
+		MapKey equalKey1 = new MapKey(0, 2, 3);
+		MapKey equalKey2 = new MapKey(0, 2, 3);
+		map0.put(equalKey1, new ExpectedValue());
+		map2.put(equalKey2, new ExpectedValue());
+
+		// only in map2
+		MapKey key3 = new MapKey(2, 0, 2);
+		MapKey key4 = new MapKey(2, 2, 3);
+		MapKey key5 = new MapKey(2, 2, 4);
+		map2.put(key3, new ExpectedValue());
+		map2.put(key4, new ExpectedValue());
+		map2.put(key5, new ExpectedValue());
+
+		// another two equal keys get by copy()
+		MapKey key = new MapKey(0, 1, 3);
+		MapKey copy = new MapKey(0, 1, 3);
+		map0.put(key, new ExpectedValue());
+		map2.put(copy, new ExpectedValue());
+
+		validator.checkMissingKeys(map0.keySet(),
+				map2.keySet(), 2);
+		List<String> errors = validator.getErrorMessages();
+		assertEquals(2, errors.size());
+		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. Missing keys: MapKey[0,1,2],MapKey[1,2,3]", errors.get(0));
+
+		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. Missing keys: MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(1));
+		for (String error : errors) {
+			System.out.println(error);
+		}
 	}
 }
