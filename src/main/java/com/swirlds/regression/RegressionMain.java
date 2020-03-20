@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.swirlds.regression.RegressionUtilities.CLOUD_WAIT_MILLIS;
+import static com.swirlds.regression.RegressionUtilities.WAIT_NODES_READY_TIMES;
 import static java.lang.Thread.sleep;
 
 
@@ -94,19 +95,19 @@ public class RegressionMain {
 
 	private void RunCloudExperiment() {
 		final CloudService cloud = setUpCloudService();
-		if (cloud == null) {
-			reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
-			return;
-		}
-		//TODO Unit test for system.exit after cloud service set up
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
-				cloud.destroyInstances();
-				log.info(MARKER, "cloud instances destroyed");
+			if (cloud == null) {
+				reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
+				return;
 			}
-		}));
+			//TODO Unit test for system.exit after cloud service set up
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
+				cloud.destroyInstances();
+					log.info(MARKER, "cloud instances destroyed");
+				}
+			}));
 
 		try {
 			runExperiments(cloud);
@@ -303,7 +304,8 @@ public class RegressionMain {
 		}
 		//TODO: made retry constant in RegressionUtlities and use that
 		int counter = 0;
-		while (!service.isInstanceReady() && counter < 10) {
+		int wait_retry_times = WAIT_NODES_READY_TIMES + regConfig.getTotalNumberOfRegions();
+		while (!service.isInstanceReady() && counter < wait_retry_times) { // old value 10 is too short for multiregion network
 			log.info(MARKER, "instances still not ready...");
 			try {
 				sleep(10000);
@@ -314,7 +316,8 @@ public class RegressionMain {
 		}
 
 		/* instance not ready after an extended time period, something went wrong */
-		if (counter >= 10) {
+		if (counter >= wait_retry_times) {
+			log.error(ERROR, "Could not setup cloud service due to instances not ready after waiting.");
 			return null;
 		}
 
