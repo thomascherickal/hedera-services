@@ -51,6 +51,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +62,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
@@ -118,6 +120,8 @@ public class Experiment {
 	private CloudService cloud = null;
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
 	private NodeMemory nodeMemoryProfile;
+	private ExecutorService es;
+	private boolean useThreadPool = false;
 
 	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
 	// savedState the nodes start from;
@@ -139,6 +143,11 @@ public class Experiment {
 
 	public boolean hasExceptions() {
 		return exceptions;
+	}
+
+	public void setUseThreadPool(boolean useThreadPool) {
+		log.info(MARKER, "Set useThreadPool as {}", useThreadPool);
+		this.useThreadPool = useThreadPool;
 	}
 
 	void setExperimentTime() {
@@ -207,41 +216,45 @@ public class Experiment {
 	 *
 	 * @param tasks
 	 * 		A list of runnable task
-	 * @param threadPoolSize
-	 * 		The size of thread pool
+	 * @param resizeThreadPool
+	 * 		Set the customized thread pool and after finish reset the thread pool
 	 */
-	private void threadPoolService(List<Runnable> tasks, int threadPoolSize) {
+	private void threadPoolService(List<Runnable> tasks, Integer resizeThreadPool) {
 		if (tasks.size() > 0) {
-			ExecutorService es = Executors.newFixedThreadPool(threadPoolSize);
+			System.out.println("Tasks = " + Arrays.toString(tasks.toArray()) );
+			if (resizeThreadPool != null) {
+				es = Executors.newFixedThreadPool(useThreadPool ? resizeThreadPool : 1);
+			} else {
+				//reuse current thread pool if already initialized
+				if (es == null) {
+					int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
+					es = Executors.newFixedThreadPool(poolSize);
+				}
+			}
 			CompletableFuture<?>[] futures = tasks.stream()
 					.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
 					.toArray(CompletableFuture[]::new);
 			CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
-			es.shutdown();
+			if (resizeThreadPool != null) {
+				es.shutdownNow();
+				es = null;
+			}
 		}
 	}
 
 	public void startAllSwirlds() {
-		List<Runnable> tasks = new ArrayList<>();
-		for (SSHService node : sshNodes) {
-			Runnable runnable = () -> {
-				node.execWithProcessID(regConfig.getJvmOptions());
-				log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.execWithProcessID(regConfig.getJvmOptions());
+					log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+				})
+				.collect(Collectors.toList()), null);
 	}
 
 	public void stopAllSwirlds() {
-		List<Runnable> tasks = new ArrayList<>();
-		for (SSHService currentNode : sshNodes) {
-			Runnable runnable = () -> {
-				currentNode.killJavaProcess();
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(currentNode -> () -> currentNode.killJavaProcess())
+				.collect(Collectors.toList()), null);
 	}
 
 	public void stopLastSwirlds() {
@@ -658,14 +671,9 @@ public class Experiment {
 		settingsFile.exportSettingsFile();
 		ArrayList<File> newUploads = new ArrayList<>();
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + SETTINGS_FILE));
-		List<Runnable> tasks = new ArrayList<>();
-		for (SSHService currentNode : sshNodes) {
-			Runnable runnable = () -> {
-				currentNode.scpToSpecificFiles(newUploads);
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads))
+				.collect(Collectors.toList()), null);
 	}
 
 	private void setIPsAndStakesInConfig() {
@@ -688,14 +696,9 @@ public class Experiment {
 
 		ArrayList<File> newUploads = new ArrayList<>();
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + CONFIG_FILE));
-		List<Runnable> tasks = new ArrayList<>();
-		for (SSHService currentNode : sshNodes) {
-			Runnable runnable = () -> {
-				currentNode.scpToSpecificFiles(newUploads);
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads))
+				.collect(Collectors.toList()), null);
 	}
 
 	public void sendSlackMessage(SlackTestMsg msg) {
@@ -760,80 +763,68 @@ public class Experiment {
 		ArrayList<File> addedFiles = buildAdditionalFileList();
 
 		//Step 1, send tar to node 0
-		List<Runnable> tasks = new ArrayList<>();
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
 		sendTarToNode(firstNode, addedFiles);
 
 		//Step 2, node 0 use rsync to send files to other nodes in parallel mode
-		for (int nodeID = 0; nodeID < nodeNumber; nodeID++) {
-			final int i = nodeID;
-			SSHService currentNode = sshNodes.get(i);
-			final SSHService firstNodeFinal = firstNode;
-			Runnable runnable = () -> {
-				if (i != 0) { //if not first node, sync files from first node to this node
-					firstNodeFinal.rsyncTo(addedFiles, currentNode.getIpAddress(),
-							new File(testConfig.getLog4j2File()));
-				}
+		//ATF server launch N-1 session on node0, each such session is a rsync session to one of
+		// the other N-1 nodes. So node0 needs to run N-1 parallel rsync sessions
+		// on linux default has smaller outgoing ssh session limit from node0 to other nodes
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					if (i != 0) { //if not first node, sync files from first node to this node
+						firstNode.rsyncTo(addedFiles, sshNodes.get(i).getIpAddress(),
+								new File(testConfig.getLog4j2File()));
+					}
 
-			};
-			tasks.add(runnable);
-		}
-		// on linux default has smaller outgoing ssh session limit
-		threadPoolService(tasks, 4);
-		tasks.clear();
+				}).collect(Collectors.toList()), sshNodes.size());
 		log.info(MARKER, "upload to nodes has finished");
 
 		//Step 3, copy saved state to nodes if necessary
-		for (int nodeID = 0; nodeID < nodeNumber; nodeID++) {
-			final int i = nodeID;
-			SSHService currentNode = sshNodes.get(i);
-			Runnable runnable = () -> {
-				// copy a saved state if set in config
-				SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
-				if (savedState != null) {
-					double thisSavedStateRoundNum = savedState.getRound();
-					if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
-						savedStateStartRoundNumber = thisSavedStateRoundNum;
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService currentNode = sshNodes.get(i);
+					// copy a saved state if set in config
+					SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
+					if (savedState != null) {
+						double thisSavedStateRoundNum = savedState.getRound();
+						if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
+							savedStateStartRoundNumber = thisSavedStateRoundNum;
+						}
+
+						String ssPath = RegressionUtilities.getRemoteSavedStatePath(
+								savedState.getMainClass(),
+								i,
+								savedState.getSwirldName(),
+								savedState.getRound()
+						);
+						FileLocationType locationType = savedState.getLocationType();
+						switch (locationType) {
+							case AWS_S3:
+								log.info(MARKER, "Downloading saved state for S3 to node {}", i);
+								currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
+								// list files in destination directory for validation
+								currentNode.listDirFiles(ssPath);
+								break;
+							case LOCAL:
+								log.info(MARKER, "Uploading local saved state to node {}", i);
+								try {
+									currentNode.scpFilesToRemoteDir(
+											RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
+											ssPath
+									);
+								} catch (IOException e) {
+									log.error(ERROR, "Fail to scp saved state from local ", e);
+								}
+								break;
+						}
+						if (savedState.isRestoreDb()) {
+							currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
+						}
 					}
 
-					String ssPath = RegressionUtilities.getRemoteSavedStatePath(
-							savedState.getMainClass(),
-							i,
-							savedState.getSwirldName(),
-							savedState.getRound()
-					);
-					FileLocationType locationType = savedState.getLocationType();
-					switch (locationType) {
-						case AWS_S3:
-							log.info(MARKER, "Downloading saved state for S3 to node {}", i);
-							currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
-							// list files in destination directory for validation
-							currentNode.listDirFiles(ssPath);
-							break;
-						case LOCAL:
-							log.info(MARKER, "Uploading local saved state to node {}", i);
-							try {
-								currentNode.scpFilesToRemoteDir(
-										RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
-										ssPath
-								);
-							} catch (IOException e) {
-								log.error(ERROR, "Fail to scp saved state from local ", e);
-							}
-							break;
-					}
-					if (savedState.isRestoreDb()) {
-						currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
-					}
-				}
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
-		if (tasks.size() > 0) {
-			log.info(MARKER, "Copy saved state has finished");
-		}
+				}).collect(Collectors.toList()), null);
 
 		log.info(MARKER, "upload to nodes has finished");
 
@@ -863,31 +854,21 @@ public class Experiment {
 		}
 
 		/* make sure that more streaming client than nodes were not requested */
-		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
-		List<Runnable> tasksEvent = new ArrayList<>();
-		for (int i = 0; i < sshNodes.size(); i++) {
-			SSHService node = sshNodes.get(i);
-			final int nodeID = i;
-			Runnable runnable = () -> {
-				node.makeSha1sumOfStreamedEvents(testConfig.getName(), nodeID, testConfig.getDuration());
-				log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
-			};
-			tasksEvent.add(runnable);
-		}
-		threadPoolService(tasksEvent, tasksEvent.size());
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = sshNodes.get(i);
+					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
+					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
 
-		List<Runnable> tasksScp = new ArrayList<>();
-		for (int i = 0; i < sshNodes.size(); i++) {
-			SSHService node = sshNodes.get(i);
-			final int nodeID = i;
-			Runnable runnable = () -> {
-				node.scpFrom(getExperimentResultsFolderForNode(nodeID),
-						(ArrayList<String>) testConfig.getResultFiles());
-			};
-			tasksScp.add(runnable);
-		}
-		threadPoolService(tasksScp, tasksScp.size());
+				}).collect(Collectors.toList()), null);
 
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = sshNodes.get(i);
+					node.scpFrom(getExperimentResultsFolderForNode(i),
+							(ArrayList<String>) testConfig.getResultFiles());
+
+				}).collect(Collectors.toList()), null);
 		log.info(MARKER, "Downloaded experiment data");
 
 		validateTest();
@@ -911,28 +892,22 @@ public class Experiment {
 	}
 
 	void resetNodes() {
-		List<Runnable> tasks = new ArrayList<>();
-		for (final SSHService node : sshNodes) {
-			Runnable runnable = () -> {
-				node.reset();
-				node.close();
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.reset();
+					node.close();
+				})
+				.collect(Collectors.toList()), null);
 		sshNodes.clear();
 	}
 
 	void killJavaProcess() {
-		List<Runnable> tasks = new ArrayList<>();
-		for (final SSHService node : sshNodes) {
-			Runnable runnable = () -> {
-				node.killJavaProcess();
-				node.close();
-			};
-			tasks.add(runnable);
-		}
-		threadPoolService(tasks, tasks.size());
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.killJavaProcess();
+					node.close();
+				})
+				.collect(Collectors.toList()), null);
 	}
 
 	private void uploadFilesToSharepoint() {

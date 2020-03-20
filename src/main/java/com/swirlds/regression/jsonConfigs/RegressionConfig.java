@@ -35,6 +35,7 @@ public class RegressionConfig {
 	private String name;
 	private int eventFilesWriters = 0;
 	private boolean uploadToSharePoint = false;
+	private boolean useThreadPool = false;
 	private String jvmOptions = "";
 
 
@@ -169,5 +170,13 @@ public class RegressionConfig {
 
 	public void setJvmOptionParametersConfig(JvmOptionParametersConfig jvmOptionParametersConfig) {
 		this.jvmOptionParametersConfig = jvmOptionParametersConfig;
+	}
+
+	public boolean isUseThreadPool() {
+		return useThreadPool;
+	}
+
+	public void setUseThreadPool(boolean useThreadPool) {
+		this.useThreadPool = useThreadPool;
 	}
 }
