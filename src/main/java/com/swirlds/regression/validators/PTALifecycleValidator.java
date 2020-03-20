@@ -264,17 +264,14 @@ public class PTALifecycleValidator extends Validator {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
 		LifecycleStatus latestSubmitStatus = ev2.getLatestSubmitStatus();
 
-		if(latestHandleStatus == null)
-			return;
-
 		if(latestSubmitStatus == null || latestSubmitStatus.getTransactionState() == null) {
 			addError("latestSubmitStatus for Entity " + key + " is null");
-			return;
-		}
-		if(latestSubmitStatus.equals(SUBMISSION_FAILED)) {
+		}else if(latestSubmitStatus.equals(SUBMISSION_FAILED)) {
 			addError("Operation " + latestSubmitStatus.getTransactionType() +
 					"failed to get successfully submitted on node " + nodeNum + " for entity " + key);
 		}
+		if(latestHandleStatus == null || latestHandleStatus.getTransactionState() == null)
+			return;
 
 		switch (latestHandleStatus.getTransactionState()) {
 			case  INVALID_SIG:

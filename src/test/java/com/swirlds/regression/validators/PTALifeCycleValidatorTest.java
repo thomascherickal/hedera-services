@@ -168,7 +168,7 @@ public class PTALifeCycleValidatorTest {
 		MapKey key2 = new MapKey(0, 1, 3);
 		MapKey key3 = new MapKey(2, 1, 2);
 
-		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_FAILED, Create), null);
+		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), null);
 		setValueStatus(map2, key, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(INVALID_SIG, Create),null);
 		setValueStatus(map0, key2, buildLifeCycle(SUBMITTED, Create),buildLifeCycle(HANDLE_ENTITY_TYPE_MISMATCH, Create), null);
 		setValueStatus(map2, key2, buildLifeCycle(SUBMISSION_FAILED, Create), buildLifeCycle(HANDLED, Create), null);
@@ -183,12 +183,13 @@ public class PTALifeCycleValidatorTest {
 		validator.checkErrorCause(key3, map2.get(key3), 2);
 
 		List<String> errors = validator.getErrorMessages();
-		assertEquals(4, errors.size());
+		assertEquals(5, errors.size());
 
 		assertEquals("latestSubmitStatus for Entity MapKey[0,2,3] is null", errors.get(0));
-		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2", errors.get(1));
-		assertEquals("Operation Create failed as it is performed on wrong entity type null", errors.get(2));
-		assertEquals("Entity MapKey[2,1,2]on Node 2 has Error. Please look at the log for more details", errors.get(3));
+		assertEquals("Operation Create on Entity MapKey[0,2,3]in Node 0 failed as entity already exists", errors.get(1));
+		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2", errors.get(2));
+		assertEquals("Operation Create failed as it is performed on wrong entity type null", errors.get(3));
+		assertEquals("Entity MapKey[2,1,2]on Node 2 has Error. Please look at the log for more details", errors.get(4));
 
 		for (String error : errors) {
 			System.out.println(error);
