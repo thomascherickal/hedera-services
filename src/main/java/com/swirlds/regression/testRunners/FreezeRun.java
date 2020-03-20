@@ -20,9 +20,9 @@ package com.swirlds.regression.testRunners;
 import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
-import static com.swirlds.regression.RegressionUtilities.MILLIS;
-
 import java.time.Duration;
+
+import static com.swirlds.regression.RegressionUtilities.MILLIS;
 
 public class FreezeRun implements TestRun {
 	@Override
@@ -33,7 +33,8 @@ public class FreezeRun implements TestRun {
 			// start all processes
 			experiment.startAllSwirlds();
 
-			Duration sleep = Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getFreezeConfig().getFreezeTiming());
+			Duration sleep = Duration.ofMinutes(
+					testConfig.getExperimentConfig().getExperimentStartDelay() + testConfig.getFreezeConfig().getFreezeTiming());
 			experiment.sleepThroughExperiment(sleep.toMillis());
 
 			// kill the process during the freeze
@@ -42,7 +43,7 @@ public class FreezeRun implements TestRun {
 			log.info(MARKER, "{} dynamic freeze test completed.", (i + 1));
 
 			// wait a bit during freeze
-			experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
+			experiment.sleepThroughExperiment(testConfig.getExperimentConfig().getFreezeWaitMillis());
 		}
 
 		log.info(MARKER, "Last dynamic freeze test finished. Starting for final time.");

@@ -31,7 +31,7 @@ public class ReconnectRun implements TestRun {
 		experiment.startAllSwirlds();
 
 		Duration sleep = Duration.ofSeconds(
-				EXPERIMENT_START_DELAY + testConfig.getReconnectConfig().getReconnectTiming());
+				testConfig.getExperimentConfig().getExperimentStartDelay() + testConfig.getReconnectConfig().getReconnectTiming());
 		experiment.sleepThroughExperiment(sleep.toMillis());
 
 		// stop the last node process
