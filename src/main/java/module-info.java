@@ -39,5 +39,6 @@ module com.swirlds.regression {
 	exports com.swirlds.regression.jsonConfigs.runTypeConfigs;
 	exports com.swirlds.regression.validators;
 	exports com.swirlds.regression.slack;
+	exports com.swirlds.regression.experiment;
 
 }

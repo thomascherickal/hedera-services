@@ -1,5 +1,5 @@
 {
-  "name":"Blob-Large",
+  "name":"Blob-Small",
   "result": {
 	"uri":"results"
   },
@@ -17,7 +17,7 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testFcmLargeBlobCfg.json"
+	"configs/testFcmSmallBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",

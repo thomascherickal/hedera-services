@@ -17,6 +17,8 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.experiment.ExperimentSummary;
+import com.swirlds.regression.experiment.ExperimentSummaryStorage;
 import com.swirlds.regression.jsonConfigs.CloudConfig;
 import com.swirlds.regression.jsonConfigs.RegionList;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -37,8 +39,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 
 import static com.swirlds.regression.RegressionUtilities.CLOUD_WAIT_MILLIS;
+import static com.swirlds.regression.RegressionUtilities.WAIT_NODES_READY_TIMES;
 import static java.lang.Thread.sleep;
 
 
@@ -75,9 +80,9 @@ public class RegressionMain {
 			//TODO Unit test for null cloud
 			if (isIllegalUseOfNightlyRunServers(regConfig.getCloud())) {
 				reportErrorToSlack(new Throwable(
-								"The servers you requested can only be used in the nightly regression runs. Please fix " +
-										"your config file to start up new servers or use different servers than these" +
-										"."),
+								"The servers you requested can only be used in the nightly regression runs. Please " +
+										"fix your config file to start up new servers or use different servers than " +
+										"these."),
 						null);
 				return;
 			}
@@ -90,19 +95,19 @@ public class RegressionMain {
 
 	private void RunCloudExperiment() {
 		final CloudService cloud = setUpCloudService();
-		if (cloud == null) {
-			reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
-			return;
-		}
-		//TODO Unit test for system.exit after cloud service set up
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
-				cloud.destroyInstances();
-				log.info(MARKER, "cloud instances destroyed");
+			if (cloud == null) {
+				reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
+				return;
 			}
-		}));
+			//TODO Unit test for system.exit after cloud service set up
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
+				cloud.destroyInstances();
+					log.info(MARKER, "cloud instances destroyed");
+				}
+			}));
 
 		try {
 			runExperiments(cloud);
@@ -196,7 +201,21 @@ public class RegressionMain {
 				} else {
 					currentTest.runRemoteExperiment(cloud, git);
 				}
-				summary.addExperiment(currentTest);
+
+				// save and load historical data
+				List<ExperimentSummary> historical = null;
+				try {
+					ExperimentSummaryStorage.storeSummary(currentTest,
+							Date.from(currentTest.getExperimentTime().toInstant()));
+					historical = ExperimentSummaryStorage.readSummaries(
+							currentTest.getName(), 10);
+					ExperimentSummaryStorage.deleteOldSummaries(
+							currentTest.getName(), 10);
+				} catch (Exception e) {
+					log.error(ERROR, "Exception while storing/reading summaries:", e);
+				}
+
+				summary.addExperiment(currentTest, historical);
 				sleep(CLOUD_WAIT_MILLIS); // add time between tests to allow for connections to reset, memory to free up
 			} catch (Throwable t) {
 				log.error(ERROR, "Exception while running experiment:", t);
@@ -286,7 +305,8 @@ public class RegressionMain {
 		}
 		//TODO: made retry constant in RegressionUtlities and use that
 		int counter = 0;
-		while (!service.isInstanceReady() && counter < 10) {
+		int wait_retry_times = WAIT_NODES_READY_TIMES + regConfig.getTotalNumberOfRegions();
+		while (!service.isInstanceReady() && counter < wait_retry_times) { // old value 10 is too short for multiregion network
 			log.info(MARKER, "instances still not ready...");
 			try {
 				sleep(10000);
@@ -297,7 +317,8 @@ public class RegressionMain {
 		}
 
 		/* instance not ready after an extended time period, something went wrong */
-		if (counter >= 10) {
+		if (counter >= wait_retry_times) {
+			log.error(ERROR, "Could not setup cloud service due to instances not ready after waiting.");
 			return null;
 		}
 
