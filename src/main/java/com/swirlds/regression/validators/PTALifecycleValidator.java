@@ -125,13 +125,14 @@ public class PTALifecycleValidator extends Validator {
 	 * @param compareValue expectedValue of entity in other node that is being compared
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
-	private void checkHandleRejectedStatus(MapKey key, ExpectedValue baseValue, ExpectedValue compareValue, int nodeNum) {
+	public void checkHandleRejectedStatus(MapKey key, ExpectedValue baseValue, ExpectedValue compareValue, int nodeNum) {
 		LifecycleStatus baseLifecycle = baseValue.getLatestHandledStatus();
 		LifecycleStatus compareLifecycle = compareValue.getLatestHandledStatus();
 		LifecycleStatus baseHistory = baseValue.getHistoryHandledStatus();
 		LifecycleStatus compareHistory = compareValue.getHistoryHandledStatus();
 
-		if(baseLifecycle == null && compareLifecycle == null)
+		if((baseLifecycle == null && compareLifecycle == null) ||
+				(baseLifecycle.getTransactionState() == null && compareLifecycle.getTransactionState() ==null))
 			return;
 
 		if(baseLifecycle == null || compareLifecycle == null){
