@@ -87,8 +87,8 @@ public class SlackSummaryMsg extends SlackMsg {
 			List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
 		List<String> columnHeaders = new ArrayList<>();
 		columnHeaders.add("Test");
-		columnHeaders.add("Unique Identifier");
-		columnHeaders.add("Historical (oldest first)");
+		columnHeaders.add("UID");
+		columnHeaders.add("History");
 
 		if (experiments.size() > 0) {
 			Attachment.Builder attachment = Attachment.builder();
@@ -143,6 +143,9 @@ public class SlackSummaryMsg extends SlackMsg {
 
 		bold(stringBuilder, "Commit:");
 		stringBuilder.append(" " + gitInfo.getGitInfo(true));
+		newline(stringBuilder);
+
+		stringBuilder.append("Note: historical test data is displayed from left to right (oldest->newest).");
 		newline(stringBuilder);
 
 		List<Pair<ExperimentSummary, List<ExperimentSummary>>> successes = new ArrayList<>();
