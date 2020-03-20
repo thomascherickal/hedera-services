@@ -108,9 +108,12 @@ abstract public class SlackMsg {
 			for (int columnIndex = 0; columnIndex < columns; columnIndex++) {
 				String column = row.get(columnIndex);
 				s.append(column);
-				int padding = columnWidths.get(columnIndex) - column.length() + columnPadding;
-				for (int i = 0; i < padding; i++) {
-					s.append(" ");
+				if (columnIndex + 1 < columns) {
+					// Add padding if column is not the rightmost column
+					int padding = columnWidths.get(columnIndex) - column.length() + columnPadding;
+					for (int i = 0; i < padding; i++) {
+						s.append(" ");
+					}
 				}
 			}
 			newline(s);
