@@ -241,6 +241,27 @@ public class PTALifeCycleValidatorTest {
 		}
 
 	}
+	@Test
+	public void validateExpectedMapTests() {
+		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
+		Map<MapKey, ExpectedValue> map1 = new ConcurrentHashMap<>();
+		expectedMaps.put(1, map1);
+
+		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+		validator.validate();
+
+		List<String> errors = validator.getErrorMessages();
+		assertEquals(3, errors.size());
+		assertEquals("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
+				"Missing keys in node 1: MapKey[0,1,2],MapKey[0,1,3],MapKey[0,2,3],MapKey[1,2,3]", errors.get(0));
+		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. Missing keys in " +
+				"node 2: MapKey[0,1,2],MapKey[1,2,3]", errors.get(1));
+		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. " +
+				"Missing keys in node 0 :MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(2));
+		for (String error : errors) {
+			System.out.println(error);
+		}
+	}
 
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,
 			LifecycleStatus latestSubmissionStatus, LifecycleStatus latestHandleStatus, LifecycleStatus historyStatusDelete) {
@@ -254,6 +275,7 @@ public class PTALifeCycleValidatorTest {
 		map.put(key, evKey);
 	}
 
+	//build LifecycleStatus object from the state and transaction type
 	private LifecycleStatus buildLifeCycle(TransactionState state, TransactionType type){
 		return LifecycleStatus.builder().
 				setTransactionState(state).

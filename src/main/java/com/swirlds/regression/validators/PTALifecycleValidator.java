@@ -188,7 +188,7 @@ public class PTALifecycleValidator extends Validator {
 		if(!missingKeysInCompare.isEmpty()) {
 			addError("KeySet of the expectedMap of node " + nodeNum +
 					" doesn't match with expectedMap of node 0. " +
-					"Missing keys: " + missingKeysInCompare);
+					"Missing keys in node " +nodeNum + ": "+  missingKeysInCompare);
 		}
 
 		String missingKeysInBase = compareKeySet.
@@ -199,7 +199,7 @@ public class PTALifecycleValidator extends Validator {
 				collect(Collectors.joining(","));;
 		if(!missingKeysInBase.isEmpty()){
 			addError("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node " +nodeNum +
-					". Missing keys: " + missingKeysInBase);
+					". Missing keys in node 0 :" + missingKeysInBase);
 		}
 	}
 
