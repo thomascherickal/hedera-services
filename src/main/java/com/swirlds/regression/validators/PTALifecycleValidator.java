@@ -103,7 +103,7 @@ public class PTALifecycleValidator extends Validator {
 					ExpectedValue compareValue = mapToCompare.get(key);
 					if(!baseValue.equals(compareValue)){
 						compareValues(key, baseValue, compareValue, i);
-					}else{
+					}else {
 						checkHandleRejectedStatus(key, baseValue, compareValue, i);
 					}
 					if(baseValue.isErrored() && compareValue.isErrored()){
@@ -131,13 +131,13 @@ public class PTALifecycleValidator extends Validator {
 		LifecycleStatus baseHistory = baseValue.getHistoryHandledStatus();
 		LifecycleStatus compareHistory = compareValue.getHistoryHandledStatus();
 
-		if(baseValue.getLatestHandledStatus() == null && compareValue.getLatestHandledStatus() == null)
+		if(baseLifecycle == null && compareLifecycle == null)
 			return;
 
-		if(baseValue.getLatestHandledStatus() == null || compareValue.getLatestHandledStatus() == null){
+		if(baseLifecycle == null || compareLifecycle == null){
 			addError("latestHandleStatus of one of the expectedValues is null . " +
-					"Node 0:"+ baseValue.getLatestHandledStatus() +
-					", Node "+nodeNum + ": "+ compareValue.getLatestHandledStatus());
+					"Node 0:"+ baseLifecycle +
+					", Node "+nodeNum + ": "+ compareLifecycle);
 			return;
 		}
 
