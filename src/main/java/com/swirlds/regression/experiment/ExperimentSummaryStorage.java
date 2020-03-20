@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,6 +111,7 @@ public class ExperimentSummaryStorage {
 				list.add(new SummaryFileInfo(file, dateTime, testName));
 			}
 		}
+		list.sort(Comparator.comparing(SummaryFileInfo::getDateTime));
 		return list;
 	}
 
