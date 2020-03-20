@@ -83,8 +83,8 @@ public class PTALifeCycleValidatorTest {
 				"node0: true; node1: false"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,12] has field EntityType " +
 				"mismatched. node0: Crypto; node2: Blob"));
-		assertTrue(validator.getErrorMessages().contains("KeySet of the expectedMap of node 0 doesn't match " +
-				"with expectedMap of node 3. Missing keys: MapKey[0,0,19]"));
+		assertTrue(validator.getErrorMessages().contains("KeySet of the expectedMap of node 0 doesn't match with expectedMap " +
+				"of node 3. Missing keys in node 0 :MapKey[0,0,19]"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,14] has field latestHandledStatus " +
 				"mismatched. node0: TransactionState: HANDLE_FAILED, TransactionType: Update, timestamp: 1584554112, " +
 				"nodeId: 14; node2: TransactionState: HANDLED, TransactionType: Update, timestamp: 1584554112, nodeId: " +
@@ -116,9 +116,11 @@ public class PTALifeCycleValidatorTest {
 				expectedMaps.get(2).keySet(), 2);
 		List<String> errors = validator.getErrorMessages();
 		assertEquals(2, errors.size());
-		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. Missing keys: MapKey[0,1,2],MapKey[1,2,3]", errors.get(0));
+		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0." +
+				" Missing keys in node 2: MapKey[0,1,2],MapKey[1,2,3]", errors.get(0));
 
-		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. Missing keys: MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(1));
+		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. " +
+				"Missing keys in node 0 :MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(1));
 		for (String error : errors) {
 			System.out.println(error);
 		}
