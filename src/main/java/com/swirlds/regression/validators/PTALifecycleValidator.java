@@ -226,7 +226,7 @@ public class PTALifecycleValidator extends Validator {
 	 * @param ev2 ExpectedValue of entity on other node to be compared
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
-	private void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
+	public void compareValues(MapKey key, ExpectedValue ev1, ExpectedValue ev2, int nodeNum){
 		if (!Objects.equals(ev1.getEntityType(), ev2.getEntityType())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getEntityType(),
 					ev2.getEntityType(), nodeNum, "EntityType"));

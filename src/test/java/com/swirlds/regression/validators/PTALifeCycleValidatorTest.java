@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.HANDLED;
@@ -43,6 +44,7 @@ import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSIO
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMITTED;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Create;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Delete;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Update;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -167,12 +169,14 @@ public class PTALifeCycleValidatorTest {
 		MapKey key = new MapKey(0, 2, 3);
 		MapKey key2 = new MapKey(0, 1, 3);
 		MapKey key3 = new MapKey(2, 1, 2);
+		MapKey key4 = new MapKey(2, 2, 4);
 
 		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), null);
 		setValueStatus(map2, key, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(INVALID_SIG, Create),null);
 		setValueStatus(map0, key2, buildLifeCycle(SUBMITTED, Create),buildLifeCycle(HANDLE_ENTITY_TYPE_MISMATCH, Create), null);
 		setValueStatus(map2, key2, buildLifeCycle(SUBMISSION_FAILED, Create), buildLifeCycle(HANDLED, Create), null);
 		setValueStatus(map2, key3, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(HANDLE_FAILED, Create), null);
+		setValueStatus(map2, key4, buildLifeCycle(INITIALIZED, Create), null, null);
 
 		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
 
@@ -197,6 +201,47 @@ public class PTALifeCycleValidatorTest {
 
 	}
 
+	@Test
+	public void compareValuesTest(){
+		ExpectedValue ev1 = new ExpectedValue(EntityType.Blob,
+				new Hash(generateRandomContent()),
+				false,
+				buildLifeCycle(SUBMITTED, Create),
+				buildLifeCycle(HANDLED, Create),
+				null);
+
+		ExpectedValue ev2 = new ExpectedValue(EntityType.Crypto,
+				new Hash(generateRandomContent()),
+				true,
+				buildLifeCycle(SUBMITTED, Update),
+				buildLifeCycle(HANDLE_FAILED, Create),
+				buildLifeCycle(HANDLED, Create));
+
+		MapKey key = new MapKey(0,0,0);
+
+		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		validator.compareValues(key, ev1, ev2, 4);
+
+		List<String> errors = validator.getErrorMessages();
+		assertEquals(5, errors.size());
+
+		assertEquals("Entity: MapKey[0,0,0] has field EntityType mismatched. node0: Blob; node4: Crypto", errors.get(0));
+		assertEquals("Entity: MapKey[0,0,0] has field isErrored mismatched. node0: false; node4: true", errors.get(1));
+		assertTrue(errors.get(2).contains("Entity: MapKey[0,0,0] has field getHash mismatched"));
+		assertEquals("Entity: MapKey[0,0,0] has field latestHandledStatus mismatched. node0: " +
+				"TransactionState: HANDLED, TransactionType: Create, timestamp: 0, nodeId: -1; node4: " +
+				"TransactionState: HANDLE_FAILED, TransactionType: Create, timestamp: 0, nodeId: -1",
+				errors.get(3));
+		assertEquals("Entity: MapKey[0,0,0] has field historyHandledStatus mismatched. node0: " +
+				"null; node4: TransactionState: HANDLED, TransactionType: Create, timestamp: 0, nodeId: " +
+				"-1", errors.get(4));
+
+		for (String error : errors) {
+			System.out.println(error);
+		}
+
+	}
+
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,
 			LifecycleStatus latestSubmissionStatus, LifecycleStatus latestHandleStatus, LifecycleStatus historyStatusDelete) {
 		ExpectedValue evKey = map.get(key);
@@ -213,6 +258,15 @@ public class PTALifeCycleValidatorTest {
 		return LifecycleStatus.builder().
 				setTransactionState(state).
 				setTransactionType(type).build();
+	}
+
+	// generate random bytes to generate Hash
+	private byte[] generateRandomContent() {
+		int contentSize = 48;
+		Random random = new Random();
+		final byte[] content = new byte[contentSize];
+		random.nextBytes(content);
+		return content;
 	}
 
 	private Map<Integer, Map<MapKey, ExpectedValue>> setUpMap(){
