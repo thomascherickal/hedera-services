@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class ExperimentSummaryStorage {
 	private static SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS");
 	private static final String SUMMARY_DIR = "./summaryHistory/";
 	private static final String FILE_NAME_PATTERN =
-			"([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3})_([^\\.]+)\\.json";
+			"([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3})_(.*?)\\.json";
 
 	public static void storeSummary(ExperimentSummary summary, Date timeDate) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -111,6 +111,7 @@ public class ExperimentSummaryStorage {
 				list.add(new SummaryFileInfo(file, dateTime, testName));
 			}
 		}
+		list.sort(Comparator.comparing(SummaryFileInfo::getDateTime));
 		return list;
 	}
 

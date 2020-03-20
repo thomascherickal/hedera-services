@@ -28,7 +28,13 @@ import com.swirlds.regression.logs.PlatformLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
-import com.swirlds.regression.validators.*;
+import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.ReconnectValidator;
+import com.swirlds.regression.validators.StreamingServerData;
+import com.swirlds.regression.validators.StreamingServerValidator;
+import com.swirlds.regression.validators.Validator;
+import com.swirlds.regression.validators.ValidatorFactory;
+import com.swirlds.regression.validators.ValidatorType;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -38,7 +44,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.appender.*;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.MemoryMappedFileAppender;
+import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,13 +72,14 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
-import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
+import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
+import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
+import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
 import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
@@ -89,10 +100,9 @@ import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
-import static com.swirlds.regression.RegressionUtilities.*;
 import static org.apache.commons.io.FileUtils.listFiles;
 
 public class Experiment implements ExperimentSummary {
@@ -799,7 +809,10 @@ public class Experiment implements ExperimentSummary {
         }
         for (int i = 0; i < sshNodes.size(); i++) {
             SSHService node = sshNodes.get(i);
-            node.scpFrom(getExperimentResultsFolderForNode(i), (ArrayList<String>) testConfig.getResultFiles());
+            boolean success = false;
+            while (!success)
+                success = node.scpFrom(getExperimentResultsFolderForNode(i),
+                        (ArrayList<String>) testConfig.getResultFiles());
         }
 
         log.info(MARKER, "Downloaded experiment data");

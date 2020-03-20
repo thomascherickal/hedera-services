@@ -13,7 +13,7 @@
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-			"i-04223a00a2884931c","i-08eafb29a6b39dc22","i-0bd743f1d8bff2fd7","i-0a80c3d91ce61c5f0"
+			"i-04223a00a2884931c","i-08eafb29a6b39dc22","i-09aceb44773d0b2da","i-0a80c3d91ce61c5f0"
 	    ]
 	  }
 	]
