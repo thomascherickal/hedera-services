@@ -33,12 +33,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.swirlds.demo.platform.fcm.lifecycle.EntityType.Crypto;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.HANDLED;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.HANDLE_ENTITY_TYPE_MISMATCH;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.HANDLE_FAILED;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.HANDLE_REJECTED;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.INITIALIZED;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.INVALID_SIG;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSION_FAILED;
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMITTED;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Create;
 import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Delete;
-import static com.swirlds.demo.platform.fcm.lifecycle.TransactionType.Expire;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -93,7 +97,7 @@ public class PTALifeCycleValidatorTest {
 
 		assertEquals("Entity: MapKey[0,1,2] has field entityType mismatched. node0: Blob; node1: Crypto",
 				PTALifecycleValidator.buildFieldMissMatchMsg(key, EntityType.Blob,
-				EntityType.Crypto, 1, "entityType"));
+						EntityType.Crypto, 1, "entityType"));
 
 		final Hash hash = new MapValueData().calculateHash();
 		assertEquals("Entity: MapKey[0,1,2] has field Hash mismatched. node0: null; node1: " + hash,
@@ -126,19 +130,10 @@ public class PTALifeCycleValidatorTest {
 		MapKey key = new MapKey(0, 2, 3);
 		MapKey key2 = new MapKey(0, 1, 3);
 
-		LifecycleStatus latestHandleStatus = LifecycleStatus.builder().
-												setTransactionState(HANDLE_REJECTED).
-												setTransactionType(Create).build();
-		LifecycleStatus historyStatusDelete = LifecycleStatus.builder().
-												setTransactionState(HANDLE_REJECTED).
-												setTransactionType(Delete).build();
-		LifecycleStatus historyStatusCreate = LifecycleStatus.builder().
-												setTransactionState(HANDLE_REJECTED).
-												setTransactionType(Create).build();
-		setValueStatus(map0, key, latestHandleStatus, historyStatusDelete);
-		setValueStatus(map2, key, latestHandleStatus, historyStatusDelete);
-		setValueStatus(map0, key2, latestHandleStatus, historyStatusCreate);
-		setValueStatus(map2, key2, latestHandleStatus, historyStatusCreate);
+		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
+		setValueStatus(map2, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
+		setValueStatus(map0, key2, null,buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
+		setValueStatus(map2, key2, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
 
 		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
 
@@ -164,11 +159,59 @@ public class PTALifeCycleValidatorTest {
 
 	}
 
+	@Test
+	public void checkErrorCauseTests(){
+		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
+		Map<MapKey, ExpectedValue> map0 = expectedMaps.get(0);
+		Map<MapKey, ExpectedValue> map2 = expectedMaps.get(2);
+		MapKey key = new MapKey(0, 2, 3);
+		MapKey key2 = new MapKey(0, 1, 3);
+		MapKey key3 = new MapKey(2, 1, 2);
+
+		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_FAILED, Create), null);
+		setValueStatus(map2, key, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(INVALID_SIG, Create),null);
+		setValueStatus(map0, key2, buildLifeCycle(SUBMITTED, Create),buildLifeCycle(HANDLE_ENTITY_TYPE_MISMATCH, Create), null);
+		setValueStatus(map2, key2, buildLifeCycle(SUBMISSION_FAILED, Create), buildLifeCycle(HANDLED, Create), null);
+		setValueStatus(map2, key3, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(HANDLE_FAILED, Create), null);
+
+		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+
+		validator.checkErrorCause(key, map0.get(key), 0);
+		validator.checkErrorCause(key, map2.get(key), 2);
+		validator.checkErrorCause(key2, map0.get(key2), 0);
+		validator.checkErrorCause(key2, map2.get(key2), 2);
+		validator.checkErrorCause(key3, map2.get(key3), 2);
+
+		List<String> errors = validator.getErrorMessages();
+		assertEquals(4, errors.size());
+
+		assertEquals("latestSubmitStatus for Entity MapKey[0,2,3] is null", errors.get(0));
+		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2", errors.get(1));
+		assertEquals("Operation Create failed as it is performed on wrong entity type null", errors.get(2));
+		assertEquals("Entity MapKey[2,1,2]on Node 2 has Error. Please look at the log for more details", errors.get(3));
+
+		for (String error : errors) {
+			System.out.println(error);
+		}
+
+	}
+
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,
-			LifecycleStatus latestHandleStatus, LifecycleStatus historyStatusDelete) {
+			LifecycleStatus latestSubmissionStatus, LifecycleStatus latestHandleStatus, LifecycleStatus historyStatusDelete) {
 		ExpectedValue evKey = map.get(key);
-		evKey.setLatestHandledStatus(latestHandleStatus).setHistoryHandledStatus(historyStatusDelete);
+		if(evKey ==null) {
+			evKey = new ExpectedValue();
+		}
+		evKey.setLatestSubmitStatus(latestSubmissionStatus).
+				setLatestHandledStatus(latestHandleStatus).
+				setHistoryHandledStatus(historyStatusDelete);
 		map.put(key, evKey);
+	}
+
+	private LifecycleStatus buildLifeCycle(TransactionState state, TransactionType type){
+		return LifecycleStatus.builder().
+				setTransactionState(state).
+				setTransactionType(type).build();
 	}
 
 	private Map<Integer, Map<MapKey, ExpectedValue>> setUpMap(){

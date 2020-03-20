@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSION_FAILED;
+
 /**
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
@@ -107,6 +109,7 @@ public class PTALifecycleValidator extends Validator {
 						checkHandleRejectedStatus(key, baseValue, compareValue, i);
 					}
 					if(baseValue.isErrored() && compareValue.isErrored()){
+						checkErrorCause(key, baseValue, 0);
 						checkErrorCause(key, compareValue, i);
 					}
 				}
@@ -257,16 +260,29 @@ public class PTALifecycleValidator extends Validator {
 	 * @param ev2 ExpectedValue of the entity
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
-	private void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
+	public void checkErrorCause(MapKey key, ExpectedValue ev2, int nodeNum) {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
 		LifecycleStatus latestSubmitStatus = ev2.getLatestSubmitStatus();
+
+		if(latestHandleStatus == null)
+			return;
+
+		if(latestSubmitStatus == null || latestSubmitStatus.getTransactionState() == null) {
+			addError("latestSubmitStatus for Entity " + key + " is null");
+			return;
+		}
+		if(latestSubmitStatus.equals(SUBMISSION_FAILED)) {
+			addError("Operation " + latestSubmitStatus.getTransactionType() +
+					"failed to get successfully submitted on node " + nodeNum + " for entity " + key);
+		}
+
 		switch (latestHandleStatus.getTransactionState()) {
 			case  INVALID_SIG:
 				addError("Signature is not valid for Entity "+ key +" while performing operation "
 						+ latestHandleStatus.getTransactionType() + " on Node "+ nodeNum);
 				break;
 			case  HANDLE_FAILED:
-				addError("Entity "+ key + "on Node "+ nodeNum + "has Error. Please look at the log for more details");
+				addError("Entity "+ key + "on Node "+ nodeNum + " has Error. Please look at the log for more details");
 				break;
 			case  HANDLE_REJECTED:
 				addError("Operation "+latestHandleStatus.getTransactionType()+ " on Entity "+ key
@@ -274,11 +290,7 @@ public class PTALifecycleValidator extends Validator {
 				break;
 			case  HANDLE_ENTITY_TYPE_MISMATCH:
 				addError("Operation "+ latestHandleStatus.getTransactionType()+
-						"failed as it is performed on wrong entity type"+ ev2.getEntityType());
-				break;
-			case  SUBMISSION_FAILED:
-				addError("Operation "+ latestSubmitStatus.getTransactionType()+
-						"failed to get successfully submitted on node "+ nodeNum + "for entity " +key);
+						" failed as it is performed on wrong entity type "+ ev2.getEntityType());
 				break;
 			default:
 		}
