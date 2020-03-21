@@ -769,11 +769,13 @@ public class Experiment implements ExperimentSummary {
 		calculateNodeMemoryProfile(firstNode);
 		sendTarToNode(firstNode, addedFiles);
 
-		//Step 2, node 0 use rsync to send files to other nodes in parallel mode
-		//ATF server launch N-1 session on node0, each such session is a rsync session to one of
-		// the other N-1 nodes. So node0 needs to run N-1 parallel rsync sessions
-		// on linux default has smaller outgoing ssh session limit from node0 to other nodes
-		List<String> ipAddresses = sshNodes.stream().map(SSHService::getIpAddress).collect(Collectors.toList());
+		//Step 2, node 0 use a rsync to send files to other nodes in parallel mode
+		//ATF server launch a single SSH session on node0, and node0 uses N-1 rsync sessions
+		// to send files to other N-1 nodes
+
+		// Get list of address of other N-1 nodes
+		List<String> ipAddresses = IntStream.range(1, sshNodes.size()).mapToObj(
+				i -> sshNodes.get(i).getIpAddress()).collect(Collectors.toList());
 		System.out.println("Ip address array =" + ipAddresses);
 		firstNode.rsyncTo(addedFiles, new File(testConfig.getLog4j2File()), ipAddresses);
 		log.info(MARKER, "upload to nodes has finished");
@@ -856,7 +858,6 @@ public class Experiment implements ExperimentSummary {
 					SSHService node = sshNodes.get(i);
 					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
 					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
-
 				}).collect(Collectors.toList()));
 
 		threadPoolService(IntStream.range(0, sshNodes.size())
