@@ -131,7 +131,9 @@ public class Experiment implements ExperimentSummary {
 	private CloudService cloud = null;
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
 	private NodeMemory nodeMemoryProfile;
+	//Executor of thread pool to run ssh session
 	private ExecutorService es;
+	//Whether use thread pool to run ssh session in parallel mode
 	private boolean useThreadPool = false;
 
 	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
@@ -227,49 +229,36 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Use thread pool to finish a list of runnable task in parallel fashion
+	 * Use thread pool to finish a list of runnable task in parallel fashion.
+	 * thread pool size depends on the number of CPU cores
 	 *
 	 * @param tasks
 	 * 		A list of runnable task
-	 * @param resizeThreadPool
-	 * 		Set the customized thread pool and after finish reset the thread pool
 	 */
-	private void threadPoolService(List<Runnable> tasks, Integer resizeThreadPool) {
+	private void threadPoolService(List<Runnable> tasks) {
 		if (tasks.size() > 0) {
-			System.out.println("Tasks = " + Arrays.toString(tasks.toArray()) );
-			if (resizeThreadPool != null) {
-				es = Executors.newFixedThreadPool(useThreadPool ? resizeThreadPool : 1);
-			} else {
-				//reuse current thread pool if already initialized
-				if (es == null) {
-					int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
-					es = Executors.newFixedThreadPool(poolSize);
-				}
+			if (es == null) {
+				int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
+				es = Executors.newFixedThreadPool(poolSize);
 			}
+			//Wait all thread future done
 			CompletableFuture<?>[] futures = tasks.stream()
 					.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
 					.toArray(CompletableFuture[]::new);
 			CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
-			if (resizeThreadPool != null) {
-				es.shutdownNow();
-				es = null;
-			}
 		}
 	}
 
 	public void startAllSwirlds() {
-		threadPoolService(sshNodes.stream()
-				.<Runnable>map(node -> () -> {
-					node.execWithProcessID(regConfig.getJvmOptions());
-					log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
-				})
-				.collect(Collectors.toList()), null);
+		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
+			node.execWithProcessID(regConfig.getJvmOptions());
+			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+		}).collect(Collectors.toList()));
 	}
 
 	public void stopAllSwirlds() {
-		threadPoolService(sshNodes.stream()
-				.<Runnable>map(currentNode -> () -> currentNode.killJavaProcess())
-				.collect(Collectors.toList()), null);
+		threadPoolService(sshNodes.stream().<Runnable>map(currentNode -> currentNode::killJavaProcess)
+				.collect(Collectors.toList()));
 	}
 
 	public void stopLastSwirlds() {
@@ -684,9 +673,9 @@ public class Experiment implements ExperimentSummary {
 		settingsFile.exportSettingsFile();
 		ArrayList<File> newUploads = new ArrayList<>();
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + SETTINGS_FILE));
-		threadPoolService(sshNodes.stream()
-				.<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads))
-				.collect(Collectors.toList()), null);
+		threadPoolService(
+				sshNodes.stream().<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads)).collect(
+						Collectors.toList()));
 	}
 
 	private void setIPsAndStakesInConfig() {
@@ -711,7 +700,7 @@ public class Experiment implements ExperimentSummary {
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + CONFIG_FILE));
 		threadPoolService(sshNodes.stream()
 				.<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads))
-				.collect(Collectors.toList()), null);
+				.collect(Collectors.toList()));
 	}
 
 	public void sendSlackMessage(SlackTestMsg msg) {
@@ -784,14 +773,9 @@ public class Experiment implements ExperimentSummary {
 		//ATF server launch N-1 session on node0, each such session is a rsync session to one of
 		// the other N-1 nodes. So node0 needs to run N-1 parallel rsync sessions
 		// on linux default has smaller outgoing ssh session limit from node0 to other nodes
-		threadPoolService(IntStream.range(0, sshNodes.size())
-				.<Runnable>mapToObj(i -> () -> {
-					if (i != 0) { //if not first node, sync files from first node to this node
-						firstNode.rsyncTo(addedFiles, sshNodes.get(i).getIpAddress(),
-								new File(testConfig.getLog4j2File()));
-					}
-
-				}).collect(Collectors.toList()), sshNodes.size());
+		List<String> ipAddresses = sshNodes.stream().map(SSHService::getIpAddress).collect(Collectors.toList());
+		System.out.println("Ip address array =" + ipAddresses);
+		firstNode.rsyncTo(addedFiles, new File(testConfig.getLog4j2File()), ipAddresses);
 		log.info(MARKER, "upload to nodes has finished");
 
 		//Step 3, copy saved state to nodes if necessary
@@ -837,7 +821,7 @@ public class Experiment implements ExperimentSummary {
 						}
 					}
 
-				}).collect(Collectors.toList()), null);
+				}).collect(Collectors.toList()));
 
 		log.info(MARKER, "upload to nodes has finished");
 
@@ -873,7 +857,7 @@ public class Experiment implements ExperimentSummary {
 					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
 					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
 
-				}).collect(Collectors.toList()), null);
+				}).collect(Collectors.toList()));
 
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
@@ -881,7 +865,7 @@ public class Experiment implements ExperimentSummary {
 					node.scpFrom(getExperimentResultsFolderForNode(i),
 							(ArrayList<String>) testConfig.getResultFiles());
 
-				}).collect(Collectors.toList()), null);
+				}).collect(Collectors.toList()));
 		log.info(MARKER, "Downloaded experiment data");
 
 		validateTest();
@@ -910,7 +894,7 @@ public class Experiment implements ExperimentSummary {
 					node.reset();
 					node.close();
 				})
-				.collect(Collectors.toList()), null);
+				.collect(Collectors.toList()));
 		sshNodes.clear();
 	}
 
@@ -920,7 +904,7 @@ public class Experiment implements ExperimentSummary {
 					node.killJavaProcess();
 					node.close();
 				})
-				.collect(Collectors.toList()), null);
+				.collect(Collectors.toList()));
 	}
 
 	private void uploadFilesToSharepoint() {

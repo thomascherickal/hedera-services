@@ -299,8 +299,8 @@ public class SSHService {
         }
     }
 
-    // return true if rsync finished successfully
-    public boolean rsyncTo(ArrayList<File> additionalFiles, String toIPAddress, File log4j2Xml) {
+    // Use rsync to copy selected files to a list of IP addresses
+    public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses) {
         long startTime = System.nanoTime();
         makeRemoteDirectory(
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION); // make sure remoteExperiments directory exist before
@@ -311,19 +311,27 @@ public class SSHService {
                 additionalFiles)) {
             rsyncCmd += "--include=\"" + fileToUpload + "\" ";
         }
-        rsyncCmd += "--exclude=\"*\" --delete --delete-excluded ./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +
-                " " + user + "@" + toIPAddress + ":./remoteExperiment/ ";
 
-        log.trace(MARKER, rsyncCmd);
+        // chain multiple rsync command together and run them in background
+        String addCmd = "";
+        for(String address:toIPAddresses){
+            addCmd += rsyncCmd + "--exclude=\"*\" --delete --delete-excluded ./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +
+                    " " + user + "@" + address + ":./remoteExperiment/ & ";
+        }
 
-        Session.Command result = executeCmd(rsyncCmd);
+        // wait all background rsync command to finish
+        addCmd += " wait  ";
+        log.trace(MARKER, "** rsyncTo cmd = " + addCmd + "**");
+
+        Session.Command result = executeCmd(addCmd);
         if (result.getExitStatus() != 0) {
-            log.error(ERROR, "RSYNC to {} failed, cmd result = \n\n {}\n\n", ipAddress, result);
+            String cmdResultString = readCommandOutput(result).toString();
+            log.error(ERROR, "RSYNC to {} failed, cmd result = \n\n {}\n\n", ipAddress, cmdResultString);
             return false;
         }
         long endTime = System.nanoTime();
         log.trace(MARKER, "took {} seconds to rsync from node {} to node {}", (endTime - startTime) / 1000000000,
-                ipAddress, toIPAddress);
+                ipAddress, toIPAddresses);
         return true;
     }
 
@@ -492,13 +500,13 @@ public class SSHService {
             lastExec = Instant.now();
             return cmd;
         } catch (ConnectionException e) {
-            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", e, joinSec, command,
-                    description);
+            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } catch (IOException | NullPointerException e) {
             log.error(ERROR, "'{}' command failed!", description, e);
         } catch (Exception e) {
-            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", e, joinSec, command,
-                    description);
+            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } finally {
             try {
                 if (session != null) {

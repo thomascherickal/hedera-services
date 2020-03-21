@@ -36,6 +36,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -219,7 +220,7 @@ public class SSHServiceTest {
 		ssh.executeCmd("chmod 400 ~/"+RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +"/my-key.pem");
 		ssh.executeCmd("ssh -i ~/"+RegressionUtilities.REMOTE_EXPERIMENT_LOCATION+"/my-key.pem ubuntu@13.56.18.18 'mkdir remoteExperiment'" );
 		startTime = System.nanoTime();
-		ssh.rsyncTo(null, "13.56.18.18", null);
+		ssh.rsyncTo(null, null, Collections.singletonList("13.56.18.18"));
 		endTime = System.nanoTime();
 		log.trace(MARKER, "rsync took:{} seconds", (endTime - startTime)/ 1000000000 );
 		//ssh.executeCmd("rm -rfv" + expectedResult);
