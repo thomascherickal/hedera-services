@@ -776,7 +776,6 @@ public class Experiment implements ExperimentSummary {
 		// Get list of address of other N-1 nodes
 		List<String> ipAddresses = IntStream.range(1, sshNodes.size()).mapToObj(
 				i -> sshNodes.get(i).getIpAddress()).collect(Collectors.toList());
-		System.out.println("Ip address array =" + ipAddresses);
 		firstNode.rsyncTo(addedFiles, new File(testConfig.getLog4j2File()), ipAddresses);
 		log.info(MARKER, "upload to nodes has finished");
 

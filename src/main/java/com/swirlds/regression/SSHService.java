@@ -320,7 +320,7 @@ public class SSHService {
         }
         // wait all background rsync command to finish
         addCmd += " wait  ";
-        log.trace(MARKER, "** rsyncTo cmd = " + addCmd + "**");
+        log.trace(MARKER, "rsyncTo cmd = " + addCmd );
 
         // command running on remote has format " rsync ip1 & rsync ip2 & rsync ip3 & rsync ip4 & wait"
         // all rsync run in background in parallel and "wait" make executeCmd returns only when all rsync are done
