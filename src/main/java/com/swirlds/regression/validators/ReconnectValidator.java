@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
@@ -284,13 +285,17 @@ public class ReconnectValidator extends NodeValidator {
 	boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
 		int socketExceptions = 0;
 		int unexpectedErrors = 0;
+		int signedStateErrors = errorMessages.stream().
+										filter(e -> e.contains("Node 3 error during receiving SignedState")).
+										collect(Collectors.toList()).size();
 		for (LogEntry e : nodeLog.getExceptions()) {
 			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 				socketExceptions++;
 			} else if(e.getLogEntry().contains(RECV_STATE_ERROR)) {
-				if(errorMessages.contains("Node 3 error during receiving SignedState")){
+				if(signedStateErrors > 0){
 					unexpectedErrors++;
 				}
+				signedStateErrors--;
 			} else if (!isAcceptable(e, nodeId)) {
 				unexpectedErrors++;
 				isValid = false;
