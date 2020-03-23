@@ -32,7 +32,7 @@ import java.util.List;
 
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
-import static com.swirlds.common.logging.PlatformLogMessages.ACTIVE;
+import static com.swirlds.common.logging.PlatformLogMessages.CHANGED_TO_ACTIVE;
 import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
@@ -152,15 +152,15 @@ public class ReconnectValidator extends NodeValidator {
 		boolean nodeReconnected = false;
 		Instant active = null;
 		while (true) {
-			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH));
+			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(CHANGED_TO_ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
 			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
 				addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
 				continue; // try to find next START_RECONNECT
-			}else if(start.getLogEntry().contains(ACTIVE)){
+			}else if(start.getLogEntry().contains(CHANGED_TO_ACTIVE)){
 				active = start.getTime();
-				continue;
+				continue; // Record the time when platform status changes to ACTIVE
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
@@ -180,7 +180,8 @@ public class ReconnectValidator extends NodeValidator {
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
 				if(testConfig !=null && testConfig.getReconnectConfig().isKillNetworkReconnect()){
 					if(active !=null && Duration.between(active, end.getTime()).getSeconds() < 30){
-						addInfo(String.format("Node %d error during receiving SignedState", reconnectNodeId));
+						addInfo(String.format("Node %d error during receiving SignedState can be ignored, " +
+								"as it occurred within 30 seconds of platform becoming ACTIVE", reconnectNodeId));
 					}else{
 						addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
 						isValid = false;
@@ -286,6 +287,10 @@ public class ReconnectValidator extends NodeValidator {
 		for (LogEntry e : nodeLog.getExceptions()) {
 			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 				socketExceptions++;
+			} else if(e.getLogEntry().contains(RECV_STATE_ERROR)) {
+				if(errorMessages.contains("Node 3 error during receiving SignedState")){
+					unexpectedErrors++;
+				}
 			} else if (!isAcceptable(e, nodeId)) {
 				unexpectedErrors++;
 				isValid = false;
