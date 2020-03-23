@@ -179,6 +179,11 @@ public class ReconnectValidator extends NodeValidator {
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
 				addInfo(String.format("Node %d reconnected, time taken %dms", reconnectNodeId, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
+				// for killNetworkReconnect test this error is allowed only if it happens within
+				// 30 seconds after platform status becomes ACTIVE. This can happen because the IP tables might be
+				// getting rebuilt on the reconnected node.
+				// This error should not be allowed on killNodeReconnect test.
+
 				if(testConfig !=null && testConfig.getReconnectConfig().isKillNetworkReconnect()){
 					if(active !=null && Duration.between(active, end.getTime()).getSeconds() < 30){
 						addInfo(String.format("Node %d error during receiving SignedState. It can be ignored, " +
@@ -292,6 +297,8 @@ public class ReconnectValidator extends NodeValidator {
 			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 				socketExceptions++;
 			} else if(e.getLogEntry().contains(RECV_STATE_ERROR)) {
+				// check number of times this error is considered as error. This might can be considered as an INFO if it
+				// has happened within 30 seconds of platform status becomes ACTIVE.
 				if(signedStateErrors > 0){
 					unexpectedErrors++;
 				}
