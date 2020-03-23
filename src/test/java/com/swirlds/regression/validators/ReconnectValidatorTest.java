@@ -137,8 +137,12 @@ class ReconnectValidatorTest {
 		assertTrue(validator.isAcceptable(reconnectNodeAcceptable, lastId));
 	}
 
+	/**
+	 * For KillNetwork reconnect test we can ignore the "Error during receiving signedState"
+	 * if it happens within 30 seconds of platform becoming ACTIVE. Test to check if it is not thrown as error
+	 */
 	@Test
-	public void checkErrorDuringSignedState(){
+	public void checkErrorKillNetwork(){
 		boolean isError = false;
 		List<NodeData> nodeData = loadNodeData("logs/PTD-SignedState-Error-KillNetwork");
 		assertEquals(4, nodeData.size());
@@ -152,6 +156,37 @@ class ReconnectValidatorTest {
 			validator.validate();
 			validator.getErrorMessages().stream().forEach(e -> System.out.println(e));
 			assertEquals(0, validator.getErrorMessages().size());
+			assertTrue(validator.getInfoMessages().contains("Node 3 error during receiving SignedState. It can be ignored, " +
+					"as it occurred within 30 seconds of platform becoming ACTIVE"));
+		}catch(IOException e){
+			isError = true;
+		}
+
+		assertEquals(false, isError);
+	}
+
+	/**
+	 * For KillNode reconnect test we can't ignore the "Error during receiving signedState".
+	 * Test to check that log message is thrown as error.
+	 */
+	@Test
+	public void checkErrorKillNode(){
+		boolean isError = false;
+		List<NodeData> nodeData = loadNodeData("logs/PTD-SignedState-Error-KillNetwork");
+		assertEquals(4, nodeData.size());
+		try {
+			Path testConfigFileLocation = Paths.get("configs/testReconnectBlobCfg.json");
+			byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
+			ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			TestConfig testConfig = objectMapper.readValue(jsonData, TestConfig.class);
+			testConfig.getReconnectConfig().setKillNetworkReconnect(false);
+			assertFalse(testConfig.getReconnectConfig().isKillNetworkReconnect());
+			ReconnectValidator validator = new ReconnectValidator(nodeData, testConfig);
+			validator.validate();
+			validator.getErrorMessages().stream().forEach(e -> System.out.println(e));
+			assertEquals(2, validator.getErrorMessages().size());
+			assertTrue(validator.getErrorMessages().get(0).equals("Node 3 error during receiving SignedState"));
+			assertTrue(validator.getErrorMessages().get(1).equals("Node 3 has 1 unexpected errors!"));
 		}catch(IOException e){
 			isError = true;
 		}

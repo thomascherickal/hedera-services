@@ -180,7 +180,7 @@ public class ReconnectValidator extends NodeValidator {
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
 				if(testConfig !=null && testConfig.getReconnectConfig().isKillNetworkReconnect()){
 					if(active !=null && Duration.between(active, end.getTime()).getSeconds() < 30){
-						addInfo(String.format("Node %d error during receiving SignedState can be ignored, " +
+						addInfo(String.format("Node %d error during receiving SignedState. It can be ignored, " +
 								"as it occurred within 30 seconds of platform becoming ACTIVE", reconnectNodeId));
 					}else{
 						addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
