@@ -17,13 +17,20 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.jsonConfigs.runTypeConfigs.ReconnectConfig;
 import com.swirlds.regression.logs.LogEntry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +50,7 @@ class ReconnectValidatorTest {
 	void validateReconnectLogs(String testDir) throws IOException {
 		System.out.println("Dir: " + testDir);
 		List<NodeData> nodeData = loadNodeData(testDir);
-		NodeValidator validator = new ReconnectValidator(nodeData);
+		NodeValidator validator = new ReconnectValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println("INFO: " + msg);
@@ -57,7 +64,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void csvValidatorForNodeKillReconnect() throws IOException {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-NodeKillReconnect");
-		NodeValidator validator = new ReconnectValidator(nodeData);
+		NodeValidator validator = new ReconnectValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println(msg);
@@ -75,7 +82,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void nodeLogIsNullTest() {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-MissLog03");
-		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		ReconnectValidator validator = new ReconnectValidator(nodeData, null);
 		assertFalse(validator.nodeLogIsNull(nodeData.get(1).getLogReader(), 1));
 		assertFalse(validator.nodeLogIsNull(nodeData.get(2).getLogReader(), 2));
 
@@ -92,7 +99,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void nodeCsvIsNullTest() {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-MissCsv02");
-		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		ReconnectValidator validator = new ReconnectValidator(nodeData, null);
 		assertFalse(validator.nodeCsvIsNull(nodeData.get(1).getCsvReader(), 1));
 		assertFalse(validator.nodeCsvIsNull(nodeData.get(3).getCsvReader(), 3));
 
@@ -130,6 +137,28 @@ class ReconnectValidatorTest {
 		assertTrue(validator.isAcceptable(reconnectNodeAcceptable, lastId));
 	}
 
+	@Test
+	public void checkErrorDuringSignedState(){
+		boolean isError = false;
+		List<NodeData> nodeData = loadNodeData("logs/PTD-SignedState-Error-KillNetwork");
+		assertEquals(4, nodeData.size());
+		try {
+			Path testConfigFileLocation = Paths.get("configs/testReconnectBlobCfg.json");
+			byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
+			ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			TestConfig testConfig = objectMapper.readValue(jsonData, TestConfig.class);
+			assertTrue(testConfig.getReconnectConfig().isKillNetworkReconnect());
+			ReconnectValidator validator = new ReconnectValidator(nodeData, testConfig);
+			validator.validate();
+			validator.getErrorMessages().stream().forEach(e -> System.out.println(e));
+			assertEquals(0, validator.getErrorMessages().size());
+		}catch(IOException e){
+			isError = true;
+		}
+
+		assertEquals(false, isError);
+	}
+
 	/**
 	 * get a dummy ReconnectValidator with NodeData's size be defined
 	 * @return
@@ -139,7 +168,8 @@ class ReconnectValidatorTest {
 		for (int i = 0; i < nodesNum; i++) {
 			nodeData.add(new NodeData(null, null));
 		}
-		return new ReconnectValidator(nodeData);
+
+		return new ReconnectValidator(nodeData, null);
 	}
 
 }

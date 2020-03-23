@@ -19,16 +19,20 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.common.logging.PlatformLogMessages.ACTIVE;
 import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
@@ -36,9 +40,10 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEP
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 
 public class ReconnectValidator extends NodeValidator {
-
-	public ReconnectValidator(List<NodeData> nodeData) {
+	private static TestConfig testConfig;
+	public ReconnectValidator(List<NodeData> nodeData, TestConfig testConfig) {
 		super(nodeData);
+		this.testConfig = testConfig;
 	}
 
 	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
@@ -145,13 +150,17 @@ public class ReconnectValidator extends NodeValidator {
 		}
 
 		boolean nodeReconnected = false;
+		Instant active = null;
 		while (true) {
-			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
+			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
 			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
 				addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
 				continue; // try to find next START_RECONNECT
+			}else if(start.getLogEntry().contains(ACTIVE)){
+				active = start.getTime();
+				continue;
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
@@ -169,8 +178,17 @@ public class ReconnectValidator extends NodeValidator {
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
 				addInfo(String.format("Node %d reconnected, time taken %dms", reconnectNodeId, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
-				addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
-				isValid = false;
+				if(testConfig !=null && testConfig.getReconnectConfig().isKillNetworkReconnect()){
+					if(active !=null && Duration.between(active, end.getTime()).getSeconds() < 30){
+						addInfo(String.format("Node %d error during receiving SignedState", reconnectNodeId));
+					}else{
+						addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
+						isValid = false;
+					}
+				} else {
+					addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
+					isValid = false;
+				}
 			}
 		}
 

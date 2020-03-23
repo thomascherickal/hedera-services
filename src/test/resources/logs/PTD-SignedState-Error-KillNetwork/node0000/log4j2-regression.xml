@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ (c) 2016-2019 Swirlds, Inc.
+  ~
+  ~ This software is the confidential and proprietary information of
+  ~ Swirlds, Inc. ("Confidential Information"). You shall not
+  ~ disclose such Confidential Information and shall use it only in
+  ~ accordance with the terms of the license agreement you entered into
+  ~ with Swirlds.
+  ~
+  ~ SWIRLDS MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+  ~ THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+  ~ TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+  ~ PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SWIRLDS SHALL NOT BE LIABLE FOR
+  ~ ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+  ~ DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+  -->
+<Configuration status="INFO">
+  <Filters>
+    <!-- In the following, enable a marker with onMatch="ACCEPT" and disable with onMatch="DENY". -->
+    <!-- More markers can be added, but ensure that every onMismatch="NEUTRAL", except the last is "DENY". -->
+
+    <!-- Exceptions -->
+    <MarkerFilter marker="EXCEPTION"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TESTING_EXCEPTIONS"     onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SOCKET_EXCEPTIONS"      onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TCP_CONNECT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <!-- Errors -->
+    <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT_DISCARD"   onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <!-- Other -->
+    <MarkerFilter marker="SYNC_START"             onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC_DONE"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC_ERROR"             onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SYNC"                   onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="CREATE_EVENT"           onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="INTAKE_EVENT"           onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="WATCH_EVENTS_SEND_REC"  onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="QUEUES"                 onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="HEARTBEAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_SIG"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="CERTIFICATES"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_FROM"          onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_TO"            onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_DEMO"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_FROM_DIFF"     onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FC_SERIALIZATION"       onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_FORCE_FLUSH"     onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_HASH"            onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_GENERATION"      onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="MERKLE_LOCKS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="LOCKS"                  onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="TIME_MEASURE"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STARTUP"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_SIG_DIST"         onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="OPENCL_INIT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="ADV_CRYPTO_SYSTEM"      onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_STREAM"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="RECONNECT"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SNAPSHOT_MANAGER"       onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_TO_DISK"          onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EVENT_PARSER"           onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="STATE_DELETER"          onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="PLATFORM_STATUS"        onMatch="ACCEPT"   onMismatch="DENY"/>
+  </Filters>
+
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %marker %T %t %msg%n"/>
+    </Console>
+    <RandomAccessFile immediateFlush="true" name="fileLog" fileName="swirlds.log" append="true">
+      <PatternLayout>
+        <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %marker %T %t %msg%n</Pattern>
+      </PatternLayout>
+    </RandomAccessFile>
+  </Appenders>
+  <Loggers>
+    <Root level="all">
+      <AppenderRef ref="fileLog"/>
+      <!-- uncomment the following to also enable output to standard output -->
+      <!-- <AppenderRef ref="Console"/> -->
+    </Root>
+  </Loggers>
+</Configuration>
