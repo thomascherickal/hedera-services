@@ -41,7 +41,7 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEP
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 
 public class ReconnectValidator extends NodeValidator {
-	private static TestConfig testConfig;
+	private TestConfig testConfig;
 	public ReconnectValidator(List<NodeData> nodeData, TestConfig testConfig) {
 		super(nodeData);
 		this.testConfig = testConfig;
