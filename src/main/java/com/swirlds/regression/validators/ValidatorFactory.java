@@ -45,7 +45,7 @@ public class ValidatorFactory {
 			case RESTART:
 				return new RestartValidator(nodeData);
 			case RECONNECT:
-				return new ReconnectValidator(nodeData);
+				return new ReconnectValidator(nodeData, testConfig);
 			case PLATFORM_TESTING_DEMO:
 				return new PtdValidator(nodeData);
 			case STATS:
