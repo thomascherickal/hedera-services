@@ -5,22 +5,50 @@
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
     {"name":"throttle7", "value": "1" },
-    {"name":"throttle7threshold", "value": "1.5" },
-    {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"},
-    {"name":"roundsExpired", "value":"50"}
+    {
+      "name": "throttle7threshold",
+      "value": "1.5"
+    },
+    {
+      "name": "showInternalStats",
+      "value": "1"
+    },
+    {
+      "name": "csvFileName",
+      "value": "PlatformTesting"
+    },
+    {
+      "name": "csvAppend",
+      "value": "true"
+    },
+    {
+      "name": "reconnectActive",
+      "value": "1"
+    },
+    {
+      "name": "roundsExpired",
+      "value": "50"
+    }
   ],
   "reconnectConfig": {
     "reconnectTiming": 180
   },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
+  },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMMultiReconnect.json"]
+    "parameterList": [
+      "FCMMultiReconnect.json"
+    ]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "RECONNECT" ]
+  "validator": [
+    "STATS",
+    "RECONNECT"
+  ]
 }

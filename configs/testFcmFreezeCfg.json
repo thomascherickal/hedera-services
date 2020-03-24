@@ -6,22 +6,37 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"state.saveStatePeriod", "value":"300"}
+    {
+      "name": "state.saveStatePeriod",
+      "value": "300"
+    }
   ],
   "freezeConfig": {
     "freezeTiming": 1,
     "freezeIterations": 5,
     "postFreezeApp": {
       "jar": "PlatformTestingApp.jar",
-      "parameterList": ["FCM1K.json"]
+      "parameterList": [
+        "FCM1K.json"
+      ]
     }
+  },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCM1KFreeze.json"]
+    "parameterList": [
+      "FCM1KFreeze.json"
+    ]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "RESTART" ]
+  "validator": [
+    "STATS",
+    "RESTART"
+  ]
 }

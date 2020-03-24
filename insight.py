@@ -1007,6 +1007,7 @@ def read_plot_subdirectory(subdirectory):
     global fig
     clear_data()
 
+
     print("The directory to search for csv files is %s" % (subdirectory))
     scan_csv_files(subdirectory)
 
@@ -1040,7 +1041,8 @@ def graphing():
     global fig
 
     # divide fiugre window into multple subplot
-    fig, sub_axes = plt.subplots(row_per_page, fig_per_row)
+    #plt.figure(figsize=[16.8, 9.8])
+    fig, sub_axes = plt.subplots(row_per_page, fig_per_row, figsize=[16.8, 9.8])
     fig.subplots_adjust(bottom=0.18)
 
     if PARAMETER.pdfOnly:
