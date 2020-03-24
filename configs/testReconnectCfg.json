@@ -1,10 +1,16 @@
 {
-  "name":"reconnect",
-  "description" : "platform testing demo - reconnect",
-  "duration": 2500,
+  "name": "reconnect",
+  "description": "platform testing demo - reconnect",
+  "duration": 250,
   "settings": [
-    {"name": "throttle7extra", "value": "0.02" },
-    {"name":"throttle7", "value": "1" },
+    {
+      "name": "throttle7extra",
+      "value": "0.02"
+    },
+    {
+      "name": "throttle7",
+      "value": "1"
+    },
     {
       "name": "throttle7threshold",
       "value": "1.5"
@@ -28,7 +34,7 @@
   ],
   "reconnectConfig": {
     "reconnectTiming": 180,
-    "killNetworkReconnect": true
+    "killNetworkReconnect": false
   },
   "experimentConfig": {
     "experimentRestartDelay": "5",

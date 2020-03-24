@@ -850,13 +850,14 @@ public class Experiment implements ExperimentSummary {
     }
 
     private void uploadFilesToSharepoint() {
+        copyLogFileToResultsFolder();
         if (!regConfig.isUploadToSharePoint()) {
             log.info(MARKER, "Uploading to SharePoint is off, skipping");
             return;
         }
         SharePointManager spm = new SharePointManager();
         spm.login();
-        copyLogFileToResultsFolder();
+
         try (Stream<Path> walkerPath = Files.walk(Paths.get(getExperimentFolder()))) {
             final List<String> foundFiles = walkerPath.filter(Files::isRegularFile).map(x -> x.toString()).collect(
                     Collectors.toList());

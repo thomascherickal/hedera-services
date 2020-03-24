@@ -33,7 +33,8 @@ public class RestartRun implements TestRun {
 		// decide the freeze time
 		ZonedDateTime experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0))
 				.plusMinutes(testConfig.getRestartConfig().getRestartTiming());
-		ZonedDateTime freezeTime = experimentTime.plusMinutes(EXPERIMENT_RESTART_DELAY);
+		ZonedDateTime freezeTime = experimentTime.plusMinutes(
+				testConfig.getExperimentConfig().getExperimentRestartDelay());
 
 		// set the freeze time in the settings
 		experiment.getSettingsFile().setFreezeTime(
@@ -50,7 +51,10 @@ public class RestartRun implements TestRun {
 		experiment.startAllSwirlds();
 
 		// sleep until freeze
-		Duration sleep = Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getRestartConfig().getRestartTiming());
+
+		Duration sleep = Duration.ofMinutes(
+				testConfig.getExperimentConfig().getExperimentStartDelay() + testConfig.getRestartConfig().getRestartTiming());
+
 		log.info(MARKER, "Sleeping until freeze");
 		experiment.sleepThroughExperiment(sleep.toMillis());
 
@@ -60,7 +64,7 @@ public class RestartRun implements TestRun {
 		log.info(MARKER, "First part of restart test completed.");
 
 		// wait a bit during freeze
-		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
+		experiment.sleepThroughExperiment(testConfig.getExperimentConfig().getFreezeWaitMillis());
 
 		// start all processes again
 		experiment.startAllSwirlds();
