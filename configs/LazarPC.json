@@ -1,12 +1,12 @@
 {
-  "name":"Lazar-test-refactor",
+  "name":"Lazar-PC",
   "result": {
     "uri":"results"
   },
   "cloud":{
     "service":"aws",
     "securityGroup":"SwirldsSecGroup",
-    "instanceType": "M4Xlarge",
+    "instanceType": "M410xlarge",
     "instanceKey": "SwirldsAIDAJWLRE6BFXCZQFGQN6",
     "keyLocation":"./keys/my-key",
     "login": "ubuntu",
@@ -20,14 +20,22 @@
   },
   "experiments": [
     "configs/testSigningDemoCfg.json",
+    "configs/testSigningDemo4KCfg.json",
     "configs/testFcmMultipleOperationsCfg.json",
     "configs/testRestartCfg.json",
+    "configs/testRestartBlobCfg.json",
+    "configs/testFcmFreezeCfg.json",
     "configs/testFcmFreezeBlobCfg.json",
-    "configs/testFcm4kx100KBlobCfg.json",
+    "configs/testFcmMultisizeBlobCfg.json",
     "configs/testFcmFreezeFCQCfg.json",
+    "configs/testFCM1KFCQCfg.json",
     "configs/testReconnectFCMMultiReconnectCfg.json",
+    "configs/testReconnectFCQMultiReconnectCfg.json",
     "configs/testReconnectBlobCfg.json",
-    "configs/testFcm1kThrottlingCfg.json"
+    "configs/testFcm1kThrottlingCfg.json",
+    "configs/testFcmCfg.json",
+    "configs/testFcmSmallBlobCfg.json",
+    "configs/testFcmLargeBlobCfg.json"
   ],
   "db": {
     "type": "postgresql",

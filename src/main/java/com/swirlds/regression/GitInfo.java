@@ -61,6 +61,36 @@ public class GitInfo {
 
 	}
 
+	/**
+	 * Finds the path to the swirlds-platform repository. Assumes that the current working directory
+	 * is either the swirlds-platform directory or inside a directory tree which is in the swirlds-platform directory.
+	 */
+	protected File findSwirldsPlatform() {
+		String cwd = System.getProperty("user.dir");
+		File directory = new File(cwd);
+
+		int maxDepth = 10;
+		while (maxDepth-- > 0) {
+			// Check if the current remote is swirlds-platform
+			ProcessBuilder processBuilder = new ProcessBuilder(currentGit, "remote", "-v");
+			processBuilder.directory(directory);
+			String currentRemote = runProcess(processBuilder, false);
+
+			if (currentRemote.contains("swirlds-platform.git")) {
+				// We are inside the correct repository
+				return directory;
+			} else {
+				// Go one level higher in the directory tree
+				String parent = directory.getParent();
+				if (parent == null) {
+					break;
+				}
+				directory = new File(directory.getParent());
+			}
+		}
+		return new File(cwd);
+	}
+
 	/*TODO: switch this to JGit */
 	public void gitVersionToFile() {
 		ProcessBuilder processBuilder = new ProcessBuilder(currentGit, "log", "-n", "1", "--decorate=short");
@@ -69,6 +99,7 @@ public class GitInfo {
 
 	public void gitVersionInfo() {
 		ProcessBuilder processBuilder = new ProcessBuilder(currentGit, "log", "-n", "1", "--decorate=short");
+		processBuilder.directory(findSwirldsPlatform());
 		gitInfo = runProcess(processBuilder, false);
 	}
 
