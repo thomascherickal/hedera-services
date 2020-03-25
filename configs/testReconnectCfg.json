@@ -1,7 +1,7 @@
 {
   "name": "reconnect",
   "description": "platform testing demo - reconnect",
-  "duration": 250,
+  "duration": 2500,
   "settings": [
     {
       "name": "throttle7extra",
@@ -30,6 +30,10 @@
     {
       "name": "reconnectActive",
       "value": "1"
+    },
+    {
+      "name": "enableEventStreaming",
+      "value": "true"
     }
   ],
   "reconnectConfig": {
