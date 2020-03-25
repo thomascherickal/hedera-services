@@ -68,26 +68,22 @@ public class ExperimentSummaryStorage {
 		List<ExperimentSummary> list = new ArrayList<>(number);
 		ObjectMapper mapper = new ObjectMapper();
 
-		for (SummaryFileInfo testFile : getTestFiles(name)) {
-			if (number <= 0) {
-				break;
-			}
+		List<SummaryFileInfo> files = getTestFiles(name);
+		int size = files.size();
+		files = files.subList(Math.max(size - number, 0), size);
 
+		for (SummaryFileInfo testFile : files) {
 			ExperimentSummaryData obj = mapper.readValue(testFile.getFile(), ExperimentSummaryData.class);
 			list.add(obj);
-			number--;
 		}
 
 		return list;
 	}
 
 	public static void deleteOldSummaries(String name, int keepLatest) throws IOException {
-		for (SummaryFileInfo testFile : getTestFiles(name)) {
-			if (keepLatest > 0) {
-				keepLatest--;
-				continue;
-			}
-			testFile.file.delete();
+		List<SummaryFileInfo> files = getTestFiles(name);
+		for (int i = 0; i < files.size() - keepLatest; i++) {
+			files.get(i).getFile().delete();
 		}
 	}
 
