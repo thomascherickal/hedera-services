@@ -6,11 +6,11 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	"instanceKey": "regression-key",
+	"instanceKey": "regression-key-neeha",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
-	  { "region":"us-west-1", "numberOfNodes":4}
+	  { "region":"us-east-2", "numberOfNodes":4}
 	]
   },
   "log": {
@@ -19,6 +19,7 @@
   "experiments": [
 	"configs/testFcmMultipleOperationsCfg.json"
   ],
+  "useLifecycleModel" : true,
   "db": {
 	"type": "postgresql",
 	"login": "dbregression",
@@ -30,7 +31,7 @@
   "slack":{
     "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-    "channel": "regression"
+    "channel": "regression-test"
   },
 
   "uploadToSharePoint": false
