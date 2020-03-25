@@ -1,5 +1,5 @@
 {
-  "name":"DynamicRestartBlob",
+  "name":"DynamicRestartBlob-Qian",
   "description" : "platform testing demo - FCM Freeze Blob",
   "duration": 540,
   "settings": [
@@ -9,7 +9,7 @@
     {"name":"state.saveStatePeriod", "value":"300"}
   ],
   "freezeConfig": {
-    "freezeTiming": 1,
+    "freezeTiming": 2,
     "freezeIterations": 5,
     "postFreezeApp": {
       "jar": "PlatformTestingApp.jar",
