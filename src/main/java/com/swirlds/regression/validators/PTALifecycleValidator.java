@@ -40,20 +40,6 @@ public class PTALifecycleValidator extends Validator {
 	private static boolean isValid;
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
-	/**
-	 * List of errors
-	 */
-	private List<String> errorMessages = new ArrayList<>();
-	private List<String> infoMessages = new ArrayList<>();
-
-	void addError(String msg) {
-		errorMessages.add(msg);
-	}
-
-	void addInfo(String msg) {
-		infoMessages.add(msg);
-	}
-
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		expectedMaps = mapData.getExpectedMaps();
 		isValid = false;
@@ -124,8 +110,6 @@ public class PTALifecycleValidator extends Validator {
 		if(errorMessages.size() == 0) {
 			isValid = true;
 			addInfo("Validator has no exceptions");
-		}else{
-			addError("Validator has "+ errorMessages.size() + "exceptions.");
 		}
 
 		return isValid;
