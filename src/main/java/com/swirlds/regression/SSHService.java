@@ -39,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -669,7 +671,8 @@ public class SSHService {
     int countSpecifiedMsg(List<String> msgList, String fileName) {
         String joined = String.join("|", msgList);
         String searchCmd = "egrep " + " \"" + joined + "\" " + fileName;
-        final Session.Command cmd = execCommand(searchCmd,
+        String countCmd = " | wc -l";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
                 "Check specified msg", -1);
         ArrayList<String> output = readCommandOutput(cmd);
         for (String out : output) {
@@ -678,10 +681,44 @@ public class SSHService {
                 return -1;
             }
         }
-        if (output.get(0).isEmpty()) {
-            return -1;
+
+        return Integer.valueOf(output.get(0));
+    }
+
+    /**
+     * Search a lists of messages in the log file and
+     * return the number of occurrences of each message
+     *
+     * @param msgList  A list of message to search for
+     * @param fileName File name to search for the message
+     * @return a Map which contains the number of occurrences of each message
+     *      Or return null if error happened
+     */
+    Map<String, Integer> countSpecifiedMsgEach(List<String> msgList, String fileName) {
+        String joined = String.join("|", msgList);
+        String searchCmd = "egrep  -Iho " + " \"" + joined + "\" " + fileName;
+        String countCmd = " | sort | uniq -c";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
+                "Check specified msg", -1);
+        ArrayList<String> output = readCommandOutput(cmd);
+        Map<String, Integer> map = new HashMap<>();
+        for (String out : output) {
+            if (out.contains("No such file or directory")) {
+                log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
+                return null;
+            }
+
+            log.trace(MARKER, out);
+            out = out.trim();
+            // if the string is Empty, it means no occurrence
+            // if the string is not Empty, it should be: "num string"
+            if (!out.isEmpty()) {
+                String[] strs = out.split(" ", 2);
+                map.put(strs[1].trim(), Integer.valueOf(strs[0]));
+            }
         }
-        return output.size();
+        log.trace(MARKER, "countSpecifiedMsgEach resultMap: ");
+        return map;
     }
 
     public void close() {

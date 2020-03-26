@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,7 +54,7 @@ public class SSHServiceTest {
 
 	static final String USER = "ubuntu";
 	static final String IPADDRESS = "18.222.31.205";
-	static final String KEY_FILE_LOCATION = ".\\keys\\my-key.pem";
+	static final String KEY_FILE_LOCATION = "./keys/my-key.pem";
 
 	static final String BAD_USER = "ec2USER";
 	static final String BAD_IPADDRESS = "3.16.38.224";
@@ -61,6 +62,7 @@ public class SSHServiceTest {
 
 	private SSHService Connect(String user, String ip, String keyFileLocation){
 		File keyFile = new File(keyFileLocation);
+		System.out.println(keyFile.getAbsolutePath());
 		SSHService ssh = null;
 		try {
 			ssh = new SSHService(user, ip, keyFile);
@@ -265,4 +267,44 @@ public class SSHServiceTest {
 		assertTrue(expectedMemory.equals(nodeMemory));
 	}
 
+	@Test
+	@DisplayName("Get count of specified Msg")
+	void testCountSpecifiedMsgEach() throws IOException {
+		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+		final String logFilePath = classloader.getResource("logs/DynamicRestartBlob/swirlds-0.log").getFile();
+
+		// upload the file to aws node
+		final SSHService ssh = Connect(USER, "3.21.241.155", KEY_FILE_LOCATION);
+		final String remoteDir = "remoteExperiment/";
+		ssh.scpFilesToRemoteDir(List.of(logFilePath), remoteDir);
+
+		final String fileName = remoteDir + "/swirlds-0.log";
+		final String occur6 = "Platform status changed to: MAINTENANCE";
+		final String occur8 = "Platform status changed to: ACTIVE";
+		final String occur0 = "NONE Exist";
+		final String occur12 = "MAINTENANCE";
+		List<String> list = List.of(occur6, occur8, occur0, occur12);
+		Map<String, Integer> map = ssh.countSpecifiedMsgEach(list, fileName);
+
+		// since 3 of the following strings exist in the log file
+		// the map size should be 3
+		assertEquals(3, map.size());
+		assertTrue(8 == map.getOrDefault(occur8, 0));
+		assertTrue(0 == map.getOrDefault(occur0, 0));
+		assertTrue(6 == map.getOrDefault(occur6, 0));
+		assertTrue(12 == map.getOrDefault(occur12, 0));
+
+		// countSpecifiedMsg should return 6 + 8 + 12
+		assertTrue(26 == ssh.countSpecifiedMsg(list, fileName));
+
+		// since none of the following strings exist in the log file
+		// the map size should be 0
+		List<String> nonExists = List.of("NONE Exist", "0 Exist", "RANDOMSTRING");
+		assertTrue(0 == ssh.countSpecifiedMsgEach(nonExists, fileName).size());
+
+
+		final String nonExistFile = remoteDir + "/nonExist.log";
+		assertTrue(-1 == ssh.countSpecifiedMsg(list, nonExistFile));
+		assertNull(ssh.countSpecifiedMsgEach(list, nonExistFile));
+	}
 }

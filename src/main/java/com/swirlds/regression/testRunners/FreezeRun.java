@@ -20,9 +20,9 @@ package com.swirlds.regression.testRunners;
 import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
-import static com.swirlds.regression.RegressionUtilities.MILLIS;
-
 import java.time.Duration;
+
+import static com.swirlds.regression.RegressionUtilities.MILLIS;
 
 public class FreezeRun implements TestRun {
 	@Override
@@ -33,8 +33,33 @@ public class FreezeRun implements TestRun {
 			// start all processes
 			experiment.startAllSwirlds();
 
-			Duration sleep = Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getFreezeConfig().getFreezeTiming());
+			Duration sleep =
+					Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getFreezeConfig().getFreezeTiming());
 			experiment.sleepThroughExperiment(sleep.toMillis());
+
+			// check if all nodes has entered Maintenance status at ith iteration
+			// if not, log an error and stop the test
+			if (!experiment.checkAllNodesFreeze(i)) {
+				log.error(ERROR, "Dynamic freeze test failed at {}th iteration. " +
+								"Not all nodes entered Maintenance status after {} mins",
+						i, testConfig.getFreezeConfig().getFreezeTiming());
+				return;
+			}
+
+			// check if all nodes finish saving expectedMap if they already started
+			if (!experiment.checkAllNodesSavedExpected(i)) {
+				// wait for a while
+				experiment.sleepThroughExperiment(
+						Duration.ofMinutes(SAVE_EXPECTED_WAIT_MINS).toMillis());
+				// if any node hasn't finished yet, log an error and stop the test
+				if (!experiment.checkAllNodesSavedExpected(i)) {
+					log.error(ERROR, "Dynamic freeze test failed at {}th iteration. " +
+									"Not all nodes have finished saving ExpectedMap after {} mins",
+							i, testConfig.getFreezeConfig().getFreezeTiming() +
+									SAVE_EXPECTED_WAIT_MINS);
+					return;
+				}
+			}
 
 			// kill the process during the freeze
 			experiment.stopAllSwirlds();
