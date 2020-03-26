@@ -38,11 +38,13 @@ import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSIO
 public class PTALifecycleValidator extends Validator {
 	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 	private static boolean isValid;
+	private static boolean isValidated;
 	public static final String EXPECTED_MAP = "ExpectedMap.json";
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		expectedMaps = mapData.getExpectedMaps();
 		isValid = false;
+		isValidated = false;
 	}
 
 	/**
@@ -52,6 +54,7 @@ public class PTALifecycleValidator extends Validator {
 	PTALifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
 		this.expectedMaps = expectedMaps;
 		isValid = false;
+		isValidated = false;
 	}
 
 	@Override
@@ -64,7 +67,7 @@ public class PTALifecycleValidator extends Validator {
 	 */
 	@Override
 	public void validate() {
-		isValid = validateExpectedMaps();
+		validateExpectedMaps();
 	}
 
 	/**
@@ -73,14 +76,14 @@ public class PTALifecycleValidator extends Validator {
 	 */
 	@Override
 	public boolean isValid() {
-		return isValid;
+		return isValid && isValidated;
 	}
 
 	/**
 	 * ExpectedMaps are valid if there are no error messages recorded while
 	 * expectedMaps from all nodes
 	 */
-	private boolean validateExpectedMaps(){
+	private void validateExpectedMaps(){
 		Map<MapKey, ExpectedValue> baselineMap = expectedMaps.get(0);
 
 		for(int i=1; i< expectedMaps.size();i++){
@@ -111,8 +114,7 @@ public class PTALifecycleValidator extends Validator {
 			isValid = true;
 			addInfo("Validator has no exceptions");
 		}
-
-		return isValid;
+		isValidated = true;
 	}
 
 	/**
