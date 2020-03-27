@@ -27,7 +27,7 @@ import org.apache.logging.log4j.MarkerManager;
 public interface TestRun {
 	static final Logger log = LogManager.getLogger(TestRun.class);
 	static final Marker MARKER = MarkerManager.getMarker("TEST_RUN");
-	static final Marker ERROR = MarkerManager.getMarker("ERROR");
+	static final Marker EXCEPTION = MarkerManager.getMarker("EXCEPTION");
 
 	static final int EXPERIMENT_RESTART_DELAY = 5;
 	static final int EXPERIMENT_START_DELAY = 2;

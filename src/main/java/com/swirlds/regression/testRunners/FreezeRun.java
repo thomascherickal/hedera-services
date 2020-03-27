@@ -26,7 +26,7 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 
 public class FreezeRun implements TestRun {
 	@Override
-	public void runTest(TestConfig testConfig, Experiment experiment) {
+	public void runTest(TestConfig testConfig, Experiment experiment) throws IllegalStateException {
 		int iterations = testConfig.getFreezeConfig().getFreezeIterations();
 
 		for (int i = 0; i < iterations; i++) {
@@ -40,9 +40,8 @@ public class FreezeRun implements TestRun {
 			// check if all nodes has entered Maintenance status at ith iteration
 			// if not, log an error and stop the test
 			if (!experiment.checkAllNodesFreeze(i)) {
-				log.error(ERROR, "Dynamic freeze test failed at {}th iteration. " +
-								"Not all nodes entered Maintenance status after {} mins",
-						i, testConfig.getFreezeConfig().getFreezeTiming());
+				log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
+						"Not all nodes entered Maintenance status after {} mins", i, testConfig.getFreezeConfig().getFreezeTiming());
 				return;
 			}
 
@@ -53,11 +52,10 @@ public class FreezeRun implements TestRun {
 						Duration.ofMinutes(SAVE_EXPECTED_WAIT_MINS).toMillis());
 				// if any node hasn't finished yet, log an error and stop the test
 				if (!experiment.checkAllNodesSavedExpected(i)) {
-					log.error(ERROR, "Dynamic freeze test failed at {}th iteration. " +
-									"Not all nodes have finished saving ExpectedMap after {} mins",
+					log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
+							"Not all nodes have finished saving ExpectedMap after {} mins",
 							i, testConfig.getFreezeConfig().getFreezeTiming() +
 									SAVE_EXPECTED_WAIT_MINS);
-					return;
 				}
 			}
 
@@ -78,6 +76,11 @@ public class FreezeRun implements TestRun {
 		);
 		// upload the configs
 		experiment.sendConfigToNodes();
+
+		// wait a bit for sending new config to nodes
+		// if the new config is not sent successfully before swirlds.jar is started
+		// total freeze frequency would be FreezeIteration + 1
+		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
 
 		// start all processes
 		experiment.startAllSwirlds();

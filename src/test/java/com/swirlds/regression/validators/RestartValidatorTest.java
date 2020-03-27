@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import org.junit.jupiter.api.Test;
 
@@ -27,13 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RestartValidatorTest {
 
 	@Test
 	void validateReconnectLogs() throws IOException {
 		List<NodeData> nodeData = loadNodeData("results/restart/singleRestart");
-		NodeValidator validator = new RestartValidator(nodeData);
+		NodeValidator validator = new RestartValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println(msg);
@@ -44,18 +47,26 @@ class RestartValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
+	/**
+	 * In the logs, each node freezes once, doesn't match expected 5
+	 * @throws IOException
+	 */
 	@Test
-	void vadidateMultipleRestartLogs() throws IOException {
-		List<NodeData> nodeData = loadNodeData("results/restart/multipleRestarts");
-		NodeValidator validator = new RestartValidator(nodeData);
+	void vadidateDynamicRestartLogs() throws IOException {
+		TestConfig testConfig = ValidatorTestUtil.loadTestConfig("configs/testFCMFreezeBlobCfg.json");
+		assertNotNull(testConfig.getFreezeConfig());
+		List<NodeData> nodeData = loadNodeData("logs/DynamicRestartBlob/FreezeFreqNotMatch");
+		NodeValidator validator = new RestartValidator(nodeData, testConfig);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println(msg);
 		}
+
+		assertEquals(4, validator.getErrorMessages().size());
 		for (String msg : validator.getErrorMessages()) {
-			System.out.println(msg);
+			assertTrue(msg.contains("froze 1 times, didn't match expected frequency of freeze: 5"));
 		}
-		assertEquals(true, validator.isValid());
+		assertEquals(false, validator.isValid());
 	}
 
 	public static List<NodeData> loadNodeData(String directory) {

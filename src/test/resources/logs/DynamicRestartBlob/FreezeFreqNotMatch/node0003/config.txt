@@ -1,0 +1,9 @@
+###############################################################################################
+# Swirlds configuration file, for automatically running multiple instances
+###############################################################################################
+swirld, 123
+app, PlatformTestingApp.jar, FCM1KFreezeBlob.json
+address, DynamicRestartBlob-Qian-shouldFail0, DynamicRestartBlob-Qian-shouldFail0, 1250000000000000000, 172.31.16.221, 40124, 3.21.241.155, 40124
+address, DynamicRestartBlob-Qian-shouldFail1, DynamicRestartBlob-Qian-shouldFail1, 1250000000000000000, 172.31.20.94, 40125, 18.221.200.105, 40125
+address, DynamicRestartBlob-Qian-shouldFail2, DynamicRestartBlob-Qian-shouldFail2, 1250000000000000000, 172.31.31.67, 40126, 3.15.230.123, 40126
+address, DynamicRestartBlob-Qian-shouldFail3, DynamicRestartBlob-Qian-shouldFail3, 1250000000000000000, 172.31.18.221, 40127, 3.133.100.184, 40127
