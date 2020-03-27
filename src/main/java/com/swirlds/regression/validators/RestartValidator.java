@@ -233,14 +233,16 @@ public class RestartValidator extends NodeValidator {
 	boolean checkFreezeFreq(final int freezeTimes) {
 		log.info(MARKER, "freeze times: {}; expected: {}", freezeTimes, expectedFreezeFreq);
 		if (freezeTimes == expectedFreezeFreq) {
+			addInfo(String.format("Actual freeze times: %d, matches expected: %d", freezeTimes, expectedFreezeFreq));
 			return true;
 		}
 		// in Freeze tests,
 		// if after finishing freezeIterations, new config with PostFreezeApp hasn't been sent
 		// to nodes before swirlds.jars are started,
 		// total freeze occurrence would be freezeIterations + 1
-		if (isFreezeTest) {
-			return freezeTimes == expectedFreezeFreq + 1;
+		if (isFreezeTest && freezeTimes == expectedFreezeFreq + 1) {
+			addInfo(String.format("Freeze times is one more than expected: %d", expectedFreezeFreq));
+			return true;
 		}
 		return false;
 	}
