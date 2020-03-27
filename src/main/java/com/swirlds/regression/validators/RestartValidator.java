@@ -147,12 +147,13 @@ public class RestartValidator extends NodeValidator {
 		 */
 		for (int i = 0; i < nodeNum; i++) {
 			if (isNodeRestarted) {
-				List<String> freezeRound = freezeRounds.get(Long.valueOf(i));
-				addInfo(String.format(SUCCESSFUL_RESTART_MESSAGE, i, freezeRound));
+				List<String> freezeRoundList = freezeRounds.get(Long.valueOf(i));
+				addInfo(String.format(SUCCESSFUL_RESTART_MESSAGE, i, freezeRoundList));
 				isValidated = true;
-				if (!checkFreezeFreq(freezeRounds)) {
+
+				if (!checkFreezeFreq(freezeRoundList.size())) {
 					addError(String.format(FREEZE_COUNT_MISMATCH_MESSAGE, i,
-							freezeRound.size(), expectedFreezeFreq));
+							freezeRoundList.size(), expectedFreezeFreq));
 					isValidated = false;
 				}
 			} else {
@@ -224,14 +225,14 @@ public class RestartValidator extends NodeValidator {
 	}
 
 	/**
-	 * check whether freeze time matches expected value
+	 * check whether actual freeze times matches expected value
 	 *
-	 * @param freezeRounds
+	 * @param freezeTimes
 	 * @return
 	 */
-	boolean checkFreezeFreq(HashMap<Long, ArrayList<String>> freezeRounds) {
-		log.info(MARKER, "freezed times: {}; expected: {}", freezeRounds.size(), expectedFreezeFreq);
-		if (freezeRounds.size() == expectedFreezeFreq) {
+	boolean checkFreezeFreq(final int freezeTimes) {
+		log.info(MARKER, "freeze times: {}; expected: {}", freezeTimes, expectedFreezeFreq);
+		if (freezeTimes == expectedFreezeFreq) {
 			return true;
 		}
 		// in Freeze tests,
@@ -239,7 +240,7 @@ public class RestartValidator extends NodeValidator {
 		// to nodes before swirlds.jars are started,
 		// total freeze occurrence would be freezeIterations + 1
 		if (isFreezeTest) {
-			return freezeRounds.size() == expectedFreezeFreq + 1;
+			return freezeTimes == expectedFreezeFreq + 1;
 		}
 		return false;
 	}

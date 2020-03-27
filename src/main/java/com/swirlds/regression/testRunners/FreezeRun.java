@@ -27,40 +27,14 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 public class FreezeRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) throws IllegalStateException {
-		int iterations = testConfig.getFreezeConfig().getFreezeIterations();
-
+		final int iterations = testConfig.getFreezeConfig().getFreezeIterations();
+		final int freezeTiming = testConfig.getFreezeConfig().getFreezeTiming();
 		for (int i = 0; i < iterations; i++) {
-			// start all processes
-			experiment.startAllSwirlds();
 
-			Duration sleep =
-					Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getFreezeConfig().getFreezeTiming());
-			experiment.sleepThroughExperiment(sleep.toMillis());
-
-			// check if all nodes has entered Maintenance status at ith iteration
-			// if not, log an error and stop the test
-			if (!experiment.checkAllNodesFreeze(i)) {
-				log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
-						"Not all nodes entered Maintenance status after {} mins", i, testConfig.getFreezeConfig().getFreezeTiming());
+			// if this iteration fails, stop the test
+			if (!runSingleFreeze(experiment, freezeTiming, i, true)) {
 				return;
 			}
-
-			// check if all nodes finish saving expectedMap if they already started
-			if (!experiment.checkAllNodesSavedExpected(i)) {
-				// wait for a while
-				experiment.sleepThroughExperiment(
-						Duration.ofMinutes(SAVE_EXPECTED_WAIT_MINS).toMillis());
-				// if any node hasn't finished yet, log an error and stop the test
-				if (!experiment.checkAllNodesSavedExpected(i)) {
-					log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
-							"Not all nodes have finished saving ExpectedMap after {} mins",
-							i, testConfig.getFreezeConfig().getFreezeTiming() +
-									SAVE_EXPECTED_WAIT_MINS);
-				}
-			}
-
-			// kill the process during the freeze
-			experiment.stopAllSwirlds();
 
 			log.info(MARKER, "{} dynamic freeze test completed.", (i + 1));
 
@@ -89,5 +63,71 @@ public class FreezeRun implements TestRun {
 		long testDuration = testConfig.getDuration() * MILLIS;
 		log.info(MARKER, "kicking off test, duration: {}", testDuration);
 		experiment.sleepThroughExperiment(testDuration);
+	}
+
+	/**
+	 * run a single freeze run
+	 *
+	 * @param experiment
+	 * @param waitTiming
+	 * 		for FreezeTest, it is FreezeConfig.freezeTiming;
+	 * 		for RestartTest, it is RestartConfig.restartTiming;
+	 * @param iteration
+	 * 		for FreezeTest, it is current iteration number;
+	 * 		for RestartTest, it should always be 0;
+	 * @param freezeTest
+	 * 		if it is true, this is a FreezeTest (Dynamic Restart Test);
+	 * 		if it is false, this is a RestartTest
+	 * @return return true if succeed, else return false
+	 */
+	static boolean runSingleFreeze(final Experiment experiment,
+			final int waitTiming, final int iteration, final boolean freezeTest) {
+		// start all processes
+		experiment.startAllSwirlds();
+
+		Duration sleep =
+				Duration.ofMinutes(EXPERIMENT_START_DELAY + waitTiming);
+		experiment.sleepThroughExperiment(sleep.toMillis());
+
+		// check if all nodes has entered Maintenance status at ith iteration
+		// if not, log an error and stop the test
+		if (!experiment.checkAllNodesFreeze(iteration)) {
+			if (freezeTest) {
+				log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
+								"Not all nodes entered Maintenance status after waiting for {} mins",
+						iteration, waitTiming);
+			} else {
+				log.error(EXCEPTION, "Restart test failed. " +
+								"Not all nodes entered Maintenance status after waiting for {} mins",
+						waitTiming);
+			}
+
+			return false;
+		}
+
+		// check if all nodes finish saving expectedMap if they already started
+		if (!experiment.checkAllNodesSavedExpected(iteration)) {
+			// wait for a while
+			experiment.sleepThroughExperiment(
+					Duration.ofMinutes(SAVE_EXPECTED_WAIT_MINS).toMillis());
+			// if any node hasn't finished yet, log an error and stop the test
+			if (!experiment.checkAllNodesSavedExpected(iteration)) {
+				if (freezeTest) {
+					log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
+									"Not all nodes have finished saving ExpectedMap after {} mins",
+							iteration, waitTiming +
+									SAVE_EXPECTED_WAIT_MINS);
+				} else {
+					log.error(EXCEPTION, "Restart test failed. " +
+							"Not all nodes have finished saving ExpectedMap after {} mins", waitTiming +
+							SAVE_EXPECTED_WAIT_MINS);
+				}
+				return false;
+			}
+		}
+
+		// kill the process during the freeze
+		experiment.stopAllSwirlds();
+		return true;
 	}
 }
