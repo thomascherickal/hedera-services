@@ -407,14 +407,6 @@ public class Experiment implements ExperimentSummary {
 		return false;
 	}
 
-	/**
-	 * set app in ConfigBuilder
-	 * @param app
-	 */
-	public void setConfigApp(final AppConfig app) {
-		configFile.setApp(app);
-	}
-
 	private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {
 		for (Boolean val : isTestFinished) {
 			if (!val) {
@@ -1293,5 +1285,14 @@ public class Experiment implements ExperimentSummary {
 			}
 		}
 		return true;
+	}
+
+
+	/**
+	 * set app in ConfigBuilder
+	 * @param app
+	 */
+	public void setConfigApp(final AppConfig app) {
+		configFile.setApp(app);
 	}
 }

@@ -139,7 +139,6 @@ public class ConfigBuilder {
 		buildHeader();
 		buildAppString();
 		buildAddressStrings();
-		System.out.println(lines);
 	}
 
 	boolean exportConfigFile() {
