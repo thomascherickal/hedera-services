@@ -1,7 +1,7 @@
 {
   "name": "FCM1K",
   "description": "platform testing demo - FCM1K",
-  "duration": 60,
+  "duration": 540,
   "settings": [
     {
       "name": "showInternalStats",
