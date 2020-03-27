@@ -35,24 +35,22 @@ class RestartValidatorTest {
 
 	@Test
 	void validateReconnectLogs() throws IOException {
-		List<NodeData> nodeData = loadNodeData("results/restart/singleRestart");
+		List<NodeData> nodeData = loadNodeData("logs/RestartBlob/Success");
 		NodeValidator validator = new RestartValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println(msg);
 		}
-		for (String msg : validator.getErrorMessages()) {
-			System.out.println(msg);
-		}
+		assertTrue(validator.getErrorMessages().isEmpty());
 		assertEquals(true, validator.isValid());
 	}
 
 	/**
-	 * In the logs, each node freezes once, doesn't match expected 5
+	 * In the logs, each node freezes once, doesn't match expected 3
 	 * @throws IOException
 	 */
 	@Test
-	void vadidateDynamicRestartLogs() throws IOException {
+	void vadidateDynamicRestartLogsNegative() throws IOException {
 		TestConfig testConfig = ValidatorTestUtil.loadTestConfig("configs/testFCMFreezeBlobCfg.json");
 		assertNotNull(testConfig.getFreezeConfig());
 		List<NodeData> nodeData = loadNodeData("logs/DynamicRestartBlob/FreezeFreqNotMatch");
@@ -64,9 +62,28 @@ class RestartValidatorTest {
 
 		assertEquals(4, validator.getErrorMessages().size());
 		for (String msg : validator.getErrorMessages()) {
-			assertTrue(msg.contains("froze 1 times, didn't match expected frequency of freeze: 5"));
+			assertTrue(msg.contains("froze 1 times, didn't match expected frequency of freeze: 3"));
 		}
 		assertEquals(false, validator.isValid());
+	}
+
+	/**
+	 * the test passed successfully
+	 * @throws IOException
+	 */
+	@Test
+	void vadidateDynamicRestartLogsPositive() throws IOException {
+		TestConfig testConfig = ValidatorTestUtil.loadTestConfig("configs/testFCMFreezeBlobCfg.json");
+		assertNotNull(testConfig.getFreezeConfig());
+		List<NodeData> nodeData = loadNodeData("logs/DynamicRestartBlob/Success");
+		NodeValidator validator = new RestartValidator(nodeData, testConfig);
+		validator.validate();
+		for (String msg : validator.getInfoMessages()) {
+			System.out.println(msg);
+		}
+
+		assertTrue(validator.getErrorMessages().isEmpty());
+		assertEquals(true, validator.isValid());
 	}
 
 	public static List<NodeData> loadNodeData(String directory) {
