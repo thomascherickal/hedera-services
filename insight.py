@@ -53,7 +53,6 @@ pp = pprint.PrettyPrinter(indent=4)
 
 CONST_PAUSE = "GC Pauses"
 
-
 #
 #  An slider to select different graph pages
 #
@@ -385,7 +384,6 @@ print("Platform=" + platform.system())
 if platform.system() == "Linux" and PARAMETER.pdfOnly:
     print("Use smaller font for save PDF on Ubuntu backend mode")
     plt.rcParams.update({'font.size': 5})
-
 
 #
 #
@@ -1041,7 +1039,6 @@ def graphing():
     global fig
 
     # divide fiugre window into multple subplot
-    #plt.figure(figsize=[16.8, 9.8])
     fig, sub_axes = plt.subplots(row_per_page, fig_per_row, figsize=[16.8, 9.8])
     fig.subplots_adjust(bottom=0.18)
 
