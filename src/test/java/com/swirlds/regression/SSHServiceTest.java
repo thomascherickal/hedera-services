@@ -17,8 +17,10 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.validators.ValidatorTestUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -40,6 +42,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -62,7 +67,6 @@ public class SSHServiceTest {
 
 	private SSHService Connect(String user, String ip, String keyFileLocation){
 		File keyFile = new File(keyFileLocation);
-		System.out.println(keyFile.getAbsolutePath());
 		SSHService ssh = null;
 		try {
 			ssh = new SSHService(user, ip, keyFile);
@@ -122,7 +126,7 @@ public class SSHServiceTest {
 	void testScpTo(){
 		ArrayList<String> checkExtensions = new ArrayList<>();
 		checkExtensions.add("*.tar.gz");
-		String expectedResult = "./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + RegressionUtilities.TAR_NAME;
+		String expectedResult = "./" + REMOTE_EXPERIMENT_LOCATION + RegressionUtilities.TAR_NAME;
 		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
 		assertNotNull(ssh);
 		ssh.scpTo(null);
@@ -201,7 +205,7 @@ public class SSHServiceTest {
 
 		ArrayList<String> checkExtensions = new ArrayList<>();
 		checkExtensions.add("*.tar.gz");
-		String expectedResult = "./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + RegressionUtilities.TAR_NAME;
+		String expectedResult = "./" + REMOTE_EXPERIMENT_LOCATION + RegressionUtilities.TAR_NAME;
 		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
 		ssh.buildSession();
 		Collection<File> filesToSend = RegressionUtilities.getSDKFilesToUpload(new File(KEY_FILE_LOCATION),new File("log4j2.xml"), null);
@@ -218,8 +222,8 @@ public class SSHServiceTest {
 		long endTime = System.nanoTime();
 		log.trace(MARKER, "upload of tar took:{} seconds",(endTime - startTime)/ 1000000000 );
 
-		ssh.executeCmd("chmod 400 ~/"+RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +"/my-key.pem");
-		ssh.executeCmd("ssh -i ~/"+RegressionUtilities.REMOTE_EXPERIMENT_LOCATION+"/my-key.pem ubuntu@13.56.18.18 'mkdir remoteExperiment'" );
+		ssh.executeCmd("chmod 400 ~/"+ REMOTE_EXPERIMENT_LOCATION +"/my-key.pem");
+		ssh.executeCmd("ssh -i ~/"+ REMOTE_EXPERIMENT_LOCATION+"/my-key.pem ubuntu@13.56.18.18 'mkdir remoteExperiment'" );
 		startTime = System.nanoTime();
 		ssh.rsyncTo(null, "13.56.18.18", null);
 		endTime = System.nanoTime();
@@ -274,11 +278,10 @@ public class SSHServiceTest {
 		final String logFilePath = classloader.getResource("logs/DynamicRestartBlob/swirlds-0.log").getFile();
 
 		// upload the file to aws node
-		final SSHService ssh = Connect(USER, "3.21.241.155", KEY_FILE_LOCATION);
-		final String remoteDir = "remoteExperiment/";
-		ssh.scpFilesToRemoteDir(List.of(logFilePath), remoteDir);
+		final SSHService ssh = Connect(USER, "18.216.159.19", KEY_FILE_LOCATION);
+		ssh.scpFilesToRemoteDir(List.of(logFilePath), REMOTE_EXPERIMENT_LOCATION);
 
-		final String fileName = remoteDir + "/swirlds-0.log";
+		final String fileName = REMOTE_EXPERIMENT_LOCATION + "/swirlds-0.log";
 		final String occur6 = "Platform status changed to: MAINTENANCE";
 		final String occur8 = "Platform status changed to: ACTIVE";
 		final String occur0 = "NONE Exist";
@@ -303,8 +306,43 @@ public class SSHServiceTest {
 		assertTrue(0 == ssh.countSpecifiedMsgEach(nonExists, fileName).size());
 
 
-		final String nonExistFile = remoteDir + "/nonExist.log";
+		final String nonExistFile = REMOTE_EXPERIMENT_LOCATION + "/nonExist.log";
 		assertTrue(-1 == ssh.countSpecifiedMsg(list, nonExistFile));
 		assertNull(ssh.countSpecifiedMsgEach(list, nonExistFile));
+	}
+
+	@Test
+	public void updateConfigTest() throws Exception {
+		final SSHService currentNode = Connect(USER, "18.216.159.19", KEY_FILE_LOCATION);
+		TestConfig testConfig = ValidatorTestUtil.loadTestConfig("configs/testFCMFreezeBlobCfg.json");
+		RegressionConfig regressionConfig = RegressionUtilities.importRegressionConfig("configs/AwsRegressionCfgFreezeBlob.json");
+		ConfigBuilder configBuilder = new ConfigBuilder(regressionConfig, testConfig);
+		List<String> publicIPs = List.of("3.21.241.155", "52.14.218.64",
+				"13.58.198.82", "13.59.213.101");
+		List<String> privateIPs = List.of("172.31.16.221", "172.31.20.94",
+				"172.31.18.221", "172.31.31.67");
+		configBuilder.addIPAddresses(publicIPs, privateIPs);
+		configBuilder.exportConfigFile();
+
+		final String freezeAppName = "FCM1KFreezeBlob.json";
+		final String postAppName = "FCMBlob1K.json";
+
+		// the configBuilder's app should contain freezeAppName
+		assertTrue(configBuilder.getLines().stream().
+				anyMatch(s -> s.contains(freezeAppName)));
+
+		// set the non-freeze config
+		AppConfig postApp = testConfig.getFreezeConfig().getPostFreezeApp();
+		configBuilder.setApp(postApp);
+		// build new config file
+		configBuilder.exportConfigFile();
+		// upload new config file
+		ArrayList<File> newUploads = new ArrayList<>();
+		newUploads.add(new File(WRITE_FILE_DIRECTORY + CONFIG_FILE));
+		currentNode.scpToSpecificFiles(newUploads);
+
+		// the node's new config file should contain postAppName
+		assertEquals(1, currentNode.countSpecifiedMsg(
+				List.of(postAppName), REMOTE_EXPERIMENT_LOCATION + CONFIG_FILE));
 	}
 }

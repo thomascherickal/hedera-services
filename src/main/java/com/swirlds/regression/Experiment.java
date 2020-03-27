@@ -19,6 +19,7 @@ package com.swirlds.regression;
 
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
+import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
@@ -404,6 +405,14 @@ public class Experiment implements ExperimentSummary {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * set app in ConfigBuilder
+	 * @param app
+	 */
+	public void setConfigApp(final AppConfig app) {
+		configFile.setApp(app);
 	}
 
 	private boolean checkForAllTrue(ArrayList<Boolean> isTestFinished) {

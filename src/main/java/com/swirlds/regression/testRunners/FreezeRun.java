@@ -45,7 +45,8 @@ public class FreezeRun implements TestRun {
 		log.info(MARKER, "Last dynamic freeze test finished. Starting for final time.");
 
 		// set the non-freeze config for the last run
-		experiment.getTestConfig().setApp(
+		// to generate new config files, we should update app in ConfigBuilder
+		experiment.setConfigApp(
 				testConfig.getFreezeConfig().getPostFreezeApp()
 		);
 		// upload the configs
@@ -54,7 +55,7 @@ public class FreezeRun implements TestRun {
 		// wait a bit for sending new config to nodes
 		// if the new config is not sent successfully before swirlds.jar is started
 		// total freeze frequency would be FreezeIteration + 1
-		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
+		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS * 2);
 
 		// start all processes
 		experiment.startAllSwirlds();
