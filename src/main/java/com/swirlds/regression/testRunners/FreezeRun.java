@@ -26,7 +26,7 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 
 public class FreezeRun implements TestRun {
 	@Override
-	public void runTest(TestConfig testConfig, Experiment experiment) throws IllegalStateException {
+	public void runTest(TestConfig testConfig, Experiment experiment) {
 		final int iterations = testConfig.getFreezeConfig().getFreezeIterations();
 		final int freezeTiming = testConfig.getFreezeConfig().getFreezeTiming();
 		for (int i = 0; i < iterations; i++) {

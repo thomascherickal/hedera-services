@@ -717,7 +717,7 @@ public class SSHService {
                 map.put(strs[1].trim(), Integer.valueOf(strs[0]));
             }
         }
-        log.trace(MARKER, "countSpecifiedMsgEach resultMap: ");
+        log.trace(MARKER, "countSpecifiedMsgEach resultMap: {}", map);
         return map;
     }
 
