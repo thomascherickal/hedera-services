@@ -1,5 +1,5 @@
 {
-  "name":"DynamicRestartBlob-Qian",
+  "name":"DynamicRestartBlob",
   "description" : "platform testing demo - FCM Freeze Blob",
   "duration": 540,
   "settings": [
