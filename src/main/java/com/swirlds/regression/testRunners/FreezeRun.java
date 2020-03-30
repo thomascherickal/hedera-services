@@ -76,13 +76,13 @@ public class FreezeRun implements TestRun {
 	 * @param iteration
 	 * 		for FreezeTest, it is current iteration number;
 	 * 		for RestartTest, it should always be 0;
-	 * @param freezeTest
+	 * @param isFreezeTest
 	 * 		if it is true, this is a FreezeTest (Dynamic Restart Test);
 	 * 		if it is false, this is a RestartTest
 	 * @return return true if succeed, else return false
 	 */
 	static boolean runSingleFreeze(final Experiment experiment,
-			final int waitTiming, final int iteration, final boolean freezeTest) {
+			final int waitTiming, final int iteration, final boolean isFreezeTest) {
 		// start all processes
 		experiment.startAllSwirlds();
 
@@ -93,7 +93,7 @@ public class FreezeRun implements TestRun {
 		// check if all nodes has entered Maintenance status at ith iteration
 		// if not, log an error and stop the test
 		if (!experiment.checkAllNodesFreeze(iteration)) {
-			if (freezeTest) {
+			if (isFreezeTest) {
 				log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
 								"Not all nodes entered Maintenance status after waiting for {} mins",
 						iteration, waitTiming);
@@ -113,7 +113,7 @@ public class FreezeRun implements TestRun {
 					Duration.ofMinutes(SAVE_EXPECTED_WAIT_MINS).toMillis());
 			// if any node hasn't finished yet, log an error and stop the test
 			if (!experiment.checkAllNodesSavedExpected(iteration)) {
-				if (freezeTest) {
+				if (isFreezeTest) {
 					log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
 									"Not all nodes have finished saving ExpectedMap after {} mins",
 							iteration, waitTiming +
