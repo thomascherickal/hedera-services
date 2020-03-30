@@ -55,6 +55,7 @@ public class FreezeRun implements TestRun {
 		// wait a bit for sending new config to nodes
 		// if the new config is not sent successfully before swirlds.jar is started
 		// total freeze frequency would be FreezeIteration + 1
+		// use FREEZE_WAIT_MILLIS * 2 to make the waiting period be a little longer
 		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS * 2);
 
 		// start all processes
