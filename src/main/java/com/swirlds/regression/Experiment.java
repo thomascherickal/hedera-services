@@ -737,7 +737,6 @@ public class Experiment implements ExperimentSummary {
 		int nodeNumber = sshNodes.size();
 		for (int i = 0; i < nodeNumber; i++) {
 			SSHService currentNode = sshNodes.get(i);
-			;
 
 			ArrayList<File> addedFiles = buildAdditionalFileList();
 			//currentNode.buildSession();
