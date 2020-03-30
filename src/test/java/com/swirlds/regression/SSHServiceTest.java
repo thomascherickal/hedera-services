@@ -275,13 +275,13 @@ public class SSHServiceTest {
 	@DisplayName("Get count of specified Msg")
 	void testCountSpecifiedMsgEach() throws IOException {
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		final String logFilePath = classloader.getResource("logs/DynamicRestartBlob/swirlds-0.log").getFile();
+		final String logFilePath = classloader.getResource("logs/DynamicRestartBlob/swirlds-00.log").getFile();
 
 		// upload the file to aws node
 		final SSHService ssh = Connect(USER, "18.216.159.19", KEY_FILE_LOCATION);
 		ssh.scpFilesToRemoteDir(List.of(logFilePath), REMOTE_EXPERIMENT_LOCATION);
 
-		final String fileName = REMOTE_EXPERIMENT_LOCATION + "/swirlds-0.log";
+		final String fileName = REMOTE_EXPERIMENT_LOCATION + "/swirlds-00.log";
 		final String occur6 = "Platform status changed to: MAINTENANCE";
 		final String occur8 = "Platform status changed to: ACTIVE";
 		final String occur0 = "NONE Exist";
