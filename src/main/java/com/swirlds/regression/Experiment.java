@@ -285,6 +285,7 @@ public class Experiment implements ExperimentSummary {
                     return;
                 }
             }
+            log.trace(MARKER, "Test time exceeded; moving to next phase");
         } else {
             try {
                 //TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
@@ -329,6 +330,7 @@ public class Experiment implements ExperimentSummary {
                     }
                 }
             }
+            log.trace(MARKER, "Test time exceeded; moving to next phase");
         } else {
             try {
                 log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);

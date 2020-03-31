@@ -90,15 +90,18 @@ public class RegressionUtilities {
 	public static final String POSTGRES_DEFAULT_SHARED_BUFFERS = "512MB";
 
 	public static final int SHA1_DIVISOR = 25;
-	public static final long JAVA_PROC_CHECK_INTERVAL = 5 * 60 * 1000; // min * sec * millis
+	public static final long JAVA_PROC_CHECK_INTERVAL = 2 * 60 * 1000; // min * sec * millis
 	public static final int MB = 1024 * 1024;
 	public static final String CHECK_JAVA_PROC_COMMAND = "pgrep -fl java";
 	public static final String KILL_JAVA_PROC_COMMAND = "sudo pkill -f java";
 
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
-	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-    public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
+	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo " +
+			"-n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo" +
+			" -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST " +
+			"ERROR\" remoteExperiment/swirlds.log";
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
 
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";

@@ -1,17 +1,38 @@
 {
-  "name":"Restart",
-  "description" : "platform testing demo - restart",
-  "duration": 900,
+  "name": "Restart",
+  "description": "platform testing demo - restart",
+  "duration": 1020,
   "settings": [
-    {"name": "throttle7extra", "value": "0.02" },
-    {"name":"throttle7", "value": "1" },
-    {"name":"throttle7threshold", "value": "1.5" },
-    {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"state.saveStatePeriod", "value":"300"}
+    {
+      "name": "throttle7extra",
+      "value": "0.02"
+    },
+    {
+      "name": "throttle7",
+      "value": "1"
+    },
+    {
+      "name": "throttle7threshold",
+      "value": "1.5"
+    },
+    {
+      "name": "showInternalStats",
+      "value": "1"
+    },
+    {
+      "name": "csvFileName",
+      "value": "PlatformTesting"
+    },
+    {
+      "name": "csvAppend",
+      "value": "true"
+    },
+    {
+      "name": "state.saveStatePeriod",
+      "value": "300"
+    }
   ],
-  "restartConfig":{
+  "restartConfig": {
     "restartTiming": 2
   },
   "app": {
