@@ -1,0 +1,609 @@
+2020-03-27 20:20:08.709 STARTUP 1 main Browser main() started
+2020-03-27 20:20:08.818 STARTUP 1 main About to run startPlatforms()
+2020-03-27 20:20:08.826 STARTUP 1 main About do crypto instantiation
+2020-03-27 20:20:08.833 STARTUP 1 main About start loading keys
+2020-03-27 20:20:09.763 STARTUP 1 main Done loading keys
+2020-03-27 20:20:09.763 STARTUP 1 main About to start creating Crypto objects
+2020-03-27 20:20:10.635 STARTUP 1 main Done creating Crypto objects
+2020-03-27 20:20:10.635 STARTUP 1 main Done with crypto instantiation
+2020-03-27 20:20:10.641 STARTUP 1 main Starting platforms
+2020-03-27 20:20:10.649 STARTUP 1 main Scanning the classpath for RuntimeConstructable classes
+2020-03-27 20:20:11.111 STARTUP 1 main Done with registerConstructables, time taken 462ms
+2020-03-27 20:20:11.336 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-27 20:20:11.336 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-27 20:20:11.913 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-27 20:20:11.913 STARTUP 1 main Done with starting platforms
+2020-03-27 20:20:11.932 STARTUP 1 main Browser main() finished
+2020-03-27 20:20:12.053 STARTUP 94 <     platformRun  0   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-27 20:20:12.053 STARTUP 94 <     platformRun  0   > JVM arg: -XX:+UseZGC
+2020-03-27 20:20:12.053 STARTUP 94 <     platformRun  0   > JVM arg: -XX:ConcGCThreads=14
+2020-03-27 20:20:12.053 STARTUP 94 <     platformRun  0   > JVM arg: -XX:+UseLargePages
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > JVM arg: -Xmx98g
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > JVM arg: -Xms10g
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-27 20:20:12.054 STARTUP 94 <     platformRun  0   > Parsing JSON FCM1KFreezeBlob.json
+2020-03-27 20:20:12.134 DEMO_INFO 94 <     platformRun  0   >  insertSeq         = true
+2020-03-27 20:20:12.134 DEMO_INFO 94 <     platformRun  0   >  appendSig         = true
+2020-03-27 20:20:12.134 DEMO_INFO 94 <     platformRun  0   >  variedSize        = false
+2020-03-27 20:20:12.134 DEMO_INFO 94 <     platformRun  0   >  payloadByteSize   = 100
+2020-03-27 20:20:12.135 DEMO_INFO 94 <     platformRun  0   >  maxByteSize       = 100
+2020-03-27 20:20:12.135 DEMO_INFO 94 <     platformRun  0   >  type              = TYPE_RANDOM_BYTES
+2020-03-27 20:20:12.136 DEMO_INFO 94 <     platformRun  0   >  invalidSigRatio   = 0.0
+2020-03-27 20:20:12.136 DEMO_INFO 94 <     platformRun  0   > Size distribution  = [100]
+2020-03-27 20:20:12.136 DEMO_INFO 94 <     platformRun  0   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-27 20:20:12.136 DEMO_INFO 94 <     platformRun  0   > Ratio distribution = [100.0]
+2020-03-27 20:20:12.141 DEMO_INFO 94 <     platformRun  0   > Goal is TRANS_PER_SECOND_PER_NODE targe 8.0
+2020-03-27 20:20:12.142 STARTUP 94 <     platformRun  0   > PlatformTestingDemo: Public Key -> hex('0x814499994A2417B21D6F435B8742C5E4FC8EC608C3867B47C7A64863D89A71B0')
+2020-03-27 20:20:12.146 DEMO_INFO 94 <     platformRun  0   > This test will generate sequential FCM payload:
+2020-03-27 20:20:12.146 DEMO_INFO 94 <     platformRun  0   > Set data account counter as 0
+2020-03-27 20:20:12.146 DEMO_INFO 94 <     platformRun  0   > Set FCQ account counter as 0
+2020-03-27 20:20:12.146 DEMO_INFO 94 <     platformRun  0   > Set Blob account counter as 0
+2020-03-27 20:20:12.161 DEMO_INFO 107 <      appMainRun  0   > Node 0 starts transactions ........
+2020-03-27 20:20:12.161 FREEZE 107 <      appMainRun  0   > Node 0 submits a Freeze Transaction
+2020-03-27 20:20:12.193 STARTUP 107 <      appMainRun  0   > PlatformTestingDemo: Signed Message { publicKey = '0x814499994A2417B21D6F435B8742C5E4FC8EC608C3867B47C7A64863D89A71B0', privateKey ='0xE27FB8D91339294DC06E39161BF151EC5D99DB3EBC8B64C9248D940F644F91CC814499994A2417B21D6F435B8742C5E4FC8EC608C3867B47C7A64863D89A71B0', signature = '0x46B63687FD86A30E7651C8819F037EEC6B4995B4AB05D7E5E3FF64069F33BBFEF552C610BCE0017503439C2D7FAB26D588C3C704682679834F72D271EEB2EA0A', message = '0x2A080814101618142025' }
+2020-03-27 20:20:12.593 PLATFORM_STATUS 127 sync_server_2 Platform status changed to: STARTING_UP
+2020-03-27 20:20:12.594 STARTUP 127 sync_server_2 Platform Status Change STARTING_UP 
+2020-03-27 20:20:12.816 PLATFORM_STATUS 90 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-03-27 20:20:12.817 STARTUP 90 < pollIntakeQueue  0   > Platform Status Change ACTIVE 
+2020-03-27 20:20:13.190 FREEZE 99 <      threadCons  0   > Handling FreezeTransaction: startHour: 20
+startMin: 22
+endHour: 20
+endMin: 37
+
+2020-03-27 20:22:00.504 FREEZE 98 <       stateHash  0   > Hashed state in freeze period, last round is 948
+2020-03-27 20:22:00.504 FREEZE 98 <       stateHash  0   > Freeze state is about to be saved to disk, round is 948
+2020-03-27 20:22:00.511 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 948' to disk
+2020-03-27 20:22:00.522 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=00000003-00000DBE-1, timeStarted=2020-03-27T20:22:00.514610Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:22:00.541 FREEZE 145 event_intake_13 Event creation frozen in platform 0
+2020-03-27 20:22:00.541 PLATFORM_STATUS 145 event_intake_13 Platform status changed to: MAINTENANCE
+2020-03-27 20:22:00.541 DEMO_INFO 145 event_intake_13 ENTERING MAINTENANCE!
+2020-03-27 20:22:00.541 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 384400 bytes; costs 12 ms
+2020-03-27 20:22:00.541 DEMO_INFO 145 event_intake_13 total submitted transactions: 862, FCM Transactions: 0, File Transactions: 0
+2020-03-27 20:22:00.541 STARTUP 145 event_intake_13 Platform Status Change MAINTENANCE 
+2020-03-27 20:22:00.545 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 948' waiting for snapshotTask
+2020-03-27 20:22:02.236 SNAPSHOT_MANAGER 221 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=00000003-00000DBE-1, timeStarted=2020-03-27T20:22:00.514610Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:22:02.237 SNAPSHOT_MANAGER 221 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=00000003-00000DBE-1, timeStarted=2020-03-27T20:22:00.514610Z, timeCompleted=2020-03-27T20:22:02.237070Z, complete=true, error=false ]
+2020-03-27 20:22:02.237 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 948' to disk
+2020-03-27 20:25:40.957 STARTUP 1 main Browser main() started
+2020-03-27 20:25:41.058 STARTUP 1 main About to run startPlatforms()
+2020-03-27 20:25:41.069 STARTUP 1 main About do crypto instantiation
+2020-03-27 20:25:41.077 STARTUP 1 main About start loading keys
+2020-03-27 20:25:41.980 STARTUP 1 main Done loading keys
+2020-03-27 20:25:41.980 STARTUP 1 main About to start creating Crypto objects
+2020-03-27 20:25:42.837 STARTUP 1 main Done creating Crypto objects
+2020-03-27 20:25:42.837 STARTUP 1 main Done with crypto instantiation
+2020-03-27 20:25:42.842 STARTUP 1 main Starting platforms
+2020-03-27 20:25:42.850 STARTUP 1 main Scanning the classpath for RuntimeConstructable classes
+2020-03-27 20:25:43.323 STARTUP 1 main Done with registerConstructables, time taken 473ms
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:25:43.565 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmFCQCreateAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmFCQUpdateAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmFCQDeleteAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmFCQTransferAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateAmount 856
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:25:43.566 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 0 state fcmBlobDeleteAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 0/856
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmFCQCreateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmFCQUpdateAmount 0
+2020-03-27 20:25:43.567 DEMO_INFO 1 main Restore node 1 state fcmFCQDeleteAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmFCQTransferAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateAmount 858
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobDeleteAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 1/858
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:25:43.568 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmFCQCreateAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmFCQUpdateAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmFCQDeleteAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmFCQTransferAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateAmount 858
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:25:43.569 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 2 state fcmBlobDeleteAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 2/858
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:25:43.570 DEMO_INFO 1 main Restore node 3 state fcmFCQCreateAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmFCQUpdateAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmFCQDeleteAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmFCQTransferAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateAmount 858
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobDeleteAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendAmount 0
+2020-03-27 20:25:43.571 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 3/858
+2020-03-27 20:25:43.662 DEMO_INFO 1 main Restore state storage map size 3430
+2020-03-27 20:25:43.663 DEMO_INFO 1 main Restore state map size 0
+2020-03-27 20:25:43.663 DEMO_INFO 1 main Restore state account FCQ map size 0
+2020-03-27 20:25:43.672 STARTUP 1 main Last known sequence numbers after restart are [4004, 4027, 4022, 4044]
+2020-03-27 20:25:43.685 SNAPSHOT_MANAGER 1 main SnapshotManager: Successfully queued snapshot request [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=restore, timeStarted=2020-03-27T20:25:43.675004Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:25:45.407 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=restore, timeStarted=2020-03-27T20:25:43.675004Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:25:45.408 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=948, snapshotId=restore, timeStarted=2020-03-27T20:25:43.675004Z, timeCompleted=2020-03-27T20:25:45.407389Z, complete=true, error=false ]
+2020-03-27 20:25:45.411 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-27 20:25:45.411 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 3430, uniqueObjectCount = 3430 ]
+2020-03-27 20:25:45.983 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-27 20:25:45.983 STARTUP 1 main Done with starting platforms
+2020-03-27 20:25:45.987 STARTUP 103 <     platformRun  0   > Platform 0 has loaded a saved state for round 948. Will freeze until: 2020-03-27T20:25:55.984054
+2020-03-27 20:25:46.002 STARTUP 1 main Browser main() finished
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseZGC
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ConcGCThreads=14
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseLargePages
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -Xmx98g
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -Xms10g
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-27 20:25:46.114 STARTUP 103 <     platformRun  0   > Parsing JSON FCM1KFreezeBlob.json
+2020-03-27 20:25:46.191 DEMO_INFO 103 <     platformRun  0   >  insertSeq         = true
+2020-03-27 20:25:46.192 DEMO_INFO 103 <     platformRun  0   >  appendSig         = true
+2020-03-27 20:25:46.192 DEMO_INFO 103 <     platformRun  0   >  variedSize        = false
+2020-03-27 20:25:46.192 DEMO_INFO 103 <     platformRun  0   >  payloadByteSize   = 100
+2020-03-27 20:25:46.192 DEMO_INFO 103 <     platformRun  0   >  maxByteSize       = 100
+2020-03-27 20:25:46.192 DEMO_INFO 103 <     platformRun  0   >  type              = TYPE_RANDOM_BYTES
+2020-03-27 20:25:46.193 DEMO_INFO 103 <     platformRun  0   >  invalidSigRatio   = 0.0
+2020-03-27 20:25:46.193 DEMO_INFO 103 <     platformRun  0   > Size distribution  = [100]
+2020-03-27 20:25:46.193 DEMO_INFO 103 <     platformRun  0   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-27 20:25:46.194 DEMO_INFO 103 <     platformRun  0   > Ratio distribution = [100.0]
+2020-03-27 20:25:46.198 DEMO_INFO 103 <     platformRun  0   > Goal is TRANS_PER_SECOND_PER_NODE targe 8.0
+2020-03-27 20:25:46.199 STARTUP 103 <     platformRun  0   > PlatformTestingDemo: Public Key -> hex('0xBF6B1D4ADE5FE248148A368CCE0CA10BA86C62090EBA7BF2861C132957F697AD')
+2020-03-27 20:25:46.202 DEMO_INFO 103 <     platformRun  0   > This test will generate sequential FCM payload:
+2020-03-27 20:25:46.202 DEMO_INFO 103 <     platformRun  0   > Set data account counter as 0
+2020-03-27 20:25:46.202 DEMO_INFO 103 <     platformRun  0   > Set FCQ account counter as 0
+2020-03-27 20:25:46.202 DEMO_INFO 103 <     platformRun  0   > Set Blob account counter as 856
+2020-03-27 20:25:46.209 DEMO_INFO 113 <      appMainRun  0   > Node 0 starts transactions ........
+2020-03-27 20:25:46.209 FREEZE 113 <      appMainRun  0   > Node 0 submits a Freeze Transaction
+2020-03-27 20:25:46.242 STARTUP 113 <      appMainRun  0   > PlatformTestingDemo: Signed Message { publicKey = '0xBF6B1D4ADE5FE248148A368CCE0CA10BA86C62090EBA7BF2861C132957F697AD', privateKey ='0x32E15D9082C0A20566835D53B3B58149F3C2A455A6FDD28A501BD8A82D2DD7F3BF6B1D4ADE5FE248148A368CCE0CA10BA86C62090EBA7BF2861C132957F697AD', signature = '0x06AF5B3D5C973C1ABAC22CEAEEE2A6BFA47D13375E1018B142EE63CC14A259BFD720959DBD81384E5073C54AD7F109654B1FDC1C883644FE0E1C2C0F9BF61800', message = '0x2A080814101B1814202A' }
+2020-03-27 20:25:46.814 PLATFORM_STATUS 132 sync_server_1 Platform status changed to: STARTING_UP
+2020-03-27 20:25:46.814 STARTUP 132 sync_server_1 Platform Status Change STARTING_UP 
+2020-03-27 20:25:56.441 PLATFORM_STATUS 90 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-03-27 20:25:56.441 DEMO_INFO 90 < pollIntakeQueue  0   > Set Blob account counter as FCMFamily's storageMap size857
+2020-03-27 20:25:56.441 STARTUP 90 < pollIntakeQueue  0   > Platform Status Change ACTIVE 
+2020-03-27 20:25:56.871 FREEZE 108 <      threadCons  0   > Handling FreezeTransaction: startHour: 20
+startMin: 27
+endHour: 20
+endMin: 42
+
+2020-03-27 20:27:00.369 FREEZE 107 <       stateHash  0   > Hashed state in freeze period, last round is 1467
+2020-03-27 20:27:00.370 FREEZE 107 <       stateHash  0   > Freeze state is about to be saved to disk, round is 1467
+2020-03-27 20:27:00.371 FREEZE 165 event_intake_24 Event creation frozen in platform 0
+2020-03-27 20:27:00.371 PLATFORM_STATUS 165 event_intake_24 Platform status changed to: MAINTENANCE
+2020-03-27 20:27:00.371 DEMO_INFO 165 event_intake_24 ENTERING MAINTENANCE!
+2020-03-27 20:27:00.372 DEMO_INFO 165 event_intake_24 total submitted transactions: 511, FCM Transactions: 0, File Transactions: 0
+2020-03-27 20:27:00.372 STARTUP 165 event_intake_24 Platform Status Change MAINTENANCE 
+2020-03-27 20:27:00.427 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 1467' to disk
+2020-03-27 20:27:00.428 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=00000003-000015DB-1, timeStarted=2020-03-27T20:27:00.427793Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:27:00.451 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 611872 bytes; costs 15 ms
+2020-03-27 20:27:00.456 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 1467' waiting for snapshotTask
+2020-03-27 20:27:03.101 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=00000003-000015DB-1, timeStarted=2020-03-27T20:27:00.427793Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:27:03.102 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=00000003-000015DB-1, timeStarted=2020-03-27T20:27:00.427793Z, timeCompleted=2020-03-27T20:27:03.101588Z, complete=true, error=false ]
+2020-03-27 20:27:03.102 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 1467' to disk
+2020-03-27 20:31:13.201 STARTUP 1 main Browser main() started
+2020-03-27 20:31:13.313 STARTUP 1 main About to run startPlatforms()
+2020-03-27 20:31:13.319 STARTUP 1 main About do crypto instantiation
+2020-03-27 20:31:13.326 STARTUP 1 main About start loading keys
+2020-03-27 20:31:14.254 STARTUP 1 main Done loading keys
+2020-03-27 20:31:14.254 STARTUP 1 main About to start creating Crypto objects
+2020-03-27 20:31:15.114 STARTUP 1 main Done creating Crypto objects
+2020-03-27 20:31:15.114 STARTUP 1 main Done with crypto instantiation
+2020-03-27 20:31:15.120 STARTUP 1 main Starting platforms
+2020-03-27 20:31:15.128 STARTUP 1 main Scanning the classpath for RuntimeConstructable classes
+2020-03-27 20:31:15.672 STARTUP 1 main Done with registerConstructables, time taken 544ms
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:31:15.917 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmFCQCreateAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmFCQUpdateAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmFCQDeleteAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmFCQTransferAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateAmount 1364
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateAmount 0
+2020-03-27 20:31:15.918 DEMO_INFO 1 main Restore node 0 state fcmBlobDeleteAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 0/1364
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmFCQCreateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmFCQUpdateAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmFCQDeleteAmount 0
+2020-03-27 20:31:15.919 DEMO_INFO 1 main Restore node 1 state fcmFCQTransferAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateAmount 1365
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobDeleteAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 1/1365
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:31:15.920 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmFCQCreateAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmFCQUpdateAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmFCQDeleteAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmFCQTransferAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateAmount 1366
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateAmount 0
+2020-03-27 20:31:15.921 DEMO_INFO 1 main Restore node 2 state fcmBlobDeleteAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 2/1366
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmFCQCreateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmFCQUpdateAmount 0
+2020-03-27 20:31:15.922 DEMO_INFO 1 main Restore node 3 state fcmFCQDeleteAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmFCQTransferAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateAmount 1366
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobDeleteAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendAmount 0
+2020-03-27 20:31:15.923 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 3/1366
+2020-03-27 20:31:16.042 DEMO_INFO 1 main Restore state storage map size 5461
+2020-03-27 20:31:16.043 DEMO_INFO 1 main Restore state map size 0
+2020-03-27 20:31:16.043 DEMO_INFO 1 main Restore state account FCQ map size 0
+2020-03-27 20:31:16.051 STARTUP 1 main Last known sequence numbers after restart are [6344, 6277, 6303, 6313]
+2020-03-27 20:31:16.065 SNAPSHOT_MANAGER 1 main SnapshotManager: Successfully queued snapshot request [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=restore, timeStarted=2020-03-27T20:31:16.054611Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:31:18.497 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=restore, timeStarted=2020-03-27T20:31:16.054611Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:31:18.498 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1467, snapshotId=restore, timeStarted=2020-03-27T20:31:16.054611Z, timeCompleted=2020-03-27T20:31:18.497445Z, complete=true, error=false ]
+2020-03-27 20:31:18.498 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/948/SignedState.swh'
+2020-03-27 20:31:18.500 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/948/PostgresBackup.tar.gz'
+2020-03-27 20:31:18.500 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/948'
+2020-03-27 20:31:18.504 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-27 20:31:18.504 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 5461, uniqueObjectCount = 5461 ]
+2020-03-27 20:31:19.168 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-27 20:31:19.168 STARTUP 1 main Done with starting platforms
+2020-03-27 20:31:19.173 STARTUP 103 <     platformRun  0   > Platform 0 has loaded a saved state for round 1467. Will freeze until: 2020-03-27T20:31:29.168936
+2020-03-27 20:31:19.187 STARTUP 1 main Browser main() finished
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseZGC
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ConcGCThreads=14
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseLargePages
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -Xmx98g
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -Xms10g
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-27 20:31:19.304 STARTUP 103 <     platformRun  0   > Parsing JSON FCM1KFreezeBlob.json
+2020-03-27 20:31:19.384 DEMO_INFO 103 <     platformRun  0   >  insertSeq         = true
+2020-03-27 20:31:19.384 DEMO_INFO 103 <     platformRun  0   >  appendSig         = true
+2020-03-27 20:31:19.385 DEMO_INFO 103 <     platformRun  0   >  variedSize        = false
+2020-03-27 20:31:19.385 DEMO_INFO 103 <     platformRun  0   >  payloadByteSize   = 100
+2020-03-27 20:31:19.385 DEMO_INFO 103 <     platformRun  0   >  maxByteSize       = 100
+2020-03-27 20:31:19.385 DEMO_INFO 103 <     platformRun  0   >  type              = TYPE_RANDOM_BYTES
+2020-03-27 20:31:19.386 DEMO_INFO 103 <     platformRun  0   >  invalidSigRatio   = 0.0
+2020-03-27 20:31:19.386 DEMO_INFO 103 <     platformRun  0   > Size distribution  = [100]
+2020-03-27 20:31:19.387 DEMO_INFO 103 <     platformRun  0   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-27 20:31:19.387 DEMO_INFO 103 <     platformRun  0   > Ratio distribution = [100.0]
+2020-03-27 20:31:19.391 DEMO_INFO 103 <     platformRun  0   > Goal is TRANS_PER_SECOND_PER_NODE targe 8.0
+2020-03-27 20:31:19.393 STARTUP 103 <     platformRun  0   > PlatformTestingDemo: Public Key -> hex('0xBC5EC18F90C336F129EA614A585B61B71D4D68C908F09B5810A0CCBB3495E230')
+2020-03-27 20:31:19.396 DEMO_INFO 103 <     platformRun  0   > This test will generate sequential FCM payload:
+2020-03-27 20:31:19.396 DEMO_INFO 103 <     platformRun  0   > Set data account counter as 0
+2020-03-27 20:31:19.396 DEMO_INFO 103 <     platformRun  0   > Set FCQ account counter as 0
+2020-03-27 20:31:19.396 DEMO_INFO 103 <     platformRun  0   > Set Blob account counter as 1364
+2020-03-27 20:31:19.403 DEMO_INFO 113 <      appMainRun  0   > Node 0 starts transactions ........
+2020-03-27 20:31:19.403 FREEZE 113 <      appMainRun  0   > Node 0 submits a Freeze Transaction
+2020-03-27 20:31:19.435 STARTUP 113 <      appMainRun  0   > PlatformTestingDemo: Signed Message { publicKey = '0xBC5EC18F90C336F129EA614A585B61B71D4D68C908F09B5810A0CCBB3495E230', privateKey ='0x1598FC0B639A3EFB04AD1F8B92CBBEC8A76ADFF28A03E263DFA7896D5763AC44BC5EC18F90C336F129EA614A585B61B71D4D68C908F09B5810A0CCBB3495E230', signature = '0x306782EC1ACCD6AC9F6B1193F631CA0FAD49C5655BDF623A5B2E89B7A0B9813028E9CD98F811E8AA18C7C1DBBED50CF575C5B27289E897F45A5947C5E0397B03', message = '0x2A080814102118142030' }
+2020-03-27 20:31:19.930 PLATFORM_STATUS 133 sync_server_2 Platform status changed to: STARTING_UP
+2020-03-27 20:31:19.930 STARTUP 133 sync_server_2 Platform Status Change STARTING_UP 
+2020-03-27 20:31:29.744 PLATFORM_STATUS 90 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-03-27 20:31:29.745 DEMO_INFO 90 < pollIntakeQueue  0   > Set Blob account counter as FCMFamily's storageMap size1365
+2020-03-27 20:31:29.745 STARTUP 90 < pollIntakeQueue  0   > Platform Status Change ACTIVE 
+2020-03-27 20:31:30.131 FREEZE 108 <      threadCons  0   > Handling FreezeTransaction: startHour: 20
+startMin: 33
+endHour: 20
+endMin: 48
+
+2020-03-27 20:31:30.221 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 1468' to disk
+2020-03-27 20:31:30.223 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1468, snapshotId=00000003-0000160D-1, timeStarted=2020-03-27T20:31:30.222005Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:31:30.244 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 612096 bytes; costs 15 ms
+2020-03-27 20:31:30.249 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 1468' waiting for snapshotTask
+2020-03-27 20:31:32.969 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1468, snapshotId=00000003-0000160D-1, timeStarted=2020-03-27T20:31:30.222005Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:31:32.969 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=1468, snapshotId=00000003-0000160D-1, timeStarted=2020-03-27T20:31:30.222005Z, timeCompleted=2020-03-27T20:31:32.969324Z, complete=true, error=false ]
+2020-03-27 20:31:32.969 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 1468' to disk
+2020-03-27 20:33:00.386 FREEZE 107 <       stateHash  0   > Hashed state in freeze period, last round is 2233
+2020-03-27 20:33:00.386 FREEZE 107 <       stateHash  0   > Freeze state is about to be saved to disk, round is 2233
+2020-03-27 20:33:00.402 FREEZE 138 event_intake_1 Event creation frozen in platform 0
+2020-03-27 20:33:00.402 PLATFORM_STATUS 138 event_intake_1 Platform status changed to: MAINTENANCE
+2020-03-27 20:33:00.403 DEMO_INFO 138 event_intake_1 ENTERING MAINTENANCE!
+2020-03-27 20:33:00.403 DEMO_INFO 138 event_intake_1 total submitted transactions: 726, FCM Transactions: 0, File Transactions: 0
+2020-03-27 20:33:00.403 STARTUP 138 event_intake_1 Platform Status Change MAINTENANCE 
+2020-03-27 20:33:00.453 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 2233' to disk
+2020-03-27 20:33:00.455 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=00000003-00001610-1, timeStarted=2020-03-27T20:33:00.453595Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:33:00.473 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 935328 bytes; costs 15 ms
+2020-03-27 20:33:00.477 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 2233' waiting for snapshotTask
+2020-03-27 20:33:04.560 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=00000003-00001610-1, timeStarted=2020-03-27T20:33:00.453595Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:33:04.561 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 2233' to disk
+2020-03-27 20:33:04.561 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=00000003-00001610-1, timeStarted=2020-03-27T20:33:00.453595Z, timeCompleted=2020-03-27T20:33:04.561066Z, complete=true, error=false ]
+2020-03-27 20:37:47.819 STARTUP 1 main Browser main() started
+2020-03-27 20:37:47.921 STARTUP 1 main About to run startPlatforms()
+2020-03-27 20:37:47.931 STARTUP 1 main About do crypto instantiation
+2020-03-27 20:37:47.940 STARTUP 1 main About start loading keys
+2020-03-27 20:37:48.840 STARTUP 1 main Done loading keys
+2020-03-27 20:37:48.841 STARTUP 1 main About to start creating Crypto objects
+2020-03-27 20:37:49.699 STARTUP 1 main Done creating Crypto objects
+2020-03-27 20:37:49.699 STARTUP 1 main Done with crypto instantiation
+2020-03-27 20:37:49.704 STARTUP 1 main Starting platforms
+2020-03-27 20:37:49.712 STARTUP 1 main Scanning the classpath for RuntimeConstructable classes
+2020-03-27 20:37:50.216 STARTUP 1 main Done with registerConstructables, time taken 504ms
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmCreateAmount 0
+2020-03-27 20:37:50.458 DEMO_INFO 1 main Restore node 0 state fcmUpdateAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmDeleteAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmTransferAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmFCQCreateAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmFCQUpdateAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmFCQDeleteAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmFCQTransferAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateAmount 2085
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobUpdateAmount 0
+2020-03-27 20:37:50.459 DEMO_INFO 1 main Restore node 0 state fcmBlobDeleteAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 0 state fcmBlobAppendAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 0/2085
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmCreateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmUpdateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmDeleteAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmTransferAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmFCQCreateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmFCQUpdateAmount 0
+2020-03-27 20:37:50.460 DEMO_INFO 1 main Restore node 1 state fcmFCQDeleteAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmFCQTransferAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateAmount 2088
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobUpdateAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobDeleteAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 1 state fcmBlobAppendAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 1/2088
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:37:50.461 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmCreateAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmUpdateAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmDeleteAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmTransferAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmFCQCreateAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmFCQUpdateAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmFCQDeleteAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmFCQTransferAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateAmount 2088
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:37:50.462 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 2 state fcmBlobUpdateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 2 state fcmBlobDeleteAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 2 state fcmBlobAppendAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 2/2088
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmCreateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmUpdateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmDeleteAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmTransferAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmFCQCreateAmount 0
+2020-03-27 20:37:50.463 DEMO_INFO 1 main Restore node 3 state fcmFCQUpdateAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmFCQDeleteAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmFCQTransferAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateAmount 2088
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateLargeAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateLargeAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobUpdateAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobDeleteAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore node 3 state fcmBlobAppendAmount 0
+2020-03-27 20:37:50.464 DEMO_INFO 1 main Restore state totalTranAmountFromPrevRun 3/2088
+2020-03-27 20:37:50.611 DEMO_INFO 1 main Restore state storage map size 8349
+2020-03-27 20:37:50.611 DEMO_INFO 1 main Restore state map size 0
+2020-03-27 20:37:50.612 DEMO_INFO 1 main Restore state account FCQ map size 0
+2020-03-27 20:37:50.620 STARTUP 1 main Last known sequence numbers after restart are [9639, 9634, 9632, 9624]
+2020-03-27 20:37:50.633 SNAPSHOT_MANAGER 1 main SnapshotManager: Successfully queued snapshot request [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=restore, timeStarted=2020-03-27T20:37:50.623005Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:37:54.881 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=restore, timeStarted=2020-03-27T20:37:50.623005Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:37:54.883 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='RESTORE', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2233, snapshotId=restore, timeStarted=2020-03-27T20:37:50.623005Z, timeCompleted=2020-03-27T20:37:54.882089Z, complete=true, error=false ]
+2020-03-27 20:37:54.883 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1468/SignedState.swh'
+2020-03-27 20:37:54.886 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1468/PostgresBackup.tar.gz'
+2020-03-27 20:37:54.886 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1468'
+2020-03-27 20:37:54.886 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1467/SignedState.swh'
+2020-03-27 20:37:54.889 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1467/PostgresBackup.tar.gz'
+2020-03-27 20:37:54.889 STATE_TO_DISK 1 main Deleted: '/home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1467'
+2020-03-27 20:37:54.892 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-27 20:37:54.893 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 8349, uniqueObjectCount = 8349 ]
+2020-03-27 20:37:55.709 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-27 20:37:55.709 STARTUP 1 main Done with starting platforms
+2020-03-27 20:37:55.713 STARTUP 103 <     platformRun  0   > Platform 0 has loaded a saved state for round 2233. Will freeze until: 2020-03-27T20:38:05.710027
+2020-03-27 20:37:55.729 STARTUP 1 main Browser main() finished
+2020-03-27 20:37:55.843 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-27 20:37:55.843 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseZGC
+2020-03-27 20:37:55.843 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ConcGCThreads=14
+2020-03-27 20:37:55.843 STARTUP 103 <     platformRun  0   > JVM arg: -XX:+UseLargePages
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > JVM arg: -Xmx98g
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > JVM arg: -Xms10g
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-27 20:37:55.844 STARTUP 103 <     platformRun  0   > Parsing JSON FCMBlob1K.json
+2020-03-27 20:37:55.923 DEMO_INFO 103 <     platformRun  0   >  insertSeq         = true
+2020-03-27 20:37:55.923 DEMO_INFO 103 <     platformRun  0   >  appendSig         = true
+2020-03-27 20:37:55.923 DEMO_INFO 103 <     platformRun  0   >  variedSize        = false
+2020-03-27 20:37:55.923 DEMO_INFO 103 <     platformRun  0   >  payloadByteSize   = 100
+2020-03-27 20:37:55.924 DEMO_INFO 103 <     platformRun  0   >  maxByteSize       = 100
+2020-03-27 20:37:55.924 DEMO_INFO 103 <     platformRun  0   >  type              = TYPE_RANDOM_BYTES
+2020-03-27 20:37:55.925 DEMO_INFO 103 <     platformRun  0   >  invalidSigRatio   = 0.0
+2020-03-27 20:37:55.925 DEMO_INFO 103 <     platformRun  0   > Size distribution  = [100]
+2020-03-27 20:37:55.925 DEMO_INFO 103 <     platformRun  0   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-27 20:37:55.925 DEMO_INFO 103 <     platformRun  0   > Ratio distribution = [100.0]
+2020-03-27 20:37:55.929 DEMO_INFO 103 <     platformRun  0   > Goal is TRANS_PER_SECOND_PER_NODE targe 20.0
+2020-03-27 20:37:55.931 STARTUP 103 <     platformRun  0   > PlatformTestingDemo: Public Key -> hex('0x6CEFF536647010ACF8409CB99B747396BDCE1DBC5101FB451066922AEC354C37')
+2020-03-27 20:37:55.934 DEMO_INFO 103 <     platformRun  0   > This test will generate sequential FCM payload:
+2020-03-27 20:37:55.934 DEMO_INFO 103 <     platformRun  0   > Set data account counter as 0
+2020-03-27 20:37:55.934 DEMO_INFO 103 <     platformRun  0   > Set FCQ account counter as 0
+2020-03-27 20:37:55.934 DEMO_INFO 103 <     platformRun  0   > Set Blob account counter as 2085
+2020-03-27 20:37:55.941 DEMO_INFO 113 <      appMainRun  0   > Node 0 starts transactions ........
+2020-03-27 20:37:56.009 STARTUP 113 <      appMainRun  0   > PlatformTestingDemo: Signed Message { publicKey = '0x6CEFF536647010ACF8409CB99B747396BDCE1DBC5101FB451066922AEC354C37', privateKey ='0xBAA8D4E974D2A2E8FF12BFA67DE2D925A21C9811AF50296677593169FDE24EDA6CEFF536647010ACF8409CB99B747396BDCE1DBC5101FB451066922AEC354C37', signature = '0x2D9179E6B5DD0026A2EECAB4CBE47BF915FD31EC129A4398B3305DE3478F642B6EBB135B7276813115A798F32CEEBEBC14B2A231E8323C809F02C08DAF415101', message = '0x1A892052862018A510228020021BD461C16198523C22322C8C2B3AA39668695AAC33914F7809A9BB1A93BADDE78FCAFFC79BA4B3C7D56698AA50DDD04C5F4A9887F7AD288F13CD34E1C4371BA0EEEE23C2DC69548C96DD083147CBB034EC3CE595151947E4911E0A5A5E355F0745368E88F6FC96789D1FB6347D8C8C349C9ED2F072C0E17C3CB918AA47C55BAB45CBFA9493336049B9A5B609A4B86423B86B949333F5E6716AAB2F7A1CA3C04FAA12948427016214B57DDECD547A424F4F17A2DF32D73F7160FB687798FD446966E91A9A6F51ADBF0EC69EDDC432C3F8116AA5170C872B3DEF97C7D3135133A4A986843C83824787FD798B5E8A2F5CD2FB71C3E3B260CE2B624E6EC10F65A25EB2AB907574E0217CC847C3B770A4E087CECC02D19BC097A5BD1F6DFCD2BE162A700BC67180C47B006D6B72125D5B28335CD7F1CF74152FA84D8FB341161BA050F6135605D0396A4C95C70EDE42CC51E6A18BB6B36D402F4684C42FD0C0C0A648BE83A424C849FAEBDEB6B84F288FFE26B21761B310861524289A83EFB4BE8443BA74926BEA51253D714F61DD3A5A156A6F77B1EDAA916FFDD2F40167AC66B7A237C73796450599F6E312F4C1F3FD08A0169B7FE0444D821DC0FAD7052597ED7C9116690876FB269C7544C77B4C1160A799E49CF12A9059E6EA065F1A5DA6771DB3A1434836EF890C925F034F03403DD6C90555E805E66E4F7D7195FC5F00A6816AD1FB7E7F0E11F5A86887C2EF6CF4745289AB7083F0DB5F8E87A58322CA73DD8A4656FA39FEAB5B54120D22671A4D3D8390129A8E255BB7304C338CAF1B7317DF9986AE7D73C416CFF0F4FCB0CAEEE4EA8F9E5A18EC2F06D1DCE27A64A35049EC37AAAF62844C50BB3530A48B4A988BC114AA0970596D92E4922AB03DC46C428402B9B861126B0B39AE32B0C0172F4C23DD73E12B11F9B6E73C0D183381F80428A290A644F039994CFDB47DC95568B41ACD8084A109165EAC08CA9FA4C7BC473AB1B2FDA6A51B22954C54A98302C9427B8A7276EE36398CF8F8E8B6D6EA32F5012B696106F2482153EDC997F55CFFED8BC9929E905E68D774004CD37E62DDAC7CC8471E637158E7BEA38AEE22B0239B81948AC98E9569E7EA1B16EE5F1EE03F01356CA27004AD17AF961A1AF1F342ABC9179C27312B98FAD3054B04F700B035B24472FD55DEE9288F1D48CA1BF6B16C24BD3CCC49024A62375D039837535149C096CC68FE59C5E7A5E6CC7039FD0BA38F9F1C300D9B4E05D959F22D584305E87C4D15BBF9F8D5F2AB2F8AC4CF176C0901A27FB07A4F37DCB767C3CDAEC076B63CC6F5F4EC2D3F3DB20AB241788964CBF0B24B0B5584C674DC4387859D466F090A7B77B792D4759158E9B4A714087409B40657E5AAD01970777401E68E68DC6C2778EBC94B79AE0854E8B77713BB3C57A7525047EF5DE104503628860231771E620F19943FD2E9934595AD7AC42E8D3E2953121DA2023D7C8239927DA9A5AE9134B30FA70C0CFE74E028E83BBDAD5FBC642653B788D9A5B38EC7DEE992028FEBB823CB3309CC6DC4606F21884DB250C0EB4567487657A19CB62C5E6A687E3F886B57D48E130A58EE51D981F50362B1AF21293F6AA421D9BDAC7E61A6BAA95875BDC92CB4F2234E32A56E2558424547E275DADD999B2699AF921AA2C65DBBC5F776191DC146CC6723189EFA4EE2ACFE256E0946B3ABBBA3A0477422F7D55B1B03EA20F37809B77E2AEB229CB5E977513A8163427EF4C0C1D00611C3EBD3C14EC3F4F156BF9E251600E87AF4304F2BE854C13D7D22FE0D731756C78755C1318017D45FA12175B41438B8A60EA7CE8D079D56D912ABE1A8A95E449E32715D321C11C6008A4B360C21B38B2E75C4CD39B1B0C9CC2888018A8821F8E56A796908EF787CD1958F875824290FA5E57650D7F91F1E5C1C0F52EEB4F48D632031654BE6465FE4EA645AA62FA7B222EC72FDEFFBEEBCC988F7317AE7FB46AA3B5C5BA5242A9FC690E3CC8BC30B40732FAD328FFA162FEABDDCD2AE107007FCF544BE0FBC071885B04C9ABB438AC1EFD3E32920BB03A8843EBE31749220254B6436541FDB73037B1A7F1B66322BB83E60142D3CDA17604A85829FB9C6EE8537DA0334317A397B543384D789A94AA274FC01DB5AE325BF6E9E70D96E494F0E21CB81D18A9DD7CBEE6C03A4956A16D24EB9B37B963FF6562A1BB3B15742CD5FA9B8081ABF110197009BCC55FEC6129482CAF564F6A3C7ADB283DC477C3985E73E8FF6A0EA1F1CC6B3C65101AA9698A55A44D56EF183C9D870B360D137D7A83C8B8A2BDC9817C44C9B9F27CB526B51FB1CFA27781A31A0E6807A15F2274FFDCEDE5C8E7064B446BBAE4B89484332BED7F28F02FB28BDE519C476B9A47E1B5DE5F3DD868EA45526A13523D56F0E80B3314DB040B1CF67A4F30F566BB3781C36ECA2F6815EB9B69BBFCCD80C1925D4D66AFF990249135EDF0D449A30C0FA25091462D8707DC9560E0CEFA8560E6B3C24568AE92B2913D508C650876FDD9683ED3FAAD0498902079F82AC6F7CAC2DE36D8E5195E04576168BB7781A75B67C0109449B3184BDAE26A0C878EE6D131E3CD31CB5910E05EEE8420657C9F24716971D7479DA9F9FB1EC189F3B1FB9E630B74F6F4977E43281DBFF78744E7B2853E6FA81DEE39ABB3DBE41250D2D199E851A2C9FA7D25406915E066475F80661E46005ACB7D47C70D5FA0AEB478EE565B7E68A07907A9735CA418F632AC870D5EA0AB93B6B8ECCCCE8D595D3DAC69C8F3973DC2B5966A61A742248E60D29FA3CDA802254BFCF187BA2CEBAC7048D6092A1C26AEEE403C1E7CF91D287F836C8AA921C62105CC772BEB5168338E465779B0069D01696F9ECEB793F403B165361A6F2D32FF202B0ED7E3FC1AE718452CBAEAE407D2800966DE7FE3F9B45664132D463B153A0D5D924660CE32EBC52D16B57291435894BEC5070179C600850270B2E24952BF545D5B40BD6E5AA50254B08E8E7D590F787C1E3663BB1FF9B168BA0CB4D44295D89ADBE314930FD193EFE794B4779795167FC3A7A7F905E3A35E3093BDFA85285A9416611E7ECB447F39C3765EF01AFAA1A3EACBCEE745579EE5B4269468CC1598CD456B7132A93B0E720E20154E947B34BA85448D29E30559838AC1A300422548DDD3B70E3C51005FDC6BA57338C286E6C9991F3985D300B6F9D8AF39D3F381A82FC47457998D6D169C3261734EC8D37D755861551D60AC4F89D85108560576C44B5AE88081844529D00310B05B4871B79299B5AE620660E4423292F7794EA631B402972CB41EC12DB26084AA016797C008BFAA895AA61298B9C656618ADEE019E4D76CB80EB1464B83D7DF593D49A09CA2E121549680C1F06740F6F630F750DE915D5AC42C1389CE573878B726C760506C518E6CD47EAAEF5F05E7CFEEE2542426C8D49C81B862AEDFCC0C6CC3D6EDCCF5381AA167B760831876EA42271B7CE82D965CC648B6079D27FE50E5730330B32BB8A5CFBAC9B55C093C0D8D7807823E3F02B44556CDEA0BA445A791C434F5550F6B09629EB3A154E2DB76E87D4CA10022C31A02F1949E9082BA359E1419C4B321A38D83615A74579FE1B3827E3A435419CCABC8458A11D9974EC6117C1CA22E8E7A8D906ED2C5F52179A2B7F4D0EBED0A8D27F077319AE019E8353056BDED903054CF1F778851E8D42429D4B8EA77104E22305CBF795A207CF583F049BADB0A092B2878744631F31B209073E9A1F12CCAB21DB6994335DAEE98356F43D65EE72E82E9C6030E946D3C645611E77BD0969222F4F288FBF2C8DE1BE4A4BF105F899AE575906EF32FEA14B340B8FB7D969BB2538CA63613DAF54D0E73E5E64E0B62E6E88B98CFFC93CCEC0764335376339C0E8273DE1A86304AE2F8047C9111F4FC8F5603B11F42F631B358E3048695B131BBC6E9DCC261CD0DDBB2F7B16813B26719C42A6E51558E59FBE6479C8095615C50B83717BCB060DD5C53E9306638739C682D6DE9E052EC500DAC56DE207001E3BB15F6D44DEF5AE99261C1C1D05A4C43A6F86CB79C90DDDB1D6E2BE3C0E945BC5CCFD1EFE286E153199DA3552CB0A38BAC70249C8D845FA04FECDC73524662AB251E1AAF6AE2D4E76FBAEE40B99867F2278BD2E58179CC71152FF6551815A439E528E9876DF9F2786D973F1C054B698504A6D630660C987C098D56159D2693A24E40FAF20646813ABB2285AE7FB8F79B9518E01F031FA9F81E60E67F2DD234D8D1D6FE1C0A3DFD8F2996D52100FD846C991E08BF34F4FF27B034F8DA7AC28815D58414B5CD28D17D82F09D45378ACDA82F3E53174A65C083CD59F70AE16AE12D550193D94EFB299A97566BF6D70FC9A19F464249197AB0D2E6EEBD9E5DFFF32C1321059AE64C07699A6138C2E510BA07F33E9F942E2389A6C8383F7D058F71636EF44BFD30BDE059E15418921B6F02A222F422311B5F34CAED09B2591D18A550C71554A594A66A08E0A47AE8AC6176C4E020370512142365C61CB46200A3C963B67EADB2290673426BC1FFB1D06C099F8FA03A323107C121BCD90AC4D31A78F6C652AB973FE23A7D5CFE66812947F56DF2EDD169B0E6F545135C88F3FF2F9555C0C43F7BD309207903B5F6A7252BA6745027072C8C2DAFF73383A197B8673F9EAC4E7F74222DE90FA0071FCCB092EBCBBBE606D959FF453241F0CFAB4C0EB74EF59CAF596F3E57CAAFCA546A23F6BC2B5ED92A4A479E345683E4B94EC8A4AEC2A6625A159E3BAA65AEFA9CB4220530FE227B47EA7F346CB87E967B393600F3BF51C36CCB52525FD42FACF29E08E9F54816FB320DC54ACF45855B3D4C4E3CBD27C6DBE277A661EC5FB028E6B14295AA735F94272A5401BD8047EE9FFC9CAA3E9B3E1810FDDA955AC96D600E82CCD6416047C5A326FF28A4B8F77A52F7609D1F844E3CA663DF0ADABD76E63B3E1FCF09082BEB41B5015666FAB90E5491348238B2842E4847279BDB9B76F999F5A48061D6C1C51191C0B1109A7568FA8E66F7B5BB6F1A2317DC44E4D9BCEA7CCA3C7025E152DF38AD87A5EAD76D8EB318E534DC34BF2D8B1AB70E0AFE69739C9F38A136B7B88A199C44A17BB2C7E2501B83F2479E146DFE382F52420DAF21D4365D4BDF5E6E5279C67BE77256569CD9EF68E1D9F2AA7156CFEBE83C4DFD6C34706E057C05D74938B574DB00E709A56C9B3316A2117585BF1F99B966DB560C4145FF98E645C5AB987A9EB673245059ACD8379D064D3359569D594AB281C595878D29FE06992BFB06B3EE933208A58546F5B5D29459F832E76A63047A2F749DEC1798522AC9AA053725D4121463578A4616ADAE363168791D088E79F58077258425E46FB11EAF1C2EA4E3033CB97948F4F9C0B80C6C34DB1C6DF001D9EA302EC5C32D066936E44DEFCE828DC39D8557D74021014C51A3D82C79A64E16B28566427EC9434909833D07D40D086FA27CBB9C4A7DECA482F367DFFCEF63D04F838AF9AE3CC8876C86182D4EF790C9E3DACF5A591B45F5AC727200538ED38653FF25E53563F59B95AAD24EEA5BB40F8DD02C337EFDFA500A0E26C95712E0C8BE67427E27242F316CC95A942EF12660A7E811D2CB949026FFFE46560FC32A982560466AC4DE6762FB07D47E96A44B7BD47A3DD2F4445EE83EE9B96E55F10304CFFA3975C6188566B7493FBBCDD0FE06D0B3146E387DB7997B3498A60FB4E788DC7DBDDE27C5FD93129B00391D5108043E8ED79621CFEC299685A54C557EB8C14D0B67F0541EA9C6FCB686275CE27AD5EB5FD015E30CC8181C67008CD0C6C' }
+2020-03-27 20:37:56.405 PLATFORM_STATUS 132 sync_server_1 Platform status changed to: STARTING_UP
+2020-03-27 20:37:56.406 STARTUP 132 sync_server_1 Platform Status Change STARTING_UP 
+2020-03-27 20:38:06.517 PLATFORM_STATUS 90 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-03-27 20:38:06.517 DEMO_INFO 90 < pollIntakeQueue  0   > Set Blob account counter as FCMFamily's storageMap size2087
+2020-03-27 20:38:06.518 STARTUP 90 < pollIntakeQueue  0   > Platform Status Change ACTIVE 
+2020-03-27 20:38:06.992 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 2234' to disk
+2020-03-27 20:38:06.994 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2234, snapshotId=00000004-00000034-1, timeStarted=2020-03-27T20:38:06.992807Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:38:07.022 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 935664 bytes; costs 22 ms
+2020-03-27 20:38:07.027 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 2234' waiting for snapshotTask
+2020-03-27 20:38:11.179 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2234, snapshotId=00000004-00000034-1, timeStarted=2020-03-27T20:38:06.992807Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:38:11.180 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 2234' to disk
+2020-03-27 20:38:11.180 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2234, snapshotId=00000004-00000034-1, timeStarted=2020-03-27T20:38:06.992807Z, timeCompleted=2020-03-27T20:38:11.179714Z, complete=true, error=false ]
+2020-03-27 20:40:33.499 DEMO_INFO 108 <      threadCons  0   > Key MapKey[0,0,856] for update doesn't exist
+2020-03-27 20:41:17.954 STATE_TO_DISK 91 <objectFileManager  0   > Started writing 'Signed state for round 2901' to disk
+2020-03-27 20:41:17.957 SNAPSHOT_MANAGER 91 <objectFileManager  0   > SnapshotManager: Successfully queued snapshot request [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2901, snapshotId=00000004-0000003B-1, timeStarted=2020-03-27T20:41:17.955104Z, timeCompleted=null, complete=false, error=false ]
+2020-03-27 20:41:18.997 DEMO_INFO 91 <objectFileManager  0   > copyToExtra: has written 1383216 bytes; costs 1037 ms
+2020-03-27 20:41:19.009 STATE_TO_DISK 91 <objectFileManager  0   > 'Signed state for round 2901' waiting for snapshotTask
+2020-03-27 20:41:24.806 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Process successfully executed for snapshot task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2901, snapshotId=00000004-0000003B-1, timeStarted=2020-03-27T20:41:17.955104Z, timeCompleted=null, complete=false, error=false ] 
+2020-03-27 20:41:24.807 SNAPSHOT_MANAGER 101 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=2901, snapshotId=00000004-0000003B-1, timeStarted=2020-03-27T20:41:17.955104Z, timeCompleted=2020-03-27T20:41:24.806731Z, complete=true, error=false ]
+2020-03-27 20:41:24.807 STATE_TO_DISK 91 <objectFileManager  0   > Finished writing 'Signed state for round 2901' to disk
+2020-03-27 20:41:26.499 DEMO_INFO 113 <      appMainRun  0   > Generated enough FCM test for sequential mode, stop generating 4 >= 4
+2020-03-27 20:41:26.499 DEMO_INFO 113 <      appMainRun  0   > Stop generating transactions 
+2020-03-27 20:41:26.502 DEMO_INFO 113 <      appMainRun  0   > node0 sent ENTER_PAUSE Message
+2020-03-27 20:41:26.502 DEMO_INFO 113 <      appMainRun  0   > TRANSACTIONS FINISHED
+2020-03-27 20:42:32.958 DEMO_INFO 108 <      threadCons  0   > Key MapKey[0,0,856] for append doesn't exist
+2020-03-27 20:42:40.474 DEMO_INFO 108 <      threadCons  0   > Key MapKey[0,0,856] for delete Blob doesn't exist
+2020-03-27 20:42:40.476 DEMO_INFO 108 <      threadCons  0   > collectedStartPauseMsg 1
+2020-03-27 20:42:40.477 DEMO_INFO 108 <      threadCons  0   > collectedStartPauseMsg 2
+2020-03-27 20:42:40.478 DEMO_INFO 108 <      threadCons  0   > collectedStartPauseMsg 3
+2020-03-27 20:42:40.482 DEMO_INFO 108 <      threadCons  0   > collectedStartPauseMsg 4
+2020-03-27 20:42:40.482 DEMO_INFO 108 <      threadCons  0   > TEST PAUSE Finished processing all transactions
