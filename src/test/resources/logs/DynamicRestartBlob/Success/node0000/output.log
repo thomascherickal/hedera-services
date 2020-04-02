@@ -1,0 +1,193 @@
+2020-03-27 20:37:47,408 main DEBUG Initializing configuration XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml]
+2020-03-27 20:37:47,416 main DEBUG Installed script engines
+Warning: Nashorn engine is planned to be removed from a future JDK release
+2020-03-27 20:37:47,644 main DEBUG Oracle Nashorn Version: 12.0.1, Language: ECMAScript, Threading: Not Thread Safe, Compile: true, Names: {nashorn, Nashorn, js, JS, JavaScript, javascript, ECMAScript, ecmascript}
+2020-03-27 20:37:47,645 main DEBUG PluginManager 'Core' found 112 plugins
+2020-03-27 20:37:47,645 main DEBUG PluginManager 'Level' found 0 plugins
+2020-03-27 20:37:47,651 main DEBUG PluginManager 'Lookup' found 13 plugins
+2020-03-27 20:37:47,653 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,664 main TRACE TypeConverterRegistry initializing.
+2020-03-27 20:37:47,664 main DEBUG PluginManager 'TypeConverter' found 26 plugins
+2020-03-27 20:37:47,673 main DEBUG createFilter(marker="EXCEPTION", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,673 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,673 main DEBUG createFilter(marker="TESTING_EXCEPTIONS", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,674 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,674 main DEBUG createFilter(marker="SOCKET_EXCEPTIONS", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,675 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,675 main DEBUG createFilter(marker="TCP_CONNECT_EXCEPTIONS", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,675 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,676 main DEBUG createFilter(marker="TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,676 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,678 main DEBUG createFilter(marker="TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,678 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,679 main DEBUG createFilter(marker="INVALID_EVENT_ERROR", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,679 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,679 main DEBUG createFilter(marker="INTAKE_EVENT_DISCARD", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,680 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,680 main DEBUG createFilter(marker="SYNC_START", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,680 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,681 main DEBUG createFilter(marker="SYNC_DONE", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,681 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,682 main DEBUG createFilter(marker="SYNC_ERROR", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,682 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,682 main DEBUG createFilter(marker="SYNC", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,683 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,683 main DEBUG createFilter(marker="CREATE_EVENT", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,683 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,684 main DEBUG createFilter(marker="INTAKE_EVENT", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,684 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,685 main DEBUG createFilter(marker="WATCH_EVENTS_SEND_REC", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,685 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,685 main DEBUG createFilter(marker="QUEUES", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,686 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,687 main DEBUG createFilter(marker="HEARTBEAT", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,687 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,687 main DEBUG createFilter(marker="EVENT_SIG", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,687 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,688 main DEBUG createFilter(marker="CERTIFICATES", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,688 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,689 main DEBUG createFilter(marker="FCM_COPY", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,689 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,689 main DEBUG createFilter(marker="FCM_COPY_FROM", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,690 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,690 main DEBUG createFilter(marker="FCM_COPY_TO", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,690 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,691 main DEBUG createFilter(marker="FCM_DEMO", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,691 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,691 main DEBUG createFilter(marker="FCM_COPY_FROM_DIFF", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,692 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,692 main DEBUG createFilter(marker="FCM_COPY_TO_DIFF", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,692 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,693 main DEBUG createFilter(marker="FC_SERIALIZATION", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,693 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,693 main DEBUG createFilter(marker="MERKLE_FORCE_FLUSH", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,694 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,694 main DEBUG createFilter(marker="MERKLE_HASH", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,695 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,695 main DEBUG createFilter(marker="MERKLE_GENERATION", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,696 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,696 main DEBUG createFilter(marker="MERKLE_LOCKS", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,696 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,697 main DEBUG createFilter(marker="LOCKS", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,697 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,697 main DEBUG createFilter(marker="TIME_MEASURE", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,698 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,698 main DEBUG createFilter(marker="STARTUP", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,698 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,698 main DEBUG createFilter(marker="STATE_SIG_DIST", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,699 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,699 main DEBUG createFilter(marker="OPENCL_INIT_EXCEPTIONS", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,699 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,700 main DEBUG createFilter(marker="ADV_CRYPTO_SYSTEM", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,700 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,700 main DEBUG createFilter(marker="EVENT_STREAM", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,701 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,701 main DEBUG createFilter(marker="RECONNECT", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,701 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,702 main DEBUG createFilter(marker="DEMO_INFO", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,702 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,702 main DEBUG createFilter(marker="DEMO_STAT", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,703 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,703 main DEBUG createFilter(marker="DEMO_MAP", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,703 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,703 main DEBUG createFilter(marker="FREEZE", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,704 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,704 main DEBUG createFilter(marker="STALE_EVENTS", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,704 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,705 main DEBUG createFilter(marker="SNAPSHOT_MANAGER", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,705 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,705 main DEBUG createFilter(marker="STATE_TO_DISK", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,706 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,706 main DEBUG createFilter(marker="EVENT_PARSER", onMatch="ACCEPT", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,706 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,706 main DEBUG createFilter(marker="STATE_DELETER", onMatch="DENY", onMismatch="NEUTRAL")
+2020-03-27 20:37:47,707 main DEBUG Building Plugin[name=filter, class=org.apache.logging.log4j.core.filter.MarkerFilter].
+2020-03-27 20:37:47,707 main DEBUG createFilter(marker="PLATFORM_STATUS", onMatch="ACCEPT", onMismatch="DENY")
+2020-03-27 20:37:47,707 main DEBUG Building Plugin[name=filters, class=org.apache.logging.log4j.core.filter.CompositeFilter].
+2020-03-27 20:37:47,710 main DEBUG createFilters(={EXCEPTION, TESTING_EXCEPTIONS, SOCKET_EXCEPTIONS, TCP_CONNECT_EXCEPTIONS, TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT, TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE, INVALID_EVENT_ERROR, INTAKE_EVENT_DISCARD, SYNC_START, SYNC_DONE, SYNC_ERROR, SYNC, CREATE_EVENT, INTAKE_EVENT, WATCH_EVENTS_SEND_REC, QUEUES, HEARTBEAT, EVENT_SIG, CERTIFICATES, FCM_COPY, FCM_COPY_FROM, FCM_COPY_TO, FCM_DEMO, FCM_COPY_FROM_DIFF, FCM_COPY_TO_DIFF, FC_SERIALIZATION, MERKLE_FORCE_FLUSH, MERKLE_HASH, MERKLE_GENERATION, MERKLE_LOCKS, LOCKS, TIME_MEASURE, STARTUP, STATE_SIG_DIST, OPENCL_INIT_EXCEPTIONS, ADV_CRYPTO_SYSTEM, EVENT_STREAM, RECONNECT, DEMO_INFO, DEMO_STAT, DEMO_MAP, FREEZE, STALE_EVENTS, SNAPSHOT_MANAGER, STATE_TO_DISK, EVENT_PARSER, STATE_DELETER, PLATFORM_STATUS})
+2020-03-27 20:37:47,711 main DEBUG Building Plugin[name=layout, class=org.apache.logging.log4j.core.layout.PatternLayout].
+2020-03-27 20:37:47,716 main DEBUG PatternLayout$Builder(pattern="%d{HH:mm:ss.SSS} %marker %T %t %msg%n", PatternSelector=null, Configuration(/home/ubuntu/remoteExperiment/log4j2-regression.xml), Replace=null, charset="null", alwaysWriteExceptions="null", disableAnsi="null", noConsoleNoAnsi="null", header="null", footer="null")
+2020-03-27 20:37:47,717 main DEBUG PluginManager 'Converter' found 41 plugins
+2020-03-27 20:37:47,717 main DEBUG Building Plugin[name=appender, class=org.apache.logging.log4j.core.appender.ConsoleAppender].
+2020-03-27 20:37:47,722 main DEBUG ConsoleAppender$Builder(target="SYSTEM_OUT", follow="null", direct="null", bufferedIo="null", bufferSize="null", immediateFlush="null", ignoreExceptions="null", PatternLayout(%d{HH:mm:ss.SSS} %marker %T %t %msg%n), name="Console", Configuration(/home/ubuntu/remoteExperiment/log4j2-regression.xml), Filter=null)
+2020-03-27 20:37:47,722 main DEBUG Starting OutputStreamManager SYSTEM_OUT.false.false
+2020-03-27 20:37:47,722 main DEBUG Building Plugin[name=layout, class=org.apache.logging.log4j.core.layout.PatternLayout].
+2020-03-27 20:37:47,723 main DEBUG PatternLayout$Builder(pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %marker %T %t %msg%n", PatternSelector=null, Configuration(/home/ubuntu/remoteExperiment/log4j2-regression.xml), Replace=null, charset="null", alwaysWriteExceptions="null", disableAnsi="null", noConsoleNoAnsi="null", header="null", footer="null")
+2020-03-27 20:37:47,731 main DEBUG Building Plugin[name=appender, class=org.apache.logging.log4j.core.appender.RandomAccessFileAppender].
+2020-03-27 20:37:47,733 main DEBUG RandomAccessFileAppender$Builder(fileName="swirlds.log", append="true", advertise="null", advertiseURI="null", bufferedIo="null", bufferSize="null", immediateFlush="true", ignoreExceptions="null", PatternLayout(%d{yyyy-MM-dd HH:mm:ss.SSS} %marker %T %t %msg%n), name="fileLog", Configuration(/home/ubuntu/remoteExperiment/log4j2-regression.xml), Filter=null)
+2020-03-27 20:37:47,734 main DEBUG Starting RandomAccessFileManager swirlds.log
+2020-03-27 20:37:47,734 main DEBUG Building Plugin[name=appenders, class=org.apache.logging.log4j.core.config.AppendersPlugin].
+2020-03-27 20:37:47,735 main DEBUG createAppenders(={Console, fileLog})
+2020-03-27 20:37:47,735 main DEBUG Building Plugin[name=AppenderRef, class=org.apache.logging.log4j.core.config.AppenderRef].
+2020-03-27 20:37:47,735 main DEBUG createAppenderRef(ref="fileLog", level="null", Filter=null)
+2020-03-27 20:37:47,735 main DEBUG Building Plugin[name=root, class=org.apache.logging.log4j.core.config.LoggerConfig$RootLogger].
+2020-03-27 20:37:47,736 main DEBUG createLogger(additivity="null", level="ALL", includeLocation="null", ={fileLog}, ={}, Configuration(/home/ubuntu/remoteExperiment/log4j2-regression.xml), Filter=null)
+2020-03-27 20:37:47,738 main DEBUG Building Plugin[name=loggers, class=org.apache.logging.log4j.core.config.LoggersPlugin].
+2020-03-27 20:37:47,738 main DEBUG createLoggers(={root})
+2020-03-27 20:37:47,739 main DEBUG Configuration XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml] initialized
+2020-03-27 20:37:47,739 main DEBUG Starting configuration XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml]
+2020-03-27 20:37:47,739 main DEBUG Started configuration XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml] OK.
+2020-03-27 20:37:47,739 main TRACE Stopping org.apache.logging.log4j.core.config.DefaultConfiguration@ed9d034...
+2020-03-27 20:37:47,740 main TRACE DefaultConfiguration notified 1 ReliabilityStrategies that config will be stopped.
+2020-03-27 20:37:47,740 main TRACE DefaultConfiguration stopping root LoggerConfig.
+2020-03-27 20:37:47,740 main TRACE DefaultConfiguration notifying ReliabilityStrategies that appenders will be stopped.
+2020-03-27 20:37:47,740 main TRACE DefaultConfiguration stopping remaining Appenders.
+2020-03-27 20:37:47,740 main DEBUG Shutting down OutputStreamManager SYSTEM_OUT.false.false-1
+2020-03-27 20:37:47,741 main DEBUG Shut down OutputStreamManager SYSTEM_OUT.false.false-1, all resources released: true
+2020-03-27 20:37:47,741 main DEBUG Appender DefaultConsole-1 stopped with status true
+2020-03-27 20:37:47,741 main TRACE DefaultConfiguration stopped 1 remaining Appenders.
+2020-03-27 20:37:47,741 main TRACE DefaultConfiguration cleaning Appenders from 1 LoggerConfigs.
+2020-03-27 20:37:47,741 main DEBUG Stopped org.apache.logging.log4j.core.config.DefaultConfiguration@ed9d034 OK
+2020-03-27 20:37:47,790 main TRACE Reregistering MBeans after reconfigure. Selector=org.apache.logging.log4j.core.selector.ClassLoaderContextSelector@59e505b2
+2020-03-27 20:37:47,791 main TRACE Reregistering context (1/1): '446cdf90' org.apache.logging.log4j.core.LoggerContext@3af0a9da
+2020-03-27 20:37:47,794 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90'
+2020-03-27 20:37:47,795 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=StatusLogger'
+2020-03-27 20:37:47,795 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=ContextSelector'
+2020-03-27 20:37:47,796 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=Loggers,name=*'
+2020-03-27 20:37:47,796 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=Appenders,name=*'
+2020-03-27 20:37:47,796 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=AsyncAppenders,name=*'
+2020-03-27 20:37:47,797 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=AsyncLoggerRingBuffer'
+2020-03-27 20:37:47,797 main TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=Loggers,name=*,subtype=RingBuffer'
+2020-03-27 20:37:47,798 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90
+2020-03-27 20:37:47,800 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90,component=StatusLogger
+2020-03-27 20:37:47,801 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90,component=ContextSelector
+2020-03-27 20:37:47,802 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90,component=Loggers,name=
+2020-03-27 20:37:47,803 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90,component=Appenders,name=Console
+2020-03-27 20:37:47,803 main DEBUG Registering MBean org.apache.logging.log4j2:type=446cdf90,component=Appenders,name=fileLog
+2020-03-27 20:37:47,804 main TRACE Using default SystemClock for timestamps.
+2020-03-27 20:37:47,805 main TRACE Using DummyNanoClock for nanosecond timestamps.
+2020-03-27 20:37:47,805 main DEBUG Reconfiguration complete for context[name=446cdf90] at URI /home/ubuntu/remoteExperiment/log4j2-regression.xml (org.apache.logging.log4j.core.LoggerContext@3af0a9da) with optional ClassLoader: null
+2020-03-27 20:37:47,805 main DEBUG Shutdown hook enabled. Registering a new one.
+2020-03-27 20:37:47,806 main DEBUG LoggerContext[name=446cdf90, org.apache.logging.log4j.core.LoggerContext@3af0a9da] started OK.
+Reading the settings from the file:        /home/ubuntu/remoteExperiment/settings.txt
+Reading the configuration from the file:   /home/ubuntu/remoteExperiment/config.txt
+Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx
+This computer has an internal IP address:  172.31.16.221
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/2234
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/2901
+2020-03-27 20:42:49,516 pool-1-thread-1 DEBUG Stopping LoggerContext[name=446cdf90, org.apache.logging.log4j.core.LoggerContext@3af0a9da]
+2020-03-27 20:42:49,518 pool-1-thread-1 DEBUG Stopping LoggerContext[name=446cdf90, org.apache.logging.log4j.core.LoggerContext@3af0a9da]...
+2020-03-27 20:42:49,518 pool-1-thread-1 TRACE Unregistering 1 MBeans: [org.apache.logging.log4j2:type=446cdf90]
+2020-03-27 20:42:49,519 pool-1-thread-1 TRACE Unregistering 1 MBeans: [org.apache.logging.log4j2:type=446cdf90,component=StatusLogger]
+2020-03-27 20:42:49,519 pool-1-thread-1 TRACE Unregistering 1 MBeans: [org.apache.logging.log4j2:type=446cdf90,component=ContextSelector]
+2020-03-27 20:42:49,520 pool-1-thread-1 TRACE Unregistering 1 MBeans: [org.apache.logging.log4j2:type=446cdf90,component=Loggers,name=]
+2020-03-27 20:42:49,520 pool-1-thread-1 TRACE Unregistering 2 MBeans: [org.apache.logging.log4j2:type=446cdf90,component=Appenders,name=Console, org.apache.logging.log4j2:type=446cdf90,component=Appenders,name=fileLog]
+2020-03-27 20:42:49,521 pool-1-thread-1 TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=AsyncAppenders,name=*'
+2020-03-27 20:42:49,521 pool-1-thread-1 TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=AsyncLoggerRingBuffer'
+2020-03-27 20:42:49,521 pool-1-thread-1 TRACE Unregistering but no MBeans found matching 'org.apache.logging.log4j2:type=446cdf90,component=Loggers,name=*,subtype=RingBuffer'
+2020-03-27 20:42:49,522 pool-1-thread-1 TRACE Stopping XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml]...
+2020-03-27 20:42:49,522 pool-1-thread-1 TRACE XmlConfiguration notified 2 ReliabilityStrategies that config will be stopped.
+2020-03-27 20:42:49,522 pool-1-thread-1 TRACE XmlConfiguration stopping 1 LoggerConfigs.
+2020-03-27 20:42:49,523 pool-1-thread-1 TRACE XmlConfiguration stopping root LoggerConfig.
+2020-03-27 20:42:49,523 pool-1-thread-1 TRACE XmlConfiguration notifying ReliabilityStrategies that appenders will be stopped.
+2020-03-27 20:42:49,523 pool-1-thread-1 TRACE XmlConfiguration stopping remaining Appenders.
+2020-03-27 20:42:49,523 pool-1-thread-1 DEBUG Shutting down RandomAccessFileManager swirlds.log
+2020-03-27 20:42:49,524 pool-1-thread-1 DEBUG Shut down RandomAccessFileManager swirlds.log, all resources released: true
+2020-03-27 20:42:49,524 pool-1-thread-1 DEBUG Appender fileLog stopped with status true
+2020-03-27 20:42:49,524 pool-1-thread-1 DEBUG Shutting down OutputStreamManager SYSTEM_OUT.false.false
+2020-03-27 20:42:49,524 pool-1-thread-1 DEBUG Shut down OutputStreamManager SYSTEM_OUT.false.false, all resources released: true
+2020-03-27 20:42:49,525 pool-1-thread-1 DEBUG Appender Console stopped with status true
+2020-03-27 20:42:49,525 pool-1-thread-1 TRACE XmlConfiguration stopped 2 remaining Appenders.
+2020-03-27 20:42:49,525 pool-1-thread-1 TRACE XmlConfiguration cleaning Appenders from 2 LoggerConfigs.
+2020-03-27 20:42:49,525 pool-1-thread-1 DEBUG Stopped XmlConfiguration[location=/home/ubuntu/remoteExperiment/log4j2-regression.xml] OK
+2020-03-27 20:42:49,526 pool-1-thread-1 DEBUG Stopped LoggerContext[name=446cdf90, org.apache.logging.log4j.core.LoggerContext@3af0a9da] with status true

@@ -12,7 +12,7 @@
     }
   ],
   "freezeConfig": {
-    "freezeTiming": 1,
+    "freezeTiming": 2,
     "freezeIterations": 5,
     "postFreezeApp": {
       "jar": "PlatformTestingApp.jar",

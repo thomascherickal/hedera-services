@@ -12,8 +12,8 @@
     }
   ],
   "freezeConfig": {
-    "freezeTiming": 1,
-    "freezeIterations": 5,
+    "freezeTiming": 3,
+    "freezeIterations": 3,
     "postFreezeApp": {
       "jar": "PlatformTestingApp.jar",
       "parameterList": [

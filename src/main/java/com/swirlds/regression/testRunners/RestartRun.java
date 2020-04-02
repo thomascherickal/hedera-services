@@ -20,7 +20,6 @@ package com.swirlds.regression.testRunners;
 import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -47,19 +46,15 @@ public class RestartRun implements TestRun {
 
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		// start all processes
-		experiment.startAllSwirlds();
 
-		// sleep until freeze
-
-		Duration sleep = Duration.ofMinutes(
-				testConfig.getExperimentConfig().getExperimentStartDelay() + testConfig.getRestartConfig().getRestartTiming());
-
-		log.info(MARKER, "Sleeping until freeze");
-		experiment.sleepThroughExperiment(sleep.toMillis());
-
-		// kill the process during the freeze
-		experiment.stopAllSwirlds();
+		final int experimentStartDelay = testConfig.getExperimentConfig().getExperimentStartDelay();
+		// run the first part
+		// if first part fails, stop the test
+		if (!FreezeRun.runSingleFreeze(experiment,
+				testConfig.getRestartConfig().getRestartTiming(), experimentStartDelay, 0, false)) {
+			return;
+		}
+		;
 
 		log.info(MARKER, "First part of restart test completed.");
 

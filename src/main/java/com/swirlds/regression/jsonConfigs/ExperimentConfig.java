@@ -33,6 +33,10 @@ public class ExperimentConfig {
 		return experimentRestartDelay;
 	}
 
+	public void setExperimentRestartDelay(int erd) {
+		experimentRestartDelay = erd;
+	}
+
 	/**
 	 * experimentStartDelay is used to compute the sleep time by adding to RestartConfig.getRestartTiming()
 	 *
@@ -41,6 +45,10 @@ public class ExperimentConfig {
 	 */
 	public int getExperimentStartDelay() {
 		return experimentStartDelay;
+	}
+
+	public void setExperimentStartDelay(int esd) {
+		experimentStartDelay = esd;
 	}
 
 	/**
@@ -52,5 +60,9 @@ public class ExperimentConfig {
 	 */
 	public int getFreezeWaitMillis() {
 		return freezeWaitMillis;
+	}
+
+	public void setFreezeWaitMillis(int fwm) {
+		freezeWaitMillis = fwm;
 	}
 }
