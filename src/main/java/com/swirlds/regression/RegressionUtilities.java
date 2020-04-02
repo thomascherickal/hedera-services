@@ -166,6 +166,8 @@ public class RegressionUtilities {
 	// (50 billion)*(times 100 million)
 	static final long TOTAL_STAKES = 50L * 1_000_000_000L * 100L * 1_000_000L;
 
+	public static final String TEST_TIME_EXCEEDED_MSG = "Test time exceeded; moving to next phase";
+
 	static final String[] NIGHTLY_REGRESSION_SERVER_LIST = {
 			"i-03c90b3fdeed8edd7",
 			"i-050d3f864b99b796f",
