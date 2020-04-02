@@ -17,14 +17,21 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
 import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 
+import java.io.IOException;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -117,5 +124,18 @@ public abstract class ValidatorTestUtil {
 			throw new RuntimeException("Cannot find log files in: " + directory);
 		}
 		return data;
+	}
+
+	/**
+	 * load TestConfig from .json file
+	 * @param jsonPath
+	 * @return
+	 * @throws IOException
+	 */
+	public static TestConfig loadTestConfig(final String jsonPath) throws IOException {
+		Path testConfigFileLocation = Paths.get(jsonPath);
+		byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
+		ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+		return objectMapper.readValue(jsonData, TestConfig.class);
 	}
 }

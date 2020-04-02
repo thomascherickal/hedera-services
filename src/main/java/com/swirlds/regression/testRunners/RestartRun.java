@@ -46,16 +46,13 @@ public class RestartRun implements TestRun {
 
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		// start all processes
-		experiment.startAllSwirlds();
 
-		// sleep until freeze
-		Duration sleep = Duration.ofMinutes(EXPERIMENT_START_DELAY + testConfig.getRestartConfig().getRestartTiming());
-		log.info(MARKER, "Sleeping until freeze");
-		experiment.sleepThroughExperiment(sleep.toMillis());
-
-		// kill the process during the freeze
-		experiment.stopAllSwirlds();
+		// run the first part
+		// if first part fails, stop the test
+		if (!FreezeRun.runSingleFreeze(experiment,
+				testConfig.getRestartConfig().getRestartTiming(), 0, false)) {
+			return;
+		};
 
 		log.info(MARKER, "First part of restart test completed.");
 
