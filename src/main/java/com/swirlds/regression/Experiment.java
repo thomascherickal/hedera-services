@@ -614,6 +614,10 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void sendSettingFileToNodes() {
+		if (regConfig.getNumberOfZeroStakeNodes() > 0) {
+			settingsFile.addSetting("enableBetaMirror", "1");
+		}
+
 		if (regConfig.getEventFilesWriters() == 0) {
 			sendSettingToNonStreamingNodes();
 		} else {
@@ -654,12 +658,27 @@ public class Experiment implements ExperimentSummary {
 		configFile.setPublicIPList(cloud.getPublicIPList());
 		configFile.setPrivateIPList(cloud.getPrivateIPList());
 		if (USE_STAKES_IN_CONFIG) {
-			configFile.setStakes(
-					// each node gets the same stake
-					Collections.nCopies(
-							regConfig.getTotalNumberOfNodes(),
-							TOTAL_STAKES / regConfig.getTotalNumberOfNodes())
-			);
+			List<Long> stakes = new ArrayList<>();
+
+			if (regConfig.getNumberOfZeroStakeNodes() == 0) {
+				// each node gets the same stake
+				Collections.nCopies(
+						regConfig.getTotalNumberOfNodes(),
+						TOTAL_STAKES / regConfig.getTotalNumberOfNodes());
+			} else {
+				final int totalStakedNodes =
+						(regConfig.getTotalNumberOfNodes() - regConfig.getNumberOfZeroStakeNodes());
+				final long stakePerActiveNode =
+						TOTAL_STAKES / totalStakedNodes;
+
+				stakes.addAll(Collections.nCopies(totalStakedNodes, stakePerActiveNode));
+
+				for (int i = 0; i < regConfig.getNumberOfZeroStakeNodes(); i++) {
+					stakes.add(0L);
+				}
+			}
+
+			configFile.setStakes(stakes);
 		}
 		configFile.exportConfigFile();
 	}
@@ -1289,6 +1308,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * set app in ConfigBuilder
+	 *
 	 * @param app
 	 */
 	public void setConfigApp(final AppConfig app) {

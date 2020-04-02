@@ -37,6 +37,7 @@ public class RegressionConfig {
 	private boolean uploadToSharePoint = false;
 	private String jvmOptions = "";
 
+	private int numberOfZeroStakeNodes = 0;
 
 	/**
 	 * Gets the total number of nodes set in this config in all regions, or local nodes if its a local test
@@ -182,5 +183,13 @@ public class RegressionConfig {
 
 	public void setJvmOptionParametersConfig(JvmOptionParametersConfig jvmOptionParametersConfig) {
 		this.jvmOptionParametersConfig = jvmOptionParametersConfig;
+	}
+
+	public int getNumberOfZeroStakeNodes() {
+		return numberOfZeroStakeNodes;
+	}
+
+	public void setNumberOfZeroStakeNodes(final int numberOfZeroStakeNodes) {
+		this.numberOfZeroStakeNodes = numberOfZeroStakeNodes;
 	}
 }
