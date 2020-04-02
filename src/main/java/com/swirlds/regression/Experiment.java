@@ -522,10 +522,14 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-    private ExpectedMapData loadExpectedMapData(String directory) {
+    public ExpectedMapData loadExpectedMapData(String directory) {
         final ExpectedMapData mapData = new ExpectedMapData();
         for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
             final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+            if(!new File(expectedMap).exists()){
+            	log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+            	return null;
+			}
             Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
             mapData.getExpectedMaps().put(i, map);
         }

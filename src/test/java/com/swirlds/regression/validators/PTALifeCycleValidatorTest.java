@@ -53,6 +53,7 @@ public class PTALifeCycleValidatorTest {
 
 	private static final String positiveTestDir =  "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir =  "src/test/resources/logs/LifecycleNeg";
+	private static final String missingMapsDir =  "src/test/resources/logs/PTD-NodeKillReconnect";
 
 	// Positive test where ExpectedMaps of all 4 nodes are the same
 	@Test
@@ -263,6 +264,12 @@ public class PTALifeCycleValidatorTest {
 		for (String error : errors) {
 			System.out.println(error);
 		}
+	}
+
+	@Test
+	public void checkMissingExpectedMapsTest(){
+		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
+		validator.validate();
 	}
 
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,

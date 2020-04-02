@@ -36,13 +36,15 @@ import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSIO
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
 public class PTALifecycleValidator extends Validator {
-	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = null;
 	private static boolean isValid;
 	private static boolean isValidated;
 	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
-		expectedMaps = mapData.getExpectedMaps();
+		if(mapData != null){
+			expectedMaps = mapData.getExpectedMaps();
+		}
 		isValid = false;
 		isValidated = false;
 	}
@@ -84,6 +86,12 @@ public class PTALifecycleValidator extends Validator {
 	 * expectedMaps from all nodes
 	 */
 	private void validateExpectedMaps(){
+		if(expectedMaps == null){
+			addError("ExpectedMap doesn't exist on nodes for validation");
+			isValid = false;
+			isValidated = false;
+			return;
+		}
 		Map<MapKey, ExpectedValue> baselineMap = expectedMaps.get(0);
 
 		for(int i=1; i< expectedMaps.size();i++){
