@@ -93,6 +93,7 @@ import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
 import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
+import static com.swirlds.regression.RegressionUtilities.TEST_TIME_EXCEEDED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
 import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
 import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
@@ -293,6 +294,7 @@ public class Experiment implements ExperimentSummary {
 					return;
 				}
 			}
+			log.trace(MARKER, TEST_TIME_EXCEEDED_MSG);
 		} else {
 			try {
 				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
@@ -337,6 +339,7 @@ public class Experiment implements ExperimentSummary {
 					}
 				}
 			}
+			log.trace(MARKER, TEST_TIME_EXCEEDED_MSG);
 		} else {
 			try {
 				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
