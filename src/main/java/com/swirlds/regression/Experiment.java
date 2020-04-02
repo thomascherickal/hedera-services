@@ -109,7 +109,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
-import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP;
+import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -525,7 +525,7 @@ public class Experiment implements ExperimentSummary {
     private ExpectedMapData loadExpectedMapData(String directory) {
         final ExpectedMapData mapData = new ExpectedMapData();
         for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
-            final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP;
+            final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
             Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
             mapData.getExpectedMaps().put(i, map);
         }

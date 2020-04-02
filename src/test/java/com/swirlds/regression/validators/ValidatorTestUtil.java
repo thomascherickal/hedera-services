@@ -44,7 +44,7 @@ public abstract class ValidatorTestUtil {
 		ExpectedMapData data = new ExpectedMapData();
 
 		for (int i = 0; i < 4 ; i++) {
-			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP,
+			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP_ZIP,
 					directory, i);
 			if(new File(expectedMap).exists()) {
 				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);

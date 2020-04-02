@@ -39,7 +39,7 @@ public class PTALifecycleValidator extends Validator {
 	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 	private static boolean isValid;
 	private static boolean isValidated;
-	public static final String EXPECTED_MAP = "ExpectedMap.json";
+	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		expectedMaps = mapData.getExpectedMaps();
