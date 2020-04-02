@@ -268,8 +268,12 @@ public class PTALifeCycleValidatorTest {
 
 	@Test
 	public void checkMissingExpectedMapsTest(){
-		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
-		validator.validate();
+		PTALifecycleValidator validator = null;
+		try{
+			validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
+		}catch(Exception e){
+			assertEquals(" expectedMap in node 0 doesn't exist", e.getMessage());
+		}
 	}
 
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,

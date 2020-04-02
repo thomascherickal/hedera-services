@@ -50,7 +50,7 @@ public abstract class ValidatorTestUtil {
 				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
 				data.getExpectedMaps().put(i, map);
 			}else{
-				throw new RuntimeException(" expectedMap in node "+ i + "doesn't exist");
+				throw new RuntimeException(" expectedMap in node "+ i + " doesn't exist");
 			}
 		}
 

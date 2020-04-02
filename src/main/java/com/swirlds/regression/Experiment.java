@@ -522,7 +522,7 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-    public ExpectedMapData loadExpectedMapData(String directory) {
+    private ExpectedMapData loadExpectedMapData(String directory) {
         final ExpectedMapData mapData = new ExpectedMapData();
         for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
             final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
