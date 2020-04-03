@@ -28,7 +28,7 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 2,
+  "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
@@ -40,7 +40,7 @@
 	//	"configs/testRestartCfg.json",
 	//	"configs/testRestartBlobCfg.json",
 	//	"configs/testFcmFreezeCfg.json",
-	//	"configs/testFcmFreezeBlobCfg.json",
+	//	"configs/testFcmFreezeBlobCfg.json"
 	//	"configs/testFcmMultisizeBlobCfg.json",
 	//	"configs/testFcmFreezeFCQCfg.json",
 	//	"configs/testFCM1KFCQCfg.json",

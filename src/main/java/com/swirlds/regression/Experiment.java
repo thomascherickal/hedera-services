@@ -660,12 +660,9 @@ public class Experiment implements ExperimentSummary {
 		if (USE_STAKES_IN_CONFIG) {
 			List<Long> stakes = new ArrayList<>();
 
-			if (regConfig.getNumberOfZeroStakeNodes() == 0) {
-				// each node gets the same stake
-				Collections.nCopies(
-						regConfig.getTotalNumberOfNodes(),
-						TOTAL_STAKES / regConfig.getTotalNumberOfNodes());
-			} else {
+			if (regConfig.getNumberOfZeroStakeNodes() > 0) {
+				log.debug("Running with Zero Stake Nodes [ zeroStake = {}, totalNodes = {} ]",
+						regConfig::getNumberOfZeroStakeNodes, regConfig::getTotalNumberOfNodes);
 				final int totalStakedNodes =
 						(regConfig.getTotalNumberOfNodes() - regConfig.getNumberOfZeroStakeNodes());
 				final long stakePerActiveNode =
@@ -676,6 +673,12 @@ public class Experiment implements ExperimentSummary {
 				for (int i = 0; i < regConfig.getNumberOfZeroStakeNodes(); i++) {
 					stakes.add(0L);
 				}
+			} else {
+				log.debug("Running with Normal Nodes [ totalNodes = {} ]", regConfig::getTotalNumberOfNodes);
+				// each node gets the same stake
+				stakes.addAll(Collections.nCopies(
+						regConfig.getTotalNumberOfNodes(),
+						TOTAL_STAKES / regConfig.getTotalNumberOfNodes()));
 			}
 
 			configFile.setStakes(stakes);
