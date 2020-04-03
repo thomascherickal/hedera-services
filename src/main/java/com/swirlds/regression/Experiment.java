@@ -1243,9 +1243,17 @@ public class Experiment implements ExperimentSummary {
 		final int expectedNum = iteration + 1;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
-				log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
-			} else {
+			int tries = 2;
+			boolean frozen = false;
+			while (tries > 0 && !frozen) {
+				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
+					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
+					frozen = true;
+				}
+				tries--;
+				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
+			}
+			if (!frozen) {
 				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {}", i, iteration);
 				return false;
 			}
