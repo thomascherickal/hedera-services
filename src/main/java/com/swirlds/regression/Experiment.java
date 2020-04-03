@@ -195,8 +195,7 @@ public class Experiment implements ExperimentSummary {
 		setupTest(experiment);
 
 		if (regConfig.getSlack() != null) {
-			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-					regConfig.getSlack().getChannel());
+			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		}
 	}
 
@@ -594,7 +593,7 @@ public class Experiment implements ExperimentSummary {
 				slackMsg.addValidatorException(item, e);
 			}
 		}
-		sendSlackMessage(slackMsg);
+		sendSlackMessage(slackMsg, regConfig.getSlack().getChannel());
 		log.info(MARKER, slackMsg.getPlaintext());
 		createStatsFile(getExperimentFolder());
 		sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
@@ -675,14 +674,14 @@ public class Experiment implements ExperimentSummary {
 		}
 	}
 
-	public void sendSlackMessage(SlackTestMsg msg) {
-		slacker.messageChannel(msg);
+	public void sendSlackMessage(SlackTestMsg msg, String channel) {
+		slacker.messageChannel(msg, channel);
 	}
 
-	public void sendSlackMessage(String error) {
+	public void sendSlackMessage(String error, String channel) {
 		SlackTestMsg msg = new SlackTestMsg(getUniqueId(), regConfig, testConfig);
 		msg.addError(error);
-		slacker.messageChannel(msg);
+		slacker.messageChannel(msg, channel);
 	}
 
 	public void sendSlackStatsFile(SlackTestMsg msg, String fileLocation) {
@@ -723,7 +722,7 @@ public class Experiment implements ExperimentSummary {
 		//TODO: unit test for null cld
 		if (cld == null) {
 			log.error(ERROR, "Cloud instance was null, cannot run test!");
-			sendSlackMessage("Cloud instance was null, cannot start test!");
+			sendSlackMessage("Cloud instance was null, cannot start test!", regConfig.getSlack().getChannel());
 			return;
 		}
 		this.cloud = cld;
