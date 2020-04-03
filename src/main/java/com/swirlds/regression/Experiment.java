@@ -1245,10 +1245,11 @@ public class Experiment implements ExperimentSummary {
 			SSHService node = sshNodes.get(i);
 			int tries = 2;
 			boolean frozen = false;
-			while (tries > 0 && !frozen) {
+			while (tries > 0) {
 				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
 					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
 					frozen = true;
+					break;
 				}
 				tries--;
 				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
