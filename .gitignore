@@ -143,6 +143,7 @@ regression/lib
 results
 remoteExperiment.tar.gz
 multipage_pdf.pdf
+summaryHistory/*.*
 
 # GitKeep
 .gitkeep

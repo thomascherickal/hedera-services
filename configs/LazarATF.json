@@ -1,0 +1,56 @@
+{
+  "name":"Lazar-ATF",
+  "result": {
+    "uri":"results"
+  },
+  "cloud":{
+    "service":"aws",
+    "securityGroup":"SwirldsSecGroup",
+    "instanceType": "M410xlarge",
+    "instanceKey": "lazar@swirlds.com-ATF",
+    "keyLocation":"./keys/lazar-atf",
+    "login": "ubuntu",
+    "regionList":[
+      {"region": "us-west-2", "numberOfNodes": 4}
+    ]
+  },
+  "eventFilesWriters": 4,
+  "log": {
+    "uri":"testing/logs/"
+  },
+  "experiments": [
+    "configs/testSigningDemoCfg.json",
+    "configs/testSigningDemo4KCfg.json",
+    "configs/testFcmMultipleOperationsCfg.json",
+    "configs/testRestartCfg.json",
+    "configs/testRestartBlobCfg.json",
+    "configs/testFcmFreezeCfg.json",
+    "configs/testFcmFreezeBlobCfg.json",
+    "configs/testFcmMultisizeBlobCfg.json",
+    "configs/testFcmFreezeFCQCfg.json",
+    "configs/testFCM1KFCQCfg.json",
+    "configs/testReconnectFCMMultiReconnectCfg.json",
+    "configs/testReconnectFCQMultiReconnectCfg.json",
+    "configs/testReconnectBlobCfg.json",
+    "configs/testFcm1kThrottlingCfg.json",
+    "configs/testFcmCfg.json",
+    "configs/testFcmSmallBlobCfg.json",
+    "configs/testFcmLargeBlobCfg.json"
+  ],
+  "db": {
+    "type": "postgresql",
+    "login": "dbregression",
+    "address": "localhost",
+    "port": "5432",
+    "database": "stats"
+  },
+  "slack":{
+    "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+    "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+    "channel": "regression-test",
+    "notifyOn": "ALL",
+    "notifyChannel": false,
+    "notifyUserIds": ["UA4T7UJQJ"]
+  },
+  "uploadToSharePoint": false
+}

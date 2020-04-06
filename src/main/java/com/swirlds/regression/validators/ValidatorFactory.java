@@ -45,9 +45,9 @@ public class ValidatorFactory {
 			case BLOB_STATE:
 				return new BlobStateValidator(nodeData, experimentPath);
 			case RESTART:
-				return new RestartValidator(nodeData);
+				return new RestartValidator(nodeData, testConfig);
 			case RECONNECT:
-				return new ReconnectValidator(nodeData);
+				return new ReconnectValidator(nodeData, testConfig);
 			case PLATFORM_TESTING_DEMO:
 				return new PtdValidator(nodeData);
 			case STATS:

@@ -28,17 +28,40 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.swirlds.regression.RegressionUtilities.*;
+import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
+import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
+import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
+import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.*;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -171,14 +194,35 @@ public class SSHService {
 			String commandStr = "find . " + extensions;
 			String pruneDirectory = "-not -path \"*/data/*\"";
 			commandStr += pruneDirectory;
-			final Session.Command cmd = execCommand(commandStr, "Find list of Files based on extension", -1);
+
+	        Session.Command cmd = null;
+	        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
+
+	            try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+	            }
+	        }
 			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
+
 			returnCollection.addAll(readCommandOutput(cmd));
 		}
 
 		if (dataExtensionCount > 0) {
 			String dataCommandStr = "find . | grep " + dataExtensions;
-			final Session.Command dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1);
+			
+			final Session.Command dataCmd = null
+			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
+			
+				try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+	            }
+	        }
 			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
 			returnCollection.addAll(readCommandOutput(dataCmd));
 		}
@@ -208,14 +252,16 @@ public class SSHService {
         }
     }
 
-    void scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
+    boolean scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
         try {
             log.info(MARKER, "top level folder: {}", topLevelFolders);
             Collection<String> foundFiles = getListOfFiles(
                     RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
 			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {
 			log.error(ERROR, "Could not download files", e);
+			return false;
 		}
 	}
 
@@ -475,6 +521,7 @@ public class SSHService {
 
     private Session.Command execCommand(String command, String description, int joinSec, boolean reconnectIfNeeded) {
         int returnValue = -1;
+
         try {
             if (reconnectIfNeeded) {
                 reconnectIfNeeded();
@@ -509,6 +556,7 @@ public class SSHService {
                         ipAddress, description, e);
             }
         }
+
         return null;
     }
 
@@ -611,7 +659,7 @@ public class SSHService {
         if (lastExec.until(Instant.now(), SECONDS) > RegressionUtilities.SSH_TEST_CMD_AFTER_SEC) {
             execCommand("echo test", "test if connection broken", -1, false);
         }
-        if (ssh.isConnected()) {
+        if (isConnected()) {
             return;
         }
         close();
@@ -668,7 +716,8 @@ public class SSHService {
     int countSpecifiedMsg(List<String> msgList, String fileName) {
         String joined = String.join("|", msgList);
         String searchCmd = "egrep " + " \"" + joined + "\" " + fileName;
-        final Session.Command cmd = execCommand(searchCmd,
+        String countCmd = " | wc -l";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
                 "Check specified msg", -1);
         ArrayList<String> output = readCommandOutput(cmd);
         for (String out : output) {
@@ -677,10 +726,44 @@ public class SSHService {
                 return -1;
             }
         }
-        if (output.get(0).isEmpty()) {
-            return -1;
+
+        return Integer.valueOf(output.get(0));
+    }
+
+    /**
+     * Search a lists of messages in the log file and
+     * return the number of occurrences of each message
+     *
+     * @param msgList  A list of message to search for
+     * @param fileName File name to search for the message
+     * @return a Map which contains the number of occurrences of each message
+     *      Or return null if error happened
+     */
+    Map<String, Integer> countSpecifiedMsgEach(List<String> msgList, String fileName) {
+        String joined = String.join("|", msgList);
+        String searchCmd = "egrep  -Iho " + " \"" + joined + "\" " + fileName;
+        String countCmd = " | sort | uniq -c";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
+                "Check specified msg", -1);
+        ArrayList<String> output = readCommandOutput(cmd);
+        Map<String, Integer> map = new HashMap<>();
+        for (String out : output) {
+            if (out.contains("No such file or directory")) {
+                log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
+                return null;
+            }
+
+            log.trace(MARKER, out);
+            out = out.trim();
+            // if the string is Empty, it means no occurrence
+            // if the string is not Empty, it should be: "num string"
+            if (!out.isEmpty()) {
+                String[] strs = out.split(" ", 2);
+                map.put(strs[1].trim(), Integer.valueOf(strs[0]));
+            }
         }
-        return output.size();
+        log.trace(MARKER, "countSpecifiedMsgEach resultMap: {}", map);
+        return map;
     }
 
     /**

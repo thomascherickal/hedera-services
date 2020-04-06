@@ -1,0 +1,9 @@
+###############################################################################################
+# Swirlds configuration file, for automatically running multiple instances
+###############################################################################################
+swirld, 123
+app, PlatformTestingApp.jar, FCMRestartBlob.json
+address, Restart-Blob0, Restart-Blob0, 1250000000000000000, 172.31.9.23, 40124, 3.135.187.210, 40124
+address, Restart-Blob1, Restart-Blob1, 1250000000000000000, 172.31.9.241, 40125, 3.133.152.217, 40125
+address, Restart-Blob2, Restart-Blob2, 1250000000000000000, 172.31.6.240, 40126, 18.221.7.63, 40126
+address, Restart-Blob3, Restart-Blob3, 1250000000000000000, 172.31.3.250, 40127, 3.133.128.156, 40127

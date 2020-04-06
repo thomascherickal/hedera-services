@@ -56,6 +56,19 @@ public class RegressionConfig {
 		return total;
 	}
 
+	/**
+	 * Gets the total number of regions
+	 *
+	 * @return total number of regions
+	 */
+	public int getTotalNumberOfRegions() {
+		int total = 0;
+		if (cloud != null && cloud.getRegionList() != null) {
+			total = cloud.getRegionList().size();
+		}
+		return total;
+	}
+
 	// ------------ getters and setters
 
 	public DBConfig getDb() {

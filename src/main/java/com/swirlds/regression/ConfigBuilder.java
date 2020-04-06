@@ -56,8 +56,8 @@ public class ConfigBuilder {
 
 	private Path outFile = Paths.get(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE);
 	private ArrayList<String> lines = new ArrayList<>();
-	private ArrayList<String> publicIPList;
-	private ArrayList<String> privateIPList;
+	private List<String> publicIPList;
+	private List<String> privateIPList;
 	private int startingPort = 40124;
 	private int eventFilesWriters = 0;
 	private boolean isLocal;
@@ -165,7 +165,7 @@ public class ConfigBuilder {
 		return true;
 	}
 
-	void addIPAddresses(ArrayList<String> publicIPs, ArrayList<String> privateIPs) {
+	void addIPAddresses(List<String> publicIPs, List<String> privateIPs) {
 		publicIPList = publicIPs;
 		privateIPList = privateIPs;
 	}
