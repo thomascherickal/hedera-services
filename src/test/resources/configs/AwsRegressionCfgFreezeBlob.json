@@ -1,0 +1,47 @@
+{
+  "name":"FreezeBlob-Qian",
+  "result": {
+	"uri":"results"
+  },
+  "cloud":{
+	"service":"aws",
+	"securityGroup":"SwirldsSecGroup",
+	"instanceType": "M410xlarge",
+	  "instanceKey": "qianqiu@swirlds.com",
+	"keyLocation":"./keys/my-key",
+	"login": "ubuntu",
+	"regionList":[
+	  { "region":"us-east-2",
+		"instanceList": [
+		  "i-02b5b80a1c060cebd","i-032fcd9170fe834da","i-0380e6160357c7c49","i-0b258e4543b3d642d"
+		]
+	  }
+	]
+  },
+  "eventFilesWriters": 4,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	//"configs/testFcmFreezeCfg.json",
+	//"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFcmFreezeBlobCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+
+  "slack":{
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	"channel": "regression-test",
+	"notifyOn": "ERROR",
+	"notifyChannel": false,
+	"notifyUserIds": ["UE4P47SMT"]
+  },
+  "uploadToSharePoint": false
+}
