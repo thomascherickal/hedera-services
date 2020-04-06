@@ -17,9 +17,17 @@
 
 package com.swirlds.regression.csv;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
+
 import java.util.function.Supplier;
 
 public class CsvParserV1 implements CsvParser {
+	static final Logger log = LogManager.getLogger(CsvParserV1.class);
+	static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
+
 	private int emptyLineCounter = 0;
 
 	public CsvStat[] getColumns(Supplier<String> lineSupplier) {
@@ -47,29 +55,35 @@ public class CsvParserV1 implements CsvParser {
 	@Override
 	public boolean addNextData(Supplier<String> lineSupplier, CsvStat[] columns) {
 		String line = lineSupplier.get();
-		if(line == null) {
+		if (line == null) {
 			return false;
 		} else if (line.isEmpty() || line.length() < 2) {
 			// Allow two empty lines in the csv file because when node kill reconnect testis performed,
 			// it generates two empty lines after node restarts
-			if(emptyLineCounter < 2) {
+			if (emptyLineCounter < 2) {
 				emptyLineCounter++;
 				return true;
-			}else{
+			} else {
 				return false;
 			}
 		}
 
-		String data[] = line.substring(2).split(",");
-		for (int i = 0; i < data.length; i++) {
-			columns[i].addData(data[i]);
+		try {
+			String data[] = line.substring(2).split(",");
+			for (int i = 0; i < data.length; i++) {
+				columns[i].addData(data[i]);
+			}
+		} catch (StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Error when parsing the line '{}'.", line, e);
+			return false;
 		}
+
 		return true;
 	}
 
 	@Override
 	public void addAllData(Supplier<String> lineSupplier, CsvStat[] columns) {
 		while (addNextData(lineSupplier, columns)) ;
-		emptyLineCounter=0;
+		emptyLineCounter = 0;
 	}
 }

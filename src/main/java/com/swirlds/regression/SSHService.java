@@ -1103,4 +1103,12 @@ public class SSHService {
         Session.Command cmd = execCommand(adjustHugepagesCommand, "Adjusting number of huge pages to " + hugePagesNumber);
         throwIfExitCodeBad(cmd, "Adjusting number of huge pages to " + hugePagesNumber);
 	}
+
+	void printCurrentTime(final int nodeId) {
+        String dateCmd = "date -u";
+
+        Session.Command cmd = executeCmd(dateCmd);
+        String cmdResult = readCommandOutput(cmd).toString();
+        log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+    }
 }

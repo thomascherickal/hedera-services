@@ -28,6 +28,7 @@ public class FreezeConfig implements FileRequirement {
 	// if all nodes has entered Maintenance status, regression test would stop all swirlds;
 	// else would log an error and stop the test;
 	private int freezeTiming = 0;
+	private int retries = 2;
 	private int freezeIterations = 1;
 	private AppConfig postFreezeApp;
 
@@ -53,6 +54,14 @@ public class FreezeConfig implements FileRequirement {
 
 	public void setPostFreezeApp(AppConfig postFreezeApp) {
 		this.postFreezeApp = postFreezeApp;
+	}
+
+	public int getRetries() {
+		return retries;
+	}
+
+	public void setRetries(int retries) {
+		this.retries = retries;
 	}
 
 	@Override

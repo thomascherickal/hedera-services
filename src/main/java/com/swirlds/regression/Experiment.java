@@ -1243,7 +1243,7 @@ public class Experiment implements ExperimentSummary {
 		final int expectedNum = iteration + 1;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			int tries = 2;
+			int tries = testConfig.getFreezeConfig().getRetries();
 			boolean frozen = false;
 			while (tries > 0) {
 				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
@@ -1252,6 +1252,8 @@ public class Experiment implements ExperimentSummary {
 					break;
 				}
 				tries--;
+				node.printCurrentTime(i);
+				log.info(MARKER, "Node {} has not enter MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
 				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
 			}
 			if (!frozen) {
