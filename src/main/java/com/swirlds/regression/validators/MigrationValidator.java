@@ -29,7 +29,7 @@ import static com.swirlds.regression.RegressionUtilities.OLD_EVENT_PARENT;
 
 public class MigrationValidator extends NodeValidator {
 
-	private static final String START_LOADING = " MigrationTestingApp started loading state from disk";
+	private static final String START_LOADING = "MigrationTestingApp started loading state from disk";
 
 	private static final String END_LOADING = "MigrationTestingApp loaded state from disk successfully";
 
@@ -86,10 +86,11 @@ public class MigrationValidator extends NodeValidator {
 			if (unexpectedErrors > 0) {
 				addError(String.format("Node %d has %d unexpected errors!", i, unexpectedErrors));
 			}
+
+			nodeLog = nodeData.get(nodeNum - 1).getLogReader();
+			this.isValid = this.isMigrationValid(nodeNum, nodeLog);
 		}
 
-		final LogReader nodeLog = nodeData.get(nodeNum - 1).getLogReader();
-		this.isValid = this.isMigrationValid(nodeNum, nodeLog);
 		this.isValidated = true;
 	}
 

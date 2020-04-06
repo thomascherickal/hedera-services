@@ -29,12 +29,15 @@ public class MigrationValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/migrationFCM/migrate_10k"
+			"logs/migrationFCM/migrate10k"
 	})
 	void validateMigrationLogs(String testDir) throws IOException {
-		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "Migration", 1);
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
 		final NodeValidator validator = new MigrationValidator(nodeData);
 		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertTrue(errorMessages.isEmpty());
 		assertTrue(validator.isValid());
 	}
 }
