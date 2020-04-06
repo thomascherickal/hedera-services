@@ -89,6 +89,7 @@ import static com.swirlds.regression.RegressionUtilities.REG_GIT_BRANCH;
 import static com.swirlds.regression.RegressionUtilities.REG_GIT_USER_EMAIL;
 import static com.swirlds.regression.RegressionUtilities.REG_SLACK_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
@@ -961,7 +962,7 @@ public class Experiment implements ExperimentSummary {
 
     void scpSavedFolder() {
 		ArrayList<String> blobStateScpList = new ArrayList<>();
-		blobStateScpList.add("data/saved$");
+		blobStateScpList.add(REMOTE_SAVED_FOLDER + "$");
 
 		//BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
 		for (int i = 0; i < sshNodes.size(); i++) {

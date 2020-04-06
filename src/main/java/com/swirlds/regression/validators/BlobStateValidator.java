@@ -29,6 +29,7 @@ import com.swirlds.demo.platform.fcm.MapValueBlob;
 import com.swirlds.fcmap.FCMap;
 import com.swirlds.platform.SignedStateFileManager;
 import com.swirlds.platform.state.SignedState;
+import com.swirlds.regression.RegressionUtilities;
 import net.schmizz.sshj.common.SSHException;
 
 import java.io.File;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.swirlds.regression.RegressionUtilities.DEFAULT_SETTINGS_DIR;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 
 public class BlobStateValidator extends NodeValidator {
 	private boolean isValidated = false;
@@ -162,7 +164,7 @@ public class BlobStateValidator extends NodeValidator {
 
 		return retVal;
 	}
-	
+
 	public boolean checkStateFiles(File[] files) {
 		if (files.length < 2) {
 			addError("less than two state files provided to checkStateFiles");
@@ -197,7 +199,7 @@ public class BlobStateValidator extends NodeValidator {
 		List<List<File>> nodesByRound = new ArrayList<>();
 
 		for (File node : nodes) {
-			File descendedFolder = new File(node, "data/saved/" + PlatformTestingDemoMain.class.getName());
+			File descendedFolder = new File(node, REMOTE_SAVED_FOLDER + "/" + PlatformTestingDemoMain.class.getName());
 
 			if (!descendedFolder.exists()) {
 				addError("folder containing nodes did not exist: " + descendedFolder.getPath());
@@ -273,51 +275,4 @@ public class BlobStateValidator extends NodeValidator {
 		return retVal;
 	}
 
-	public static void main (String[] arg) {
-		System.out.println("gotHere");
-
-		String out = "2020-03-12 18:26:27.994 SNAPSHOT_MANAGER 74 < SnapshotManager > SnapshotManager: Completed task [taskType='BACKUP', applicationName='com.swirlds.demo.platform.PlatformTestingDemoMain', worldId='123', nodeId=0, roundNumber=660, snapshotId=00000003-00000E86-1, timeStarted=2020-03-12T18:26:24.395262Z, timeCompleted=2020-03-12T18:26:27.993478Z, complete=true, error=false ]";
-
-		if (out.contains("No such file or directory")) {
-			log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
-//			return null;
-		}
-
-		Long roundNum = null;
-		Boolean complete = null;
-
-		String[] keyVals = out.split(", ");
-		for (String keyVal : keyVals) {
-			String[] parts = keyVal.split("=", 2);
-			if (parts.length == 2) {
-				if (parts[0].contentEquals("roundNumber")) {
-					roundNum = Long.parseLong(parts[1]);
-				} else if (parts[0].contentEquals("complete")) {
-					if (parts[1].contentEquals("false")) {
-						complete = false;
-					} else if (parts[1].contentEquals("true")) {
-						complete = true;
-					} else {
-						throw new NumberFormatException();
-					}
-				}
-			}
-		}
-
-		if ((roundNum != null) && (complete != null)) {
-			if (complete == false) {
-//				if (retMap.containsKey(roundNum)) {
-//					//already know this round completed
-//					continue;
-//				} else {
-//					retMap.put(roundNum, false);
-//				}
-			} else {
-				//round number completed
-//				retMap.put(roundNum, true);
-			}
-		} else {
-//			throw new SSHException("invalid line read");
-		}
-	}
 }

@@ -146,7 +146,8 @@ public class RegressionUtilities {
 	static final String TEST_CONFIG = "configs/testRestartCfg.json";
 	static final String REGRESSION_CONFIG = "configs/AwsRegressionCfg_Freeze.json";
 	static final String REMOTE_EXPERIMENT_LOCATION = "remoteExperiment/";
-	static final String REMOTE_STATE_LOCATION = REMOTE_EXPERIMENT_LOCATION + "data/saved/";
+	public static final String REMOTE_SAVED_FOLDER = "data/saved";
+	static final String REMOTE_STATE_LOCATION = REMOTE_EXPERIMENT_LOCATION + REMOTE_SAVED_FOLDER + "/";
 	static final String DB_BACKUP_FILENAME = "PostgresBackup.tar.gz";
 
 	static final String REG_SLACK_CHANNEL = "regression";
