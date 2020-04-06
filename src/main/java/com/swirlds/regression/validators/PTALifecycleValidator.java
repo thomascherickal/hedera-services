@@ -171,15 +171,12 @@ public class PTALifecycleValidator extends Validator {
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
 	private void checkHistory(MapKey key , TransactionType historyType, int nodeNum) {
-		String error = "";
 		if(historyType == null){
-			error = String.format(HANDLE_REJECTED_ERROR, key, nodeNum, null);
-			addError(error);
+			addError(String.format(HANDLE_REJECTED_ERROR, key, nodeNum, null));
 			return;
 		}else if(!(historyType.equals(TransactionType.Delete) ||
 				historyType.equals(TransactionType.Expire))){
-			error = String.format(HANDLE_REJECTED_ERROR, key, nodeNum, historyType);
-			addError(error);
+			addError(String.format(HANDLE_REJECTED_ERROR, key, nodeNum, historyType));
 		}
 	}
 
@@ -200,8 +197,7 @@ public class PTALifecycleValidator extends Validator {
 		missingKeysInCompare.removeAll(compareKeySet);
 
 		if(!missingKeysInCompare.isEmpty() || !missingKeysInCompare.isEmpty()) {
-			String error = String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase);
-			addError(error);
+			addError(String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase));
 		}
 	}
 
