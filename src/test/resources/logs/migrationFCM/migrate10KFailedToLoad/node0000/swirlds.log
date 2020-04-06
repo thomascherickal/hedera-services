@@ -9,7 +9,6 @@
 2020-04-05 23:33:49.476   4329 main Starting platforms
 2020-04-05 23:33:49.940   4793 main Adv Crypto Subsystem: Located an acceptable GPU acceleration device (AMD Radeon Pro 560X Compute Engine)
 2020-04-05 23:33:49.940 MIGRATION 4837 main MigrationTestingApp started loading state from disk
-2020-04-05 23:34:57.445 MIGRATION 72298 main MigrationTestingApp loaded state from disk successfully, with 10000 elements
 2020-04-05 23:34:57.452  72305 main Last known sequence numbers after restart are [1378, 1341]
 2020-04-05 23:34:57.455  72308 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/1002/SignedState.swh'
 2020-04-05 23:34:57.455  72308 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/1002/PostgresBackup.tar.gz'

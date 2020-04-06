@@ -23,13 +23,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MigrationValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/migrationFCM/migrate10k"
+			"logs/migrationFCM/migrate10K"
 	})
 	void validateMigrationLogs(String testDir) throws IOException {
 		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
@@ -39,5 +40,19 @@ public class MigrationValidatorTest {
 
 		assertTrue(errorMessages.isEmpty());
 		assertTrue(validator.isValid());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate10KFailedToLoad"
+	})
+	void validateFailToLoadMigrationLogs(String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertFalse(errorMessages.isEmpty());
+		assertFalse(validator.isValid());
 	}
 }
