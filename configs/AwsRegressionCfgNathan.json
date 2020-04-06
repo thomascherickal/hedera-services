@@ -28,7 +28,7 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 0,
+  "numberOfZeroStakeNodes": 2,
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
