@@ -349,7 +349,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Whether all node find defined number of messages in log file
+	 * Whether all nodes find defined number of messages in log file
 	 *
 	 * @param msgList
 	 * 		A list of message to search for
@@ -374,10 +374,10 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-     * Whether all node find defined number of messages in log file
+     * Whether all nodes backed up the last round
      *
      * @param fileName
-     * 		File name to search for the message
+     * 		File name to search for the saved folder containing rounds relative to
      * @return return true if the time that the message appeared is equal or larger than messageAmount
      */
     public boolean isAllNodesBackedUpLastRound(String fileName) {

@@ -46,7 +46,6 @@ public class BlobStateValidator extends NodeValidator {
 	private boolean isValid = false;
 
 	private File experimentFolder;
-//	private File dataFolder;
 
 	public BlobStateValidator(List<NodeData> nodeData, String experimentPath) {
 		super(nodeData);
@@ -80,7 +79,7 @@ public class BlobStateValidator extends NodeValidator {
 			SignedStateFileManager.readObjectFromFile(file, signedState);
 			bos.stopInit();
 		} catch (IOException e) {
-			e.printStackTrace();
+			addError("could not read signed state");
 		}
 
 		return ptdState.getStateMap().getStorageMap();
@@ -163,7 +162,7 @@ public class BlobStateValidator extends NodeValidator {
 
 		return retVal;
 	}
-//
+	
 	public boolean checkStateFiles(File[] files) {
 		if (files.length < 2) {
 			addError("less than two state files provided to checkStateFiles");

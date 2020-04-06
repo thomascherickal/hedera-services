@@ -767,11 +767,13 @@ public class SSHService {
     }
 
     /**
-     * Search a lists of messages in the log file and
-     * return the total number of occurrences of all messages
-     * Or return -1 if error happened
+     * Checks file for messages reporting that the state has been successfully saved
+     * and that a pg_backup has successfully been processed for each rounnd
      *
      * @param fileName File name to search for the message
+     *
+     * @return a map containing round numbers and whether their backup was completed
+     * for a given node
      */
     HashMap<Long,Boolean> checkSavedStateProgress(String fileName) {
         HashMap<Long,Boolean> retMap = new HashMap<>();
@@ -825,10 +827,10 @@ public class SSHService {
                 }
             }
         } catch (NumberFormatException | SSHException e) {
-            log.error("State message manager improperly formed");
+            log.error(ERROR,"State message manager improperly formed");
         }
         if (retMap.size() == 0) {
-            log.info("No saved rounds found for node");
+            log.info(MARKER,"No saved rounds found for node");
             return null;
         }
         return retMap;
