@@ -28,10 +28,11 @@
     <MarkerFilter marker="INVALID_EVENT_ERROR"    onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <!-- Other -->
     <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_COPY_FROM_DIFF"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_NODE_COORDINATOR"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_MERKLE_BUILDER"       onMatch="DENY"       onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_ISS" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+    <MarkerFilter marker="FCM_COPY_FROM_DIFF"     onMatch="DENY"       onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_NODE_COORDINATOR"   onMatch="DENY"       onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_MERKLE_BUILDER"     onMatch="DENY"       onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_ISS"                onMatch="ACCEPT" onMismatch="NEUTRAL" />
+    <MarkerFilter marker="MIGRATION"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STARTUP"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="RECONNECT"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>

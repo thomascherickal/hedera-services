@@ -1,0 +1,28 @@
+{
+  "name":"MigrationTestingApp",
+  "description" : "Migration Testing App",
+  "duration": 1800,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"MigrationTestingApp"},
+    {"name":"csvAppend", "value":"true"},
+    {"name":"reconnectActive", "value": "1"},
+    {"name": "checkSignedStateFromDisk", "value": "true"}
+  ],
+  "app": {
+    "jar": "MigrationTestingApp.jar",
+    "parameterList": [4685095852903873060, 10000,	2]
+  },
+  "startSavedState": {
+    "location": "s3://swirlds-regression/saved-states/FCQ-Batch-PTD/SetStakeInConfig/",
+    "mainClass": "com.swirlds.demo.migration.MigrationTestingAppMain",
+    "swirldName": "123",
+    "round": 4212,
+    "restoreDb": true,
+    "nodeIdentifier": "ALL_BUT_LAST"
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS" ]
+}

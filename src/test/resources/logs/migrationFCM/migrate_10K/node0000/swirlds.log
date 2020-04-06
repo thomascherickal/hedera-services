@@ -1,0 +1,27 @@
+2020-04-05 23:33:45.849    702 main Browser main() started
+2020-04-05 23:33:48.034   2887 main About to run startPlatforms()
+2020-04-05 23:33:48.046   2899 main About do crypto instantiation
+2020-04-05 23:33:48.050   2903 main About start loading keys
+2020-04-05 23:33:48.860   3713 main Done loading keys
+2020-04-05 23:33:48.861   3714 main About to start creating Crypto objects
+2020-04-05 23:33:49.474   4327 main Done creating Crypto objects
+2020-04-05 23:33:49.474   4327 main Done with crypto instantiation
+2020-04-05 23:33:49.476   4329 main Starting platforms
+2020-04-05 23:33:49.940   4793 main Adv Crypto Subsystem: Located an acceptable GPU acceleration device (AMD Radeon Pro 560X Compute Engine)
+2020-04-05 23:33:49.940   4837 main MigrationTestingApp started loading state from disk
+2020-04-05 23:34:57.445  72298 main MigrationTestingApp loaded state from disk successfully, with 10000 elements
+2020-04-05 23:34:57.452  72305 main Last known sequence numbers after restart are [1378, 1341]
+2020-04-05 23:34:57.455  72308 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/1002/SignedState.swh'
+2020-04-05 23:34:57.455  72308 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/1002/PostgresBackup.tar.gz'
+2020-04-05 23:34:57.456  72309 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/1002'
+2020-04-05 23:34:57.457  72310 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/646/SignedState.swh'
+2020-04-05 23:34:57.457  72310 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/646/PostgresBackup.tar.gz'
+2020-04-05 23:34:57.458  72311 main Deleted: '/Users/cesar/Documents/swirlds/swirldsr4/swirlds-platform/sdk/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/646'
+2020-04-05 23:36:12.869 147722 main BinaryObject: Recovery Starting
+2020-04-05 23:36:12.869 147722 main BinaryObject: Recovering Objects [ objectCount = 20000, uniqueObjectCount = 1 ]
+2020-04-05 23:36:12.894 147747 main BinaryObject: Recovery Finished
+2020-04-05 23:36:12.895 147748 main Done with starting platforms
+2020-04-05 23:36:12.909 147762 <     platformRun  0   > Platform 0 has loaded a saved state for round 1180. Will freeze until: 2020-04-05T23:36:22.895375
+2020-04-05 23:36:12.922 147775 <      appMainRun  0   > MigrationTestingApp started handling 5000 transactions with seed 4685095852903873060 and 2 nodes
+2020-04-05 23:36:13.902 148755 main Browser main() finished
+2020-04-05 23:36:17.172 152025 <      appMainRun  0   > MigrationTestingApp finished handling 5000 transactions with seed 4685095852903873060 and 2 nodes

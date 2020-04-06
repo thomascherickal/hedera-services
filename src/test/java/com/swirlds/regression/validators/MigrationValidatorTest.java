@@ -17,16 +17,24 @@
 
 package com.swirlds.regression.validators;
 
-public enum ValidatorType {
-	STANDARD,
-	RESTART,
-	RECONNECT,
-	PLATFORM_CSV,
-	FCM_CSV,
-	FCFS_CSV,
-	PLATFORM_TESTING_DEMO,
-	STATS,
-	THROTTLE,
-	PTA_THROTTLE,
-	MIGRATION
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class MigrationValidatorTest {
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate_10k"
+	})
+	void validateMigrationLogs(String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "Migration", 1);
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		assertTrue(validator.isValid());
+	}
 }
