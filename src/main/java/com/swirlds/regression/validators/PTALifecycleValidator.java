@@ -23,7 +23,7 @@ import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
 import com.swirlds.demo.platform.fcm.lifecycle.TransactionState;
 import com.swirlds.demo.platform.fcm.lifecycle.TransactionType;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +40,14 @@ public class PTALifecycleValidator extends Validator {
 	private static boolean isValid;
 	private static boolean isValidated;
 	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
+
+	public static final String HANDLE_REJECTED_ERROR = "ExpectedValue of Key %s on node %d has the " +
+			"latestHandledStatus TransactionState as HANDLE_REJECTED. But, the HistoryHandledStatus " +
+			"is not Deleted/Expired. It is %s";
+	public static final String MISSING_KEYS_ERROR = "KeySet of the expectedMap of node %d doesn't match with " +
+			"expectedMap of node %d. " +
+			"Missing keys in node %d : %s, MissingKeys in node 0 : %s";
+	public static final String FIELD_MISMATCH_ERROR = "Entity: %s has field %s mismatched. node0: %s; node%d: %s";
 
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		if(mapData != null){
@@ -89,7 +97,7 @@ public class PTALifecycleValidator extends Validator {
 		if(expectedMaps == null){
 			addError("ExpectedMap doesn't exist on nodes for validation");
 			isValid = false;
-			isValidated = false;
+			isValidated = true;
 			return;
 		}
 		Map<MapKey, ExpectedValue> baselineMap = expectedMaps.get(0);
@@ -163,15 +171,15 @@ public class PTALifecycleValidator extends Validator {
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
 	private void checkHistory(MapKey key , TransactionType historyType, int nodeNum) {
+		String error = "";
 		if(historyType == null){
-			addError("ExpectedValue of Key "+key+" on node "+ nodeNum+ " has the latestHandledStatus TransactionState " +
-					"as HANDLE_REJECTED. But, the HistoryHandledStatus is null and not Deleted/Expired.");
+			error = String.format(HANDLE_REJECTED_ERROR, key, nodeNum, null);
+			addError(error);
 			return;
 		}else if(!(historyType.equals(TransactionType.Delete) ||
 				historyType.equals(TransactionType.Expire))){
-			addError("ExpectedValue of Key "+key+" on node "+ nodeNum+" has the latestHandledStatus TransactionState as "+
-					"HANDLE_REJECTED.But, the HistoryHandledStatus is not Deleted/Expired." +
-					" It is"+historyType);
+			error = String.format(HANDLE_REJECTED_ERROR, key, nodeNum, historyType);
+			addError(error);
 		}
 	}
 
@@ -182,28 +190,18 @@ public class PTALifecycleValidator extends Validator {
 	 * @param nodeNum Node number of the node on which entities are being compared
 	 */
 	public void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
+		Set<MapKey> missingKeysInCompare = new HashSet<>();
+		Set<MapKey> missingKeysInBase = new HashSet<>();
 
-		String missingKeysInCompare = baseKeySet.
-				stream().
-				filter(x -> !compareKeySet.contains(x)).
-				map(key -> key.toString()).
-				sorted().
-				collect(Collectors.joining(","));
-		if(!missingKeysInCompare.isEmpty()) {
-			addError("KeySet of the expectedMap of node " + nodeNum +
-					" doesn't match with expectedMap of node 0. " +
-					"Missing keys in node " +nodeNum + ": "+  missingKeysInCompare);
-		}
+		missingKeysInBase.addAll(compareKeySet);
+		missingKeysInCompare.addAll(baseKeySet);
 
-		String missingKeysInBase = compareKeySet.
-				stream().
-				filter(x -> !baseKeySet.contains(x)).
-				map(key -> key.toString()).
-				sorted().
-				collect(Collectors.joining(","));;
-		if(!missingKeysInBase.isEmpty()){
-			addError("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node " +nodeNum +
-					". Missing keys in node 0 :" + missingKeysInBase);
+		missingKeysInBase.removeAll(baseKeySet);
+		missingKeysInCompare.removeAll(compareKeySet);
+
+		if(!missingKeysInCompare.isEmpty() || !missingKeysInCompare.isEmpty()) {
+			String error = String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase);
+			addError(error);
 		}
 	}
 
@@ -218,8 +216,7 @@ public class PTALifecycleValidator extends Validator {
 	 */
 	public static String buildFieldMissMatchMsg(final MapKey key, final Object base,
 			final Object other, final int nodeNum, final String fieldName) {
-		return String.format("Entity: %s has field %s mismatched. node0: %s; node%d: %s",
-				key, fieldName, base, nodeNum, other);
+		return String.format(FIELD_MISMATCH_ERROR, key, fieldName, base, nodeNum, other);
 	}
 
 	/**
@@ -269,7 +266,8 @@ public class PTALifecycleValidator extends Validator {
 		LifecycleStatus latestSubmitStatus = ev2.getLatestSubmitStatus();
 
 		if(latestSubmitStatus == null || latestSubmitStatus.getTransactionState() == null) {
-			addError("latestSubmitStatus for Entity " + key + " is null");
+			addError("latestSubmitStatus or the latestSubmitStatus's TransactionState is " +
+					"null for Entity " + key + " . latestSubmitStatus : "+ latestSubmitStatus);
 		}else if(latestSubmitStatus.equals(SUBMISSION_FAILED)) {
 			addError("Operation " + latestSubmitStatus.getTransactionType() +
 					"failed to get successfully submitted on node " + nodeNum + " for entity " + key);

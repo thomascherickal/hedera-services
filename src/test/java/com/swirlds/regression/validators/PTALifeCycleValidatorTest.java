@@ -116,15 +116,14 @@ public class PTALifeCycleValidatorTest {
 		validator.checkMissingKeys(expectedMaps.get(0).keySet(),
 				expectedMaps.get(2).keySet(), 2);
 		List<String> errors = validator.getErrorMessages();
-		assertEquals(2, errors.size());
-		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0." +
-				" Missing keys in node 2: MapKey[0,1,2],MapKey[1,2,3]", errors.get(0));
+		assertEquals(1, errors.size());
 
-		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. " +
-				"Missing keys in node 0 :MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(1));
-		for (String error : errors) {
-			System.out.println(error);
-		}
+		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. " +
+				"Missing keys in node 2 : [MapKey[0,1,2], MapKey[1,2,3]], MissingKeys in node 0 : " +
+				"[MapKey[2,2,4], MapKey[2,2,3], MapKey[2,0,2]]", errors.get(0));
+
+		System.out.println(errors.get(0));
+
 	}
 
 	@Test
@@ -153,11 +152,11 @@ public class PTALifeCycleValidatorTest {
 		assertEquals(2, errors2.size());
 
 		assertEquals("ExpectedValue of Key MapKey[0,2,3] on node 0 has the latestHandledStatus " +
-				"TransactionState as HANDLE_REJECTED.But, the HistoryHandledStatus is not Deleted/Expired. " +
-				"It isCreate", errors.get(0));
+				"TransactionState as HANDLE_REJECTED. But, the HistoryHandledStatus is not Deleted/Expired. " +
+				"It is Create", errors.get(0));
 		assertEquals("ExpectedValue of Key MapKey[0,2,3] on node 2 has the latestHandledStatus " +
-				"TransactionState as HANDLE_REJECTED.But, the HistoryHandledStatus is not Deleted/Expired. " +
-				"It isCreate", errors.get(1));
+				"TransactionState as HANDLE_REJECTED. But, the HistoryHandledStatus is not Deleted/Expired. " +
+				"It is Create", errors.get(1));
 		for (String error : errors) {
 			System.out.println(error);
 		}
@@ -192,7 +191,8 @@ public class PTALifeCycleValidatorTest {
 		List<String> errors = validator.getErrorMessages();
 		assertEquals(5, errors.size());
 
-		assertEquals("latestSubmitStatus for Entity MapKey[0,2,3] is null", errors.get(0));
+		assertEquals("latestSubmitStatus or the latestSubmitStatus's TransactionState is null for Entity MapKey[0,2,3] ." +
+				" latestSubmitStatus : null", errors.get(0));
 		assertEquals("Operation Create on Entity MapKey[0,2,3]in Node 0 failed as entity already exists", errors.get(1));
 		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2", errors.get(2));
 		assertEquals("Operation Create failed as it is performed on wrong entity type null", errors.get(3));
@@ -254,13 +254,13 @@ public class PTALifeCycleValidatorTest {
 		validator.validate();
 
 		List<String> errors = validator.getErrorMessages();
-		assertEquals(3, errors.size());
+		assertEquals(2, errors.size());
 		assertEquals("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 1: MapKey[0,1,2],MapKey[0,1,3],MapKey[0,2,3],MapKey[1,2,3]", errors.get(0));
-		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. Missing keys in " +
-				"node 2: MapKey[0,1,2],MapKey[1,2,3]", errors.get(1));
-		assertEquals("KeySet of the expectedMap of node 0 doesn't match with expectedMap of node 2. " +
-				"Missing keys in node 0 :MapKey[2,0,2],MapKey[2,2,3],MapKey[2,2,4]", errors.get(2));
+				"Missing keys in node 1 : [MapKey[0,2,3], MapKey[0,1,3], MapKey[0,1,2], MapKey[1,2,3]], " +
+				"MissingKeys in node 0 : []", errors.get(0));
+		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. " +
+				"Missing keys in node 2 : [MapKey[0,1,2], MapKey[1,2,3]], MissingKeys in node 0 : " +
+				"[MapKey[2,2,4], MapKey[2,2,3], MapKey[2,0,2]]", errors.get(1));
 		for (String error : errors) {
 			System.out.println(error);
 		}
