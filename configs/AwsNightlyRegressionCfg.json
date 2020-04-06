@@ -56,7 +56,7 @@
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
-	"notifyUserIds": ["UA4T7UJQJ", "UA5K2LZ1D"]
+	"notifyUserIds": ["UA4T7UJQJ", "UA5K2LZ1D" ]
   },
   "uploadToSharePoint": true
 }
