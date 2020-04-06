@@ -381,7 +381,6 @@ public class Experiment implements ExperimentSummary {
      * @return return true if the time that the message appeared is equal or larger than messageAmount
      */
     public boolean isAllNodesBackedUpLastRound(String fileName) {
-        boolean allNodesCompletedSameRound = false;
         Long maxRoundSeen = -1L;
         Boolean allCompleteMaxRound = true;
         HashMap<Integer,HashMap<Long,Boolean>> nodeRounds = new HashMap<>();
