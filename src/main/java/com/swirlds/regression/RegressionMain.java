@@ -222,7 +222,9 @@ public class RegressionMain {
 			}
 		}
 		String summaryChannel = regConfig.getSlack().getSummaryChannel();
-		if (summaryChannel == null || summaryChannel.isEmpty()) summaryChannel = regConfig.getSlack().getChannel();
+		if (summaryChannel == null || summaryChannel.isEmpty()) {
+			summaryChannel = regConfig.getSlack().getChannel();
+		}
 		slacker.messageChannel(summary, summaryChannel);
 	}
 
