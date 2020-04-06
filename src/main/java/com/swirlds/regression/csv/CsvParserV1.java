@@ -49,7 +49,7 @@ public class CsvParserV1 implements CsvParser {
 		String line = lineSupplier.get();
 		if(line == null) {
 			return false;
-		} else if (line.isEmpty()) {
+		} else if (line.isEmpty() || line.length() < 2) {
 			// Allow two empty lines in the csv file because when node kill reconnect testis performed,
 			// it generates two empty lines after node restarts
 			if(emptyLineCounter < 2) {
@@ -59,6 +59,7 @@ public class CsvParserV1 implements CsvParser {
 				return false;
 			}
 		}
+
 		String data[] = line.substring(2).split(",");
 		for (int i = 0; i < data.length; i++) {
 			columns[i].addData(data[i]);
