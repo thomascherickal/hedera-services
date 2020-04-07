@@ -17,20 +17,20 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.demo.platform.fcm.MapKey;
-import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.LifecycleStatus;
-import com.swirlds.demo.platform.fcm.lifecycle.TransactionState;
-import com.swirlds.demo.platform.fcm.lifecycle.TransactionType;
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.LifecycleStatus;
+import com.swirlds.fcmap.test.lifecycle.TransactionState;
+import com.swirlds.fcmap.test.lifecycle.TransactionType;
+import com.swirlds.fcmap.test.pta.MapKey;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static com.swirlds.demo.platform.fcm.lifecycle.TransactionState.SUBMISSION_FAILED;
+import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMISSION_FAILED;
+
 
 /**
  * Validator to validate lifecycle of all entities in ExpectedMap
@@ -196,7 +196,7 @@ public class PTALifecycleValidator extends Validator {
 		missingKeysInBase.removeAll(baseKeySet);
 		missingKeysInCompare.removeAll(compareKeySet);
 
-		if(!missingKeysInCompare.isEmpty() || !missingKeysInCompare.isEmpty()) {
+		if(missingKeysInBase.size() > 0 || missingKeysInCompare.size() > 0) {
 			addError(String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase));
 		}
 	}

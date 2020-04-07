@@ -19,9 +19,10 @@ package com.swirlds.regression.validators;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swirlds.demo.platform.fcm.MapKey;
-import com.swirlds.demo.platform.fcm.lifecycle.ExpectedValue;
-import com.swirlds.demo.platform.fcm.lifecycle.SaveExpectedMapHandler;
+
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
