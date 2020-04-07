@@ -69,18 +69,14 @@ public class BlobStateValidator extends Validator {
 
 
 	private FCMap recoverStorageMapFromSavedState(File file) {
-		PlatformTestingDemoState ptdState = new PlatformTestingDemoState();
-		SignedState signedState = new SignedState(ptdState);
-		try {
-			BinaryObjectStore bos = BinaryObjectStore.getInstance();
-			bos.startInit();
-			SignedStateFileManager.readObjectFromFile(file, signedState);
-			bos.stopInit();
-		} catch (IOException e) {
-			addError("could not read signed state");
-		}
+		FCMap storageMap = null;
 
-		return ptdState.getStateMap().getStorageMap();
+		BinaryObjectStore bos = BinaryObjectStore.getInstance();
+		bos.startInit();
+		storageMap = getStorageMapFromSavedState(file);
+		bos.stopInit();
+
+		return storageMap;
 	}
 
 	private FCMap getStorageMapFromSavedState(File file) {
@@ -89,7 +85,8 @@ public class BlobStateValidator extends Validator {
 		try {
 			SignedStateFileManager.readObjectFromFile(file, signedState);
 		} catch (IOException e) {
-			e.printStackTrace();
+			addError("could not read signed state");
+			return null;
 		}
 
 		return ptdState.getStateMap().getStorageMap();
@@ -148,13 +145,18 @@ public class BlobStateValidator extends Validator {
 		//deserialize state and get storage map
 		FCMap<MapKey, MapValueBlob> fcMap = recoverStorageMapFromSavedState(signedStateFile);
 
-		if (!checkState(fcMap)) {
-			addError("state file check failed for: " + roundDir.getAbsolutePath());
-			retVal = false;
-		}
+		if (fcMap != null) {
+			if (!checkState(fcMap)) {
+				addError("state file check failed for: " + roundDir.getAbsolutePath());
+				retVal = false;
+			}
 
-		if (!checkForDanglingLOs()) {
-			addError("danglingLOs found for: " + roundDir.getAbsolutePath());
+			if (!checkForDanglingLOs()) {
+				addError("danglingLOs found for: " + roundDir.getAbsolutePath());
+				retVal = false;
+			}
+		} else {
+			//failed to retrieve fcMap
 			retVal = false;
 		}
 
