@@ -40,7 +40,7 @@ import java.util.List;
 import static com.swirlds.regression.RegressionUtilities.DEFAULT_SETTINGS_DIR;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 
-public class BlobStateValidator extends NodeValidator {
+public class BlobStateValidator extends Validator {
 	private boolean isValidated = false;
 	private boolean isValid = false;
 
@@ -49,9 +49,8 @@ public class BlobStateValidator extends NodeValidator {
 	private final static String STATE_FILE_NAME = "SignedState.swh";
 	private final static String SWIRLD_NUM = "123";
 
-	public BlobStateValidator(List<NodeData> nodeData, String experimentPath) {
-		super(nodeData);
-		this.experimentFolder = new File(experimentPath);
+	public void setExperimentFolder(String experimentFolder) {
+		this.experimentFolder = new File(experimentFolder);
 		if (!this.experimentFolder.exists()) {
 			addError("experiment path did not exist");
 		}

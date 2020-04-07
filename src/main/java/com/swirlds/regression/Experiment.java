@@ -28,6 +28,7 @@ import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
@@ -670,7 +671,11 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig, getExperimentFolder()));
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig);
+			if (item == ValidatorType.BLOB_STATE) {
+				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
+			}
+			requiredValidator.add(validatorToAdd);
 		}
 
 		// Add stream server validator if event streaming is configured
