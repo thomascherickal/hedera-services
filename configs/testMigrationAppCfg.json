@@ -11,18 +11,18 @@
   ],
   "app": {
     "jar": "MigrationTestingApp.jar",
-    "parameterList": [4685095852903873060, 10000,	2]
+    "parameterList": [4685095852903873060, 5000,	4]
   },
   "startSavedState": {
-    "location": "s3://swirlds-regression/saved-states/FCQ-Batch-PTD/SetStakeInConfig/",
+    "location": "s3://swirlds-regression/saved-states/MigrationTestingApp/migrate10K/",
     "mainClass": "com.swirlds.demo.migration.MigrationTestingAppMain",
     "swirldName": "123",
-    "round": 4212,
+    "round": 113,
     "restoreDb": true,
     "nodeIdentifier": "ALL_BUT_LAST"
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS" ]
+  "validator": [ "MIGRATION" ]
 }
