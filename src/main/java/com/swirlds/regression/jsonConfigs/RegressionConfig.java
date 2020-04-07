@@ -30,10 +30,11 @@ public class RegressionConfig {
 	private LocalConfig local = null;
 	private List<String> experiments;
 	private SlackConfig slack;
+	private JvmOptionParametersConfig jvmOptionParametersConfig = null;
 
 	private String name;
 	private int eventFilesWriters = 0;
-	private boolean uploadToSharePoint = true;
+	private boolean uploadToSharePoint = false;
 	private String jvmOptions = "";
 
 
@@ -51,6 +52,19 @@ public class RegressionConfig {
 		}
 		if (local != null) {
 			total += local.getNumberOfNodes();
+		}
+		return total;
+	}
+
+	/**
+	 * Gets the total number of regions
+	 *
+	 * @return total number of regions
+	 */
+	public int getTotalNumberOfRegions() {
+		int total = 0;
+		if (cloud != null && cloud.getRegionList() != null) {
+			total = cloud.getRegionList().size();
 		}
 		return total;
 	}
@@ -160,5 +174,13 @@ public class RegressionConfig {
 
 	public void setJvmOptions(String jvmOptions) {
 		this.jvmOptions = jvmOptions;
+	}
+
+	public JvmOptionParametersConfig getJvmOptionParametersConfig() {
+		return jvmOptionParametersConfig;
+	}
+
+	public void setJvmOptionParametersConfig(JvmOptionParametersConfig jvmOptionParametersConfig) {
+		this.jvmOptionParametersConfig = jvmOptionParametersConfig;
 	}
 }

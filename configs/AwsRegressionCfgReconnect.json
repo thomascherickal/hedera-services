@@ -6,16 +6,14 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
-	"instanceType": "M410xlarge",
-	"instanceKey": "ATF-Key",
+	  "instanceKey": "regression-key",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
 	  { "region":"us-east-1", "numberOfNodes":4}
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
@@ -32,6 +30,7 @@
 
   "slack":{
     "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
     "channel": "regression"
   }
 }

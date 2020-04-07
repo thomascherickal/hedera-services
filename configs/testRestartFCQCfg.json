@@ -8,7 +8,8 @@
     {"name":"throttle7threshold", "value": "1.5" },
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"}
+    {"name":"csvAppend", "value":"true"},
+    {"name":"state.saveStatePeriod", "value":"300"}
   ],
   "restartConfig":{
     "restartTiming": 2

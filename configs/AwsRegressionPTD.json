@@ -6,10 +6,7 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
-	"instanceType": "M410xlarge",
-	"instanceKey": "ATF-Key",
+	  "instanceKey": "regression-key",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[

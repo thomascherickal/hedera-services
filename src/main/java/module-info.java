@@ -7,8 +7,10 @@ module com.swirlds.regression {
 	requires log4j.core;
 	requires log4j.api;
 
-	// requires org.apache.logging.log4j;
-	// requires org.apache.logging.log4j.core;
+	requires java.scripting;
+
+//	requires org.apache.logging.log4j;
+//	requires org.apache.logging.log4j.core;
 
 	requires org.apache.commons.io;
 	requires org.apache.commons.compress;
@@ -20,6 +22,7 @@ module com.swirlds.regression {
 	requires aws.java.sdk.ec2;
 	requires aws.java.sdk.core;
 	requires aws.java.sdk.pricing;
+	requires aws.java.sdk.costexplorer;
 
 	requires jdk.xml.dom;
 
@@ -37,5 +40,6 @@ module com.swirlds.regression {
 	exports com.swirlds.regression.jsonConfigs.runTypeConfigs;
 	exports com.swirlds.regression.validators;
 	exports com.swirlds.regression.slack;
+	exports com.swirlds.regression.experiment;
 
 }

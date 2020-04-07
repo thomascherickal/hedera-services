@@ -17,28 +17,21 @@
 
 package com.swirlds.regression.validators;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 
-public class EventSigFile implements Comparable<EventSigFile>{
+public class EventSigFile implements Comparable<EventSigFile> {
 
-	private static final String EXTENSION = ".ets_sig";
-	private static final long DEFAULT_CREATION = 0;
-	private static final Date DEFAULT_CREATION_TIME = new Date(DEFAULT_CREATION);
-	private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH_mm_ss.SSSSSS'Z'";
-	private static final SimpleDateFormat FILE_DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+	private static final String EXTENSION = ".evts_sig";
 
 	private final String filename;
-	private Date creationTime;
+	private Instant creationTime;
 
 	public EventSigFile(final String filename) {
 		this.filename = filename;
 		try {
-			final String dateInfo = this.filename.substring(0, this.filename.length() - EXTENSION.length());
-			this.creationTime  = FILE_DATE_FORMAT.parse(dateInfo);
-		} catch (final ParseException ex) {
-			this.creationTime = DEFAULT_CREATION_TIME;
+			String dateInfo = this.filename.substring(0, this.filename.length() - EXTENSION.length());
+			dateInfo = dateInfo.replace("_", ":");
+			this.creationTime = Instant.parse(dateInfo);
 		} catch (final Exception ex) {
 			throw new RuntimeException("Invalid filename: " + filename, ex);
 		}

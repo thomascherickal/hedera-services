@@ -6,8 +6,6 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V11",
 	"instanceType": "M410xlarge",
 	"instanceKey": "regression-key",
 	"keyLocation":"./keys/my-key",
@@ -15,10 +13,7 @@
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-		"i-03c90b3fdeed8edd7",
-		"i-050d3f864b99b796f",
-		"i-0611e2febc6a73d5a",
-		"i-0cc227bff247a8a09"
+			"i-04223a00a2884931c","i-08eafb29a6b39dc22","i-09aceb44773d0b2da","i-0a80c3d91ce61c5f0"
 	    ]
 	  }
 	]
@@ -32,25 +27,19 @@
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
 	"configs/testRestartCfg.json",
-	"configs/testRestartFCLLCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
-	"configs/testFcmFreezeFCLLCfg.json",
 	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcmCfg.json",
-	"configs/testFcm3MCfg.json",
-	"configs/testFcm1KFCLLCfg.json",
 	"configs/testFcmMultisizeBlobCfg.json",
-	"configs/testFcm10MBx10KBlobCfg.json",
-	"configs/testFcm4kx100KBlobCfg.json",
-	"configs/testFcm3MSavedStateCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
 	"configs/testFCM1KFCQCfg.json",
-	"configs/testExperimentFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
 	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectFCQCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testReconnectBlobCfg.json",
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testFcmCfg.json",
+	"configs/testFcmSmallBlobCfg.json",
+	"configs/testFcmLargeBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -61,6 +50,7 @@
   },
   "slack":{
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",

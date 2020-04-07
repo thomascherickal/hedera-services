@@ -17,11 +17,14 @@
 
 package com.swirlds.regression.validators;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.EMPTY_HASH;
+import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 
 public class StreamingServerValidator extends Validator {
 
@@ -32,9 +35,13 @@ public class StreamingServerValidator extends Validator {
 
 	private final List<StreamingServerData> ssData;
 	private boolean valid = false;
+	private boolean stateRecoverMode = false;
+	// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
+	private boolean reconnect = false;
 
-	public StreamingServerValidator(final List<StreamingServerData> ssData) {
+	public StreamingServerValidator(final List<StreamingServerData> ssData, final boolean reconnect) {
 		this.ssData = ssData;
+		this.reconnect = reconnect;
 	}
 
 	@Override
@@ -44,16 +51,30 @@ public class StreamingServerValidator extends Validator {
 			return;
 		}
 
-		final List<String> sha1sumList = new ArrayList<>(ssData.size());
-		for (final StreamingServerData data : ssData) {
-			sha1sumList.add(data.getSha1SumData());
+		// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
+		final int validateNodesNum = reconnect ? ssData.size() - 1 : ssData.size();
+
+		final List<String> sha1sumList = new ArrayList<>(validateNodesNum);
+		for (int i = 0; i < validateNodesNum; i++) {
+			sha1sumList.add(ssData.get(i).getSha1SumData());
 		}
 
 		if (!isAnySha1SumMissing(sha1sumList)) {
 			isChecksumListValid(sha1sumList);
 		}
 
-		validateEvtSigFiles();
+		validateEvtSigFiles(validateNodesNum);
+
+		if (stateRecoverMode) {
+			for (int i = 0; i < ssData.size(); i++) {
+				if (!checkRecoverEventMatchLog(ssData.get(i).getRecoverEventMatchLog())) {
+					addError("Node " + i + " recovered event file does not match original ones !");
+					this.valid = false;
+				} else {
+					addInfo("Node " + i + " recovered event file match original ones");
+				}
+			}
+		}
 	}
 
 	private boolean isAnySha1SumMissing(final List<String> sha1sumList) {
@@ -97,7 +118,7 @@ public class StreamingServerValidator extends Validator {
 							"Server %d and %d do servers have the same hashes, except the last evt. This is common " +
 									"in apps that do not have a set ending.", i - 1, i));
 				} else {
-					addError(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
+					addInfo(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
 							FINAL_EVENT_FILE_HASH));
 					mismatch = true;
 				}
@@ -106,15 +127,15 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		if (!mismatch && !someEmpty) {
-			addInfo(String.format("The events saved by the first %d servers have the same hashes.", ssData.size()));
+			addInfo(String.format("The events saved by the first %d servers have the same hashes.", sha1sumList.size()));
 			valid = true;
 		}
 	}
 
 	/*
-		Because some nodes may be killed while events are still being written, the last event file (or two) may 
+		Because some nodes may be killed while events are still being written, the last event file (or two) may
 		mismatch. For that reason we check from the second to last common last event back. If a difference is found
-		then an error existing in the streaming data. There is a small statistical chance the lastCommonEvent is not 
+		then an error existing in the streaming data. There is a small statistical chance the lastCommonEvent is not
 		mismatched, but that a new evt file was started after the last line of the leastCommonEvt was written. This is
 		a small likelihood and it is assumed that in this case if all other events are equal the lastCommonEvent
 		would be equal as well.
@@ -149,14 +170,14 @@ public class StreamingServerValidator extends Validator {
 		return valid;
 	}
 
-	private void validateEvtSigFiles() {
+	private void validateEvtSigFiles(final int validateNodesNum) {
 		boolean evtsValid = true;
 		final List<EventSigEvent> sigEvents = this.ssData.stream()
 				.map(StreamingServerData::getEvtsSigEvents)
 				.collect(Collectors.toList());
 
 		final EventSigEvent reference = sigEvents.get(0);
-		for (int index = 1; index < sigEvents.size(); index++) {
+		for (int index = 1; index < validateNodesNum; index++) {
 			final EventSigEvent event = sigEvents.get(index);
 			if (!reference.equals(event)) {
 				String description = "The contents of two nodes don't match:\n\n" +
@@ -175,5 +196,31 @@ public class StreamingServerValidator extends Validator {
 
 		this.valid &= evtsValid;
 		addInfo(String.format("Are evts_sig files valid: %s for %d files", evtsValid, reference.size()));
+	}
+
+
+	private boolean checkRecoverEventMatchLog(InputStream input) {
+		if (input != null) {
+			Scanner eventScanner = new Scanner(input);
+			if (eventScanner.hasNextLine()) {
+				String entry = eventScanner.nextLine();
+				log.info(MARKER, "Read match log entry = {}", entry);
+				if (entry.contains(EVENT_MATCH_MSG)) {
+					return true;
+				}
+			}
+		}else{
+			log.error(ERROR, "Input stream of event match log after state recover is null");
+			return false;
+		}
+		return false;
+	}
+
+	public boolean isStateRecoverMode() {
+		return stateRecoverMode;
+	}
+
+	public void setStateRecoverMode(boolean stateRecoverMode) {
+		this.stateRecoverMode = stateRecoverMode;
 	}
 }

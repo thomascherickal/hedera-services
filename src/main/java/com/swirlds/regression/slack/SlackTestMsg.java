@@ -17,7 +17,6 @@
 
 package com.swirlds.regression.slack;
 
-import com.hubspot.slack.client.methods.params.chat.ChatPostMessageParams;
 import com.hubspot.slack.client.models.Attachment;
 import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -29,10 +28,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SlackTestMsg extends BaseSlackMsg {
+public class SlackTestMsg extends SlackMsg {
 
 	private RegressionConfig regConfig;
 	private TestConfig testConfig;
@@ -41,21 +41,28 @@ public class SlackTestMsg extends BaseSlackMsg {
 
 	private List<Pair<Validator, Throwable>> validators = new LinkedList<>();
 
+	private List<String> Errors = new LinkedList<>();
+	private List<String> Warnings = new LinkedList<>();
+	private List<Throwable> Exceptions = new LinkedList<>();
 
-	public SlackTestMsg(RegressionConfig regConfig, TestConfig testConfig, String resultsFolder, GitInfo gitInfo) {
+	private String uniqueId;
+
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig, TestConfig testConfig,
+			String resultsFolder, GitInfo gitInfo) {
 		super(regConfig.getSlack());
 		this.regConfig = regConfig;
 		this.testConfig = testConfig;
 		this.resultsFolder = resultsFolder;
 		this.gitInfo = gitInfo;
+		this.uniqueId = uniqueId;
 	}
 
-	public SlackTestMsg(RegressionConfig regConfig, TestConfig testConfig) {
-		this(regConfig, testConfig, null, null);
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig, TestConfig testConfig) {
+		this(uniqueId, regConfig, testConfig, null, null);
 	}
 
-	public SlackTestMsg(RegressionConfig regConfig) {
-		this(regConfig, null, null, null);
+	public SlackTestMsg(String uniqueId, RegressionConfig regConfig) {
+		this(uniqueId, regConfig, null, null, null);
 	}
 
 	public void addValidatorInfo(Validator v) {
@@ -66,16 +73,30 @@ public class SlackTestMsg extends BaseSlackMsg {
 		validators.add(Pair.of(v, t));
 	}
 
-	ChatPostMessageParams build(String channel) {
-		ChatPostMessageParams.Builder msg = ChatPostMessageParams.builder();
-		msg.setChannelId(channel);
+	public void addError(String error) {
+		errors = true;
+		Errors.add(error);
+	}
 
-		StringBuilder sbRun = new StringBuilder();
+	public void addExceptions(Throwable exception) {
+		exceptions = true;
+		Exceptions.add(exception);
+	}
 
-		addTestSummary(sbRun);
+	public void addWarning(String warning) {
+		warnings = true;
+		Warnings.add(warning);
+	}
 
-		checkForAnomolies();
+	public String getUniqueId() {
+		return uniqueId == null ? "" : uniqueId;
+	}
 
+	@Override
+	public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
+		addTestSummary(stringBuilder);
+
+		List<Attachment> attachments = new ArrayList<>();
 		for (Pair<Validator, Throwable> pair : validators) {
 			Validator v = pair.getLeft();
 			Throwable t = pair.getRight();
@@ -91,24 +112,21 @@ public class SlackTestMsg extends BaseSlackMsg {
 			// if [there is an exception] OR [test not valid] OR [test has errors]
 			if (t != null || !v.isValid() || v.hasErrors()) {
 				attach.setColor("#FF0000");
-				hasErrors = true;
+				errors = true;
 			} else if (v.hasWarnings()) {
 				attach.setColor("#FFFF00");
-				hasWarnings = true;
+				warnings = true;
 			} else {
 				attach.setColor("#00FF00");
 			}
 
-			msg.addAttachments(attach.build());
+			attachments.add(attach.build());
 		}
 
-		addNotify(sbRun, hasWarnings, hasErrors, hasExceptions);
-		msg.setText(sbRun.toString());
-
-		return msg.build();
+		return attachments;
 	}
 
-	public String getPlainText() {
+	public String getPlaintext() {
 		StringBuilder s = new StringBuilder();
 
 		addTestSummary(s);
@@ -128,11 +146,14 @@ public class SlackTestMsg extends BaseSlackMsg {
 	private void addTestSummary(StringBuilder s) {
 		s.append("*Run:* ").append(regConfig.getName()).append(NEWLINE);
 		if (testConfig != null) {
-			s.append("*Test:* ").append(testConfig.getName()).append(NEWLINE);
+			s.append("*Test:* `").append(testConfig.getName()).append("`").append(NEWLINE);
 			s.append("*Configured Test Duration:* ").append(testConfig.getDuration()).append(NEWLINE);
 		}
 		if (resultsFolder != null) {
-			s.append("*ResultsFolder:* ").append(resultsFolder).append(NEWLINE);
+			s.append("*Results Folder:* ").append(resultsFolder).append(NEWLINE);
+		}
+		if (uniqueId != null) {
+			s.append("*Unique Identifier:* ").append(uniqueId).append(NEWLINE);
 		}
 		if (gitInfo != null) {
 			s.append("*Git:* ")
@@ -190,9 +211,14 @@ public class SlackTestMsg extends BaseSlackMsg {
 		sb.append(" validation");
 		sb.append(" ----").append(NEWLINE);
 
+		// If there are many warnings in the test validation,
+		// errors are not displayed in slack post.
+		// So, errors are displayed before warnings.
+
 		appendValidatorMessages(validator, sb, "INFO");
-		appendValidatorMessages(validator, sb, "WARNING");
 		appendValidatorMessages(validator, sb, "ERROR");
+		appendValidatorMessages(validator, sb, "WARNING");
+
 		sb.append("```").append(NEWLINE);
 	}
 

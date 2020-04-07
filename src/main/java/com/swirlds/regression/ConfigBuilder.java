@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.swirlds.regression.RegressionUtilities.SWIRLDS_NAME;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class ConfigBuilder {
@@ -47,7 +48,7 @@ public class ConfigBuilder {
 					+ "# Swirlds configuration file, for automatically running multiple instances\n"
 					+
 					"###############################################################################################\n"
-					+ "swirld, 123";
+					+ "swirld, " + SWIRLDS_NAME;
 	private static final String LOCALHOST_DEFAULT_IP = "127.0.0.1";
 	private static final String SEPERATOR = ", ";
 	private static final String CONFIG_PLACEHOLDER = "1";
@@ -55,8 +56,8 @@ public class ConfigBuilder {
 
 	private Path outFile = Paths.get(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE);
 	private ArrayList<String> lines = new ArrayList<>();
-	private ArrayList<String> publicIPList;
-	private ArrayList<String> privateIPList;
+	private List<String> publicIPList;
+	private List<String> privateIPList;
 	private int startingPort = 40124;
 	private int eventFilesWriters = 0;
 	private boolean isLocal;
@@ -164,7 +165,7 @@ public class ConfigBuilder {
 		return true;
 	}
 
-	void addIPAddresses(ArrayList<String> publicIPs, ArrayList<String> privateIPs) {
+	void addIPAddresses(List<String> publicIPs, List<String> privateIPs) {
 		publicIPList = publicIPs;
 		privateIPList = privateIPs;
 	}

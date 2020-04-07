@@ -6,19 +6,13 @@
   "cloud":{
 	"service":"aws",
 	"securityGroup":"SwirldsSecGroup",
-	"securityGroupID":"sg-7214c20b",
-	"instanceName": "ATF-U18.04-OJDK12.0.1-PSQL10.9-BADGERIZE-V10",
-	"instanceType": "M410xlarge",
 	"instanceKey": "regression-key",
 	"keyLocation":"./keys/my-key",
 	"login": "ubuntu",
 	"regionList":[
 	  { "region":"us-east-2",
 		"instanceList": [
-		  "i-06c39c882643225fd",
-		  "i-0bd698db303a77e9c",
-		  "i-0bec7694235f63240",
-		  "i-0e25ddb466139ef9c"
+			"i-09ee53ca2f4d22259", "i-098090dc9273cad03","i-0ffa30714389e48ad","i-0196e8bd46993dfc1"
 		]
 	  }
 	]
@@ -39,6 +33,7 @@
   },
   "slack":{
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	  "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",

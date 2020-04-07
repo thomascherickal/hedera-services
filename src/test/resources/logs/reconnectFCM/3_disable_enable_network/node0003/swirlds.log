@@ -1,118 +1,225 @@
-2019-03-14 15:49:50.642 STARTUP    618 main Browser main() started
-2019-03-14 15:49:50.660 STARTUP    636 main About to run startPlatforms()
-2019-03-14 15:49:50.665 STARTUP    641 main About do crypto instantiation
-2019-03-14 15:49:50.670 STARTUP    646 main About start loading keys
-2019-03-14 15:49:51.534 STARTUP   1510 main Done loading keys
-2019-03-14 15:49:51.535 STARTUP   1511 main About to start creating Crypto objects
-2019-03-14 15:49:52.363 STARTUP   2339 main Done creating Crypto objects
-2019-03-14 15:49:52.363 STARTUP   2339 main Done with crypto instantiation
-2019-03-14 15:49:52.365 STARTUP   2341 main Starting platforms
-2019-03-14 15:49:52.556 STARTUP   2532 main Done with starting platforms
-2019-03-14 15:49:52.575 STARTUP   2551 <     platformRun  3  3> Initializing FCMapStatsDemoMain
-2019-03-14 15:49:52.590 STARTUP   2566 main Browser main() finished
-2019-03-14 15:49:53.491 STARTUP   3467 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory initializing
-2019-03-14 15:49:53.506 STARTUP   3482 <       stateHash  3   > Adv Crypto Subsystem: No supported GPU acceleration device found
-2019-03-14 15:49:53.583 STARTUP   3559 <       stateHash  3   > Adv Crypto Subsystem: CpuCryptoEngine initialized
-2019-03-14 15:49:53.583 STARTUP   3559 <       stateHash  3   > Adv Crypto Subsystem: CryptoFactory startup complete
-2019-03-14 15:50:55.019 SOCKET_EXCEPTIONS  64995 <    syncListener  3  1> 3 didn't receive anything from 1 for 5005 ms. Disconnecting...
-2019-03-14 15:50:55.029 SOCKET_EXCEPTIONS  65005 <    syncListener  3  0> 3 didn't receive anything from 0 for 5006 ms. Disconnecting...
-2019-03-14 15:50:55.033 SOCKET_EXCEPTIONS  65009 <    syncListener  3  2> 3 didn't receive anything from 2 for 5006 ms. Disconnecting...
-2019-03-14 15:50:55.127 SOCKET_EXCEPTIONS  65103 <      syncCaller  3  1> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 3 listening for 1:
+2020-03-09 22:43:30.377 STARTUP 1 main Browser main() started
+2020-03-09 22:43:31.104 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-03-09 22:43:31.371 STARTUP 1 main About to run startPlatforms()
+2020-03-09 22:43:31.382 STARTUP 1 main About do crypto instantiation
+2020-03-09 22:43:31.448 STARTUP 1 main About start loading keys
+2020-03-09 22:43:33.121 STARTUP 1 main Done loading keys
+2020-03-09 22:43:33.121 STARTUP 1 main About to start creating Crypto objects
+2020-03-09 22:43:33.987 STARTUP 1 main Done creating Crypto objects
+2020-03-09 22:43:33.987 STARTUP 1 main Done with crypto instantiation
+2020-03-09 22:43:33.992 STARTUP 1 main Starting platforms
+2020-03-09 22:43:34.459 STARTUP 1 main BinaryObject: Recovery Starting
+2020-03-09 22:43:34.461 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 0, uniqueObjectCount = 0 ]
+2020-03-09 22:43:35.400 STARTUP 1 main BinaryObject: Recovery Finished
+2020-03-09 22:43:35.401 STARTUP 1 main Done with starting platforms
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -XX:+UseZGC
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -XX:ConcGCThreads=14
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -XX:+UseLargePages
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -Xmx98g
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -Xms10g
+2020-03-09 22:43:35.611 STARTUP 39 <     platformRun  3   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-03-09 22:43:35.612 STARTUP 39 <     platformRun  3   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-03-09 22:43:35.612 STARTUP 39 <     platformRun  3   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-03-09 22:43:35.612 STARTUP 39 <     platformRun  3   > Parsing JSON FCMReconnectFCQ.json
+2020-03-09 22:43:35.702 DEMO_INFO 39 <     platformRun  3   >  insertSeq         = true
+2020-03-09 22:43:35.702 DEMO_INFO 39 <     platformRun  3   >  appendSig         = true
+2020-03-09 22:43:35.703 DEMO_INFO 39 <     platformRun  3   >  variedSize        = false
+2020-03-09 22:43:35.703 DEMO_INFO 39 <     platformRun  3   >  payloadByteSize   = 100
+2020-03-09 22:43:35.703 DEMO_INFO 39 <     platformRun  3   >  maxByteSize       = 100
+2020-03-09 22:43:35.703 DEMO_INFO 39 <     platformRun  3   >  type              = TYPE_RANDOM_BYTES
+2020-03-09 22:43:35.704 DEMO_INFO 39 <     platformRun  3   > Size distribution  = [100]
+2020-03-09 22:43:35.704 DEMO_INFO 39 <     platformRun  3   > Type distribution  = [TYPE_FCM_TEST]
+2020-03-09 22:43:35.704 DEMO_INFO 39 <     platformRun  3   > Ratio distribution = [100.0]
+2020-03-09 22:43:35.709 DEMO_INFO 39 <     platformRun  3   > Goal is TRANS_PER_SECOND_PER_NODE targe 1000.0
+2020-03-09 22:43:35.712 STARTUP 39 <     platformRun  3   > PlatformTestingDemo: Public Key -> hex('0x90E06502555E6AB4C7A2035DD58466E40542679B11B7F006E67D02474169CC22')
+2020-03-09 22:43:35.715 DEMO_INFO 39 <     platformRun  3   > This test will generate sequential FCM payload:
+2020-03-09 22:43:35.715 DEMO_INFO 39 <     platformRun  3   > Set data account counter as 0
+2020-03-09 22:43:35.715 DEMO_INFO 39 <     platformRun  3   > Set FCQ account counter as 0
+2020-03-09 22:43:35.715 DEMO_INFO 39 <     platformRun  3   > Set Blob account counter as 0
+2020-03-09 22:43:35.717 STARTUP 1 main Browser main() finished
+2020-03-09 22:43:35.735 DEMO_INFO 52 <      appMainRun  3   > Node 3 starts transactions ........
+2020-03-09 22:43:35.792 STARTUP 52 <      appMainRun  3   > PlatformTestingDemo: Signed Message { publicKey = '0x90E06502555E6AB4C7A2035DD58466E40542679B11B7F006E67D02474169CC22', privateKey ='0x997395B4C05699AD71048EB067563639C0503D6EA90D4FCFAE812BDC199691A890E06502555E6AB4C7A2035DD58466E40542679B11B7F006E67D02474169CC22', signature = '0xA4D2EA93D3B604423BA53F5F08081A3004C450A13C439C33DC1F058319D07BC821E2C92DB94E0C48FA2B89037014D6F47BCE7A7EC2BDE798C67EE441DDF77604', message = '0x1A739A01700803100320A08D0632644724CC99CFC11A5885B50765E123C7F78B6EF42CBE0D65D9D8AA97D34BAB10B9E9072160A4476505C3C1ACD792CCD725CDD804092659CB70831DA03A724541A0D625DFA585DFEBC33389AE2D0CAE5BA884DB558B461FA642A68CF69230CF74422F61FCA03801' }
+2020-03-09 22:43:35.998 PLATFORM_STATUS 67 <       heartbeat  3  2> Platform status changed to: STARTING_UP
+2020-03-09 22:43:35.998 STARTUP 67 <       heartbeat  3  2> Platform Status Change STARTING_UP 
+2020-03-09 22:43:36.133 PLATFORM_STATUS 36 < pollIntakeQueue  3   > Platform status changed to: ACTIVE
+2020-03-09 22:43:36.134 STARTUP 36 < pollIntakeQueue  3   > Platform Status Change ACTIVE 
+2020-03-09 22:46:00.157 SOCKET_EXCEPTIONS 62 <    syncListener  3  0> 3 didn't receive anything from 0 for 5007 ms. Disconnecting...
+2020-03-09 22:46:00.359 SOCKET_EXCEPTIONS 66 <    syncListener  3  2> 3 didn't receive anything from 2 for 5007 ms. Disconnecting...
+2020-03-09 22:46:00.418 SOCKET_EXCEPTIONS 64 <    syncListener  3  1> 3 didn't receive anything from 1 for 5007 ms. Disconnecting...
+2020-03-09 22:46:00.463 SOCKET_EXCEPTIONS 68 <    syncCaller-0  3   > SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 3 listening for 1:
 java.net.SocketTimeoutException: Read timed out
 	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
-	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
-	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
-	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:115) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:168) ~[?:?]
+	at java.net.SocketInputStream.read(SocketInputStream.java:140) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:448) ~[?:?]
+	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:68) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1132) ~[?:?]
+	at sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:828) ~[?:?]
 	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
 	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
 	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
-	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
-	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
+	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:759) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[swirlds-platform-core-0.6.5.jar:?]
 	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-	at java.lang.Thread.run(Thread.java:844) [?:?]
-2019-03-14 15:50:55.159 SOCKET_EXCEPTIONS  65135 <      syncCaller  3  0> SyncCaller.sync SocketException (so incrementing iCSyncPerSec) while 3 listening for 2:
-java.net.SocketTimeoutException: Read timed out
-	at java.net.SocketInputStream.socketRead0(Native Method) ~[?:?]
-	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:171) ~[?:?]
-	at java.net.SocketInputStream.read(SocketInputStream.java:141) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:425) ~[?:?]
-	at sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:65) ~[?:?]
-	at sun.security.ssl.SSLSocketImpl.bytesInCompletePacket(SSLSocketImpl.java:918) ~[?:?]
-	at sun.security.ssl.AppInputStream.read(AppInputStream.java:144) ~[?:?]
-	at java.io.BufferedInputStream.fill(BufferedInputStream.java:252) ~[?:?]
-	at java.io.BufferedInputStream.read(BufferedInputStream.java:271) ~[?:?]
-	at java.io.FilterInputStream.read(FilterInputStream.java:83) ~[?:?]
-	at com.swirlds.platform.SyncUtils$1.syncCall(SyncUtils.java:713) ~[platform-0.0.1-SNAPSHOT.jar:?]
-	at com.swirlds.platform.SyncCallable.call(SyncCallable.java:60) ~[platform-0.0.1-SNAPSHOT.jar:?]
-	at java.util.concurrent.FutureTask.run(FutureTask.java:264) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135) ~[?:?]
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635) ~[?:?]
-	at java.lang.Thread.run(Thread.java:844) [?:?]
-2019-03-14 15:51:50.737 SOCKET_EXCEPTIONS 120713 sync_server_4 3 got new connection from 2, disconnecting old one
-2019-03-14 15:51:50.756 SOCKET_EXCEPTIONS 120732 sync_server_5 3 got new connection from 0, disconnecting old one
-2019-03-14 15:51:50.786 RECONNECT 120762 <tp caller events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:51:50.796 SOCKET_EXCEPTIONS 120772 sync_server_5 3 got new connection from 1, disconnecting old one
-2019-03-14 15:51:50.833 RECONNECT 120809 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:51:50.834 RECONNECT 120810 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:51:50.835 RECONNECT 120811 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:51:50.836 RECONNECT 120812 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:51:50.836 RECONNECT 120812 <tp  lstnr events  3  0> 3 received commEventDiscarded from 0 
-2019-03-14 15:51:50.841 RECONNECT 120817 <tp caller events  3  1> 3 received commEventDiscarded from 2 
-2019-03-14 15:51:50.849 RECONNECT 120825 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
-2019-03-14 15:51:50.849 RECONNECT 120825 <       stateHash  3   > stateHashSign() interrupted
-2019-03-14 15:51:50.849 RECONNECT 120825 <      threadCurr  3   > takeHandlePut() fromQueue.poll() interrupted
-2019-03-14 15:51:50.849 RECONNECT 120825 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
-2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 0, 2]
-2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 will start reconnect with 1
-2019-03-14 15:51:50.865 RECONNECT 120841 <      syncCaller  3  0> 3 sent commStateRequest to 1
-2019-03-14 15:51:50.867 RECONNECT 120843 <      syncCaller  3  0> 3 got commStateAck from 1
-2019-03-14 15:52:04.089 RECONNECT 134065 <      syncCaller  3  0> 3 got SignedState from 1
-2019-03-14 15:52:04.089 RECONNECT 134065 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 1802
-2019-03-14 15:52:04.094 RECONNECT 134070 <      syncCaller  3  0> signed state events:
-[(3,3838), (1,8026), (2,8000), (2,8001), (0,8000), (0,8001), (1,8027), (2,8002), (0,8002), (0,8003), (2,8003), (2,8004), (1,8028), (2,8005), (2,8006), (0,8004), (0,8005), (1,8029), (2,8007), (1,8030), (2,8008), (1,8031), (0,8006), (1,8032), (2,8009), (0,8007), (0,8008), (2,8010), (1,8033), (1,8034), (2,8011), (1,8035), (1,8036), (0,8009), (0,8010), (1,8037), (2,8012), (0,8011), (0,8012), (2,8013)]
-2019-03-14 15:52:04.094 RECONNECT 134070 <      syncCaller  3  0> About to start recalculating the hash of the received state
-2019-03-14 15:52:04.095 RECONNECT 134071 <      syncCaller  3  0> About to start validating signatures of the received state
-2019-03-14 15:52:04.096 RECONNECT 134072 <      syncCaller  3  0> State is valid, will load it
-2019-03-14 15:52:04.096 STARTUP 134072 <      syncCaller  3  0> lateseq after restart is [8012, 8037, 8013, 3838]
-2019-03-14 15:52:04.101 RECONNECT 134077 <tp  lstnr events  3  0> 3 received commEventDiscarded from 1 
-2019-03-14 15:52:04.103 RECONNECT 134079 <tp  lstnr events  3  0> 3 received commEventDiscarded from 0 
-2019-03-14 15:52:04.104 RECONNECT 134080 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
-2019-03-14 15:52:04.104 RECONNECT 134080 <       stateHash  3   > stateHashSign() interrupted
-2019-03-14 15:52:04.104 RECONNECT 134080 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
-2019-03-14 15:52:04.151 RECONNECT 134127 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 0]
-2019-03-14 15:52:04.151 RECONNECT 134127 <      syncCaller  3  0> 3 will start reconnect with 1
-2019-03-14 15:52:04.152 RECONNECT 134128 <      syncCaller  3  0> 3 sent commStateRequest to 1
-2019-03-14 15:52:04.152 RECONNECT 134128 <      syncCaller  3  0> 3 got commStateAck from 1
-2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> 3 got SignedState from 1
-2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 1978
-2019-03-14 15:52:07.514 RECONNECT 137490 <      syncCaller  3  0> signed state events:
-[(3,3838), (2,8843), (0,8842), (2,8844), (2,8845), (2,8846), (0,8843), (2,8847), (0,8844), (2,8848), (0,8845), (2,8849), (0,8846), (2,8850), (1,8848), (1,8849), (1,8850), (0,8847), (0,8848), (2,8851), (0,8849), (2,8852), (2,8853), (0,8850), (2,8854), (0,8851), (2,8855), (1,8851), (1,8852), (0,8852), (2,8856), (0,8853), (0,8854), (2,8857), (2,8858), (0,8855), (1,8853), (1,8854), (2,8859), (0,8856), (1,8855), (0,8857), (2,8860), (2,8861), (0,8858), (2,8862), (1,8856), (1,8857), (0,8859), (2,8863), (1,8858), (2,8864), (0,8860), (2,8865), (0,8861), (2,8866), (1,8859), (0,8862), (2,8867), (2,8868), (0,8863), (0,8864), (2,8869), (1,8860), (1,8861), (0,8865), (1,8862)]
-2019-03-14 15:52:07.515 RECONNECT 137491 <      syncCaller  3  0> About to start recalculating the hash of the received state
-2019-03-14 15:52:07.515 RECONNECT 137491 <      syncCaller  3  0> About to start validating signatures of the received state
-2019-03-14 15:52:07.516 RECONNECT 137492 <      syncCaller  3  0> State is valid, will load it
-2019-03-14 15:52:07.516 STARTUP 137492 <      syncCaller  3  0> lateseq after restart is [8865, 8862, 8869, 3838]
-2019-03-14 15:52:07.532 RECONNECT 137508 <tp  lstnr events  3  1> 3 received commEventDiscarded from 1 
-2019-03-14 15:52:07.533 RECONNECT 137509 <tp  lstnr events  3  1> 3 received commEventDiscarded from 2 
-2019-03-14 15:52:07.533 RECONNECT 137509 <      syncCaller  3  0> 3 has fallen behind, will stop and clear EventFlow and Hashgraph
-2019-03-14 15:52:07.533 RECONNECT 137509 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
-2019-03-14 15:52:07.533 RECONNECT 137509 <       stateHash  3   > stateHashSign() interrupted
-2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 has fallen behind, will try to reconnect with [1, 2]
-2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 will start reconnect with 1
-2019-03-14 15:52:07.584 RECONNECT 137560 <      syncCaller  3  0> 3 sent commStateRequest to 1
-2019-03-14 15:52:07.585 RECONNECT 137561 <      syncCaller  3  0> 3 got commStateAck from 1
-2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> 3 got SignedState from 1
-2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> 3 finished reconnect with 1, got SignedState for round 2028
-2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> signed state events:
-[(3,3838), (1,9084), (0,9097), (0,9098), (1,9085), (2,9097), (2,9098), (0,9099), (0,9100), (0,9101), (1,9086), (0,9102), (2,9099), (1,9087), (1,9088), (0,9103), (1,9089), (2,9100), (2,9101), (0,9104), (0,9105), (1,9090), (0,9106), (0,9107), (2,9102), (1,9091), (1,9092), (2,9103), (1,9093), (0,9108), (0,9109), (0,9110), (1,9094), (1,9095), (2,9104), (2,9105), (0,9111), (0,9112), (2,9106), (1,9096), (0,9113), (0,9114)]
-2019-03-14 15:52:08.471 RECONNECT 138447 <      syncCaller  3  0> About to start recalculating the hash of the received state
-2019-03-14 15:52:08.472 RECONNECT 138448 <      syncCaller  3  0> About to start validating signatures of the received state
-2019-03-14 15:52:08.472 RECONNECT 138448 <      syncCaller  3  0> State is valid, will load it
-2019-03-14 15:52:08.474 STARTUP 138450 <      syncCaller  3  0> lateseq after restart is [9114, 9096, 9106, 3838]
-2019-03-14 15:53:50.324 STARTUP 240300 Thread-17 Adv Crypto Subsystem: CpuCryptoEngine shutdown hook invoked
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128) ~[?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628) ~[?:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-09 22:46:00.670 PLATFORM_STATUS 67 <       heartbeat  3  2> Platform status changed to: DISCONNECTED
+2020-03-09 22:46:00.670 STARTUP 67 <       heartbeat  3  2> Platform Status Change DISCONNECTED 
+2020-03-09 22:48:25.836 PLATFORM_STATUS 63 <       heartbeat  3  0> Platform status changed to: ACTIVE
+2020-03-09 22:48:25.836 STARTUP 63 <       heartbeat  3  0> Platform Status Change ACTIVE 
+2020-03-09 22:48:25.928 RECONNECT 166 <tp caller events  3  0> 3 received commEventDiscarded from 0 
+2020-03-09 22:48:25.945 RECONNECT 166 <tp caller events  3  0> 3 received commEventDiscarded from 2 
+2020-03-09 22:48:25.945 PLATFORM_STATUS 68 <    syncCaller-0  3   > Platform status changed to: BEHIND
+2020-03-09 22:48:25.946 STARTUP 68 <    syncCaller-0  3   > Platform Status Change BEHIND 
+2020-03-09 22:48:25.946 RECONNECT 68 <    syncCaller-0  3   > 3 has fallen behind, will stop and clear EventFlow and Hashgraph
+2020-03-09 22:48:25.946 RECONNECT 44 <      threadCons  3   > takeHandlePut() fromQueue.poll() interrupted
+2020-03-09 22:48:25.946 TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE 201 <       stateHash  3   > error while verifying signature:
+java.lang.InterruptedException: null
+	at java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418) ~[?:?]
+	at java.util.concurrent.FutureTask.get(FutureTask.java:190) ~[?:?]
+	at com.swirlds.platform.state.SignedStateManager.addSigInfo(SignedStateManager.java:559) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.state.SignedStateManager.recordStateSig(SignedStateManager.java:496) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.state.SignedStateManager.newSelfSigned(SignedStateManager.java:437) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.EventFlow.stateHashSign(EventFlow.java:1002) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.EventFlow$EventFlowRunnable.run(EventFlow.java:1287) [swirlds-platform-core-0.6.5.jar:?]
+	at java.lang.Thread.run(Thread.java:835) [?:?]
+2020-03-09 22:48:25.946 RECONNECT 43 <       stateHash  3   > stateHashSign() interrupted
+2020-03-09 22:48:25.946 RECONNECT 45 <      threadCurr  3   > takeHandlePut() fromQueue.poll() interrupted
+2020-03-09 22:48:25.951 RECONNECT 68 <    syncCaller-0  3   > 3 has fallen behind, will try to reconnect with [2, 0]
+2020-03-09 22:48:25.951 RECONNECT 68 <    syncCaller-0  3   > 3 will start reconnect with 2
+2020-03-09 22:48:25.951 RECONNECT 68 <    syncCaller-0  3   > 3 sent commStateRequest to 2
+2020-03-09 22:48:25.953 RECONNECT 68 <    syncCaller-0  3   > 3 got commStateAck from 2
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmCreateAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmUpdateAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmDeleteAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmTransferAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmDeleteAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmTransferAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmCreateAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmUpdateAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmDeleteAmount 0
+2020-03-09 22:48:25.957 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmTransferAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmFCQCreateAmount 100000
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmFCQUpdateAmount 189310
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmFCQDeleteAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmFCQTransferAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobCreateAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobCreateLargeAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobUpdateLargeAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobCreateMultisizeAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobUpdateMultisizeAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobAppendMultisizeAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobUpdateAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobDeleteAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 0 state fcmBlobAppendAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore state totalTranAmountFromPrevRun 0/289310
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmCreateAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmUpdateAmount 0
+2020-03-09 22:48:25.958 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmDeleteAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmTransferAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmDeleteAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmTransferAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmCreateAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmUpdateAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmDeleteAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmTransferAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmFCQCreateAmount 100000
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmFCQUpdateAmount 189390
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmFCQDeleteAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmFCQTransferAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobCreateAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobCreateLargeAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobUpdateLargeAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobCreateMultisizeAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobUpdateMultisizeAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobAppendMultisizeAmount 0
+2020-03-09 22:48:25.959 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobUpdateAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobDeleteAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 1 state fcmBlobAppendAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore state totalTranAmountFromPrevRun 1/289390
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmCreateAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmUpdateAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmDeleteAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmTransferAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmDeleteAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmTransferAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmCreateAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmUpdateAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmDeleteAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmTransferAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmFCQCreateAmount 100000
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmFCQUpdateAmount 189409
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmFCQDeleteAmount 0
+2020-03-09 22:48:25.960 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmFCQTransferAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobCreateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobCreateLargeAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobUpdateLargeAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobCreateMultisizeAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobUpdateMultisizeAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobAppendMultisizeAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobUpdateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobDeleteAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 2 state fcmBlobAppendAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore state totalTranAmountFromPrevRun 2/289409
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmCreateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmUpdateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmDeleteAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmTransferAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmDeleteAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmTransferAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmCreateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmUpdateAmount 0
+2020-03-09 22:48:25.961 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmDeleteAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmTransferAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmFCQCreateAmount 100000
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmFCQUpdateAmount 39174
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmFCQDeleteAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmFCQTransferAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobCreateAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobCreateLargeAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobUpdateLargeAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobCreateMultisizeAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobUpdateMultisizeAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobAppendMultisizeAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobUpdateAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobDeleteAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore node 3 state fcmBlobAppendAmount 0
+2020-03-09 22:48:25.962 DEMO_INFO 68 <    syncCaller-0  3   > Restore state totalTranAmountFromPrevRun 3/139174
+2020-03-09 22:48:25.969 DEMO_INFO 68 <    syncCaller-0  3   > Starts FCMFamily diffCopyFrom
+2020-03-09 22:48:25.969 DEMO_INFO 68 <    syncCaller-0  3   > Starts StorageMap diffCopyFrom
+2020-03-09 22:48:25.972 DEMO_INFO 68 <    syncCaller-0  3   > Root Hash for Storage map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-09 22:48:25.972 DEMO_INFO 68 <    syncCaller-0  3   > Starts Map diffCopyFrom
+2020-03-09 22:48:25.973 DEMO_INFO 68 <    syncCaller-0  3   > Root Hash for FCMap map 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2020-03-09 22:48:25.973 DEMO_INFO 68 <    syncCaller-0  3   > Starts FCQMap diffCopyFrom
+2020-03-09 22:48:27.651 SOCKET_EXCEPTIONS 180 sync_server_3 3 got new connection from 2, disconnecting old one
+2020-03-09 22:48:27.712 SOCKET_EXCEPTIONS 180 sync_server_3 3 got new connection from 1, disconnecting old one
+2020-03-09 22:48:27.763 SOCKET_EXCEPTIONS 180 sync_server_3 3 got new connection from 0, disconnecting old one
+2020-03-09 22:48:33.794 DEMO_INFO 68 <    syncCaller-0  3   > Root Hash for FCQ map 6db1bfbb5783739196ab5ad1e64361c898c19a39f84107df63bc6cfe6ad50bd51acb6405697e0105bcc12ba114857c84
+2020-03-09 22:48:33.794 DEMO_INFO 68 <    syncCaller-0  3   > Finished FCMFamily diffCopyFrom
+2020-03-09 22:48:33.794 RECONNECT 68 <    syncCaller-0  3   > 3 got SignedState from 2
+2020-03-09 22:48:33.794 RECONNECT 68 <    syncCaller-0  3   > 3 finished reconnect with 2, got SignedState for round 2559
+2020-03-09 22:48:33.799 RECONNECT 68 <    syncCaller-0  3   > signed state events:
+[(3,5238), (2,11218), (1,11136), (1,11137), (0,10995), (0,10996), (0,10997), (2,11219), (2,11220), (2,11221), (1,11138), (1,11139), (1,11140), (0,10998), (0,10999), (2,11222), (2,11223), (1,11141), (1,11142), (1,11143), (0,11000), (2,11224), (0,11001), (2,11225), (1,11144), (1,11145), (2,11226), (0,11002), (2,11227), (1,11146), (0,11003), (0,11004), (0,11005), (1,11147), (1,11148), (2,11228), (2,11229), (2,11230), (1,11149), (1,11150), (0,11006), (0,11007), (2,11231), (2,11232), (1,11151), (1,11152), (0,11008), (1,11153), (2,11233), (0,11009), (2,11234), (2,11235), (1,11154), (1,11155), (2,11236), (0,11010), (0,11011), (1,11156), (2,11237), (0,11012), (2,11238), (1,11157), (1,11158), (2,11239), (1,11159), (0,11013), (0,11014), (0,11015), (2,11240), (1,11160), (2,11241), (2,11242), (2,11243), (0,11016), (0,11017), (1,11161), (1,11162), (0,11018), (2,11244), (2,11245), (1,11163), (1,11164), (1,11165), (0,11019), (2,11246), (0,11020), (1,11166), (1,11167), (2,11247), (2,11248), (0,11021), (0,11022), (1,11168), (0,11023), (2,11249), (2,11250), (2,11251), (1,11169), (1,11170), (1,11171), (0,11024), (0,11025), (2,11252), (0,11026), (2,11253), (1,11172), (1,11173), (0,11027), (2,11254), (2,11255), (0,11028), (0,11029), (1,11174), (1,11175), (0,11030), (2,11256), (2,11257), (1,11176), (1,11177), (0,11031), (2,11258), (1,11178), (2,11259), (0,11032), (0,11033), (1,11179), (0,11034), (2,11260), (2,11261), (1,11180), (1,11181), (1,11182), (0,11035), (0,11036), (2,11262), (2,11263), (1,11183), (1,11184), (2,11264), (0,11037), (1,11185), (2,11265), (2,11266), (0,11038), (1,11186), (0,11039), (1,11187), (2,11267), (2,11268), (0,11040), (0,11041), (2,11269), (1,11188), (0,11042), (0,11043), (2,11270), (2,11271), (0,11044), (1,11189), (1,11190), (2,11272), (0,11045), (0,11046), (1,11191), (1,11192), (1,11193), (2,11273), (2,11274), (0,11047), (0,11048), (1,11194), (2,11275), (1,11195), (0,11049), (0,11050), (2,11276), (1,11196), (1,11197), (0,11051), (0,11052), (2,11277), (2,11278), (2,11279), (1,11198), (1,11199), (0,11053), (0,11054), (2,11280), (2,11281), (1,11200), (1,11201), (0,11055), (0,11056), (2,11282), (2,11283), (1,11202), (1,11203), (0,11057), (0,11058), (1,11204), (2,11284), (2,11285), (1,11205), (0,11059), (0,11060), (0,11061), (2,11286), (1,11206), (2,11287), (0,11062), (0,11063), (1,11207), (0,11064), (2,11288), (2,11289), (1,11208), (1,11209), (0,11065), (0,11066), (2,11290), (2,11291), (1,11210), (1,11211), (0,11067), (0,11068), (2,11292), (1,11212), (0,11069), (0,11070), (0,11071), (2,11293), (1,11213), (1,11214), (2,11294), (2,11295), (0,11072), (0,11073), (1,11215), (1,11216), (0,11074), (0,11075), (2,11296), (2,11297), (1,11217), (0,11076), (0,11077), (2,11298), (1,11218), (0,11078), (0,11079), (1,11219), (2,11299), (2,11300), (1,11220), (1,11221), (0,11080), (0,11081), (2,11301), (0,11082), (0,11083), (2,11302), (2,11303), (1,11222), (0,11084), (2,11304), (1,11223), (1,11224), (1,11225), (0,11085), (0,11086), (2,11305), (1,11226), (1,11227), (0,11087), (2,11306), (2,11307), (1,11228), (1,11229), (1,11230), (2,11308), (0,11088), (0,11089), (0,11090), (1,11231), (1,11232), (2,11309), (2,11310), (2,11311), (1,11233), (0,11091), (2,11312), (1,11234), (1,11235), (0,11092), (0,11093), (2,11313), (2,11314), (0,11094), (1,11236), (2,11315), (2,11316), (1,11237), (1,11238), (1,11239), (0,11095), (0,11096), (0,11097), (2,11317), (1,11240), (2,11318), (0,11098), (1,11241), (2,11319), (2,11320), (1,11242), (1,11243), (0,11099), (0,11100), (1,11244), (2,11321), (0,11101), (0,11102), (1,11245), (1,11246), (2,11322), (2,11323), (0,11103), (0,11104), (1,11247), (1,11248), (0,11105), (2,11324), (0,11106), (1,11249), (1,11250), (1,11251), (2,11325), (2,11326)]
+2020-03-09 22:48:33.799 RECONNECT 68 <    syncCaller-0  3   > About to start recalculating the hash of the received state
+2020-03-09 22:48:33.800 RECONNECT 68 <    syncCaller-0  3   > Hash generated the receiving side [-74, 83, 24, 48, -84, -34, 19, 107, 35, 72, -62, 71, 47, 43, 127, -89, -9, -93, 11, -39, 127, 19, 11, 86, -66, -37, -20, -10, 42, 24, 7, 46, -70, 30, 104, -6, 32, -119, -40, 19, 81, -95, -20, -20, 25, -78, 118, 11]
+2020-03-09 22:48:33.800 RECONNECT 68 <    syncCaller-0  3   > Signed State Hash [-74, 83, 24, 48, -84, -34, 19, 107, 35, 72, -62, 71, 47, 43, 127, -89, -9, -93, 11, -39, 127, 19, 11, 86, -66, -37, -20, -10, 42, 24, 7, 46, -70, 30, 104, -6, 32, -119, -40, 19, 81, -95, -20, -20, 25, -78, 118, 11]
+2020-03-09 22:48:33.800 RECONNECT 68 <    syncCaller-0  3   > About to start validating signatures of the received state
+2020-03-09 22:48:33.801 RECONNECT 68 <    syncCaller-0  3   > Signed State valid Stake :3750000000000000000 
+2020-03-09 22:48:33.801 RECONNECT 68 <    syncCaller-0  3   > AddressBook Stake :5000000000000000000 
+2020-03-09 22:48:33.801 RECONNECT 68 <    syncCaller-0  3   > StrongMinority status: true
+2020-03-09 22:48:33.801 RECONNECT 68 <    syncCaller-0  3   > State is valid, will load it
+2020-03-09 22:48:33.811 STARTUP 68 <    syncCaller-0  3   > Last known sequence numbers after restart are [11106, 11251, 11326, 5238]
+2020-03-09 22:48:33.811 PLATFORM_STATUS 68 <    syncCaller-0  3   > Platform status changed to: ACTIVE
+2020-03-09 22:48:33.812 STARTUP 68 <    syncCaller-0  3   > Platform Status Change ACTIVE 
+2020-03-09 23:01:56.190 DEMO_INFO 52 <      appMainRun  3   > Generated enough FCM test for sequential mode, stop generating 5 >= 5
+2020-03-09 23:01:56.191 DEMO_INFO 52 <      appMainRun  3   > Stop generating transactions 
+2020-03-09 23:01:56.196 DEMO_INFO 52 <      appMainRun  3   > node3 sent ENTER_PAUSE Message
+2020-03-09 23:01:56.196 DEMO_INFO 52 <      appMainRun  3   > TRANSACTIONS FINISHED
+2020-03-09 23:01:56.625 DEMO_INFO 183 <      threadCons  3   > collectedStartPauseMsg 1
+2020-03-09 23:01:56.626 DEMO_INFO 183 <      threadCons  3   > collectedStartPauseMsg 2
+2020-03-09 23:01:56.626 DEMO_INFO 183 <      threadCons  3   > collectedStartPauseMsg 3
+2020-03-09 23:01:56.626 DEMO_INFO 183 <      threadCons  3   > collectedStartPauseMsg 4
+2020-03-09 23:01:56.627 DEMO_INFO 183 <      threadCons  3   > TEST PAUSE Finished processing all transactions

@@ -3,7 +3,8 @@ cd "`dirname "$0"`"
 configFile="./configs/$1"
 echo $configFile
 
-ssh-add ~/.ssh/regression_rsa
+eval $(ssh-agent)
+ssh-add /home/ubuntu/.ssh/regression_rsa
 
 cd ..
 git pull
