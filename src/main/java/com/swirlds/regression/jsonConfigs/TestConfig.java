@@ -51,7 +51,7 @@ public class TestConfig implements FileRequirement {
 	private RestartConfig restartConfig = null;
 	private FreezeConfig freezeConfig = null;
 	private RecoverConfig recoverConfig = null;
-	private ExperimentConfig experimentConfig = null;
+	private ExperimentConfig experimentConfig = new ExperimentConfig();
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
