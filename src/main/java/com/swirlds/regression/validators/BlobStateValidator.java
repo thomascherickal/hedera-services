@@ -29,11 +29,8 @@ import com.swirlds.demo.platform.fcm.MapValueBlob;
 import com.swirlds.fcmap.FCMap;
 import com.swirlds.platform.SignedStateFileManager;
 import com.swirlds.platform.state.SignedState;
-import com.swirlds.regression.RegressionUtilities;
-import net.schmizz.sshj.common.SSHException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -48,6 +45,9 @@ public class BlobStateValidator extends NodeValidator {
 	private boolean isValid = false;
 
 	private File experimentFolder;
+
+	private final static String STATE_FILE_NAME = "SignedState.swh";
+	private final static String SWIRLD_NUM = "123";
 
 	public BlobStateValidator(List<NodeData> nodeData, String experimentPath) {
 		super(nodeData);
@@ -68,9 +68,6 @@ public class BlobStateValidator extends NodeValidator {
 		return isValidated && isValid;
 	}
 
-	final static String pgFileName = "PostgresBackup.tar";
-	final static String stateFileName = "SignedState.swh";
-	final static String swirldNum = "123";
 
 	private FCMap recoverStorageMapFromSavedState(File file) {
 		PlatformTestingDemoState ptdState = new PlatformTestingDemoState();
@@ -139,7 +136,7 @@ public class BlobStateValidator extends NodeValidator {
 
 	public boolean checkStateMatchesDb(File roundDir) {
 		boolean retVal = true;
-		File signedStateFile = new File(roundDir, stateFileName);
+		File signedStateFile = new File(roundDir, STATE_FILE_NAME);
 
 		//restore database
 		try {
@@ -214,7 +211,7 @@ public class BlobStateValidator extends NodeValidator {
 				return false;
 			}
 
-			File swirldFolder = new File(nodeList[0], swirldNum);
+			File swirldFolder = new File(nodeList[0], SWIRLD_NUM);
 
 			if (!swirldFolder.exists()) {
 				addError("no swirld folder in node " + node.getAbsolutePath());
@@ -241,7 +238,7 @@ public class BlobStateValidator extends NodeValidator {
 			File[] stateFiles = new File[nodeList.size()];
 
 			for (int i = 0; i < nodeList.size(); i++) {
-				stateFiles[i] = new File(nodeList.get(i), stateFileName);
+				stateFiles[i] = new File(nodeList.get(i), STATE_FILE_NAME);
 				if (!stateFiles[i].exists()) {
 					addError("State file not found: " + stateFiles[i].getAbsolutePath());
 					success = false;

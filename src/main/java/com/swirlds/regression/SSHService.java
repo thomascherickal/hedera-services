@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
+import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE;
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
@@ -213,14 +214,14 @@ public class SSHService {
 		if (dataExtensionCount > 0) {
 			String dataCommandStr = "find . | grep " + dataExtensions;
 			
-			final Session.Command dataCmd = null
+			Session.Command dataCmd = null;
 			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
 			
 				try {
 	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
 	                Thread.sleep(10000);
 	            } catch (InterruptedException ie) {
-	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", dataCommandStr);
 	            }
 	        }
 			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
