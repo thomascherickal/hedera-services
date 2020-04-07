@@ -67,8 +67,14 @@ public class BlobStateValidator extends Validator {
 		return isValidated && isValid;
 	}
 
-
-	private FCMap recoverStorageMapFromSavedState(File file) {
+	/**
+	 * get fcMap containing blobs from saved state file
+	 *
+	 * @param file
+	 * 	file is saved state
+	 * @return map from deserialized saved state file
+	 */
+	FCMap recoverStorageMapFromSavedState(File file) {
 		FCMap storageMap = null;
 
 		BinaryObjectStore bos = BinaryObjectStore.getInstance();
@@ -79,7 +85,7 @@ public class BlobStateValidator extends Validator {
 		return storageMap;
 	}
 
-	private FCMap getStorageMapFromSavedState(File file) {
+	FCMap getStorageMapFromSavedState(File file) {
 		PlatformTestingDemoState ptdState = new PlatformTestingDemoState();
 		SignedState signedState = new SignedState(ptdState);
 		try {
@@ -92,7 +98,13 @@ public class BlobStateValidator extends Validator {
 		return ptdState.getStateMap().getStorageMap();
 	}
 
-	private boolean checkState(FCMap<MapKey, MapValueBlob> map) {
+	/**
+	 * check for consistency between postgres backup and recovered saved state file
+	 * @param map
+	 * 	FCMap containing values to verify the blob content of
+	 * @return true=all values consistent, false=fail
+	 */
+	boolean checkState(FCMap<MapKey, MapValueBlob> map) {
 		boolean retVal = true;
 		BinaryObjectStore bos = BinaryObjectStore.getInstance();
 		for (MapValueBlob blob : map.values()) {
@@ -111,7 +123,12 @@ public class BlobStateValidator extends Validator {
 		return retVal;
 	}
 
-	private boolean checkForDanglingLOs() {
+	/**
+	 * check whether postgres backup is consistent between large object table and binary_object table
+	 *
+	 * @return true=pass, false=fail
+	 */
+	boolean checkForDanglingLOs() {
 		boolean retVal = true;
 		try (BlobStoragePipeline pipeline = DbManager.getInstance().blob()) {
 			HashSet<Long> loIds = new HashSet(pipeline.retrieveLoIDs());
@@ -130,7 +147,15 @@ public class BlobStateValidator extends Validator {
 		return retVal;
 	}
 
-	public boolean checkStateMatchesDb(File roundDir) {
+	/**
+	 * check whether recovery from a saved state and postgres backup is successful and
+	 * whether there are any database inconsistencies or dangling objects
+	 *
+	 * @param roundDir
+	 * 	directory containing a saved state and a postgres backup for a round
+	 * @return true=recovery succeeded and no dangling objects found, false=error found
+	 */
+	boolean checkStateMatchesDb(File roundDir) {
 		boolean retVal = true;
 		File signedStateFile = new File(roundDir, STATE_FILE_NAME);
 
@@ -163,7 +188,15 @@ public class BlobStateValidator extends Validator {
 		return retVal;
 	}
 
-	public boolean checkStateFiles(File[] files) {
+	/**
+	 * check for consistency between saved state files for a round
+	 *
+	 * @param files
+	 * saved state files for each node of a round
+	 * @return true=all states consistent, fail=at least 1 node inconsistent
+	 */
+
+	boolean checkStateFiles(File[] files) {
 		if (files.length < 2) {
 			addError("less than two state files provided to checkStateFiles");
 			return false;
@@ -183,17 +216,14 @@ public class BlobStateValidator extends Validator {
 		return true;
 	}
 
-	public boolean checkStateForResultsPath(String path) {
-		File nodeContainingDir = new File(path);
-		boolean retVal = true;
-
-		if (!nodeContainingDir.exists()) {
-			addError("results path invalid");
-			return false;
-		}
-
-		File[] nodes = nodeContainingDir.listFiles(File::isDirectory);
-
+	/**
+	 * traverse node directories and get list of directories for equivalent rounds for each node
+	 *
+	 * @param nodes
+	 *   directories containing data for nodes
+	 * @return list of node directories for a round, listed by round
+	 */
+	List<List<File>> getNodesByRound(File[] nodes) {
 		List<List<File>> nodesByRound = new ArrayList<>();
 
 		for (File node : nodes) {
@@ -201,7 +231,7 @@ public class BlobStateValidator extends Validator {
 
 			if (!descendedFolder.exists()) {
 				addError("folder containing nodes did not exist: " + descendedFolder.getPath());
-				return false;
+				return null;
 			}
 
 			File[] nodeList = descendedFolder.listFiles((dir, name) -> name.matches("[0-9]+"));
@@ -209,14 +239,14 @@ public class BlobStateValidator extends Validator {
 			if (nodeList.length != 1) {
 				addError("expected 1 node folder: " + descendedFolder.getPath() + " in results for node, " +
 						"found: " + nodeList.length);
-				return false;
+				return null;
 			}
 
 			File swirldFolder = new File(nodeList[0], SWIRLD_NUM);
 
 			if (!swirldFolder.exists()) {
 				addError("no swirld folder in node " + node.getAbsolutePath());
-				return false;
+				return null;
 			}
 
 			File[] rounds = swirldFolder.listFiles(File::isDirectory);
@@ -227,6 +257,35 @@ public class BlobStateValidator extends Validator {
 				}
 				nodesByRound.get(i).add(rounds[i]);
 			}
+		}
+
+		return nodesByRound;
+	}
+
+	/**
+	 * verify saved state and postgres backup from experiment is consistent across all nodes and rounds
+	 *
+	 * @param path
+	 * path to folder containing data copied from nodes
+	 *
+	 * @return pass=true, fail=false
+	 */
+
+	boolean checkStateForResultsPath(String path) {
+		File nodeContainingDir = new File(path);
+		boolean retVal = true;
+
+		if (!nodeContainingDir.exists()) {
+			addError("results path invalid");
+			return false;
+		}
+
+		File[] nodes = nodeContainingDir.listFiles(File::isDirectory);
+
+		List<List<File>> nodesByRound = getNodesByRound(nodes);
+
+		if (nodesByRound == null) {
+			return false;
 		}
 
 		for (List<File> nodeList : nodesByRound) {
