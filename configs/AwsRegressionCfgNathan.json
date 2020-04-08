@@ -13,7 +13,7 @@
 	"regionList": [
 	  {
 		"region": "us-west-2",
-		"numberOfNodes": 6
+		"numberOfNodes": 15
 	  }
 	]
 	//	"regionList": [
@@ -28,7 +28,7 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 2,
+  "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
