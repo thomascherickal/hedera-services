@@ -285,10 +285,8 @@ public class PTALifecycleValidator extends Validator {
 		LifecycleStatus latestHandleStatus = ev2.getLatestHandledStatus();
 		LifecycleStatus latestSubmitStatus = ev2.getLatestSubmitStatus();
 
-		if(latestSubmitStatus == null || latestSubmitStatus.getTransactionState() == null) {
-			addError("latestSubmitStatus or the latestSubmitStatus's TransactionState is " +
-					"null for Entity " + key + " . latestSubmitStatus : "+ latestSubmitStatus);
-		}else if(latestSubmitStatus.equals(SUBMISSION_FAILED)) {
+		if(latestSubmitStatus != null && latestSubmitStatus.getTransactionState() != null &&
+				latestSubmitStatus.getTransactionState().equals(SUBMISSION_FAILED)) {
 			addError("Operation " + latestSubmitStatus.getTransactionType() +
 					"failed to get successfully submitted on node " + nodeNum + " for entity " + key);
 		}
@@ -304,14 +302,16 @@ public class PTALifecycleValidator extends Validator {
 				addError("Entity "+ key + "on Node "+ nodeNum + " has Error. Please look at the log for more details");
 				break;
 			case  HANDLE_REJECTED:
-				addError("Operation "+latestHandleStatus.getTransactionType()+ " on Entity "+ key
-						+ "in Node "+ nodeNum+ " failed as entity already exists");
+					addError("Operation " + latestHandleStatus.getTransactionType() + " on Entity " + key
+							+ "in Node " + nodeNum + " failed as entity is Deleted and PerformOnDeleted is false");
 				break;
 			case  HANDLE_ENTITY_TYPE_MISMATCH:
 				addError("Operation "+ latestHandleStatus.getTransactionType()+
 						" failed as it is performed on wrong entity type "+ ev2.getEntityType());
 				break;
 			default:
+				addError("Something went wrong and entity "+ key + "on Node "+ nodeNum + " has Error. " +
+						"Please look at the log for more details");
 		}
 	}
 }
