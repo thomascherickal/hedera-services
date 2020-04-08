@@ -430,9 +430,8 @@ public class Experiment implements ExperimentSummary {
 
             if (nodeRoundMap.containsKey(maxRoundSeen)) {
                 //value looked up is the boolean value telling whether the round is completed
-                if (nodeRoundMap.get(maxRoundSeen)) {
-                    //kill completed nodes
-                    node.killJavaProcess();
+                if (!nodeRoundMap.get(maxRoundSeen)) {
+					nodesStillSaving.put(nodeIndex,node);
                 }
             } else {
                 nodesStillSaving.put(nodeIndex,node);
@@ -906,7 +905,6 @@ public class Experiment implements ExperimentSummary {
 
 		testRun.runTest(testConfig, this);
 
-		//TODO maybe move the kill to the TestRun
         if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
         	if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
         		log.error(ERROR,"Not all nodes successfully backed up last round");
@@ -915,6 +913,7 @@ public class Experiment implements ExperimentSummary {
             scpSavedFolder();
         }
 
+		//TODO maybe move the kill to the TestRun
 		stopAllSwirlds();
 
 		// call badgerize.sh that tars all the database logs

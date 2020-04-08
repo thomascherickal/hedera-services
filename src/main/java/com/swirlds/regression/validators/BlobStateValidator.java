@@ -282,6 +282,11 @@ public class BlobStateValidator extends Validator {
 
 		File[] nodes = nodeContainingDir.listFiles(File::isDirectory);
 
+		if (nodes.length == 0) {
+			addError("no node folders found");
+			return false;
+		}
+
 		List<List<File>> nodesByRound = getNodesByRound(nodes);
 
 		if (nodesByRound == null) {
@@ -324,7 +329,7 @@ public class BlobStateValidator extends Validator {
 			}
 
 			if (success) {
-				log.info(MARKER,"All checks succeeded for round {}", () -> nodeList.get(0).getName());
+				addInfo("All checks succeeded for round " + nodeList.get(0).getName());
 			}
 
 			retVal &= success;
