@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMISSION_FAILED;
+import static com.swirlds.fcmap.test.lifecycle.TransactionType.Delete;
+import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
 
 
 /**
@@ -174,8 +176,8 @@ public class PTALifecycleValidator extends Validator {
 		if(historyType == null){
 			addError(String.format(HANDLE_REJECTED_ERROR, key, nodeNum, null));
 			return;
-		}else if(!(historyType.equals(TransactionType.Delete) ||
-				historyType.equals(TransactionType.Expire))){
+		}else if(!(historyType.equals(Delete) ||
+				historyType.equals(Expire))){
 			addError(String.format(HANDLE_REJECTED_ERROR, key, nodeNum, historyType));
 		}
 	}
@@ -196,9 +198,31 @@ public class PTALifecycleValidator extends Validator {
 		missingKeysInBase.removeAll(baseKeySet);
 		missingKeysInCompare.removeAll(compareKeySet);
 
+		missingKeysInBase = checkRemoved(nodeNum, missingKeysInBase);
+		missingKeysInCompare = checkRemoved(0, missingKeysInCompare);
+
 		if(missingKeysInBase.size() > 0 || missingKeysInCompare.size() > 0) {
 			addError(String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase));
 		}
+	}
+
+	/**
+	 * check if the missing keys are Deleted or Expired in other node. If so, ignore them as missing Keys.
+	 * @param nodeNum
+	 * @param missingKeys
+	 * @return Set of missing keys other than expired or deleted ones
+	 */
+	private Set<MapKey> checkRemoved(int nodeNum, Set<MapKey> missingKeys) {
+		Set<MapKey> missingKeysSet = new HashSet<>();
+		for(MapKey key : missingKeys){
+			if(expectedMaps.get(nodeNum).get(key).getLatestHandledStatus() != null &&
+					expectedMaps.get(nodeNum).get(key).getLatestHandledStatus().getTransactionType() != null &&
+					(!expectedMaps.get(nodeNum).get(key).getLatestHandledStatus().getTransactionType().equals(Delete) &&
+							!expectedMaps.get(nodeNum).get(key).getLatestHandledStatus().getTransactionType().equals(Expire))){
+				missingKeysSet.add(key);
+			}
+		}
+		return missingKeysSet;
 	}
 
 	/**
