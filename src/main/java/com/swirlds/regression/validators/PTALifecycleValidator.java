@@ -105,7 +105,7 @@ public class PTALifecycleValidator extends Validator {
 		for(int i=1; i< expectedMaps.size();i++){
 			Map<MapKey, ExpectedValue> mapToCompare = expectedMaps.get(i);
 
-			if(baselineMap.keySet() != mapToCompare.keySet()){
+			if(!baselineMap.keySet().equals(mapToCompare.keySet())){
 				checkMissingKeys(baselineMap.keySet(),mapToCompare.keySet(), i);
 			}
 
