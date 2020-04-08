@@ -77,16 +77,17 @@ public class PTALifeCycleValidatorTest {
 		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
 
-		assertEquals(30, validator.getErrorMessages().size());
-
 		System.out.println("Error messages : \n"+ String.join("\n",validator.getErrorMessages()));
+
+		assertEquals(30, validator.getErrorMessages().size());
 
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,11] has field isErrored mismatched. " +
 				"node0: true; node1: false"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,12] has field EntityType " +
 				"mismatched. node0: Crypto; node2: Blob"));
 		assertTrue(validator.getErrorMessages().contains("KeySet of the expectedMap of node 1 doesn't match with " +
-				"expectedMap of node 0. Missing keys in node 1 : [], MissingKeys in node 0 : [MapKey[0,0,19]]"));
+				"expectedMap of node 0. Missing keys in node 1 : [MapKey[0,0,0], MapKey[0,0,15]], MissingKeys " +
+				"in node 0 : [MapKey[0,0,1], MapKey[0,0,19]]"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,14] has field latestHandledStatus " +
 				"mismatched. node0: TransactionState: HANDLE_FAILED, TransactionType: Update, timestamp: 1584554112, " +
 				"nodeId: 14; node2: TransactionState: HANDLED, TransactionType: Update, timestamp: 1584554112, nodeId: " +
