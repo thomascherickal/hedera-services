@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.IOException;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,8 +40,9 @@ public class MigrationValidatorTest {
 		validator.validate();
 		final List<String> errorMessages = validator.getErrorMessages();
 
-		assertTrue(errorMessages.isEmpty());
-		assertTrue(validator.isValid());
+		assertFalse(errorMessages.isEmpty());
+		assertFalse(validator.isValid());
+		assertEquals("Could not load log for node 0", errorMessages.get(0));
 	}
 
 	@ParameterizedTest
