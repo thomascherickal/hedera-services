@@ -29,6 +29,7 @@ public interface TestRun {
 	static final Marker MARKER = MarkerManager.getMarker("TEST_RUN");
 	static final Marker EXCEPTION = MarkerManager.getMarker("EXCEPTION");
 
+	static final int FREEZE_WAIT_MILLIS = 30000;
 	// if a node hasn't finished saving expectedMap during freeze period, wait for a while
 	static final int SAVE_EXPECTED_WAIT_MINS = 1;
 
