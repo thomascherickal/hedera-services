@@ -50,8 +50,7 @@ public class SlackNotifierTester {
 	public static void main(String[] args) throws IOException {
 
 		SlackNotifier sn = createSlackNotifier(
-				SLACK_TOKEN,
-				SLACK_CHANNEL);
+				SLACK_TOKEN);
 
 		//testNoExperiment(sn);
 		//testAllFeatures(sn);
@@ -95,17 +94,17 @@ public class SlackNotifierTester {
         ExperimentSummaryData good = new ExperimentSummaryData(
                 false,
                 false,
-                false,
-                "passed",
-                "1234567"
-        );
+				false,
+				"passed",
+				"1234567"
+		);
 
 		summaryMsg.addExperiment(bad1, List.of(good, good, bad1));
 		summaryMsg.addExperiment(bad2, List.of(good, good, bad1));
 		summaryMsg.addExperiment(warn, List.of(warn, warn, warn));
 		summaryMsg.addExperiment(good, List.of(good, good, good));
 
-		sn.messageChannel(summaryMsg);
+		sn.messageChannel(summaryMsg, SLACK_CHANNEL);
 	}
 
 	private static void testAllFeatures(SlackNotifier sn) {
@@ -143,7 +142,7 @@ public class SlackNotifierTester {
 //		System.out.println("--- start");
 //		System.out.println(msg.getPlainText());
 //		System.out.println("--- end");
-		sn.messageChannel(msg);
+		sn.messageChannel(msg, SLACK_CHANNEL);
 
 		runInsightScript();
 

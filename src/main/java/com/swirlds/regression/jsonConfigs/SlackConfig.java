@@ -25,6 +25,7 @@ public class SlackConfig {
 	private String token;
 	private String botToken;
 	private String channel;
+	private String summaryChannel = null;
 	private SlackTestMsg.NotifyOn notifyOn = SlackTestMsg.NotifyOn.ERROR;
 	private boolean notifyChannel = false;
 	private List<String> notifyUserIds = null;
@@ -51,6 +52,14 @@ public class SlackConfig {
 
 	public void setChannel(String channel) {
 		this.channel = channel;
+	}
+
+	public String getSummaryChannel() {
+		return summaryChannel;
+	}
+
+	public void setSummaryChannel(String summaryChannel) {
+		this.summaryChannel = summaryChannel;
 	}
 
 	public SlackTestMsg.NotifyOn getNotifyOn() {
