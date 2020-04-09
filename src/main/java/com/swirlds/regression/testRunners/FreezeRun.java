@@ -29,17 +29,20 @@ public class FreezeRun implements TestRun {
 	public void runTest(TestConfig testConfig, Experiment experiment) {
 		final int iterations = testConfig.getFreezeConfig().getFreezeIterations();
 		final int freezeTiming = testConfig.getFreezeConfig().getFreezeTiming();
+		final int experimentStartDelay = testConfig.getExperimentConfig().getExperimentStartDelay();
+
 		for (int i = 0; i < iterations; i++) {
 
 			// if this iteration fails, stop the test
-			if (!runSingleFreeze(experiment, freezeTiming, i, true)) {
+			if (!runSingleFreeze(experiment, freezeTiming, experimentStartDelay, i, true)) {
 				return;
 			}
+
 
 			log.info(MARKER, "{} dynamic freeze test completed.", (i + 1));
 
 			// wait a bit during freeze
-			experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS);
+			experiment.sleepThroughExperiment(testConfig.getExperimentConfig().getFreezeWaitMillis());
 		}
 
 		log.info(MARKER, "Last dynamic freeze test finished. Starting for final time.");
@@ -52,11 +55,12 @@ public class FreezeRun implements TestRun {
 		// upload the configs
 		experiment.sendConfigToNodes();
 
+
 		// wait a bit for sending new config to nodes
 		// if the new config is not sent successfully before swirlds.jar is started
 		// total freeze frequency would be FreezeIteration + 1
 		// use FREEZE_WAIT_MILLIS * 2 to make the waiting period be a little longer
-		experiment.sleepThroughExperiment(FREEZE_WAIT_MILLIS * 2);
+		experiment.sleepThroughExperiment(testConfig.getExperimentConfig().getFreezeWaitMillis() * 2);
 
 		// start all processes
 		experiment.startAllSwirlds();
@@ -83,12 +87,12 @@ public class FreezeRun implements TestRun {
 	 * @return return true if succeed, else return false
 	 */
 	static boolean runSingleFreeze(final Experiment experiment,
-			final int waitTiming, final int iteration, final boolean isFreezeTest) {
+			final int waitTiming, final int experimentStartDelay, final int iteration, final boolean isFreezeTest) {
 		// start all processes
 		experiment.startAllSwirlds();
 
 		Duration sleep =
-				Duration.ofMinutes(EXPERIMENT_START_DELAY + waitTiming);
+				Duration.ofMinutes(experimentStartDelay + waitTiming);
 		experiment.sleepThroughExperiment(sleep.toMillis());
 
 		// check if all nodes has entered Maintenance status at ith iteration
