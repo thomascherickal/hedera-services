@@ -29,5 +29,6 @@ public enum ValidatorType {
 	RECOVER_STATE,
 	THROTTLE,
 	PTA_THROTTLE,
+	BLOB_STATE,
 	MIGRATION
 }
