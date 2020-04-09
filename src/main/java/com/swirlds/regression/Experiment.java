@@ -1363,17 +1363,32 @@ public class Experiment implements ExperimentSummary {
 	 *
 	 * @param iteration
 	 * 		iteration number of freeze test
+	 * @param isFreezeTest
+	 * 		whether current test is FreezeTest or RetartTest
 	 * @return
 	 */
-	public boolean checkAllNodesFreeze(final int iteration) {
+	public boolean checkAllNodesFreeze(final int iteration, final boolean isFreezeTest) {
 		//expected number of CHANGED_TO_MAINTENANCE contained in swirlds.log
 		final int expectedNum = iteration + 1;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
-				log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
-			} else {
-				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {}", i, iteration);
+			int tries = isFreezeTest ?
+					testConfig.getFreezeConfig().getRetries() :
+					testConfig.getRestartConfig().getRetries();
+			boolean frozen = false;
+			while (tries > 0) {
+				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
+					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
+					frozen = true;
+					break;
+				}
+				tries--;
+				node.printCurrentTime(i);
+				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
+				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
+			}
+			if (!frozen) {
+				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {} after {} retries", i, iteration, tries);
 				return false;
 			}
 		}

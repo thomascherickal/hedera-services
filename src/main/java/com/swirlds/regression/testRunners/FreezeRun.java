@@ -97,7 +97,7 @@ public class FreezeRun implements TestRun {
 
 		// check if all nodes has entered Maintenance status at ith iteration
 		// if not, log an error and stop the test
-		if (!experiment.checkAllNodesFreeze(iteration)) {
+		if (!experiment.checkAllNodesFreeze(iteration, isFreezeTest)) {
 			if (isFreezeTest) {
 				log.error(EXCEPTION, "Dynamic freeze test failed at {}th iteration. " +
 								"Not all nodes entered Maintenance status after waiting for {} mins",
