@@ -1257,7 +1257,7 @@ public class Experiment implements ExperimentSummary {
 				}
 				tries--;
 				node.printCurrentTime(i);
-				log.info(MARKER, "Node {} has not enter MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
+				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
 				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
 			}
 			if (!frozen) {

@@ -58,7 +58,7 @@ public class CsvParserV1 implements CsvParser {
 		if (line == null) {
 			return false;
 		} else if (line.isEmpty() || line.length() < 2) {
-			// Allow two empty lines in the csv file because when node kill reconnect testis performed,
+			// Allow two empty lines in the csv file because when node kill reconnect test is performed,
 			// it generates two empty lines after node restarts
 			if (emptyLineCounter < 2) {
 				emptyLineCounter++;
