@@ -3,16 +3,35 @@
   "description" : "platform testing demo - FileSequential",
   "duration": 60,
   "settings": [
-    {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"}
+    {
+      "name": "showInternalStats",
+      "value": "1"
+    },
+    {
+      "name": "csvFileName",
+      "value": "PlatformTesting"
+    },
+    {
+      "name": "csvAppend",
+      "value": "true"
+    }
   ],
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FileFreeze.json"]
+    "parameterList": [
+      "FileFreeze.json"
+    ]
+  },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+  "validator": [
+    "STATS",
+    "PLATFORM_TESTING_DEMO"
+  ]
 }
