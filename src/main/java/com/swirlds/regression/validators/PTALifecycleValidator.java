@@ -238,7 +238,7 @@ public class PTALifecycleValidator extends Validator {
 			LifecycleStatus latestHandleStatus = expectedMaps.get(nodeNum).get(key).getLatestHandledStatus();
 			if (latestHandleStatus != null && latestHandleStatus.getTransactionType() != null &&
 					(!latestHandleStatus.getTransactionType().equals(Delete) &&
-							latestHandleStatus.getTransactionType().equals(Expire))) {
+							!latestHandleStatus.getTransactionType().equals(Expire))) {
 				missingKeysSet.add(key);
 			}
 		}
