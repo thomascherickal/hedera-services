@@ -51,6 +51,9 @@ public class PTALifecycleValidator extends Validator {
 			"Missing keys in node %d : %s, MissingKeys in node 0 : %s";
 	public static final String FIELD_MISMATCH_ERROR = "Entity: %s has field %s mismatched. node0: %s; node%d: %s";
 
+	public static final String NULL_LATEST_HANDLED_STATUS_ERROR = "latestHandleStatus of one of the expectedValues is null. " +
+			"Node 0 : %s , Node %d : %s ";
+
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		if(mapData != null){
 			expectedMaps = mapData.getExpectedMaps();
@@ -153,9 +156,7 @@ public class PTALifecycleValidator extends Validator {
 			return;
 
 		if(baseLifecycle == null || compareLifecycle == null){
-			addError("latestHandleStatus of one of the expectedValues is null . " +
-					"Node 0:"+ baseLifecycle +
-					", Node "+nodeNum + ": "+ compareLifecycle);
+			addError(String.format(NULL_LATEST_HANDLED_STATUS_ERROR, baseLifecycle, nodeNum, compareLifecycle));
 			return;
 		}
 
@@ -288,30 +289,31 @@ public class PTALifecycleValidator extends Validator {
 		if(latestSubmitStatus != null && latestSubmitStatus.getTransactionState() != null &&
 				latestSubmitStatus.getTransactionState().equals(SUBMISSION_FAILED)) {
 			addError("Operation " + latestSubmitStatus.getTransactionType() +
-					"failed to get successfully submitted on node " + nodeNum + " for entity " + key);
+					" failed to get successfully submitted on node " + nodeNum + " for entity " + key);
 		}
 		if(latestHandleStatus == null || latestHandleStatus.getTransactionState() == null)
 			return;
 
 		switch (latestHandleStatus.getTransactionState()) {
 			case  INVALID_SIG:
-				addError("Signature is not valid for Entity "+ key +" while performing operation "
-						+ latestHandleStatus.getTransactionType() + " on Node "+ nodeNum);
+				addError(String.format("Signature is not valid for Entity %s while performing operation "+
+						"%s on Node %d", key, latestHandleStatus.getTransactionType(), nodeNum));
 				break;
 			case  HANDLE_FAILED:
-				addError("Entity "+ key + "on Node "+ nodeNum + " has Error. Please look at the log for more details");
+				addError(String.format("Entity %s on Node %d has Error. Please look at the log for " +
+						"more details", key, nodeNum));
 				break;
 			case  HANDLE_REJECTED:
-					addError("Operation " + latestHandleStatus.getTransactionType() + " on Entity " + key
-							+ "in Node " + nodeNum + " failed as entity is Deleted and PerformOnDeleted is false");
+				addError(String.format("Operation %s on Entity %s in Node %d failed as entity is Deleted " +
+						"and PerformOnDeleted is false", latestHandleStatus.getTransactionType(), key, nodeNum));
 				break;
 			case  HANDLE_ENTITY_TYPE_MISMATCH:
-				addError("Operation "+ latestHandleStatus.getTransactionType()+
-						" failed as it is performed on wrong entity type "+ ev2.getEntityType());
+				addError(String.format("Operation %s failed as it is performed on wrong entity type %s",
+						latestHandleStatus.getTransactionType(), ev2.getEntityType()));
 				break;
 			default:
-				addError("Something went wrong and entity "+ key + "on Node "+ nodeNum + " has Error. " +
-						"Please look at the log for more details");
+				addError(String.format("Something went wrong and entity %s on Node %d has Error." +
+						"Please look at the log for more details", key, nodeNum));
 		}
 	}
 }
