@@ -52,6 +52,7 @@ public class TestConfig implements FileRequirement {
 	private RestartConfig restartConfig = null;
 	private FreezeConfig freezeConfig = null;
 	private RecoverConfig recoverConfig = null;
+	private ExperimentConfig experimentConfig = new ExperimentConfig();
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -191,6 +192,14 @@ public class TestConfig implements FileRequirement {
 
 	public void setRecoverConfig(RecoverConfig recoverConfig) {
 		this.recoverConfig = recoverConfig;
+	}
+
+	public ExperimentConfig getExperimentConfig() {
+		return experimentConfig;
+	}
+
+	public void setExperimentConfig(ExperimentConfig experimentConfig) {
+		this.experimentConfig = experimentConfig;
 	}
 
 	@Override
