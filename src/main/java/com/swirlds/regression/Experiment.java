@@ -522,28 +522,28 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-    private ExpectedMapData loadExpectedMapData(String directory) {
-        final ExpectedMapData mapData = new ExpectedMapData();
-        for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
-            final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
-            if(!new File(expectedMap).exists()){
-            	log.error("ExpectedMap doesn't exist for validation in Node {}", i);
-            	return null;
+	private ExpectedMapData loadExpectedMapData(String directory) {
+		final ExpectedMapData mapData = new ExpectedMapData();
+		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
+			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMap).exists()){
+				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+				return null;
 			}
-            Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
-            mapData.getExpectedMaps().put(i, map);
-        }
-        return mapData;
-    }
+			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
+			mapData.getExpectedMaps().put(i, map);
+		}
+		return mapData;
+	}
 
-    private void validateTest() {
-        SlackTestMsg slackMsg = new SlackTestMsg(
-                getUniqueId(),
-                regConfig,
-                testConfig,
-                getResultsFolder(experimentTime, testConfig.getName()),
-                git
-        );
+	private void validateTest() {
+		SlackTestMsg slackMsg = new SlackTestMsg(
+				getUniqueId(),
+				regConfig,
+				testConfig,
+				getResultsFolder(experimentTime, testConfig.getName()),
+				git
+		);
 
 		// if posting to the regression channel, check branch and git user
 		if (regConfig.getSlack() != null
@@ -602,28 +602,28 @@ public class Experiment implements ExperimentSummary {
 			requiredValidator.add(ssValidator);
 		}
 
-        if(regConfig.isUseLifecycleModel()){
-            PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
-                    (loadExpectedMapData(testConfig.getName()));
-            requiredValidator.add(lifecycleValidator);
-        }
+		if (regConfig.isUseLifecycleModel()) {
+			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+					(loadExpectedMapData(testConfig.getName()));
+			requiredValidator.add(lifecycleValidator);
+		}
 
-        for (Validator item : requiredValidator) {
-            try {
-                if (item instanceof ReconnectValidator) {
-                    ((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
-                }
-                item.validate();
-                slackMsg.addValidatorInfo(item);
-            } catch (Throwable e) {
-                log.error(ERROR, "{} validator failed to validate", item.getClass(), e);
-                slackMsg.addValidatorException(item, e);
-            }
-        }
-        sendSlackMessage(slackMsg);
-        log.info(MARKER, slackMsg.getPlaintext());
-        createStatsFile(getExperimentFolder());
-        sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
+		for (Validator item : requiredValidator) {
+			try {
+				if (item instanceof ReconnectValidator) {
+					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
+				}
+				item.validate();
+				slackMsg.addValidatorInfo(item);
+			} catch (Throwable e) {
+				log.error(ERROR, "{} validator failed to validate", item.getClass(), e);
+				slackMsg.addValidatorException(item, e);
+			}
+		}
+		sendSlackMessage(slackMsg);
+		log.info(MARKER, slackMsg.getPlaintext());
+		createStatsFile(getExperimentFolder());
+		sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
 
 		// TODO Experiments only communicate failures over the slack message
 		// TODO This should be fixed
@@ -632,11 +632,12 @@ public class Experiment implements ExperimentSummary {
 		exceptions = exceptions || slackMsg.hasExceptions();
 	}
 
-    private void createStatsFile(String resultsFolder) {
-        String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(), RegressionUtilities.INSIGHT_SCRIPT_LOCATION,resultsFolder).split(" ");
-        ExecStreamReader.outputProcessStreams(insightCmd);
+	private void createStatsFile(String resultsFolder) {
+		String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(),
+				RegressionUtilities.INSIGHT_SCRIPT_LOCATION, resultsFolder).split(" ");
+		ExecStreamReader.outputProcessStreams(insightCmd);
 
-    }
+	}
 
 	public void sendSettingFileToNodes() {
 		if (regConfig.getEventFilesWriters() == 0) {
@@ -1314,6 +1315,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * set app in ConfigBuilder
+	 *
 	 * @param app
 	 */
 	public void setConfigApp(final AppConfig app) {

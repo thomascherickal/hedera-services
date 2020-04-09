@@ -52,17 +52,23 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Update;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// test class for PTA LifecycleValidator
+/**
+ * test class for PTA LifecycleValidator
+ */
 public class PTALifeCycleValidatorTest {
 
-	private static final String positiveTestDir =  "src/test/resources/logs/Lifecycle";
-	private static final String negativeTestDir =  "src/test/resources/logs/LifecycleNeg";
-	private static final String missingMapsDir =  "src/test/resources/logs/PTD-NodeKillReconnect";
+	private static final String positiveTestDir = "src/test/resources/logs/Lifecycle";
+	private static final String negativeTestDir = "src/test/resources/logs/LifecycleNeg";
+	private static final String missingMapsDir = "src/test/resources/logs/PTD-NodeKillReconnect";
 
-	// Positive test where ExpectedMaps of all 4 nodes are the same
+	/**
+	 * Positive test where ExpectedMaps of all 4 nodes are the same
+	 */
+
 	@Test
 	void validateExpectedMapsPositiveTest() {
-		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
+		PTALifecycleValidator validator = new PTALifecycleValidator(
+				ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
 		validator.validate();
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
@@ -70,17 +76,20 @@ public class PTALifeCycleValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
-	// Test to check errors
-	// 	Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12]
-	//	[0,0,11],[0,0,17],[0,0,14],[0,0,15] has 2 different fields compared to node 0.
-	//	So that total mismatch errors will be 24
-	//	[0,0,19,Blob] is missing in node 0 . So, total missing Keys will be 3
+	/**
+	 * Test to check errors
+	 * Modified the node 0's ExpectedMap to have different Entity type for MapKey[0,0,12]
+	 * [0,0,11],[0,0,17],[0,0,14],[0,0,15] has 2 different fields compared to node 0.
+	 * So that total mismatch errors will be 24
+	 * [0,0,19,Blob] is missing in node 0 . So, total missing Keys will be 3
+	 */
 	@Test
 	void validateExpectedMapsErrors() {
-		PTALifecycleValidator validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
+		PTALifecycleValidator validator = new PTALifecycleValidator(
+				ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
 		validator.validate();
 
-		System.out.println("Error messages : \n"+ String.join("\n",validator.getErrorMessages()));
+		System.out.println("Error messages : \n" + String.join("\n", validator.getErrorMessages()));
 
 		assertEquals(30, validator.getErrorMessages().size());
 
@@ -88,11 +97,14 @@ public class PTALifeCycleValidatorTest {
 				"node0: true; node1: false"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,12] has field EntityType " +
 				"mismatched. node0: Crypto; node2: Blob"));
-		assertTrue(validator.getErrorMessages().contains("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 1 : [MapKey[0,0,15]], MissingKeys in node 0 : [MapKey[0,0,19]]"));
+		assertTrue(validator.getErrorMessages().contains(
+				"KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
+						"Missing keys in node 1 : [MapKey[0,0,15]], MissingKeys in node 0 : [MapKey[0,0,19]]"));
 		assertTrue(validator.getErrorMessages().contains("Entity: MapKey[0,0,14] has field latestHandledStatus " +
 				"mismatched. node0: TransactionState: HANDLE_FAILED, TransactionType: Update, timestamp: 1584554112, " +
-				"nodeId: 14; node2: TransactionState: HANDLED, TransactionType: Update, timestamp: 1584554112, nodeId: " +
+				"nodeId: 14; node2: TransactionState: HANDLED, TransactionType: Update, timestamp: 1584554112, " +
+				"nodeId:" +
+				" " +
 				"14"));
 		assertEquals(false, validator.isValid());
 	}
@@ -131,7 +143,7 @@ public class PTALifeCycleValidatorTest {
 	}
 
 	@Test
-	public void checkHandleRejectedTests(){
+	public void checkHandleRejectedTests() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
 		Map<MapKey, ExpectedValue> map0 = expectedMaps.get(0);
 		Map<MapKey, ExpectedValue> map2 = expectedMaps.get(2);
@@ -140,7 +152,7 @@ public class PTALifeCycleValidatorTest {
 
 		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
 		setValueStatus(map2, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
-		setValueStatus(map0, key2, null,buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
+		setValueStatus(map0, key2, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
 		setValueStatus(map2, key2, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
 
 		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
@@ -168,7 +180,7 @@ public class PTALifeCycleValidatorTest {
 	}
 
 	@Test
-	public void checkErrorCauseTests(){
+	public void checkErrorCauseTests() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
 		Map<MapKey, ExpectedValue> map0 = expectedMaps.get(0);
 		Map<MapKey, ExpectedValue> map2 = expectedMaps.get(2);
@@ -178,8 +190,9 @@ public class PTALifeCycleValidatorTest {
 		MapKey key4 = new MapKey(2, 2, 4);
 
 		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), null);
-		setValueStatus(map2, key, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(INVALID_SIG, Create),null);
-		setValueStatus(map0, key2, buildLifeCycle(SUBMITTED, Create),buildLifeCycle(HANDLE_ENTITY_TYPE_MISMATCH, Create), null);
+		setValueStatus(map2, key, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(INVALID_SIG, Create), null);
+		setValueStatus(map0, key2, buildLifeCycle(SUBMITTED, Create),
+				buildLifeCycle(HANDLE_ENTITY_TYPE_MISMATCH, Create), null);
 		setValueStatus(map2, key2, buildLifeCycle(SUBMISSION_FAILED, Create), buildLifeCycle(HANDLED, Create), null);
 		setValueStatus(map2, key3, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(HANDLE_FAILED, Create), null);
 		setValueStatus(map2, key4, buildLifeCycle(INITIALIZED, Create), null, null);
@@ -202,16 +215,19 @@ public class PTALifeCycleValidatorTest {
 
 		assertEquals("Operation Create on Entity MapKey[0,2,3] in Node 0 failed as entity is " +
 				"Deleted and PerformOnDeleted is false", errors.get(0));
-		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2", errors.get(1));
+		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2",
+				errors.get(1));
 		assertEquals("Operation Create failed as it is performed on wrong entity type Blob", errors.get(2));
-		assertEquals("Operation Create failed to get successfully submitted on node 2 for entity MapKey[0,1,3]", errors.get(3));
+		assertEquals("Operation Create failed to get successfully submitted on node 2 for entity MapKey[0,1,3]",
+				errors.get(3));
 		assertEquals("Something went wrong and entity MapKey[0,1,3] on Node 2 has Error." +
 				"Please look at the log for more details", errors.get(4));
-		assertEquals("Entity MapKey[2,1,2] on Node 2 has Error. Please look at the log for more details", errors.get(5));
+		assertEquals("Entity MapKey[2,1,2] on Node 2 has Error. Please look at the log for more details",
+				errors.get(5));
 	}
 
 	@Test
-	public void compareValuesTest(){
+	public void compareValuesTest() {
 		ExpectedValue ev1 = new ExpectedValue(Blob,
 				new Hash(generateRandomContent()),
 				false,
@@ -226,7 +242,7 @@ public class PTALifeCycleValidatorTest {
 				buildLifeCycle(HANDLE_FAILED, Create),
 				buildLifeCycle(HANDLED, Create));
 
-		MapKey key = new MapKey(0,0,0);
+		MapKey key = new MapKey(0, 0, 0);
 
 		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
 		validator.compareValues(key, ev1, ev2, 4);
@@ -234,12 +250,13 @@ public class PTALifeCycleValidatorTest {
 		List<String> errors = validator.getErrorMessages();
 		assertEquals(5, errors.size());
 
-		assertEquals("Entity: MapKey[0,0,0] has field EntityType mismatched. node0: Blob; node4: Crypto", errors.get(0));
+		assertEquals("Entity: MapKey[0,0,0] has field EntityType mismatched. node0: Blob; node4: Crypto",
+				errors.get(0));
 		assertEquals("Entity: MapKey[0,0,0] has field isErrored mismatched. node0: false; node4: true", errors.get(1));
 		assertTrue(errors.get(2).contains("Entity: MapKey[0,0,0] has field getHash mismatched"));
 		assertEquals("Entity: MapKey[0,0,0] has field latestHandledStatus mismatched. node0: " +
-				"TransactionState: HANDLED, TransactionType: Create, timestamp: 0, nodeId: -1; node4: " +
-				"TransactionState: HANDLE_FAILED, TransactionType: Create, timestamp: 0, nodeId: -1",
+						"TransactionState: HANDLED, TransactionType: Create, timestamp: 0, nodeId: -1; node4: " +
+						"TransactionState: HANDLE_FAILED, TransactionType: Create, timestamp: 0, nodeId: -1",
 				errors.get(3));
 		assertEquals("Entity: MapKey[0,0,0] has field historyHandledStatus mismatched. node0: " +
 				"null; node4: TransactionState: HANDLED, TransactionType: Create, timestamp: 0, nodeId: " +
@@ -248,8 +265,8 @@ public class PTALifeCycleValidatorTest {
 		for (String error : errors) {
 			System.out.println(error);
 		}
-
 	}
+
 	@Test
 	public void validateExpectedMapTests() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
@@ -273,19 +290,20 @@ public class PTALifeCycleValidatorTest {
 	}
 
 	@Test
-	public void checkMissingExpectedMapsTest(){
+	public void checkMissingExpectedMapsTest() {
 		PTALifecycleValidator validator = null;
-		try{
+		try {
 			validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
-		}catch(Exception e){
+		} catch (Exception e) {
 			assertEquals(" expectedMap in node 0 doesn't exist", e.getMessage());
 		}
 	}
 
 	private void setValueStatus(Map<MapKey, ExpectedValue> map, MapKey key,
-			LifecycleStatus latestSubmissionStatus, LifecycleStatus latestHandleStatus, LifecycleStatus historyStatusDelete) {
+			LifecycleStatus latestSubmissionStatus, LifecycleStatus latestHandleStatus,
+			LifecycleStatus historyStatusDelete) {
 		ExpectedValue evKey = map.get(key);
-		if(evKey ==null) {
+		if (evKey == null) {
 			evKey = new ExpectedValue();
 		}
 		evKey.setLatestSubmitStatus(latestSubmissionStatus).
@@ -294,14 +312,18 @@ public class PTALifeCycleValidatorTest {
 		map.put(key, evKey);
 	}
 
-	//build LifecycleStatus object from the state and transaction type
-	private LifecycleStatus buildLifeCycle(TransactionState state, TransactionType type){
+	/**
+	 * build LifecycleStatus object from the state and transaction type
+	 */
+	private LifecycleStatus buildLifeCycle(TransactionState state, TransactionType type) {
 		return LifecycleStatus.builder().
 				setTransactionState(state).
 				setTransactionType(type).build();
 	}
 
-	// generate random bytes to generate Hash
+	/**
+	 * generate random bytes to generate Hash
+	 */
 	private byte[] generateRandomContent() {
 		int contentSize = 48;
 		Random random = new Random();
@@ -310,7 +332,7 @@ public class PTALifeCycleValidatorTest {
 		return content;
 	}
 
-	private Map<Integer, Map<MapKey, ExpectedValue>> setUpMap(){
+	private Map<Integer, Map<MapKey, ExpectedValue>> setUpMap() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = new HashMap<>();
 		Map<MapKey, ExpectedValue> map0 = new ConcurrentHashMap<>();
 		Map<MapKey, ExpectedValue> map2 = new ConcurrentHashMap<>();
@@ -321,20 +343,20 @@ public class PTALifeCycleValidatorTest {
 		MapKey key1 = new MapKey(0, 1, 2);
 		MapKey key2 = new MapKey(1, 2, 3);
 		map0.put(key1, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 		map0.put(key2, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 
 		// two equal keys
 		MapKey equalKey1 = new MapKey(0, 2, 3);
 		MapKey equalKey2 = new MapKey(0, 2, 3);
 		map0.put(equalKey1, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 		map2.put(equalKey2, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 
 		// only in map2
@@ -342,23 +364,23 @@ public class PTALifeCycleValidatorTest {
 		MapKey key4 = new MapKey(2, 2, 3);
 		MapKey key5 = new MapKey(2, 2, 4);
 		map2.put(key3, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 		map2.put(key4, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 		map2.put(key5, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 
 		// another two equal keys get by copy()
 		MapKey key = new MapKey(0, 1, 3);
 		MapKey copy = new MapKey(0, 1, 3);
 		map0.put(key, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 		map2.put(copy, new ExpectedValue(Blob, new Hash(), false,
-				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0 ),
+				new LifecycleStatus(INITIALIZED, Update, Instant.now().toEpochMilli(), 0),
 				new LifecycleStatus(HANDLED, Transfer, Instant.now().toEpochMilli(), 0), null));
 
 		return expectedMaps;
