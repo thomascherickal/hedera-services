@@ -1,12 +1,11 @@
 {
   "name":"MigrationTestingApp",
   "description" : "Migration Testing App",
-  "duration": 1800,
+  "duration": 600,
   "settings": [
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"MigrationTestingApp"},
     {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value": "1"},
     {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
   "app": {
@@ -19,10 +18,10 @@
     "swirldName": "123",
     "round": 113,
     "restoreDb": true,
-    "nodeIdentifier": "ALL_BUT_LAST"
+    "nodeIdentifier": "ALL"
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "MIGRATION" ]
+  "validator": ["STATS", "MIGRATION" ]
 }
