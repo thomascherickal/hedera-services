@@ -32,6 +32,21 @@ public class MigrationValidatorTest {
 	@ValueSource(strings = {
 			"logs/migrationFCM/migrate10K"
 	})
+	void validateMigrationWithMissingLog(String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
+		nodeData.set(0, new NodeData(null, null));
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertTrue(errorMessages.isEmpty());
+		assertTrue(validator.isValid());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate10K"
+	})
 	void validateMigrationLogs(String testDir) throws IOException {
 		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
 		final NodeValidator validator = new MigrationValidator(nodeData);

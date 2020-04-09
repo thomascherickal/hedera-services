@@ -48,7 +48,8 @@ public class MigrationValidator extends NodeValidator {
 		for (int index = 0; index < nodeNum; index++) {
 			LogReader nodeLog = nodeData.get(index).getLogReader();
 			if (nodeLog == null) {
-				log.error(MARKER, "could not load log, exiting validation for node {}", index);
+				addError(String.format( "Could not load log for node %d", index));
+				this.isValid = false;
 				continue;
 			}
 
