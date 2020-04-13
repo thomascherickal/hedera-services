@@ -28,7 +28,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogParserV2 implements LogParser {
+public class LogParserV2 implements PlatformLogParser {
 	/* matches the following style line:
 	  2019-04-09 19:07:00.269  83789 <       stateHash  0   > Freeze state is about to be saved to disk, round is 486
 	  match(1) = datetimeRegex = 2019-04-09 19:07:00.269
@@ -49,7 +49,7 @@ public class LogParserV2 implements LogParser {
 	}
 
 	@Override
-	public LogEntry parse(String line) {
+	public PlatformLogEntry parse(String line) {
 		Matcher matcher = pattern.matcher(line);
 
 		if (matcher.find()) {
@@ -68,7 +68,7 @@ public class LogParserV2 implements LogParser {
 			}
 			String threadName = (matcher.group(3).trim());
 			String entry = matcher.group(4);
-			return new LogEntry(
+			return new PlatformLogEntry(
 					timestamp,
 					marker,
 					threadId,

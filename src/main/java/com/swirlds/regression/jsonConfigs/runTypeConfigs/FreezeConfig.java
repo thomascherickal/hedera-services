@@ -23,7 +23,13 @@ import com.swirlds.regression.jsonConfigs.FileRequirement;
 import java.util.List;
 
 public class FreezeConfig implements FileRequirement {
+	// regression test would sleep for (EXPERIMENT_START_DELAY + freezeTiming) mins before checking if
+	// the node has entered Maintenance status;
+	// if all nodes has entered Maintenance status, regression test would stop all swirlds;
+	// else would log an error and stop the test;
 	private int freezeTiming = 0;
+	// when a node is not frozen at checking, retry this many times
+	private int retries = 2;
 	private int freezeIterations = 1;
 	private AppConfig postFreezeApp;
 
@@ -49,6 +55,14 @@ public class FreezeConfig implements FileRequirement {
 
 	public void setPostFreezeApp(AppConfig postFreezeApp) {
 		this.postFreezeApp = postFreezeApp;
+	}
+
+	public int getRetries() {
+		return retries;
+	}
+
+	public void setRetries(int retries) {
+		this.retries = retries;
 	}
 
 	@Override

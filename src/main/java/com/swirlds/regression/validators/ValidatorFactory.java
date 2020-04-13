@@ -18,14 +18,13 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 public class ValidatorFactory {
 
 
-	public static NodeValidator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
 		if (vt == null) {
 			return null;
 		}
@@ -42,10 +41,12 @@ public class ValidatorFactory {
 				break;
 			case PLATFORM_CSV:
 				break; */
+			case BLOB_STATE:
+				return new BlobStateValidator();
 			case RESTART:
-				return new RestartValidator(nodeData);
+				return new RestartValidator(nodeData, testConfig);
 			case RECONNECT:
-				return new ReconnectValidator(nodeData);
+				return new ReconnectValidator(nodeData, testConfig);
 			case PLATFORM_TESTING_DEMO:
 				return new PtdValidator(nodeData);
 			case STATS:
@@ -56,6 +57,8 @@ public class ValidatorFactory {
 				return new ThrottleValidator(nodeData);
 			case PTA_THROTTLE:
 				return new PTAThrottleValidator(nodeData, testConfig);
+			case STDOUT:
+				return new StdoutValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}

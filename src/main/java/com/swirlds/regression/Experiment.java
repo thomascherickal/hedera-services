@@ -17,17 +17,26 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
+import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.validators.ExpectedMapData;
+import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -65,7 +74,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -83,6 +94,7 @@ import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
@@ -91,6 +103,7 @@ import static com.swirlds.regression.RegressionUtilities.REG_GIT_BRANCH;
 import static com.swirlds.regression.RegressionUtilities.REG_GIT_USER_EMAIL;
 import static com.swirlds.regression.RegressionUtilities.REG_SLACK_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
@@ -103,6 +116,11 @@ import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
+import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
+import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
+import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
+import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -203,8 +221,7 @@ public class Experiment implements ExperimentSummary {
 		setupTest(experiment);
 
 		if (regConfig.getSlack() != null) {
-			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-					regConfig.getSlack().getChannel());
+			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		}
 	}
 
@@ -251,7 +268,7 @@ public class Experiment implements ExperimentSummary {
 
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			node.execWithProcessID(regConfig.getJvmOptions());
+			node.execWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
 		}).collect(Collectors.toList()));
 	}
@@ -401,6 +418,105 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
+     * Whether all nodes backed up the last round
+     *
+     * @param fileName
+     * 		File name to search for the saved folder containing rounds relative to
+     * @return return true if the time that the message appeared is equal or larger than messageAmount
+     */
+    public boolean isAllNodesBackedUpLastRound(String fileName) {
+        Long maxRoundSeen = -1L;
+        Boolean allCompleteMaxRound = true;
+        HashMap<Integer,HashMap<Long,Boolean>> nodeRounds = new HashMap<>();
+        HashMap<Integer,SSHService> nodesStillSaving = new HashMap<>();
+
+        log.info(MARKER,"Checking if all nodes backed up last round");
+
+        for (int i = 0; i < sshNodes.size(); i++) {
+            SSHService node = sshNodes.get(i);
+            HashMap<Long,Boolean> ssProgress = node.checkSavedStateProgress(fileName);
+
+            if (ssProgress == null) {
+                log.info(MARKER,"no saved nodes found for node {}", i);
+                continue;
+            }
+
+            nodeRounds.put(i,ssProgress);
+
+            for(Map.Entry<Long,Boolean> entry : ssProgress.entrySet()) {
+                Long roundNum = entry.getKey();
+                Boolean roundComplete = entry.getValue();
+
+                //reset tracking for max round seen
+                if (roundNum > maxRoundSeen) {
+                    maxRoundSeen = roundNum;
+                    allCompleteMaxRound = roundComplete;
+
+                    nodesStillSaving = new HashMap<>();
+                }
+
+                if (roundNum == maxRoundSeen) {
+                    allCompleteMaxRound &= roundComplete;
+                    if (roundComplete == false) {
+                        nodesStillSaving.put(i,node);
+                    }
+                }
+            }
+        }
+
+        //kill java process on nodes that have finished the last round
+        for (Map.Entry<Integer,HashMap<Long,Boolean>> entry : nodeRounds.entrySet()) {
+            Integer nodeIndex = entry.getKey();
+            SSHService node = sshNodes.get(nodeIndex);
+            HashMap<Long,Boolean> nodeRoundMap = entry.getValue();
+
+            if (nodeRoundMap.containsKey(maxRoundSeen)) {
+                //value looked up is the boolean value telling whether the round is completed
+                if (!nodeRoundMap.get(maxRoundSeen)) {
+					nodesStillSaving.put(nodeIndex,node);
+                }
+            } else {
+                nodesStillSaving.put(nodeIndex,node);
+            }
+        }
+
+        if (allCompleteMaxRound == false) {
+            //retry all nodes that had not completed saving the final round
+            allCompleteMaxRound = true;
+
+            try {
+                log.trace(MARKER, "sleeping for {} seconds ", testConfig::getSaveStateCheckWait);
+                Thread.sleep(testConfig.getSaveStateCheckWait());
+            } catch (InterruptedException e) {
+                log.error(ERROR, "could not sleep.", e);
+            }
+
+            for (Map.Entry<Integer,SSHService> entry : nodesStillSaving.entrySet()) {
+                Integer nodeNum = entry.getKey();
+                SSHService node = entry.getValue();
+                HashMap<Long,Boolean> nodeSaveStatus = node.checkSavedStateProgress(fileName);
+
+                if (nodeSaveStatus.containsKey(maxRoundSeen)) {
+                    if (!nodeSaveStatus.get(maxRoundSeen)) {
+                        log.error(ERROR,"node {} did not contain saved state and postgres backup for round {}", nodeNum, maxRoundSeen);
+                        allCompleteMaxRound = false;
+                    }
+                } else {
+                    allCompleteMaxRound = false;
+                }
+            }
+        }
+
+        if (allCompleteMaxRound) {
+            log.info(MARKER,"All nodes finishes saving up to round " + maxRoundSeen);
+        } else {
+            log.error(ERROR,"Not all nodes finished saving for round " + maxRoundSeen);
+        }
+
+        return allCompleteMaxRound;
+    }
+
+    /**
 	 * Whether test finished message can be found at least twice in the log file
 	 */
 	public boolean isFoundTwoPTDFinishMessage() {
@@ -517,13 +633,20 @@ public class Experiment implements ExperimentSummary {
 				InputStream csvInput = getInputStream(csvFilePath);
 				LogReader logReader = null;
 				if (logInput != null) {
-					logReader = LogReader.createReader(1, logInput);
+					logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
 				}
 				CsvReader csvReader = null;
 				if (csvInput != null) {
 					csvReader = CsvReader.createReader(1, csvInput);
 				}
-				nodeData.add(new NodeData(logReader, csvReader));
+				String outputLogFileName = getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
+				InputStream outputLogInput = getInputStream(outputLogFileName);
+				LogReader outputLogReader = null;
+				if (outputLogInput != null) {
+					outputLogReader = LogReader.createReader(new StdoutLogParser(), outputLogInput);
+				}
+
+				nodeData.add(new NodeData(logReader, csvReader, outputLogReader));
 			}
 		}
 		return nodeData;
@@ -542,6 +665,20 @@ public class Experiment implements ExperimentSummary {
 					getInputStream(shaEventFileName), recoverEventLogStream));
 		}
 		return nodeData;
+	}
+
+	private ExpectedMapData loadExpectedMapData(String directory) {
+		final ExpectedMapData mapData = new ExpectedMapData();
+		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
+			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMap).exists()){
+				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+				return null;
+			}
+			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
+			mapData.getExpectedMaps().put(i, map);
+		}
+		return mapData;
 	}
 
 	private void validateTest() {
@@ -596,8 +733,14 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			requiredValidator.add(ValidatorFactory.getValidator(item, nodeData, testConfig));
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig);
+			if (item == ValidatorType.BLOB_STATE) {
+				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
+			}
+			requiredValidator.add(validatorToAdd);
 		}
+		List<NodeData> nodeData = loadNodeData(testConfig.getName());
+		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
@@ -608,6 +751,12 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
+		}
+
+		if (regConfig.isUseLifecycleModel()) {
+			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+					(loadExpectedMapData(testConfig.getName()));
+			requiredValidator.add(lifecycleValidator);
 		}
 
 		for (Validator item : requiredValidator) {
@@ -622,7 +771,7 @@ public class Experiment implements ExperimentSummary {
 				slackMsg.addValidatorException(item, e);
 			}
 		}
-		sendSlackMessage(slackMsg);
+		sendSlackMessage(slackMsg, regConfig.getSlack().getChannel());
 		log.info(MARKER, slackMsg.getPlaintext());
 		createStatsFile(getExperimentFolder());
 		sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
@@ -703,14 +852,14 @@ public class Experiment implements ExperimentSummary {
 				.collect(Collectors.toList()));
 	}
 
-	public void sendSlackMessage(SlackTestMsg msg) {
-		slacker.messageChannel(msg);
+	public void sendSlackMessage(SlackTestMsg msg, String channel) {
+		slacker.messageChannel(msg, channel);
 	}
 
-	public void sendSlackMessage(String error) {
+	public void sendSlackMessage(String error, String channel) {
 		SlackTestMsg msg = new SlackTestMsg(getUniqueId(), regConfig, testConfig);
 		msg.addError(error);
-		slacker.messageChannel(msg);
+		slacker.messageChannel(msg, channel);
 	}
 
 	public void sendSlackStatsFile(SlackTestMsg msg, String fileLocation) {
@@ -751,7 +900,7 @@ public class Experiment implements ExperimentSummary {
 		//TODO: unit test for null cld
 		if (cld == null) {
 			log.error(ERROR, "Cloud instance was null, cannot run test!");
-			sendSlackMessage("Cloud instance was null, cannot start test!");
+			sendSlackMessage("Cloud instance was null, cannot start test!", regConfig.getSlack().getChannel());
 			return;
 		}
 		this.cloud = cld;
@@ -839,6 +988,14 @@ public class Experiment implements ExperimentSummary {
 
 		testRun.runTest(testConfig, this);
 
+        if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
+        	if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
+        		log.error(ERROR,"Not all nodes successfully backed up last round");
+			}
+
+            scpSavedFolder();
+        }
+
 		//TODO maybe move the kill to the TestRun
 		stopAllSwirlds();
 
@@ -852,7 +1009,8 @@ public class Experiment implements ExperimentSummary {
 		}
 
 		/* make sure that more streaming client than nodes were not requested */
-		threadPoolService(IntStream.range(0, sshNodes.size())
+		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
+		threadPoolService(IntStream.range(0, eventFileWriters)
 				.<Runnable>mapToObj(i -> () -> {
 					SSHService node = sshNodes.get(i);
 					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
@@ -862,9 +1020,10 @@ public class Experiment implements ExperimentSummary {
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
 					SSHService node = sshNodes.get(i);
-					node.scpFrom(getExperimentResultsFolderForNode(i),
-							(ArrayList<String>) testConfig.getResultFiles());
-
+					boolean success = false;
+					while (!success)
+						success = node.scpFrom(getExperimentResultsFolderForNode(i),
+								(ArrayList<String>) testConfig.getResultFiles());
 				}).collect(Collectors.toList()));
 		log.info(MARKER, "Downloaded experiment data");
 
@@ -888,6 +1047,17 @@ public class Experiment implements ExperimentSummary {
 		nodeMemoryProfile = new NodeMemory(totalNodeMemory);
 	}
 
+	void scpSavedFolder() {
+		ArrayList<String> blobStateScpList = new ArrayList<>();
+		blobStateScpList.add(REMOTE_SAVED_FOLDER + "$");
+
+		//BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
+		}
+	}
+	
 	void resetNodes() {
 		threadPoolService(sshNodes.stream()
 				.<Runnable>map(node -> () -> {
@@ -908,13 +1078,13 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	private void uploadFilesToSharepoint() {
+		copyLogFileToResultsFolder();
 		if (!regConfig.isUploadToSharePoint()) {
 			log.info(MARKER, "Uploading to SharePoint is off, skipping");
 			return;
 		}
 		SharePointManager spm = new SharePointManager();
 		spm.login();
-		copyLogFileToResultsFolder();
 		try (Stream<Path> walkerPath = Files.walk(Paths.get(getExperimentFolder()))) {
 			final List<String> foundFiles = walkerPath.filter(Files::isRegularFile).map(x -> x.toString()).collect(
 					Collectors.toList());
@@ -1272,5 +1442,86 @@ public class Experiment implements ExperimentSummary {
 
 		}
 		return true;
+	}
+
+
+	/**
+	 * check if all nodes have entered MAINTENANCE mode
+	 *
+	 * @param iteration
+	 * 		iteration number of freeze test
+	 * @param isFreezeTest
+	 * 		whether current test is FreezeTest or RetartTest
+	 * @return
+	 */
+	public boolean checkAllNodesFreeze(final int iteration, final boolean isFreezeTest) {
+		//expected number of CHANGED_TO_MAINTENANCE contained in swirlds.log
+		final int expectedNum = iteration + 1;
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			int tries = isFreezeTest ?
+					testConfig.getFreezeConfig().getRetries() :
+					testConfig.getRestartConfig().getRetries();
+			boolean frozen = false;
+			while (tries > 0) {
+				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
+					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
+					frozen = true;
+					break;
+				}
+				tries--;
+				node.printCurrentTime(i);
+				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
+				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
+			}
+			if (!frozen) {
+				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {} after {} retries", i, iteration, tries);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * check if all nodes finish saving expectedMap if they started to save expectedMap
+	 *
+	 * @param iteration
+	 * 		iteration number of freeze test
+	 * @return
+	 */
+	public boolean checkAllNodesSavedExpected(final int iteration) {
+		final int expectedNum = iteration + 1;
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			final Map<String, Integer> countMap = node.countSpecifiedMsgEach(
+					List.of(PTD_SAVE_EXPECTED_MAP,
+							PTD_SAVE_EXPECTED_MAP_SUCCESS,
+							PTD_SAVE_EXPECTED_MAP_ERROR),
+					REMOTE_SWIRLDS_LOG);
+			final int startCount = countMap.getOrDefault(PTD_SAVE_EXPECTED_MAP, 0);
+
+			if (startCount == 0) {
+				continue;
+			}
+			final int errorCount = countMap.getOrDefault(PTD_SAVE_EXPECTED_MAP_ERROR, 0);
+			final int successCount = countMap.getOrDefault(PTD_SAVE_EXPECTED_MAP_SUCCESS, 0);
+			if (startCount == errorCount + successCount && startCount == expectedNum) {
+				log.info(MARKER, "Node {} finished/stopped saving expectedMap at iteration {}", i, iteration);
+			} else {
+				log.info(MARKER, "Node {} hasn't finished saving expectedMap at iteration {}", i, iteration);
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+	/**
+	 * set app in ConfigBuilder
+	 *
+	 * @param app
+	 */
+	public void setConfigApp(final AppConfig app) {
+		configFile.setApp(app);
 	}
 }

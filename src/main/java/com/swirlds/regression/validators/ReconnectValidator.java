@@ -19,16 +19,21 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogEntry;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.swirlds.common.PlatformStatNames.ROUND_SUPER_MAJORITY;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.common.logging.PlatformLogMessages.CHANGED_TO_ACTIVE;
 import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
@@ -36,9 +41,11 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEP
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 
 public class ReconnectValidator extends NodeValidator {
+	private TestConfig testConfig;
 
-	public ReconnectValidator(List<NodeData> nodeData) {
+	public ReconnectValidator(List<NodeData> nodeData, TestConfig testConfig) {
 		super(nodeData);
+		this.testConfig = testConfig;
 	}
 
 	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
@@ -136,7 +143,7 @@ public class ReconnectValidator extends NodeValidator {
 		}
 
 		// check the reconnect node's log and csv
-		LogReader nodeLog = nodeData.get(reconnectNodeId).getLogReader();
+		LogReader<PlatformLogEntry> nodeLog = nodeData.get(reconnectNodeId).getLogReader();
 		CsvReader nodeCsv = nodeData.get(reconnectNodeId).getCsvReader();
 
 		if (nodeLogIsNull(nodeLog, reconnectNodeId) || nodeCsvIsNull(nodeCsv, reconnectNodeId)) {
@@ -145,18 +152,25 @@ public class ReconnectValidator extends NodeValidator {
 		}
 
 		boolean nodeReconnected = false;
+		Instant active = null;
 		while (true) {
-			LogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT, RECV_STATE_HASH_MISMATCH));
+			//PlatformLogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT,
+			// RECV_STATE_HASH_MISMATCH));
+			PlatformLogEntry start = nodeLog.nextEntryContaining(
+					Arrays.asList(CHANGED_TO_ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
 			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
 				addError(String.format("Node %d hash mismatch of received hash", reconnectNodeId));
 				continue; // try to find next START_RECONNECT
+			} else if (start.getLogEntry().contains(CHANGED_TO_ACTIVE)) {
+				active = start.getTime();
+				continue; // Record the time when platform status changes to ACTIVE
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
 
-			LogEntry end = nodeLog.nextEntryContaining(
+			PlatformLogEntry end = nodeLog.nextEntryContaining(
 					Arrays.asList(FINISHED_RECONNECT, RECV_STATE_ERROR, RECV_STATE_IO_EXCEPTION));
 			if (end == null) {
 				addError(String.format("Node %d started a reconnect, but did not finish!", reconnectNodeId));
@@ -169,8 +183,18 @@ public class ReconnectValidator extends NodeValidator {
 				long time = start.getTime().until(end.getTime(), ChronoUnit.MILLIS);
 				addInfo(String.format("Node %d reconnected, time taken %dms", reconnectNodeId, time));
 			} else if (end.getLogEntry().contains(RECV_STATE_ERROR)) {
-				addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
-				isValid = false;
+				// for killNetworkReconnect test this error is allowed only if it happens within
+				// 30 seconds after platform status becomes ACTIVE. This can happen because the IP tables might be
+				// getting rebuilt on the reconnected node.
+				// This error should not be allowed on killNodeReconnect test.
+				if (testConfig != null && testConfig.getReconnectConfig().isKillNetworkReconnect() &&
+						active != null && Duration.between(active, end.getTime()).getSeconds() < 30) {
+					addInfo(String.format("Node %d error during receiving SignedState. It can be ignored, " +
+							"as it occurred within 30 seconds of platform becoming ACTIVE", reconnectNodeId));
+				} else {
+					addError(String.format("Node %d error during receiving SignedState", reconnectNodeId));
+					isValid = false;
+				}
 			}
 		}
 
@@ -212,7 +236,7 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param e
 	 * @return
 	 */
-	boolean isAcceptable(final LogEntry e, final int nodeId) {
+	boolean isAcceptable(final PlatformLogEntry e, final int nodeId) {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT) {
 			return true;
 		}
@@ -262,12 +286,23 @@ public class ReconnectValidator extends NodeValidator {
 	 * @param nodeId
 	 * @return
 	 */
-	boolean checkExceptions(final LogReader nodeLog, final int nodeId) {
+	boolean checkExceptions(final LogReader<PlatformLogEntry> nodeLog, final int nodeId) {
 		int socketExceptions = 0;
 		int unexpectedErrors = 0;
-		for (LogEntry e : nodeLog.getExceptions()) {
+		int signedStateErrors = errorMessages.stream().
+				filter(e -> e.contains("Node 3 error during receiving SignedState")).
+				collect(Collectors.toList()).size();
+		for (PlatformLogEntry e : nodeLog.getExceptions()) {
 			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 				socketExceptions++;
+			} else if (e.getLogEntry().contains(RECV_STATE_ERROR)) {
+				// check number of times this error is considered as error. This might can be considered as an INFO
+				// if it
+				// has happened within 30 seconds of platform status becomes ACTIVE.
+				if (signedStateErrors > 0) {
+					unexpectedErrors++;
+				}
+				signedStateErrors--;
 			} else if (!isAcceptable(e, nodeId)) {
 				unexpectedErrors++;
 				isValid = false;
@@ -286,5 +321,4 @@ public class ReconnectValidator extends NodeValidator {
 		}
 		return true;
 	}
-
 }

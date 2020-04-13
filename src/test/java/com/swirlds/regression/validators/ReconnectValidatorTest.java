@@ -17,13 +17,21 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.logs.PlatformLogEntry;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.jsonConfigs.runTypeConfigs.ReconnectConfig;
 import com.swirlds.regression.logs.LogEntry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +51,7 @@ class ReconnectValidatorTest {
 	void validateReconnectLogs(String testDir) throws IOException {
 		System.out.println("Dir: " + testDir);
 		List<NodeData> nodeData = loadNodeData(testDir);
-		NodeValidator validator = new ReconnectValidator(nodeData);
+		NodeValidator validator = new ReconnectValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println("INFO: " + msg);
@@ -57,7 +65,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void csvValidatorForNodeKillReconnect() throws IOException {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-NodeKillReconnect");
-		NodeValidator validator = new ReconnectValidator(nodeData);
+		NodeValidator validator = new ReconnectValidator(nodeData, null);
 		validator.validate();
 		for (String msg : validator.getInfoMessages()) {
 			System.out.println(msg);
@@ -75,7 +83,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void nodeLogIsNullTest() {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-MissLog03");
-		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		ReconnectValidator validator = new ReconnectValidator(nodeData, null);
 		assertFalse(validator.nodeLogIsNull(nodeData.get(1).getLogReader(), 1));
 		assertFalse(validator.nodeLogIsNull(nodeData.get(2).getLogReader(), 2));
 
@@ -92,7 +100,7 @@ class ReconnectValidatorTest {
 	@Test
 	public void nodeCsvIsNullTest() {
 		List<NodeData> nodeData = loadNodeData("logs/PTD-MissCsv02");
-		ReconnectValidator validator = new ReconnectValidator(nodeData);
+		ReconnectValidator validator = new ReconnectValidator(nodeData, null);
 		assertFalse(validator.nodeCsvIsNull(nodeData.get(1).getCsvReader(), 1));
 		assertFalse(validator.nodeCsvIsNull(nodeData.get(3).getCsvReader(), 3));
 
@@ -112,7 +120,7 @@ class ReconnectValidatorTest {
 
 		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
 
-		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
 				0, "thread",
 				"Exceptions acceptable at reconnect",
@@ -120,7 +128,7 @@ class ReconnectValidatorTest {
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
 
-		LogEntry reconnectNodeAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectNodeAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE,
 				0, "thread",
 				"Exceptions acceptable for reconnect node",
@@ -128,6 +136,63 @@ class ReconnectValidatorTest {
 		// this exception should only be acceptable for the reconnect node
 		assertFalse(validator.isAcceptable(reconnectNodeAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectNodeAcceptable, lastId));
+	}
+
+	/**
+	 * For KillNetwork reconnect test we can ignore the "Error during receiving signedState"
+	 * if it happens within 30 seconds of platform becoming ACTIVE. Test to check if it is not thrown as error
+	 */
+	@Test
+	public void checkErrorKillNetwork(){
+		boolean isError = false;
+		List<NodeData> nodeData = loadNodeData("logs/PTD-SignedState-Error-KillNetwork");
+		assertEquals(4, nodeData.size());
+		try {
+			Path testConfigFileLocation = Paths.get("configs/testReconnectBlobCfg.json");
+			byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
+			ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			TestConfig testConfig = objectMapper.readValue(jsonData, TestConfig.class);
+			assertTrue(testConfig.getReconnectConfig().isKillNetworkReconnect());
+			ReconnectValidator validator = new ReconnectValidator(nodeData, testConfig);
+			validator.validate();
+			validator.getErrorMessages().stream().forEach(e -> System.out.println(e));
+			assertEquals(0, validator.getErrorMessages().size());
+			assertTrue(validator.getInfoMessages().contains("Node 3 error during receiving SignedState. It can be ignored, " +
+					"as it occurred within 30 seconds of platform becoming ACTIVE"));
+		}catch(IOException e){
+			isError = true;
+		}
+
+		assertEquals(false, isError);
+	}
+
+	/**
+	 * For KillNode reconnect test we can't ignore the "Error during receiving signedState".
+	 * Test to check that log message is thrown as error.
+	 */
+	@Test
+	public void checkErrorKillNode(){
+		boolean isError = false;
+		List<NodeData> nodeData = loadNodeData("logs/PTD-SignedState-Error-KillNetwork");
+		assertEquals(4, nodeData.size());
+		try {
+			Path testConfigFileLocation = Paths.get("configs/testReconnectBlobCfg.json");
+			byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
+			ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			TestConfig testConfig = objectMapper.readValue(jsonData, TestConfig.class);
+			testConfig.getReconnectConfig().setKillNetworkReconnect(false);
+			assertFalse(testConfig.getReconnectConfig().isKillNetworkReconnect());
+			ReconnectValidator validator = new ReconnectValidator(nodeData, testConfig);
+			validator.validate();
+			validator.getErrorMessages().stream().forEach(e -> System.out.println(e));
+			assertEquals(2, validator.getErrorMessages().size());
+			assertTrue(validator.getErrorMessages().get(0).equals("Node 3 error during receiving SignedState"));
+			assertTrue(validator.getErrorMessages().get(1).equals("Node 3 has 1 unexpected errors!"));
+		}catch(IOException e){
+			isError = true;
+		}
+
+		assertEquals(false, isError);
 	}
 
 	/**
@@ -139,7 +204,8 @@ class ReconnectValidatorTest {
 		for (int i = 0; i < nodesNum; i++) {
 			nodeData.add(new NodeData(null, null));
 		}
-		return new ReconnectValidator(nodeData);
+
+		return new ReconnectValidator(nodeData, null);
 	}
 
 }

@@ -37,6 +37,7 @@ public class RegressionConfig {
 	private boolean uploadToSharePoint = false;
 	private boolean useThreadPool = false;
 	private String jvmOptions = "";
+	private boolean useLifecycleModel = false;
 
 
 	/**
@@ -192,4 +193,12 @@ public class RegressionConfig {
 	public void setUseThreadPool(boolean useThreadPool) {
 		this.useThreadPool = useThreadPool;
 	}
+	public boolean isUseLifecycleModel() {
+		return useLifecycleModel;
+	}
+
+	public void setUseLifecycleModel(boolean useLifecycleModel) {
+		this.useLifecycleModel = useLifecycleModel;
+	}
+
 }

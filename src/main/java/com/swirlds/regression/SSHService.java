@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -39,12 +40,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
+import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE;
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
@@ -169,30 +173,60 @@ public class SSHService {
 
     Collection<String> getListOfFiles(ArrayList<String> extension) {
         Collection<String> returnCollection = new ArrayList<>();
+		int extensionCount = 0;
+		int dataExtensionCount = 0;
         String extensions = "\\( ";
+		String dataExtensions = "";
         for (int i = 0; i < extension.size(); i++) {
-            if (i > 0) {
-                extensions += " -o ";
-            }
-            extensions += "-name \"" + extension.get(i) + "\"";
-        }
+			if (!extension.get(i).contains("data/")) {
+				if (extensionCount++ > 0) {
+					extensions += " -o ";
+				}
+				extensions += "-name \"" + extension.get(i) + "\"";
+			}
+			else {
+				dataExtensionCount++;
+				dataExtensions += "-e \"" + extension.get(i) + "\" ";
+			}
+		}
         extensions += " \\) ";
-        String pruneDirectory = "-not -path \"*/data/*\"";
-        String commandStr = "find . " + extensions + pruneDirectory;
 
-        Session.Command cmd = null;
-        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
+		if (extensionCount > 0) {
+			String commandStr = "find . " + extensions;
+			String pruneDirectory = "-not -path \"*/data/*\"";
+			commandStr += pruneDirectory;
 
-            try {
-                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
-                Thread.sleep(10000);
-            } catch (InterruptedException ie) {
-                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
-            }
-        }
-        log.info(MARKER, "Extensions to look for on node {}: ", ipAddress, extensions);
+	        Session.Command cmd = null;
+	        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
 
-        returnCollection = readCommandOutput(cmd);
+	            try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+	            }
+	        }
+			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
+
+			returnCollection.addAll(readCommandOutput(cmd));
+		}
+
+		if (dataExtensionCount > 0) {
+			String dataCommandStr = "find . | grep " + dataExtensions;
+			
+			Session.Command dataCmd = null;
+			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
+			
+				try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", dataCommandStr);
+	            }
+	        }
+			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
+			returnCollection.addAll(readCommandOutput(dataCmd));
+		}
 
         return returnCollection;
     }
@@ -224,49 +258,63 @@ public class SSHService {
             log.info(MARKER, "top level folder: {}", topLevelFolders);
             Collection<String> foundFiles = getListOfFiles(
                     RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
-            log.info(MARKER, "total files found:{}", foundFiles.size());
-            for (String file : foundFiles) {
-                String currentLine = file;
-				/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
-				. */
-                String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-                int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files", e);
+			return false;
+		}
+	}
 
-                log.info(MARKER,
-                        String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+	void scpFromListOnly(String topLevelFolders, ArrayList<String> patternsToMatch) {
+		try {
+			log.info(MARKER, "top level folder: {}", topLevelFolders);
+			Collection<String> foundFiles = getListOfFiles(patternsToMatch);
+			scpFilesFromList(topLevelFolders, foundFiles);
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files", e);
+		}
+	}
+
+	private void scpFilesFromList(String topLevelFolders, Collection<String> foundFiles) throws IOException {
+		log.info(MARKER, "total files found:{}", foundFiles.size());
+		for (String file : foundFiles) {
+            String currentLine = file;
+			/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
+			. */
+            String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+            int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+
+            log.info(MARKER,
+                    String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+                                    "'%s'.",
+                            cutOff, currentLine, cutOffString));
+
+            if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
+                currentLine = currentLine.substring(cutOff);
+            } else {
+                log.error(MARKER,
+                        String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
                                         "'%s'.",
                                 cutOff, currentLine, cutOffString));
-
-                if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
-                    currentLine = currentLine.substring(cutOff);
-                } else {
-                    log.error(MARKER,
-                            String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
-                                            "'%s'.",
-                                    cutOff, currentLine, cutOffString));
-                }
-
-                currentLine = topLevelFolders + currentLine;
-
-                File fileToSplit = new File(currentLine);
-                if (!fileToSplit.exists()) {
-
-					/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
-					of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
-					and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
-					.jar
-					 */
-                    fileToSplit.getParentFile().mkdirs();
-
-                }
-                log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
-                        fileToSplit.getPath());
-                ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
             }
-            return true;
-        } catch (IOException | StringIndexOutOfBoundsException e) {
-            log.error(ERROR, "Could not download files", e);
-            return false;
+
+            currentLine = topLevelFolders + currentLine;
+
+            File fileToSplit = new File(currentLine);
+            if (!fileToSplit.exists()) {
+
+				/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
+				of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
+				and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
+				.jar
+				 */
+                fileToSplit.getParentFile().mkdirs();
+
+            }
+            log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
+                    fileToSplit.getPath());
+            ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
         }
     }
 
@@ -678,7 +726,8 @@ public class SSHService {
     int countSpecifiedMsg(List<String> msgList, String fileName) {
         String joined = String.join("|", msgList);
         String searchCmd = "egrep " + " \"" + joined + "\" " + fileName;
-        final Session.Command cmd = execCommand(searchCmd,
+        String countCmd = " | wc -l";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
                 "Check specified msg", -1);
         ArrayList<String> output = readCommandOutput(cmd);
         for (String out : output) {
@@ -687,10 +736,114 @@ public class SSHService {
                 return -1;
             }
         }
-        if (output.get(0).isEmpty()) {
-            return -1;
+
+        return Integer.valueOf(output.get(0));
+    }
+
+    /**
+     * Search a lists of messages in the log file and
+     * return the number of occurrences of each message
+     *
+     * @param msgList  A list of message to search for
+     * @param fileName File name to search for the message
+     * @return a Map which contains the number of occurrences of each message
+     *      Or return null if error happened
+     */
+    Map<String, Integer> countSpecifiedMsgEach(List<String> msgList, String fileName) {
+        String joined = String.join("|", msgList);
+        String searchCmd = "egrep  -Iho " + " \"" + joined + "\" " + fileName;
+        String countCmd = " | sort | uniq -c";
+        final Session.Command cmd = execCommand(searchCmd + countCmd ,
+                "Check specified msg", -1);
+        ArrayList<String> output = readCommandOutput(cmd);
+        Map<String, Integer> map = new HashMap<>();
+        for (String out : output) {
+            if (out.contains("No such file or directory")) {
+                log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
+                return null;
+            }
+
+            log.trace(MARKER, out);
+            out = out.trim();
+            // if the string is Empty, it means no occurrence
+            // if the string is not Empty, it should be: "num string"
+            if (!out.isEmpty()) {
+                String[] strs = out.split(" ", 2);
+                map.put(strs[1].trim(), Integer.valueOf(strs[0]));
+            }
         }
-        return output.size();
+        log.trace(MARKER, "countSpecifiedMsgEach resultMap: {}", map);
+        return map;
+    }
+
+    /**
+     * Checks file for messages reporting that the state has been successfully saved
+     * and that a pg_backup has successfully been processed for each rounnd
+     *
+     * @param fileName File name to search for the message
+     *
+     * @return a map containing round numbers and whether their backup was completed
+     * for a given node
+     */
+    HashMap<Long,Boolean> checkSavedStateProgress(String fileName) {
+        HashMap<Long,Boolean> retMap = new HashMap<>();
+
+        final Session.Command cmd = execCommand(CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE,
+                "Get all state manager queuing messages", -1);;
+        ArrayList<String> output = readCommandOutput(cmd);
+        try {
+            for (String out : output) {
+
+                if (out.contains("No such file or directory")) {
+                    log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+                    return null;
+                }
+
+                Long roundNum = null;
+                Boolean complete = null;
+
+                String[] keyVals = out.split(", ");
+                for (String keyVal : keyVals) {
+                    String[] parts = keyVal.split("=", 2);
+                    if (parts.length == 2) {
+                        if (parts[0].contentEquals("roundNumber")) {
+                            roundNum = Long.parseLong(parts[1]);
+                        } else if (parts[0].contentEquals("complete")) {
+                            if (parts[1].contentEquals("false")) {
+                                complete = false;
+                            } else if (parts[1].contentEquals("true")) {
+                                complete = true;
+                            } else {
+                                throw new NumberFormatException();
+                            }
+                        }
+                    }
+                }
+
+                if ((roundNum != null) && (complete != null)) {
+                    if (complete == false) {
+                        if (retMap.containsKey(roundNum)) {
+                            //already know this round completed
+                            continue;
+                        } else {
+                            retMap.put(roundNum, false);
+                        }
+                    } else {
+                        //round number completed
+                        retMap.put(roundNum, true);
+                    }
+                } else {
+                    throw new SSHException("invalid line read");
+                }
+            }
+        } catch (NumberFormatException | SSHException e) {
+            log.error(ERROR,"State message manager improperly formed");
+        }
+        if (retMap.size() == 0) {
+            log.info(MARKER,"No saved rounds found for node");
+            return null;
+        }
+        return retMap;
     }
 
     public void close() {
@@ -1075,4 +1228,12 @@ public class SSHService {
         Session.Command cmd = execCommand(adjustHugepagesCommand, "Adjusting number of huge pages to " + hugePagesNumber);
         throwIfExitCodeBad(cmd, "Adjusting number of huge pages to " + hugePagesNumber);
 	}
+
+	void printCurrentTime(final int nodeId) {
+        String dateCmd = "date -u";
+
+        Session.Command cmd = executeCmd(dateCmd);
+        String cmdResult = readCommandOutput(cmd).toString();
+        log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+    }
 }

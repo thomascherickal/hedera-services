@@ -18,6 +18,8 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.logs.PlatformLogEntry;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -30,13 +32,27 @@ import java.util.regex.Pattern;
 
 public class RestartValidator extends NodeValidator {
 
-	public RestartValidator(List<NodeData> nodeData) {
+	private static int expectedFreezeFreq;
+	private boolean isFreezeTest;
+
+	public RestartValidator(List<NodeData> nodeData, TestConfig testConfig) {
 		super(nodeData);
+		// in FreezeTest, expected frequency of freeze is FreezeConfig.freezeIterations
+		if (testConfig != null && testConfig.getFreezeConfig() != null) {
+			expectedFreezeFreq = testConfig.getFreezeConfig().getFreezeIterations();
+			isFreezeTest = true;
+		} else {
+			// in RestartTest, expected frequency of freeze is 1
+			expectedFreezeFreq = 1;
+			isFreezeTest = false;
+		}
 	}
 
 	/* String Literals used in this class */
 	private static String SUCCESSFUL_RESTART_MESSAGE = "Node %d froze and restarted with %s events";
 	private static String UNSUCCESSFUL_RESTART_MESSAGE = "Node %d didFreeze:%s	didUnfreeze:%s	were matched:%s";
+	private static String FREEZE_COUNT_MISMATCH_MESSAGE = "Node %d froze %d times, didn't match expected frequency of " +
+			"freeze: %d";
 	private static String EXCEPTIONS_FOUND_MESSAGE = "Node %d has %d exceptions";
 
 	private static String START_RESTART_MESSAGE = "Freeze state is about to be saved to disk";
@@ -71,8 +87,8 @@ public class RestartValidator extends NodeValidator {
 		HashMap<Long, ArrayList<String>> freezeRounds = new HashMap<>();
 		HashMap<Long, ArrayList<String>> unfreezeRounds = new HashMap<>();
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
-			LogEntry currentEntry;
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
+			PlatformLogEntry currentEntry;
 			/* build node specific search phrase for loading after freeze */
 			String loadRestartMessageForNode = String.format(LOAD_RESTART_MESSAGE, i);
 			ArrayList<String> keyedFreeze = new ArrayList<>();
@@ -84,7 +100,7 @@ public class RestartValidator extends NodeValidator {
 					break;
 				}
 				String freezeChk = checkEntryForSearchString(currentEntry, i, START_RESTART_MESSAGE);
-				if(!freezeChk.isEmpty()) {
+				if (!freezeChk.isEmpty()) {
 					keyedFreeze.add(freezeChk);
 					log.trace(MARKER, "Added entry to freeze rounds: {}",
 							freezeChk);
@@ -92,24 +108,24 @@ public class RestartValidator extends NodeValidator {
 					freezeStarted = true;
 				}
 				String unfreezeChk = checkEntryForSearchString(currentEntry, i, loadRestartMessageForNode);
-				if(!unfreezeChk.isEmpty()){
+				if (!unfreezeChk.isEmpty()) {
 					keyedUnfreeze.add(unfreezeChk);
 					log.trace(MARKER, "Added entry to unfreeze rounds: {}", unfreezeChk);
 				}
-				if (currentEntry.getLogEntry().contains(FREEZE_END_MESSAGE)){
-					addInfo(String.format("Node %d end freeze",i ));
+				if (currentEntry.getLogEntry().contains(FREEZE_END_MESSAGE)) {
+					addInfo(String.format("Node %d end freeze", i));
 				}
 			}
-			if (!freezeStarted){
-				addError(String.format("Node %d never started freeze stage",i ));
+			if (!freezeStarted) {
+				addError(String.format("Node %d never started freeze stage", i));
 				isValid = false; // report error if freeze not started
 			}
-			freezeRounds.put(Long.valueOf(i),keyedFreeze);
+			freezeRounds.put(Long.valueOf(i), keyedFreeze);
 			unfreezeRounds.put(Long.valueOf(i), keyedUnfreeze);
 
 			int socketExceptions = 0;
 			int unexpectedErrors = 0;
-			for (LogEntry e : nodeLog.getExceptions()) {
+			for (PlatformLogEntry e : nodeLog.getExceptions()) {
 				if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					socketExceptions++;
 				} else {
@@ -132,9 +148,15 @@ public class RestartValidator extends NodeValidator {
 		 */
 		for (int i = 0; i < nodeNum; i++) {
 			if (isNodeRestarted) {
-				addInfo(String.format(SUCCESSFUL_RESTART_MESSAGE, i,
-						freezeRounds.get(Long.valueOf(Integer.valueOf(i).longValue()))));
+				List<String> freezeRoundList = freezeRounds.get(Long.valueOf(i));
+				addInfo(String.format(SUCCESSFUL_RESTART_MESSAGE, i, freezeRoundList));
 				isValidated = true;
+
+				if (!checkFreezeFreq(freezeRoundList.size())) {
+					addError(String.format(FREEZE_COUNT_MISMATCH_MESSAGE, i,
+							freezeRoundList.size(), expectedFreezeFreq));
+					isValidated = false;
+				}
 			} else {
 				boolean didFreeze, didUnfreeze, didEventsMatched;
 				didFreeze = didUnfreeze = didEventsMatched = true;
@@ -174,7 +196,7 @@ public class RestartValidator extends NodeValidator {
 	 * 		- phrase to check
 	 * @return - map with a String from the search phrase and a key of the node which this log belongs to
 	 */
-	private String checkEntryForSearchString(LogEntry entry, int node, String searchPhrase) {
+	private String checkEntryForSearchString(PlatformLogEntry entry, int node, String searchPhrase) {
 		String returnStr = "";
 		if (entry.getLogEntry().contains(searchPhrase)) {
 			returnStr = getRoundNumber(searchPhrase, entry.getLogEntry());
@@ -191,7 +213,8 @@ public class RestartValidator extends NodeValidator {
 	 * 		= information taken from messages output into the logs when freeze ended
 	 * @return - true if all infromation matches for each node, false if any nodes do not have matching information
 	 */
-	private boolean compareRounds(HashMap<Long, ArrayList<String>> freezeRounds, HashMap<Long, ArrayList<String>> unfreezeRounds) {
+	private boolean compareRounds(HashMap<Long, ArrayList<String>> freezeRounds,
+			HashMap<Long, ArrayList<String>> unfreezeRounds) {
 		for (Long freezeKey : freezeRounds.keySet()) {
 			if (!unfreezeRounds.containsKey(freezeKey)) {
 				return false;
@@ -202,12 +225,12 @@ public class RestartValidator extends NodeValidator {
 		return true;
 	}
 
-	private boolean compareRecordedRestarts(ArrayList<String> freeze, ArrayList<String> unfreeze){
-		if(freeze.size() != unfreeze.size()) {
+	private boolean compareRecordedRestarts(ArrayList<String> freeze, ArrayList<String> unfreeze) {
+		if (freeze.size() != unfreeze.size()) {
 			return false;
 		}
-		for(int i = 0; i < freeze.size(); i++){
-			if(freeze.get(i) != unfreeze.get(i)){
+		for (int i = 0; i < freeze.size(); i++) {
+			if (freeze.get(i) != unfreeze.get(i)) {
 				return false;
 			}
 		}
@@ -238,5 +261,28 @@ public class RestartValidator extends NodeValidator {
 	@Override
 	public boolean isValid() {
 		return isValidated && isValid;
+	}
+
+	/**
+	 * check whether actual freeze times matches expected value
+	 *
+	 * @param freezeTimes
+	 * @return
+	 */
+	boolean checkFreezeFreq(final int freezeTimes) {
+		log.info(MARKER, "freeze times: {}; expected: {}", freezeTimes, expectedFreezeFreq);
+		if (freezeTimes == expectedFreezeFreq) {
+			addInfo(String.format("Actual freeze times: %d, matches expected: %d", freezeTimes, expectedFreezeFreq));
+			return true;
+		}
+		// in Freeze tests,
+		// if after finishing freezeIterations, new config with PostFreezeApp hasn't been sent
+		// to nodes before swirlds.jars are started,
+		// total freeze occurrence would be freezeIterations + 1
+		if (isFreezeTest && freezeTimes == expectedFreezeFreq + 1) {
+			addInfo(String.format("Freeze times is one more than expected: %d", expectedFreezeFreq));
+			return true;
+		}
+		return false;
 	}
 }

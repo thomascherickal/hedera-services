@@ -53,7 +53,6 @@ pp = pprint.PrettyPrinter(indent=4)
 
 CONST_PAUSE = "GC Pauses"
 
-
 #
 #  An slider to select different graph pages
 #
@@ -385,7 +384,6 @@ print("Platform=" + platform.system())
 if platform.system() == "Linux" and PARAMETER.pdfOnly:
     print("Use smaller font for save PDF on Ubuntu backend mode")
     plt.rcParams.update({'font.size': 5})
-
 
 #
 #
@@ -1007,6 +1005,7 @@ def read_plot_subdirectory(subdirectory):
     global fig
     clear_data()
 
+
     print("The directory to search for csv files is %s" % (subdirectory))
     scan_csv_files(subdirectory)
 
@@ -1040,7 +1039,7 @@ def graphing():
     global fig
 
     # divide fiugre window into multple subplot
-    fig, sub_axes = plt.subplots(row_per_page, fig_per_row)
+    fig, sub_axes = plt.subplots(row_per_page, fig_per_row, figsize=[16.8, 9.8])
     fig.subplots_adjust(bottom=0.18)
 
     if PARAMETER.pdfOnly:

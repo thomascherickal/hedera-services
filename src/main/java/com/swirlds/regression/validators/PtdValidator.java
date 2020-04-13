@@ -19,7 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class PtdValidator extends NodeValidator {
 		double maxTotalMem = -1;
 		double minFreeMem = Double.MAX_VALUE;
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 			CsvReader nodeCsv = nodeData.get(i).getCsvReader();
 
 			Instant nodeStart = nodeLog.nextEntry().getTime();
@@ -65,7 +65,7 @@ public class PtdValidator extends NodeValidator {
 			}
 
 			// this is the last log statement we check, we don't care about any exceptions after it
-			LogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
+			PlatformLogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
 			if (end == null) {
 				addError("Node " + i + " did not finish!");
 				/* collect stats even if node did not finish */
@@ -79,7 +79,7 @@ public class PtdValidator extends NodeValidator {
 			}
 
 			if (nodeLog.getExceptionCount() > 0) {
-				for (LogEntry le : nodeLog.getExceptions()) {
+				for (PlatformLogEntry le : nodeLog.getExceptions()) {
 					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
 					} else {

@@ -34,7 +34,7 @@ class LogParserV1Test {
 		String threadName = "<      syncCaller  3  0>";
 		String msg = "3 sent commStateRequest to 1";
 		LogParserV1 parser = new LogParserV1();
-		LogEntry entry = parser.parse(line);
+		PlatformLogEntry entry = parser.parse(line);
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
@@ -54,7 +54,7 @@ class LogParserV1Test {
 		String threadName = "checkThread_node0";
 		String msg = "TEST SUCCESS: Quit checking";
 		LogParserV1 parser = new LogParserV1();
-		LogEntry entry = parser.parse(line);
+		PlatformLogEntry entry = parser.parse(line);
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
@@ -75,7 +75,7 @@ class LogParserV1Test {
 		String msg = "Freeze state is about to be saved to disk, round is 486";
 
 		LogParserV2 parser = new LogParserV2();
-		LogEntry entry = parser.parse(line);
+		PlatformLogEntry entry = parser.parse(line);
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
@@ -96,7 +96,7 @@ class LogParserV1Test {
 		String msg = "Exception: 0 Received invalid state signature! round:48 memberId:3 details:";
 
 		LogParserV2 parser = new LogParserV2();
-		LogEntry entry = parser.parse(line);
+		PlatformLogEntry entry = parser.parse(line);
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
@@ -116,7 +116,7 @@ class LogParserV1Test {
 		String msg = "0 failed to connect to 2 with error: java.net.ConnectException: Connection refused (Connection refused)";
 
 		LogParserV2 parser = new LogParserV2();
-		LogEntry entry = parser.parse(line);
+		PlatformLogEntry entry = parser.parse(line);
 
 		assertNotNull(entry);
 		assertEquals(time, entry.getTime());
