@@ -25,7 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StdoutValidatorTest {
 	private static final String STDOUT =
@@ -35,6 +36,12 @@ class StdoutValidatorTest {
 					"Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx\n" +
 					"Could not load libOpenCL.so, error libOpenCL.so: cannot open shared object file: No such file or" +
 					" directory";
+
+	private static final String STDOUT_CLEAN =
+			"Reading the settings from the file:        /home/ubuntu/remoteExperiment/settings.txt\n" +
+					"Reading the configuration from the file:   /home/ubuntu/remoteExperiment/config.txt\n" +
+					"Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx\n" +
+					"This computer has an internal IP address:  172.31.13.113";
 
 	@Test
 	void validate() throws IOException {
@@ -53,5 +60,25 @@ class StdoutValidatorTest {
 
 		v.validate();
 		assertTrue(v.hasErrors());
+
+
+	}
+
+	@Test
+	void validateClean() throws IOException {
+		StdoutValidator v = new StdoutValidator(
+				List.of(
+						new NodeData(
+								null,
+								null,
+								LogReader.createReader(
+										new StdoutLogParser(),
+										new ByteArrayInputStream(STDOUT_CLEAN.getBytes())
+								)
+						)
+				)
+		);
+		v.validate();
+		assertFalse(v.hasErrors());
 	}
 }
