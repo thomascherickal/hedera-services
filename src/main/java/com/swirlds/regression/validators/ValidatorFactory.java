@@ -18,7 +18,6 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -58,6 +57,8 @@ public class ValidatorFactory {
 				return new ThrottleValidator(nodeData);
 			case PTA_THROTTLE:
 				return new PTAThrottleValidator(nodeData, testConfig);
+			case STDOUT:
+				return new StdoutValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}

@@ -17,8 +17,22 @@
 
 package com.swirlds.regression.logs;
 
-public interface LogEntry {
-	String getLogEntry();
+public interface PlatformLogParser extends LogParser<PlatformLogEntry> {
+	String DATETIME_REGEX = "(^[0-9\\-]+ [0-9:.]+)";
+	String OBJ_MILLISECOND_REGEX = "([0-9]+)";
+	String THREAD_REGEX = "(< +[a-zA-Z_0-9: ]+ *>|\\S+)";
+	String TILL_END_REGEX = "(.+)";
+	String MARKER_REGEX = "(\\S+)";
+	String SPACE_BETWEEN_REGEX = " +";
 
-	boolean isException();
+	static LogParser<PlatformLogEntry> createParser(int version){
+		switch (version){
+			case 1:
+				return new LogParserV1();
+			case 2:
+				return new LogParserV2();
+			default:
+				throw new IllegalArgumentException("Unsupported version");
+		}
+	}
 }

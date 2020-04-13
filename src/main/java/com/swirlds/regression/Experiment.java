@@ -28,6 +28,8 @@ import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
@@ -87,6 +89,7 @@ import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
@@ -595,13 +598,20 @@ public class Experiment implements ExperimentSummary {
 				InputStream csvInput = getInputStream(csvFilePath);
 				LogReader logReader = null;
 				if (logInput != null) {
-					logReader = LogReader.createReader(1, logInput);
+					logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
 				}
 				CsvReader csvReader = null;
 				if (csvInput != null) {
 					csvReader = CsvReader.createReader(1, csvInput);
 				}
-				nodeData.add(new NodeData(logReader, csvReader));
+				String outputLogFileName = getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
+				InputStream outputLogInput = getInputStream(outputLogFileName);
+				LogReader outputLogReader = null;
+				if (outputLogInput != null) {
+					outputLogReader = LogReader.createReader(new StdoutLogParser(), outputLogInput);
+				}
+
+				nodeData.add(new NodeData(logReader, csvReader, outputLogReader));
 			}
 		}
 		return nodeData;
@@ -694,6 +704,8 @@ public class Experiment implements ExperimentSummary {
 			}
 			requiredValidator.add(validatorToAdd);
 		}
+		List<NodeData> nodeData = loadNodeData(testConfig.getName());
+		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {

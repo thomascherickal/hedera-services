@@ -17,8 +17,22 @@
 
 package com.swirlds.regression.logs;
 
-public interface LogEntry {
-	String getLogEntry();
+public class StdoutLogEntry implements LogEntry {
+	private String line;
+	private boolean hasErrors;
 
-	boolean isException();
+	public StdoutLogEntry(String line, boolean hasErrors) {
+		this.line = line;
+		this.hasErrors = hasErrors;
+	}
+
+	@Override
+	public String getLogEntry() {
+		return line;
+	}
+
+	@Override
+	public boolean isException() {
+		return hasErrors;
+	}
 }
