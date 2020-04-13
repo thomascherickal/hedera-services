@@ -233,6 +233,12 @@
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
+			<artifactId>fcmap-test</artifactId>
+			<version>0.6.5</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-fcmap</artifactId>
 			<version>0.6.5</version>
 		</dependency>

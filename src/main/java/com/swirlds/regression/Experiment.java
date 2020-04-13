@@ -17,6 +17,9 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
@@ -25,11 +28,15 @@ import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -82,6 +89,7 @@ import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.POSTGRES_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
@@ -107,6 +115,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
+import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -197,8 +206,7 @@ public class Experiment implements ExperimentSummary {
 		setupTest(experiment);
 
 		if (regConfig.getSlack() != null) {
-			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-					regConfig.getSlack().getChannel());
+			slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		}
 	}
 
@@ -590,13 +598,20 @@ public class Experiment implements ExperimentSummary {
 				InputStream csvInput = getInputStream(csvFilePath);
 				LogReader logReader = null;
 				if (logInput != null) {
-					logReader = LogReader.createReader(1, logInput);
+					logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
 				}
 				CsvReader csvReader = null;
 				if (csvInput != null) {
 					csvReader = CsvReader.createReader(1, csvInput);
 				}
-				nodeData.add(new NodeData(logReader, csvReader));
+				String outputLogFileName = getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
+				InputStream outputLogInput = getInputStream(outputLogFileName);
+				LogReader outputLogReader = null;
+				if (outputLogInput != null) {
+					outputLogReader = LogReader.createReader(new StdoutLogParser(), outputLogInput);
+				}
+
+				nodeData.add(new NodeData(logReader, csvReader, outputLogReader));
 			}
 		}
 		return nodeData;
@@ -615,6 +630,20 @@ public class Experiment implements ExperimentSummary {
 					getInputStream(shaEventFileName), recoverEventLogStream));
 		}
 		return nodeData;
+	}
+
+	private ExpectedMapData loadExpectedMapData(String directory) {
+		final ExpectedMapData mapData = new ExpectedMapData();
+		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
+			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMap).exists()){
+				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+				return null;
+			}
+			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
+			mapData.getExpectedMaps().put(i, map);
+		}
+		return mapData;
 	}
 
 	private void validateTest() {
@@ -675,6 +704,8 @@ public class Experiment implements ExperimentSummary {
 			}
 			requiredValidator.add(validatorToAdd);
 		}
+		List<NodeData> nodeData = loadNodeData(testConfig.getName());
+		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
@@ -685,6 +716,12 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
+		}
+
+		if (regConfig.isUseLifecycleModel()) {
+			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+					(loadExpectedMapData(testConfig.getName()));
+			requiredValidator.add(lifecycleValidator);
 		}
 
 		for (Validator item : requiredValidator) {
@@ -699,7 +736,7 @@ public class Experiment implements ExperimentSummary {
 				slackMsg.addValidatorException(item, e);
 			}
 		}
-		sendSlackMessage(slackMsg);
+		sendSlackMessage(slackMsg, regConfig.getSlack().getChannel());
 		log.info(MARKER, slackMsg.getPlaintext());
 		createStatsFile(getExperimentFolder());
 		sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
@@ -780,14 +817,14 @@ public class Experiment implements ExperimentSummary {
 		}
 	}
 
-	public void sendSlackMessage(SlackTestMsg msg) {
-		slacker.messageChannel(msg);
+	public void sendSlackMessage(SlackTestMsg msg, String channel) {
+		slacker.messageChannel(msg, channel);
 	}
 
-	public void sendSlackMessage(String error) {
+	public void sendSlackMessage(String error, String channel) {
 		SlackTestMsg msg = new SlackTestMsg(getUniqueId(), regConfig, testConfig);
 		msg.addError(error);
-		slacker.messageChannel(msg);
+		slacker.messageChannel(msg, channel);
 	}
 
 	public void sendSlackStatsFile(SlackTestMsg msg, String fileLocation) {
@@ -828,7 +865,7 @@ public class Experiment implements ExperimentSummary {
 		//TODO: unit test for null cld
 		if (cld == null) {
 			log.error(ERROR, "Cloud instance was null, cannot run test!");
-			sendSlackMessage("Cloud instance was null, cannot start test!");
+			sendSlackMessage("Cloud instance was null, cannot start test!", regConfig.getSlack().getChannel());
 			return;
 		}
 		this.cloud = cld;
@@ -1363,17 +1400,32 @@ public class Experiment implements ExperimentSummary {
 	 *
 	 * @param iteration
 	 * 		iteration number of freeze test
+	 * @param isFreezeTest
+	 * 		whether current test is FreezeTest or RetartTest
 	 * @return
 	 */
-	public boolean checkAllNodesFreeze(final int iteration) {
+	public boolean checkAllNodesFreeze(final int iteration, final boolean isFreezeTest) {
 		//expected number of CHANGED_TO_MAINTENANCE contained in swirlds.log
 		final int expectedNum = iteration + 1;
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
-				log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
-			} else {
-				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {}", i, iteration);
+			int tries = isFreezeTest ?
+					testConfig.getFreezeConfig().getRetries() :
+					testConfig.getRestartConfig().getRetries();
+			boolean frozen = false;
+			while (tries > 0) {
+				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
+					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
+					frozen = true;
+					break;
+				}
+				tries--;
+				node.printCurrentTime(i);
+				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
+				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
+			}
+			if (!frozen) {
+				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {} after {} retries", i, iteration, tries);
 				return false;
 			}
 		}
@@ -1416,6 +1468,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * set app in ConfigBuilder
+	 *
 	 * @param app
 	 */
 	public void setConfigApp(final AppConfig app) {
