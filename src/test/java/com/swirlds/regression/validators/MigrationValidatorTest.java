@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -42,6 +42,7 @@ public class MigrationValidatorTest {
 
 		assertFalse(errorMessages.isEmpty());
 		assertFalse(validator.isValid());
+		assertEquals(1, errorMessages.size());
 		assertEquals("Could not load log for node 0", errorMessages.get(0));
 	}
 
@@ -71,5 +72,7 @@ public class MigrationValidatorTest {
 
 		assertFalse(errorMessages.isEmpty());
 		assertFalse(validator.isValid());
+		assertEquals(1, errorMessages.size());
+		assertEquals("Node 0 started loading state from disk but didn't finish", errorMessages.get(0));
 	}
 }
