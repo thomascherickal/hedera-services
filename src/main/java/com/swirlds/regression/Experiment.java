@@ -17,6 +17,9 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
@@ -28,8 +31,10 @@ import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -107,6 +112,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
+import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -616,6 +622,20 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
+	private ExpectedMapData loadExpectedMapData(String directory) {
+		final ExpectedMapData mapData = new ExpectedMapData();
+		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
+			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMap).exists()){
+				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+				return null;
+			}
+			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
+			mapData.getExpectedMaps().put(i, map);
+		}
+		return mapData;
+	}
+
 	private void validateTest() {
 		SlackTestMsg slackMsg = new SlackTestMsg(
 				getUniqueId(),
@@ -684,6 +704,12 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
+		}
+
+		if (regConfig.isUseLifecycleModel()) {
+			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+					(loadExpectedMapData(testConfig.getName()));
+			requiredValidator.add(lifecycleValidator);
 		}
 
 		for (Validator item : requiredValidator) {
@@ -1430,6 +1456,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * set app in ConfigBuilder
+	 *
 	 * @param app
 	 */
 	public void setConfigApp(final AppConfig app) {

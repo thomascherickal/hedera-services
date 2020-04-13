@@ -314,6 +314,7 @@ public class RegressionUtilities {
 		returnIterator.add("*.xml");
 		returnIterator.add("*.txt");
 		returnIterator.add("*.json");
+		returnIterator.add("*.json.gz");
 		returnIterator.add("badger_*");
 		//returnIterator.add("stream_*");
 		returnIterator.add("postgres_reports"); // badgerized web summaries

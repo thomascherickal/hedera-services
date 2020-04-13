@@ -24,9 +24,9 @@ import com.swirlds.blob.internal.db.SnapshotManager;
 import com.swirlds.common.crypto.Hash;
 import com.swirlds.demo.platform.PlatformTestingDemoMain;
 import com.swirlds.demo.platform.PlatformTestingDemoState;
-import com.swirlds.demo.platform.fcm.MapKey;
 import com.swirlds.demo.platform.fcm.MapValueBlob;
 import com.swirlds.fcmap.FCMap;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.platform.SignedStateFileManager;
 import com.swirlds.platform.state.SignedState;
 

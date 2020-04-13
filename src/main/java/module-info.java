@@ -38,6 +38,7 @@ module com.swirlds.regression {
 	requires com.swirlds.fcmap;
 	requires com.swirlds.demo.platform;
 	requires com.swirlds.platform;
+	requires com.swirlds.fcmap.test;
 
 	exports com.swirlds.regression.jsonConfigs;
 	exports com.swirlds.regression.jsonConfigs.runTypeConfigs;
