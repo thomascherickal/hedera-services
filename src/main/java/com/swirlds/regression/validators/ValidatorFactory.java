@@ -25,7 +25,7 @@ import java.util.List;
 public class ValidatorFactory {
 
 
-	public static NodeValidator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
 		if (vt == null) {
 			return null;
 		}
@@ -42,6 +42,8 @@ public class ValidatorFactory {
 				break;
 			case PLATFORM_CSV:
 				break; */
+			case BLOB_STATE:
+				return new BlobStateValidator();
 			case RESTART:
 				return new RestartValidator(nodeData, testConfig);
 			case RECONNECT:

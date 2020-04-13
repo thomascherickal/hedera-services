@@ -187,8 +187,7 @@ public class RegressionMain {
 		SlackSummaryMsg summary = new SlackSummaryMsg(regConfig.getSlack(), regConfig, git,
 				RegressionUtilities.getExperimentTimeFormattedString(regressionTestStart));
 		Experiment currentTest = null;
-		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-				regConfig.getSlack().getChannel());
+		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		for (int i = 0; i < regConfig.getExperiments().size(); i++) {
 			try {
 				currentTest = new Experiment(regConfig, regConfig.getExperiments().get(i));
@@ -222,12 +221,15 @@ public class RegressionMain {
 				summary.registerException(t);
 			}
 		}
-		slacker.messageChannel(summary);
+		String summaryChannel = regConfig.getSlack().getSummaryChannel();
+		if (summaryChannel == null || summaryChannel.isEmpty()) {
+			summaryChannel = regConfig.getSlack().getChannel();
+		}
+		slacker.messageChannel(summary, summaryChannel);
 	}
 
 	void reportErrorToSlack(Throwable t, Experiment test) {
-		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken(),
-				regConfig.getSlack().getChannel());
+		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		/* pass null if test is null, otherwise pass whatever is in test */
 		TestConfig tc = null;
 		if (test != null) {
@@ -235,7 +237,7 @@ public class RegressionMain {
 		}
 		SlackTestMsg msg = new SlackTestMsg(null, regConfig, tc, null, git);
 		msg.addExceptions(t);
-		slacker.messageChannel(msg);
+		slacker.messageChannel(msg, regConfig.getSlack().getChannel());
 	}
 
 	void mvnBuild() throws Throwable {

@@ -7,6 +7,7 @@ module com.swirlds.regression {
 	requires log4j.core;
 	requires log4j.api;
 	requires java.scripting;
+	requires java.sql;
 
 //	requires org.apache.logging.log4j;
 //	requires org.apache.logging.log4j.core;
@@ -34,6 +35,9 @@ module com.swirlds.regression {
 	requires slack.java.client;
 	requires algebra;
 	requires com.google.guice;
+	requires com.swirlds.fcmap;
+	requires com.swirlds.demo.platform;
+	requires com.swirlds.platform;
 	requires com.swirlds.test;
 
 	exports com.swirlds.regression.jsonConfigs;

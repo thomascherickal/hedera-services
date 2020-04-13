@@ -1,0 +1,5 @@
+Reading the settings from the file:        /home/ubuntu/remoteExperiment/settings.txt
+Reading the configuration from the file:   /home/ubuntu/remoteExperiment/config.txt
+Creating keys, because there are no files: /home/ubuntu/remoteExperiment/data/keys/*.pfx
+This computer has an internal IP address:  172.31.23.181
+Storage Path: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/3/123/2477

@@ -22,4 +22,6 @@ public class LogMessages {
 	public static final String PTD_SAVE_EXPECTED_MAP = "Start a thread for saving expectedMap while freezing";
 	public static final String PTD_SAVE_EXPECTED_MAP_ERROR = "Could not serialize expectedMap";
 	public static final String PTD_SAVE_EXPECTED_MAP_SUCCESS = "Platform fslog and map saved";
+	public static final String PTD_SAVE_FREEZE_STATE_START = "Freeze state is about to be saved to disk, round is";
+	public static final String PTD_SAVE_STATE_FINISH = "Finished writing 'Signed state for round ";
 }

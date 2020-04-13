@@ -4,22 +4,50 @@
   "duration": 1800,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
-    {"name":"throttle7", "value": "1" },
-    {"name":"throttle7threshold", "value": "1.5" },
-    {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"state.saveStatePeriod", "value":"300"}
+    {
+      "name": "throttle7",
+      "value": "1"
+    },
+    {
+      "name": "throttle7threshold",
+      "value": "1.5"
+    },
+    {
+      "name": "showInternalStats",
+      "value": "1"
+    },
+    {
+      "name": "csvFileName",
+      "value": "PlatformTesting"
+    },
+    {
+      "name": "csvAppend",
+      "value": "true"
+    },
+    {
+      "name": "state.saveStatePeriod",
+      "value": "300"
+    }
   ],
-  "restartConfig":{
+  "restartConfig": {
     "restartTiming": 2
+  },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
   },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMRestartFCQ.json"]
+    "parameterList": [
+      "FCMRestartFCQ.json"
+    ]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "RESTART" ]
+  "validator": [
+    "STATS",
+    "RESTART"
+  ]
 }

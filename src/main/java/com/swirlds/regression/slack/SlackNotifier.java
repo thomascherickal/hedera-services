@@ -47,7 +47,6 @@ public class SlackNotifier {
     public static final String CURL_DASH_H = "-H";
 
     private final SlackClient slackClient;
-    private String channel;
 
     /**
      * Do not use this, this is for Guice
@@ -57,15 +56,14 @@ public class SlackNotifier {
         this.slackClient = slackClient;
     }
 
-    public static SlackNotifier createSlackNotifier(String token, String channel) {
+    public static SlackNotifier createSlackNotifier(String token) {
         SlackNotifier sn = Guice.createInjector(
                 new SlackModule(token))
                 .getInstance(SlackNotifier.class);
-        sn.setChannel(channel);
         return sn;
     }
 
-    public ChatPostMessageResponse messageChannel(String message, boolean notifyChannel) {
+    public ChatPostMessageResponse messageChannel(String message, boolean notifyChannel, String channel) {
         Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
                 ChatPostMessageParams.builder()
                         .setText(notifyChannel ? "<!here> " + message : message)
@@ -76,11 +74,11 @@ public class SlackNotifier {
         return postResult.unwrapOrElseThrow(); // release failure here as a RTE
     }
 
-    public ChatPostMessageResponse messageChannel(String message) {
-        return messageChannel(message, false);
+    public ChatPostMessageResponse messageChannel(String message, String channel) {
+        return messageChannel(message, false, channel);
     }
 
-    public ChatPostMessageResponse messageChannel(SlackMsg message) {
+    public ChatPostMessageResponse messageChannel(SlackMsg message, String channel) {
         try {
             Result<ChatPostMessageResponse, SlackError> postResult = slackClient.postMessage(
                     message.build(channel)
@@ -119,9 +117,5 @@ public class SlackNotifier {
         String[] uploadFileToSlackCmd = new String[]{"curl", CURL_DASH_F, fileOption, CURL_DASH_F, commentOption, CURL_DASH_F, CURL_AS_USER_FALSE, CURL_DASH_F, channelOption, CURL_DASH_H, botAuthToken, CURL_FILE_UPLOAD_ADDRESS};
         log.trace(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
         return uploadFileToSlackCmd;
-    }
-
-    private void setChannel(String channel) {
-        this.channel = channel;
     }
 }
