@@ -19,22 +19,49 @@ package com.swirlds.regression.validators;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogParser;
 
 import java.io.IOException;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 
 public abstract class ValidatorTestUtil {
+
+	public static ExpectedMapData loadExpectedMapData(String directory) {
+		ExpectedMapData data = new ExpectedMapData();
+
+		for (int i = 0; i < 4 ; i++) {
+			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP_ZIP,
+					directory, i);
+			if(new File(expectedMap).exists()) {
+				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
+				data.getExpectedMaps().put(i, map);
+			}else{
+				throw new RuntimeException(" expectedMap in node "+ i + " doesn't exist");
+			}
+		}
+
+		if (data.getExpectedMaps().size() == 0) {
+			throw new RuntimeException("Cannot find expectedMap files in: " + directory);
+		}
+		return data;
+	}
+
 	public static List<NodeData> loadNodeData(String directory, String csvName, int logVersion) {
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0; ; i++) {

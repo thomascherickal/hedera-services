@@ -99,6 +99,7 @@ public class RegressionUtilities {
 	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
+	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued snapshot request \\[taskType='BACKUP'|SnapshotManager: Completed task \\[taskType='BACKUP'\" remoteExperiment/swirlds.log";
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
 
 	public static final String OUTPUT_LOG_FILENAME = "output.log";
@@ -147,7 +148,8 @@ public class RegressionUtilities {
 	static final String TEST_CONFIG = "configs/testRestartCfg.json";
 	static final String REGRESSION_CONFIG = "configs/AwsRegressionCfg_Freeze.json";
 	static final String REMOTE_EXPERIMENT_LOCATION = "remoteExperiment/";
-	static final String REMOTE_STATE_LOCATION = REMOTE_EXPERIMENT_LOCATION + "data/saved/";
+	public static final String REMOTE_SAVED_FOLDER = "data/saved";
+	static final String REMOTE_STATE_LOCATION = REMOTE_EXPERIMENT_LOCATION + REMOTE_SAVED_FOLDER + "/";
 	static final String DB_BACKUP_FILENAME = "PostgresBackup.tar.gz";
 
 	static final String REG_SLACK_CHANNEL = "regression";
@@ -314,6 +316,7 @@ public class RegressionUtilities {
 		returnIterator.add("*.xml");
 		returnIterator.add("*.txt");
 		returnIterator.add("*.json");
+		returnIterator.add("*.json.gz");
 		returnIterator.add("badger_*");
 		//returnIterator.add("stream_*");
 		returnIterator.add("postgres_reports"); // badgerized web summaries
