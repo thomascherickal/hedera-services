@@ -34,7 +34,7 @@ public class MigrationValidatorTest {
 			"logs/migrationFCM/migrate10K"
 	})
 	void validateMigrationWithMissingLog(String testDir) throws IOException {
-		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationTestingApp", 1);
 		nodeData.set(0, new NodeData(null, null));
 		final NodeValidator validator = new MigrationValidator(nodeData);
 		validator.validate();
@@ -48,10 +48,11 @@ public class MigrationValidatorTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/migrationFCM/migrate10K"
+			"logs/migrationFCM/migrate10K",
+			"logs/migrationFCM/migrate20K"
 	})
 	void validateMigrationLogs(String testDir) throws IOException {
-		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationStats", 1);
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationTestingApp", 1);
 		final NodeValidator validator = new MigrationValidator(nodeData);
 		validator.validate();
 		final List<String> errorMessages = validator.getErrorMessages();
@@ -74,5 +75,53 @@ public class MigrationValidatorTest {
 		assertFalse(validator.isValid());
 		assertEquals(1, errorMessages.size());
 		assertEquals("Node 0 started loading state from disk but didn't finish", errorMessages.get(0));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate20KFailedToStartLoading"
+	})
+	void validateFailToStartLoading(final String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationTestingApp", 1);
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertFalse(errorMessages.isEmpty());
+		assertFalse(validator.isValid());
+		assertEquals(1, errorMessages.size());
+		assertEquals("Node 0 didn't start loading state from disk", errorMessages.get(0));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate20KFailedToStartProcessing"
+	})
+	void validateFailToStartProcessingTransactions(final String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationTestingApp", 1);
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertFalse(errorMessages.isEmpty());
+		assertFalse(validator.isValid());
+		assertEquals(1, errorMessages.size());
+		assertEquals("Node 2 didn't start processing transactions", errorMessages.get(0));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"logs/migrationFCM/migrate20KFailedToFinishProcessing"
+	})
+	void validateFailToFinishProcessingTransactions(final String testDir) throws IOException {
+		final List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "MigrationTestingApp", 1);
+		final NodeValidator validator = new MigrationValidator(nodeData);
+		validator.validate();
+		final List<String> errorMessages = validator.getErrorMessages();
+
+		assertFalse(errorMessages.isEmpty());
+		assertFalse(validator.isValid());
+		assertEquals(1, errorMessages.size());
+		assertEquals("Node 1 didn't finish processing transactions", errorMessages.get(0));
 	}
 }
