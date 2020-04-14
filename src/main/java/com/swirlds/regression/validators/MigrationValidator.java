@@ -17,12 +17,17 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.logs.LogEntry;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogEntry;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 
 public class MigrationValidator extends NodeValidator {
 
@@ -46,12 +51,14 @@ public class MigrationValidator extends NodeValidator {
 		final int nodeNum = nodeData.size();
 
 		for (int index = 0; index < nodeNum; index++) {
-			LogReader nodeLog = nodeData.get(index).getLogReader();
+			final LogReader<PlatformLogEntry> nodeLog = nodeData.get(index).getLogReader();
 			if (nodeLog == null) {
 				addError(String.format( "Could not load log for node %d", index));
 				this.isValid = false;
 				continue;
 			}
+
+			this.isValid &= this.checkExceptions(nodeLog, index);
 
 			this.isValid &= this.isMigrationValid(index, nodeLog);
 		}
@@ -59,26 +66,26 @@ public class MigrationValidator extends NodeValidator {
 		this.isValidated = true;
 	}
 
-	private boolean isMigrationValid(final int nodeNum, final LogReader nodeLog) throws IOException {
-		final LogEntry startLoading = nodeLog.nextEntryContaining(Arrays.asList(START_LOADING));
+	private boolean isMigrationValid(final int nodeNum, final LogReader<PlatformLogEntry> nodeLog) throws IOException {
+		final LogEntry startLoading = nodeLog.nextEntryContaining(Collections.singletonList(START_LOADING));
 		if (startLoading == null) {
 			addError(String.format("Node %d didn't start loading state from disk", nodeNum));
 			return false;
 		}
 
-		final LogEntry endLoading = nodeLog.nextEntryContaining(Arrays.asList(END_LOADING));
+		final LogEntry endLoading = nodeLog.nextEntryContaining(Collections.singletonList(END_LOADING));
 		if (endLoading == null) {
 			addError(String.format("Node %d started loading state from disk but didn't finish", nodeNum));
 			return false;
 		}
 
-		final LogEntry startProcessing = nodeLog.nextEntryContaining(Arrays.asList(START_PROCESSING));
+		final LogEntry startProcessing = nodeLog.nextEntryContaining(Collections.singletonList(START_PROCESSING));
 		if (startProcessing == null) {
 			addError(String.format("Node %d didn't start processing transactions", nodeNum));
 			return false;
 		}
 
-		final LogEntry endProcessing = nodeLog.nextEntryContaining(Arrays.asList(END_PROCESSING));
+		final LogEntry endProcessing = nodeLog.nextEntryContaining(Collections.singletonList(END_PROCESSING));
 		if (endProcessing == null) {
 			addError(String.format("Node %d didn't finish processing transactions", nodeNum));
 			return false;
@@ -90,5 +97,33 @@ public class MigrationValidator extends NodeValidator {
 	@Override
 	public boolean isValid() {
 		return isValidated && isValid;
+	}
+
+	boolean checkExceptions(final LogReader<PlatformLogEntry> nodeLog, final int nodeId) {
+		int socketExceptions = 0;
+		int unexpectedErrors = 0;
+
+		for (PlatformLogEntry e : nodeLog.getExceptions()) {
+			if (e.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
+				socketExceptions++;
+			} else if (e.getLogEntry().contains("Signed state loaded from disk has an invalid hash")) {
+			} else {
+				unexpectedErrors++;
+				addError(String.format("Node %d has unexpected error: [%s]", nodeId, e.getLogEntry()));
+			}
+		}
+
+		if (socketExceptions > 0) {
+			addInfo(String.format("Node %d has %d socket exceptions.",
+					nodeId,
+					socketExceptions));
+		}
+
+		if (unexpectedErrors > 0) {
+			addError(String.format("Node %d has %d unexpected errors!", nodeId, unexpectedErrors));
+			return false;
+		}
+
+		return true;
 	}
 }
