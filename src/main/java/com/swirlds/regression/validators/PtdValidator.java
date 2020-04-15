@@ -82,6 +82,8 @@ public class PtdValidator extends NodeValidator {
 				for (PlatformLogEntry le : nodeLog.getExceptions()) {
 					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
+					} else if (le.getMarker() == LogMarkerInfo.LONG_WAIT_EXCEPTIONS) {
+						addWarning(le.getLogEntry());
 					} else {
 						numProblems++;
 						exceptionString += le.getLogEntry() + "\\r";
@@ -109,6 +111,9 @@ public class PtdValidator extends NodeValidator {
 		if (numProblems > 0) {
 			addError("Test had " + numProblems + " exceptions!");
 		}
+
+		if(socketExceptions > 0)
+			addWarning("Test had "+ socketExceptions +" socket exceptions");
 
 		if (startTime != null && endTime != null) {
 			Duration time = Duration.between(startTime, endTime);
