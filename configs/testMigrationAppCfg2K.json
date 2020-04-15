@@ -16,7 +16,7 @@
     "location": "s3://swirlds-regression/saved-states/MigrationTestingApp/migrate2K/",
     "mainClass": "com.swirlds.demo.migration.MigrationTestingAppMain",
     "swirldName": "123",
-    "round": 113,
+    "round": 79,
     "restoreDb": true,
     "nodeIdentifier": "ALL"
   },
