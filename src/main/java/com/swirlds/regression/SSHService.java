@@ -953,7 +953,7 @@ public class SSHService {
         String tarPath = tarGzPath.substring(0, tarGzPath.lastIndexOf('.'));
 
         String command = String.format(
-                "test -f %s && gunzip %s && sudo -u postgres pg_restore -d fcfs -F t %s",
+                "test -f %s && gunzip --keep %s && sudo -u postgres pg_restore -d fcfs -F t %s",
                 tarGzPath, tarGzPath, tarPath
         );
         String description = String.format(
