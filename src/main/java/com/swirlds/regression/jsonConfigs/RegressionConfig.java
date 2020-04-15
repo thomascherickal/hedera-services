@@ -36,6 +36,7 @@ public class RegressionConfig {
 	private int eventFilesWriters = 0;
 	private boolean uploadToSharePoint = false;
 	private String jvmOptions = "";
+	private boolean useLifecycleModel = false;
 
 	private int numberOfZeroStakeNodes = 0;
 
@@ -191,5 +192,13 @@ public class RegressionConfig {
 
 	public void setNumberOfZeroStakeNodes(final int numberOfZeroStakeNodes) {
 		this.numberOfZeroStakeNodes = numberOfZeroStakeNodes;
+	}
+	
+	public boolean isUseLifecycleModel() {
+		return useLifecycleModel;
+	}
+
+	public void setUseLifecycleModel(boolean useLifecycleModel) {
+		this.useLifecycleModel = useLifecycleModel;
 	}
 }

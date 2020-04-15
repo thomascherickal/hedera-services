@@ -20,6 +20,7 @@ package com.swirlds.regression.validators;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -86,6 +87,26 @@ class RestartValidatorTest {
 		assertEquals(true, validator.isValid());
 	}
 
+	/**
+	 * the test should pass successfully
+	 * there is one line in PlatformTesting2.csv contains only one `,` character, CsvParserV1 should treat it as an empty line
+	 * @throws IOException
+	 */
+	@Test
+	void csvParserTest() throws IOException {
+		TestConfig testConfig = ValidatorTestUtil.loadTestConfig("configs/testFCMFreezeBlobCfg.json");
+		assertNotNull(testConfig.getFreezeConfig());
+		List<NodeData> nodeData = loadNodeData("logs/DynamicRestartBlob/csvParserTest");
+		NodeValidator validator = new RestartValidator(nodeData, testConfig);
+		validator.validate();
+		for (String msg : validator.getInfoMessages()) {
+			System.out.println(msg);
+		}
+
+		assertTrue(validator.getErrorMessages().isEmpty());
+		assertEquals(true, validator.isValid());
+	}
+
 	public static List<NodeData> loadNodeData(String directory) {
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0;i < 4 ; i++) {
@@ -99,15 +120,15 @@ class RestartValidatorTest {
 
 			LogReader logReader = null;
 			if (logInput != null) {
-				logReader = LogReader.createReader(1, logInput);
+				logReader = LogReader.createReader(PlatformLogParser.createParser(1), logInput);
 			}
 			CsvReader csvReader = null;
 			if (csvInput != null) {
 				csvReader = CsvReader.createReader(1, csvInput);
 			}
 			nodeData.add(new NodeData(logReader, csvReader));
+			System.out.println("loaded for node" + i);
 		}
 		return nodeData;
 	}
-
 }

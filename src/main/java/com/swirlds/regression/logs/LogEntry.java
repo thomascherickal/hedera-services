@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -17,61 +17,8 @@
 
 package com.swirlds.regression.logs;
 
-import com.swirlds.common.logging.LogMarkerInfo;
+public interface LogEntry {
+	String getLogEntry();
 
-import java.time.Instant;
-
-public class LogEntry {
-	private Instant time;
-	private LogMarkerInfo marker;
-	private long threadId;
-	private String threadName;
-	private String logEntry;
-	private boolean isException;
-
-	public LogEntry(Instant time, LogMarkerInfo marker, long threadId, String threadName, String logEntry,
-			boolean isException) {
-		this.time = time;
-		this.marker = marker;
-		this.threadId = threadId;
-		this.threadName = threadName;
-		this.logEntry = logEntry;
-		this.isException = isException;
-	}
-
-	public Instant getTime() {
-		return time;
-	}
-
-	public LogMarkerInfo getMarker() {
-		return marker;
-	}
-
-	public long getThreadId() {
-		return threadId;
-	}
-
-	public String getThreadName() {
-		return threadName;
-	}
-
-	public String getLogEntry() {
-		return logEntry;
-	}
-
-	public boolean isException() {
-		return isException;
-	}
-
-	@Override
-	public String toString() {
-		return "LogEntry{" +
-				"time=" + time +
-				", marker=" + marker +
-				", threadId=" + threadId +
-				", threadName='" + threadName + '\'' +
-				", logEntry='" + logEntry + '\'' +
-				", isException=" + isException +
-				'}';
-	}
+	boolean isException();
 }
