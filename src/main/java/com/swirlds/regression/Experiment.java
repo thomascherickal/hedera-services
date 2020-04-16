@@ -83,6 +83,7 @@ import java.util.stream.Stream;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
+import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
@@ -380,6 +381,26 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
+	 * Whether any node find at least one of the message
+	 *
+	 * @param msgList
+	 * 		A list of message to search for
+	 * @param fileName
+	 * 		File name to search for the message
+	 * @return return true if found at least one occurrence
+	 */
+	public boolean isAnyNodeFoundMessage(List<String> msgList, String fileName) {
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			if (node.countSpecifiedMsg(msgList, fileName) > 0) {
+				log.info(MARKER, "Node {} found at least one message {}", i, msgList);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
      * Whether all nodes backed up the last round
      *
      * @param fileName
@@ -483,6 +504,13 @@ public class Experiment implements ExperimentSummary {
 	 */
 	public boolean isFoundTwoPTDFinishMessage() {
 		return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
+	}
+
+	/**
+	 * Whether any node found fall behind message
+	 */
+	public boolean isAnyNodeFoundFallBehindMessage() {
+		return isAnyNodeFoundMessage(Collections.singletonList(FALL_BEHIND_MSG), REMOTE_SWIRLDS_LOG);
 	}
 
 	public boolean isProcessFinished() {

@@ -102,6 +102,7 @@ public class RegressionUtilities {
 	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued snapshot request \\[taskType='BACKUP'|SnapshotManager: Completed task \\[taskType='BACKUP'\" remoteExperiment/swirlds.log";
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
 
+	public static final String FALL_BEHIND_MSG = "has fallen behind";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;

@@ -110,6 +110,7 @@ public class RecoverStateRun implements TestRun {
 
 		checkerList.clear();
 		checkerList.add(experiment::isFoundTwoPTDFinishMessage);
+		checkerList.add(experiment::isAnyNodeFoundFallBehindMessage);
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 	}
