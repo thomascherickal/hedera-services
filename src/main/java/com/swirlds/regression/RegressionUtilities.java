@@ -121,6 +121,7 @@ public class RegressionUtilities {
 			"database fcfs;\"";
 	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
+	public final static String STATE_SAVED_MSG = "Last recovered signed state has been saved in state recover mode";
 
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";

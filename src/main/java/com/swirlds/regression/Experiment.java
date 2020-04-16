@@ -101,6 +101,7 @@ import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
+import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
 import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
 import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
@@ -507,11 +508,19 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
+	 * Whether state recover finished message found in the log file
+	 */
+	public boolean isFoundStateRecoverDoneMessage() {
+		return isAllNodesFoundEnoughMessage(Collections.singletonList(STATE_SAVED_MSG), 1, REMOTE_SWIRLDS_LOG);
+	}
+	/**
 	 * Whether any node found fall behind message
 	 */
 	public boolean isAnyNodeFoundFallBehindMessage() {
 		return isAnyNodeFoundMessage(Collections.singletonList(FALL_BEHIND_MSG), REMOTE_SWIRLDS_LOG);
 	}
+
+
 
 	public boolean isProcessFinished() {
 		ArrayList<Boolean> isProcDown = new ArrayList<>();
@@ -1297,24 +1306,6 @@ public class Experiment implements ExperimentSummary {
 	public int getNumberOfSignedStates() {
 		SSHService node0 = sshNodes.get(0);
 		return node0.getNumberOfSignedStates();
-	}
-
-	/** check if all nodes generated same number of states */
-	public boolean generatedSameNumberStates() {
-		boolean result = true;
-		SSHService node0 = sshNodes.get(0);
-		int node0StateNumber = node0.getNumberOfSignedStates();
-		log.info(MARKER, "Important Node 0 generated {} states", node0StateNumber);
-		for (int i = 1; i < sshNodes.size(); i++) {
-			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
-			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
-			if (stateNumber != node0StateNumber) {
-				log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
-						0, i, node0StateNumber, stateNumber);
-				result = false;
-			}
-		}
-		return result;
 	}
 
 	/**
