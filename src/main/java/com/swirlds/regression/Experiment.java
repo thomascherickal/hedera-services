@@ -1305,7 +1305,7 @@ public class Experiment implements ExperimentSummary {
 		SSHService node0 = sshNodes.get(0);
 		int node0StateNumber = node0.getNumberOfSignedStates();
 		log.info(MARKER, "Important Node 0 generated {} states", node0StateNumber);
-		for (int i = 1; i < sshNodes.size() - 1; i++) {
+		for (int i = 1; i < sshNodes.size(); i++) {
 			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
 			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
 			if (stateNumber != node0StateNumber) {
@@ -1323,18 +1323,30 @@ public class Experiment implements ExperimentSummary {
 	 * of saved states
 	 */
 	public boolean randomDeleteLastNSignedStates() {
-		SSHService node0 = sshNodes.get(0);
-		int savedStatesAmount = node0.getNumberOfSignedStates();
-		log.info(MARKER, "Found {} saved signed state", savedStatesAmount);
-		if (savedStatesAmount > 1) {
-			// random generate an amount and delete such amount of signed state
-			// at least leave one of the original signed state
-			int randNum = ((new Random()).nextInt(savedStatesAmount - 1)) + 1;
-			log.info(MARKER, "Random delete {} signed state", randNum);
-
-			deleteLastNSignedStates(randNum);
+		//After test finished, different nodes might have saved different round number of states
+		//need to find the minimum state saved
+		int minStateAmount = Integer.MAX_VALUE;
+		int[] stateAmount = new int[sshNodes.size()];
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			stateAmount[i] = node.getNumberOfSignedStates();
+			minStateAmount = Math.min(stateAmount[i], minStateAmount);
 		}
-		if (savedStatesAmount == 0) {
+		log.info(MARKER, "Found minStateAmount {} saved signed state", minStateAmount);
+		if (minStateAmount > 1) {
+			// some nodes need to delete randNum round of states, some may need to
+			// delete more so every one left with the same keepStateAmount round of state
+			int randNum = ((new Random()).nextInt(minStateAmount - 1)) + 1;
+			int keepStateAmount = minStateAmount - randNum;
+			log.info(MARKER, "Delete some signed states to keep only {} state(s)", keepStateAmount);
+
+			for (int i = 0; i < sshNodes.size(); i++) {
+				SSHService node = sshNodes.get(i);
+				List<SavedStatePathInfo> stateList = node.getSavedStatesDirectories();
+				node.deleteLastNSignedStates(stateAmount[i] - keepStateAmount, stateList);
+			}
+		}
+		if (minStateAmount == 0) {
 			log.error(ERROR, "no signed state saved, cannot continue recover test");
 			return false;
 		}
