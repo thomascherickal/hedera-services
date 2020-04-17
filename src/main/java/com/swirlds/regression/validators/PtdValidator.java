@@ -110,6 +110,9 @@ public class PtdValidator extends NodeValidator {
 			addError("Test had " + numProblems + " exceptions!");
 		}
 
+		if(socketExceptions > 0)
+			addWarning("Test had "+ socketExceptions +" socket exceptions");
+
 		if (startTime != null && endTime != null) {
 			Duration time = Duration.between(startTime, endTime);
 			addInfo("Test took " + time.toMinutes() + " minutes " + time.toSecondsPart() + " seconds");
