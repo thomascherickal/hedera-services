@@ -82,8 +82,6 @@ public class PtdValidator extends NodeValidator {
 				for (PlatformLogEntry le : nodeLog.getExceptions()) {
 					if (le.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 						socketExceptions++;
-					} else if (le.getMarker() == LogMarkerInfo.LONG_WAIT_EXCEPTIONS) {
-						addWarning(le.getLogEntry());
 					} else {
 						numProblems++;
 						exceptionString += le.getLogEntry() + "\\r";
