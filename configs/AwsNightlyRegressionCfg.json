@@ -40,7 +40,8 @@
 	"configs/testFcmCfg.json",
 	"configs/testFcmSmallBlobCfg.json",
 	"configs/testFcmLargeBlobCfg.json",
-	"configs/testMigrationAppCfg2K.json"
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
