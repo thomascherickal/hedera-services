@@ -57,6 +57,11 @@ public class RecoverStateRun implements TestRun {
 		String oldEventsLogDir = settingsBuilder.getSettingValue("eventsLogDir");
 		String originalStreamFileDir = oldEventsLogDir + "/*/";
 
+		//if nodes generated different number of states, quit
+		if (!experiment.generatedSameNumberStates()){
+			return;
+		}
+
 		/**************************
 		 Stage 2 recover run
 		 **************************/
