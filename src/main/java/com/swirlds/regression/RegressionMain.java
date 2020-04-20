@@ -191,6 +191,7 @@ public class RegressionMain {
 		for (int i = 0; i < regConfig.getExperiments().size(); i++) {
 			try {
 				currentTest = new Experiment(regConfig, regConfig.getExperiments().get(i));
+				currentTest.setUseThreadPool(regConfig.isUseThreadPool());
 				currentTest.resetNodes(); // make sure any preexisting instances are clean.
 				/* all experiments in the set should have the same time to save in the same results folder */
 				currentTest.setExperimentTime(regressionTestStart);
