@@ -64,7 +64,7 @@ public class StandardValidator extends NodeValidator {
 				} else if (ex.getLogEntry().contains(RegressionUtilities.FALL_BEHIND_MSG)){
 					badExceptions++;
 					isValid = false;
-					addError(String.format("Node %d has fall behind.", i));
+					addError(String.format("Node %d has fallen behind.", i));
 				} else {
 					badExceptions++;
 					isValid = false;
