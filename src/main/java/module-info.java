@@ -6,6 +6,7 @@ module com.swirlds.regression {
 
 	requires log4j.core;
 	requires log4j.api;
+
 	requires java.scripting;
 	requires java.sql;
 

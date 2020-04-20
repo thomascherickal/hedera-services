@@ -1,0 +1,31 @@
+2020-04-07 22:13:46.883 STARTUP 1 main Browser main() started
+2020-04-07 22:13:47.604 STARTUP 1 main About to run startPlatforms()
+2020-04-07 22:13:47.613 STARTUP 1 main About do crypto instantiation
+2020-04-07 22:13:47.717 STARTUP 1 main About start loading keys
+2020-04-07 22:13:49.739 STARTUP 1 main Done loading keys
+2020-04-07 22:13:49.740 STARTUP 1 main About to start creating Crypto objects
+2020-04-07 22:13:50.611 STARTUP 1 main Done creating Crypto objects
+2020-04-07 22:13:50.611 STARTUP 1 main Done with crypto instantiation
+2020-04-07 22:13:50.614 STARTUP 1 main Starting platforms
+2020-04-07 22:13:51.165 MIGRATION 1 main MigrationTestingApp started loading state from disk
+2020-04-07 22:13:51.187 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-04-07 22:17:18.088 MIGRATION 1 main There were 0 invalid keys
+2020-04-07 22:17:18.088 MIGRATION 1 main MigrationTestingApp loaded state from disk successfully, with 20000 elements
+2020-04-07 22:17:18.091 STARTUP 1 main Signed state loaded from disk has a valid hash.
+2020-04-07 22:17:18.106 STARTUP 1 main Last known sequence numbers after restart are [514, 456, 498, 493]
+2020-04-07 22:17:18.111 STARTUP 1 main BinaryObject: Recovery Starting
+2020-04-07 22:17:18.111 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 20000, uniqueObjectCount = 1 ]
+2020-04-07 22:17:18.128 STARTUP 1 main BinaryObject: Recovery Finished
+2020-04-07 22:17:18.128 STARTUP 1 main Done with starting platforms
+2020-04-07 22:17:18.134 STARTUP 41 <     platformRun  2   > Platform 2 has loaded a saved state for round 113. Will freeze until: 2020-04-07T22:17:28.129800
+2020-04-07 22:17:18.145 MIGRATION 41 <     platformRun  2   > JVM arg: -Xmx100g
+2020-04-07 22:17:18.145 MIGRATION 41 <     platformRun  2   > JVM arg: -Xms8g
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:+UseZGC
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:ConcGCThreads=14
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:+UseLargePages
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-04-07 22:17:18.146 MIGRATION 41 <     platformRun  2   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-04-07 22:17:18.454 STARTUP 1 main Browser main() finished
+2020-04-07 22:20:49.898 MIGRATION 47 <objectFileManager  2   > Finished serializing 20000 leaves

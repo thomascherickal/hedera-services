@@ -17,7 +17,7 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -53,9 +53,9 @@ public class RecoverStateValidator extends NodeValidator {
 		int nodeNum = nodeData.size();
 
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 
-			LogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
+			PlatformLogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
 			if (end == null) {
 				addError("Node " + i + " did not finish first run!");
 				isValid = false;

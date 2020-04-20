@@ -19,7 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
 import com.swirlds.regression.RegressionUtilities;
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
@@ -43,15 +43,15 @@ public class StandardValidator extends NodeValidator {
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 			nodeLog.readFully();
 		}
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 			int sockExAtEnd = 0;
 			int badExceptions = 0;
 			Instant nodeEnd = nodeLog.getLastEntryRead().getTime();
-			for (LogEntry ex : nodeLog.getExceptions()) {
+			for (PlatformLogEntry ex : nodeLog.getExceptions()) {
 				if (ex.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
 					Duration dur = Duration.between(ex.getTime(), nodeEnd);
 					if (dur.toSeconds() < 10) {

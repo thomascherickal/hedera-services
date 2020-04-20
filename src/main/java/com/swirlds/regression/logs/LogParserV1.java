@@ -28,7 +28,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LogParserV1 implements LogParser {
+public class LogParserV1 implements PlatformLogParser {
 	/* matches the following style line:
 	  "2019-03-14 15:52:04.152 RECONNECT 134128 <      syncCaller  3  0> 3 sent commStateRequest to 1"
 	  match(1) = DATETIME_REGEX = 			2019-04-09 19:07:00.269
@@ -50,7 +50,7 @@ public class LogParserV1 implements LogParser {
 	}
 
 	@Override
-	public LogEntry parse(String line) {
+	public PlatformLogEntry parse(String line) {
 		Matcher matcher = pattern.matcher(line);
 
 		if (matcher.find()) {
@@ -74,7 +74,7 @@ public class LogParserV1 implements LogParser {
 			String threadName = matcher.group(4);
 			String entry = matcher.group(5);
 
-			return new LogEntry(
+			return new PlatformLogEntry(
 					timestamp,
 					marker,
 					threadId,

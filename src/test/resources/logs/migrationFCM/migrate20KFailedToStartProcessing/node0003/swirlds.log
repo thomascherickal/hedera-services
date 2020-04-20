@@ -1,0 +1,39 @@
+2020-04-07 22:13:46.893 STARTUP 1 main Browser main() started
+2020-04-07 22:13:47.644 STARTUP 1 main About to run startPlatforms()
+2020-04-07 22:13:47.654 STARTUP 1 main About do crypto instantiation
+2020-04-07 22:13:47.736 STARTUP 1 main About start loading keys
+2020-04-07 22:13:49.690 STARTUP 1 main Done loading keys
+2020-04-07 22:13:49.690 STARTUP 1 main About to start creating Crypto objects
+2020-04-07 22:13:50.544 STARTUP 1 main Done creating Crypto objects
+2020-04-07 22:13:50.544 STARTUP 1 main Done with crypto instantiation
+2020-04-07 22:13:50.547 STARTUP 1 main Starting platforms
+2020-04-07 22:13:51.190 MIGRATION 1 main MigrationTestingApp started loading state from disk
+2020-04-07 22:13:51.211 STARTUP 1 main Adv Crypto Subsystem: No supported GPU acceleration device found
+2020-04-07 22:17:15.863 MIGRATION 1 main There were 0 invalid keys
+2020-04-07 22:17:15.864 MIGRATION 1 main MigrationTestingApp loaded state from disk successfully, with 20000 elements
+2020-04-07 22:17:15.868 STARTUP 1 main Signed state loaded from disk has a valid hash.
+2020-04-07 22:17:15.877 STARTUP 1 main Last known sequence numbers after restart are [514, 456, 498, 493]
+2020-04-07 22:17:15.882 STARTUP 1 main BinaryObject: Recovery Starting
+2020-04-07 22:17:15.882 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 20000, uniqueObjectCount = 1 ]
+2020-04-07 22:17:15.902 STARTUP 1 main BinaryObject: Recovery Finished
+2020-04-07 22:17:15.902 STARTUP 1 main Done with starting platforms
+2020-04-07 22:17:15.907 STARTUP 41 <     platformRun  3   > Platform 3 has loaded a saved state for round 113. Will freeze until: 2020-04-07T22:17:25.903162
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -Xmx100g
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -Xms8g
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:+UnlockExperimentalVMOptions
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:+UseZGC
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:ConcGCThreads=14
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:ZMarkStackSpaceLimit=16g
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:+UseLargePages
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -XX:MaxDirectMemorySize=32g
+2020-04-07 22:17:15.918 MIGRATION 41 <     platformRun  3   > JVM arg: -Dlog4j.configurationFile=log4j2-regression.xml
+2020-04-07 22:17:15.920 MIGRATION 46 <      appMainRun  3   > MigrationTestingApp started handling 5000 transactions with seed 4685095852903873060 and 4 nodes
+2020-04-07 22:17:16.302 STARTUP 1 main Browser main() finished
+2020-04-07 22:17:22.260 MIGRATION 46 <      appMainRun  3   > MigrationTestingApp finished handling 5000 transactions with seed 4685095852903873060 and 4 nodes
+2020-04-07 22:20:49.935 MIGRATION 47 <objectFileManager  3   > Finished serializing 20000 leaves
+2020-04-07 22:28:46.148 SOCKET_EXCEPTIONS 57 <    syncListener  3  0> SyncListener.sync IOException (so incrementing interruptedRecSyncsPerSecond) while 3 listening for 0: java.io.EOFException: null
+|   java.base/java.io.DataInputStream.readByte(DataInputStream.java:272)
+|   com.swirlds.platform.SyncListener.handleOneMsgOrException(SyncListener.java:223)
+|   com.swirlds.platform.SyncListener.handleOneMsg(SyncListener.java:132)
+|   com.swirlds.platform.SyncListener.run(SyncListener.java:90)
+|   java.base/java.lang.Thread.run(Thread.java:835)

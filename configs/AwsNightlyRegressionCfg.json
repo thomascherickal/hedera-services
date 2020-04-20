@@ -39,7 +39,8 @@
 	"configs/testFcm1kThrottlingCfg.json",
 	"configs/testFcmCfg.json",
 	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json"
+	"configs/testFcmLargeBlobCfg.json",
+	"configs/testMigrationAppCfg2K.json"
   ],
   "db": {
 	"type": "postgresql",
