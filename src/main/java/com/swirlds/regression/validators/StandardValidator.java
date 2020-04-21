@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
@@ -60,6 +61,10 @@ public class StandardValidator extends NodeValidator {
 						badExceptions++;
 						isValid = false;
 					}
+				} else if (ex.getLogEntry().contains(RegressionUtilities.FALL_BEHIND_MSG)){
+					badExceptions++;
+					isValid = false;
+					addError(String.format("Node %d has fallen behind.", i));
 				} else {
 					badExceptions++;
 					isValid = false;

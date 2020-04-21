@@ -98,12 +98,12 @@ public class RegressionUtilities {
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
+	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|has fallen behind|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued snapshot request \\[taskType='BACKUP'|SnapshotManager: Completed task \\[taskType='BACKUP'\" remoteExperiment/swirlds.log";
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
 
+	public static final String FALL_BEHIND_MSG = "has fallen behind";
 	public static final String OUTPUT_LOG_FILENAME = "output.log";
-
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -122,6 +122,7 @@ public class RegressionUtilities {
 			"database fcfs;\"";
 	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
+	public final static String STATE_SAVED_MSG = "Last recovered signed state has been saved in state recover mode";
 
 	public static final int AMAZON_INSTANCE_WAIT_TIME_SECONDS = 3;
 	static final String DROP_DATABASE_FCFS_EXPECTED_RESPONCE = "DROP DATABASE";

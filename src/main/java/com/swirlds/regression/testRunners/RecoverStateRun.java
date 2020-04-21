@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
+import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
+import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 
 /**
  * Recover signed state from event stream file
@@ -86,6 +88,8 @@ public class RecoverStateRun implements TestRun {
 		experiment.startAllSwirlds();
 
 		// sleep through the rest of the test
+		checkerList.clear();
+		checkerList.add(experiment::isFoundStateRecoverDoneMessage);
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 
@@ -110,6 +114,7 @@ public class RecoverStateRun implements TestRun {
 
 		checkerList.clear();
 		checkerList.add(experiment::isFoundTwoPTDFinishMessage);
+		checkerList.add(experiment::isAnyNodeFoundFallBehindMessage);
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 	}
