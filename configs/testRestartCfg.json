@@ -3,10 +3,7 @@
   "description": "platform testing demo - restart",
   "duration": 1020,
   "settings": [
-    {
-      "name": "throttle7extra",
-      "value": "0.02"
-    },
+    {"name": "throttle7extra", "value": "0.02" },
     {
       "name": "throttle7",
       "value": "1"
@@ -35,12 +32,22 @@
   "restartConfig": {
     "restartTiming": 2
   },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
+  },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMRestart.json"]
+    "parameterList": [
+      "FCMRestart.json"
+    ]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator":[ "STATS", "RESTART" ]
+  "validator": [
+    "STATS",
+    "RESTART"
+  ]
 }

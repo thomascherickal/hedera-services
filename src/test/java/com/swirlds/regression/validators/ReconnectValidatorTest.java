@@ -20,6 +20,7 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.common.logging.LogMarkerInfo;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.ReconnectConfig;
 import com.swirlds.regression.logs.LogEntry;
@@ -119,7 +120,7 @@ class ReconnectValidatorTest {
 
 		ReconnectValidator validator = dummyReconnectValidator(nodesNum);
 
-		LogEntry reconnectAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT,
 				0, "thread",
 				"Exceptions acceptable at reconnect",
@@ -127,7 +128,7 @@ class ReconnectValidatorTest {
 		assertTrue(validator.isAcceptable(reconnectAcceptable, firstId));
 		assertTrue(validator.isAcceptable(reconnectAcceptable, lastId));
 
-		LogEntry reconnectNodeAcceptable = new LogEntry(Instant.now(),
+		PlatformLogEntry reconnectNodeAcceptable = new PlatformLogEntry(Instant.now(),
 				LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE,
 				0, "thread",
 				"Exceptions acceptable for reconnect node",

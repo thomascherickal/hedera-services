@@ -17,13 +17,14 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
 
 import java.io.IOException;
 import java.util.List;
 
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
+import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 
 public class RecoverStateValidator extends NodeValidator {
 
@@ -33,7 +34,6 @@ public class RecoverStateValidator extends NodeValidator {
 		super(nodeData);
 	}
 
-	private final static String STATE_SAVED_MSG = "Last recovered signed state has been saved in state recover mode";
 	boolean isValidated = false;
 	boolean isValid = true;
 
@@ -53,9 +53,9 @@ public class RecoverStateValidator extends NodeValidator {
 		int nodeNum = nodeData.size();
 
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader nodeLog = nodeData.get(i).getLogReader();
+			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 
-			LogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
+			PlatformLogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
 			if (end == null) {
 				addError("Node " + i + " did not finish first run!");
 				isValid = false;

@@ -30,6 +30,8 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
@@ -43,7 +45,9 @@
 	"configs/testFcm1kThrottlingCfg.json",
 	"configs/testFcmCfg.json",
 	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json"
+	"configs/testFcmLargeBlobCfg.json",
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -56,6 +60,7 @@
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression",
+	"summaryChannel": "platform-aws-summary",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,

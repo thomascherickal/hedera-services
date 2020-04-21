@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
+import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE;
 import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
@@ -171,30 +173,60 @@ public class SSHService {
 
     Collection<String> getListOfFiles(ArrayList<String> extension) {
         Collection<String> returnCollection = new ArrayList<>();
+		int extensionCount = 0;
+		int dataExtensionCount = 0;
         String extensions = "\\( ";
+		String dataExtensions = "";
         for (int i = 0; i < extension.size(); i++) {
-            if (i > 0) {
-                extensions += " -o ";
-            }
-            extensions += "-name \"" + extension.get(i) + "\"";
-        }
+			if (!extension.get(i).contains("data/")) {
+				if (extensionCount++ > 0) {
+					extensions += " -o ";
+				}
+				extensions += "-name \"" + extension.get(i) + "\"";
+			}
+			else {
+				dataExtensionCount++;
+				dataExtensions += "-e \"" + extension.get(i) + "\" ";
+			}
+		}
         extensions += " \\) ";
-        String pruneDirectory = "-not -path \"*/data/*\"";
-        String commandStr = "find . " + extensions + pruneDirectory;
 
-        Session.Command cmd = null;
-        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
+		if (extensionCount > 0) {
+			String commandStr = "find . " + extensions;
+			String pruneDirectory = "-not -path \"*/data/*\"";
+			commandStr += pruneDirectory;
 
-            try {
-                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
-                Thread.sleep(10000);
-            } catch (InterruptedException ie) {
-                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
-            }
-        }
-        log.info(MARKER, "Extensions to look for on node {}: ", ipAddress, extensions);
+	        Session.Command cmd = null;
+	        while ((cmd = execCommand(commandStr, "Find list of Files based on extension", -1)) == null) {
 
-        returnCollection = readCommandOutput(cmd);
+	            try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
+	            }
+	        }
+			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
+
+			returnCollection.addAll(readCommandOutput(cmd));
+		}
+
+		if (dataExtensionCount > 0) {
+			String dataCommandStr = "find . | grep " + dataExtensions;
+			
+			Session.Command dataCmd = null;
+			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
+			
+				try {
+	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
+	                Thread.sleep(10000);
+	            } catch (InterruptedException ie) {
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", dataCommandStr);
+	            }
+	        }
+			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
+			returnCollection.addAll(readCommandOutput(dataCmd));
+		}
 
         return returnCollection;
     }
@@ -226,49 +258,63 @@ public class SSHService {
             log.info(MARKER, "top level folder: {}", topLevelFolders);
             Collection<String> foundFiles = getListOfFiles(
                     RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
-            log.info(MARKER, "total files found:{}", foundFiles.size());
-            for (String file : foundFiles) {
-                String currentLine = file;
-				/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
-				. */
-                String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-                int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files", e);
+			return false;
+		}
+	}
 
-                log.info(MARKER,
-                        String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+	void scpFromListOnly(String topLevelFolders, ArrayList<String> patternsToMatch) {
+		try {
+			log.info(MARKER, "top level folder: {}", topLevelFolders);
+			Collection<String> foundFiles = getListOfFiles(patternsToMatch);
+			scpFilesFromList(topLevelFolders, foundFiles);
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files", e);
+		}
+	}
+
+	private void scpFilesFromList(String topLevelFolders, Collection<String> foundFiles) throws IOException {
+		log.info(MARKER, "total files found:{}", foundFiles.size());
+		for (String file : foundFiles) {
+            String currentLine = file;
+			/* remove everything before remoteExperiments and "remoteExpeirments" add in experiment folder and node
+			. */
+            String cutOffString = RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+            int cutOff = currentLine.indexOf(cutOffString) + cutOffString.length() - 1;
+
+            log.info(MARKER,
+                    String.format("CutOff of '%d' computed for the line '%s' with cutOffString of " +
+                                    "'%s'.",
+                            cutOff, currentLine, cutOffString));
+
+            if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
+                currentLine = currentLine.substring(cutOff);
+            } else {
+                log.error(MARKER,
+                        String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
                                         "'%s'.",
                                 cutOff, currentLine, cutOffString));
-
-                if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
-                    currentLine = currentLine.substring(cutOff);
-                } else {
-                    log.error(MARKER,
-                            String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
-                                            "'%s'.",
-                                    cutOff, currentLine, cutOffString));
-                }
-
-                currentLine = topLevelFolders + currentLine;
-
-                File fileToSplit = new File(currentLine);
-                if (!fileToSplit.exists()) {
-
-					/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
-					of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
-					and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
-					.jar
-					 */
-                    fileToSplit.getParentFile().mkdirs();
-
-                }
-                log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
-                        fileToSplit.getPath());
-                ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
             }
-            return true;
-        } catch (IOException | StringIndexOutOfBoundsException e) {
-            log.error(ERROR, "Could not download files", e);
-            return false;
+
+            currentLine = topLevelFolders + currentLine;
+
+            File fileToSplit = new File(currentLine);
+            if (!fileToSplit.exists()) {
+
+				/* has to be getParentFile().mkdirs() because if it is not JAVA will make a directory with the name
+				of the file like remoteExperiments/swirlds.jar. This will cause scp to take the input as a filepath
+				and not the file itself leaving the directory structure like remoteExperiments/swirlds.jar/swirlds
+				.jar
+				 */
+                fileToSplit.getParentFile().mkdirs();
+
+            }
+            log.info(MARKER, "downloading {} from node {} putting it in {}", file, ipAddress,
+                    fileToSplit.getPath());
+            ssh.newSCPFileTransfer().download(file, fileToSplit.getPath());
         }
     }
 
@@ -301,8 +347,8 @@ public class SSHService {
         }
     }
 
-    // return true if rsync finished successfully
-    public boolean rsyncTo(ArrayList<File> additionalFiles, String toIPAddress, File log4j2Xml) {
+    // Use rsync to copy selected files to a list of IP addresses
+    public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses) {
         long startTime = System.nanoTime();
         makeRemoteDirectory(
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION); // make sure remoteExperiments directory exist before
@@ -313,19 +359,28 @@ public class SSHService {
                 additionalFiles)) {
             rsyncCmd += "--include=\"" + fileToUpload + "\" ";
         }
-        rsyncCmd += "--exclude=\"*\" --delete --delete-excluded ./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +
-                " " + user + "@" + toIPAddress + ":./remoteExperiment/ ";
 
-        log.trace(MARKER, rsyncCmd);
+        // chain multiple rsync command together and run them in background
+        String addCmd = "";
+        for(String address:toIPAddresses){
+            addCmd += rsyncCmd + "--exclude=\"*\" --delete --delete-excluded ./" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION +
+                    " " + user + "@" + address + ":./remoteExperiment/ & ";
+        }
+        // wait all background rsync command to finish
+        addCmd += " wait  ";
+        log.trace(MARKER, "rsyncTo cmd = " + addCmd );
 
-        Session.Command result = executeCmd(rsyncCmd);
+        // command running on remote has format " rsync ip1 & rsync ip2 & rsync ip3 & rsync ip4 & wait"
+        // all rsync run in background in parallel and "wait" make executeCmd returns only when all rsync are done
+        Session.Command result = executeCmd(addCmd);
         if (result.getExitStatus() != 0) {
-            log.error(ERROR, "RSYNC to {} failed, cmd result = \n\n {}\n\n", ipAddress, result);
+            String cmdResultString = readCommandOutput(result).toString();
+            log.error(ERROR, "RSYNC to {} failed, cmd result = \n\n {}\n\n", ipAddress, cmdResultString);
             return false;
         }
         long endTime = System.nanoTime();
         log.trace(MARKER, "took {} seconds to rsync from node {} to node {}", (endTime - startTime) / 1000000000,
-                ipAddress, toIPAddress);
+                ipAddress, toIPAddresses);
         return true;
     }
 
@@ -494,13 +549,13 @@ public class SSHService {
             lastExec = Instant.now();
             return cmd;
         } catch (ConnectionException e) {
-            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", e, joinSec, command,
-                    description);
+            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } catch (IOException | NullPointerException e) {
             log.error(ERROR, "'{}' command failed!", description, e);
         } catch (Exception e) {
-            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", e, joinSec, command,
-                    description);
+            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } finally {
             try {
                 if (session != null) {
@@ -721,6 +776,76 @@ public class SSHService {
         return map;
     }
 
+    /**
+     * Checks file for messages reporting that the state has been successfully saved
+     * and that a pg_backup has successfully been processed for each rounnd
+     *
+     * @param fileName File name to search for the message
+     *
+     * @return a map containing round numbers and whether their backup was completed
+     * for a given node
+     */
+    HashMap<Long,Boolean> checkSavedStateProgress(String fileName) {
+        HashMap<Long,Boolean> retMap = new HashMap<>();
+
+        final Session.Command cmd = execCommand(CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE,
+                "Get all state manager queuing messages", -1);;
+        ArrayList<String> output = readCommandOutput(cmd);
+        try {
+            for (String out : output) {
+
+                if (out.contains("No such file or directory")) {
+                    log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+                    return null;
+                }
+
+                Long roundNum = null;
+                Boolean complete = null;
+
+                String[] keyVals = out.split(", ");
+                for (String keyVal : keyVals) {
+                    String[] parts = keyVal.split("=", 2);
+                    if (parts.length == 2) {
+                        if (parts[0].contentEquals("roundNumber")) {
+                            roundNum = Long.parseLong(parts[1]);
+                        } else if (parts[0].contentEquals("complete")) {
+                            if (parts[1].contentEquals("false")) {
+                                complete = false;
+                            } else if (parts[1].contentEquals("true")) {
+                                complete = true;
+                            } else {
+                                throw new NumberFormatException();
+                            }
+                        }
+                    }
+                }
+
+                if ((roundNum != null) && (complete != null)) {
+                    if (complete == false) {
+                        if (retMap.containsKey(roundNum)) {
+                            //already know this round completed
+                            continue;
+                        } else {
+                            retMap.put(roundNum, false);
+                        }
+                    } else {
+                        //round number completed
+                        retMap.put(roundNum, true);
+                    }
+                } else {
+                    throw new SSHException("invalid line read");
+                }
+            }
+        } catch (NumberFormatException | SSHException e) {
+            log.error(ERROR,"State message manager improperly formed");
+        }
+        if (retMap.size() == 0) {
+            log.info(MARKER,"No saved rounds found for node");
+            return null;
+        }
+        return retMap;
+    }
+
     public void close() {
         try {
             ssh.close();
@@ -837,7 +962,7 @@ public class SSHService {
         String tarPath = tarGzPath.substring(0, tarGzPath.lastIndexOf('.'));
 
         String command = String.format(
-                "test -f %s && gunzip %s && sudo -u postgres pg_restore -d fcfs -F t %s",
+                "test -f %s && gunzip --keep %s && sudo -u postgres pg_restore -d fcfs -F t %s",
                 tarGzPath, tarGzPath, tarPath
         );
         String description = String.format(
@@ -1103,4 +1228,12 @@ public class SSHService {
         Session.Command cmd = execCommand(adjustHugepagesCommand, "Adjusting number of huge pages to " + hugePagesNumber);
         throwIfExitCodeBad(cmd, "Adjusting number of huge pages to " + hugePagesNumber);
 	}
+
+	void printCurrentTime(final int nodeId) {
+        String dateCmd = "date -u";
+
+        Session.Command cmd = executeCmd(dateCmd);
+        String cmdResult = readCommandOutput(cmd).toString();
+        log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+    }
 }

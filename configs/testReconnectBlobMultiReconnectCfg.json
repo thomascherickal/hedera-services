@@ -8,22 +8,47 @@
     {"name":"throttle7threshold", "value": "1.5" },
 
     {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"},
-    {"name":"enableEventStreaming", "value":"true"},
-    {"name":"roundsExpired", "value":"250"}
+    {
+      "name": "csvFileName",
+      "value": "PlatformTesting"
+    },
+    {
+      "name": "csvAppend",
+      "value": "true"
+    },
+    {
+      "name": "reconnectActive",
+      "value": "1"
+    },
+    {
+      "name": "enableEventStreaming",
+      "value": "true"
+    },
+    {
+      "name": "roundsExpired",
+      "value": "250"
+    }
   ],
   "reconnectConfig": {
     "reconnectTiming": 180,
     "killNetworkReconnect": true
   },
+  "experimentConfig": {
+    "experimentRestartDelay": "5",
+    "experimentStartDelay": "2",
+    "freezeWaitMillis": "30000"
+  },
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMMultiReconnectBlob.json"]
+    "parameterList": [
+      "FCMMultiReconnectBlob.json"
+    ]
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "RECONNECT" ]
+  "validator": [
+    "STATS",
+    "RECONNECT"
+  ]
 }
