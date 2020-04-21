@@ -1,7 +1,7 @@
 {
-  "name":"Restart",
-  "description" : "platform testing demo - restart",
-  "duration": 900,
+  "name": "Restart",
+  "description": "platform testing demo - restart",
+  "duration": 1020,
   "settings": [
     {"name": "throttle7extra", "value": "0.02" },
     {
