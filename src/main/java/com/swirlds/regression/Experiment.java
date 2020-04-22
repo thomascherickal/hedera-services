@@ -1003,7 +1003,7 @@ public class Experiment implements ExperimentSummary {
         }
 
 		//TODO maybe move the kill to the TestRun
-		stopAllSwirlds();
+		stopAllSwirlds(); //kill swirlds.jar java process
 
 		// call badgerize.sh that tars all the database logs
 
@@ -1039,6 +1039,7 @@ public class Experiment implements ExperimentSummary {
 
 		//resetNodes();
 
+		killJavaProcess(); //kill any data collecting java process
 		closeThreadPool();
 	}
 
@@ -1073,6 +1074,15 @@ public class Experiment implements ExperimentSummary {
 				})
 				.collect(Collectors.toList()));
 		sshNodes.clear();
+	}
+
+	void killJavaProcess() {
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.killJavaProcess();
+					node.close();
+				})
+				.collect(Collectors.toList()));
 	}
 
 	private void uploadFilesToSharepoint() {
