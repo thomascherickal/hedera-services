@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.swirlds.regression.RegressionUtilities.PTD_LOG_FINISHED_MESSAGES;
+import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 
 public class RecoverStateValidator extends NodeValidator {
 
@@ -33,7 +34,6 @@ public class RecoverStateValidator extends NodeValidator {
 		super(nodeData);
 	}
 
-	private final static String STATE_SAVED_MSG = "Last recovered signed state has been saved in state recover mode";
 	boolean isValidated = false;
 	boolean isValid = true;
 
