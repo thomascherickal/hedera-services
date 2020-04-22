@@ -266,6 +266,12 @@ public class Experiment implements ExperimentSummary {
 		}
 	}
 
+	private void closeThreadPool() {
+		if (es != null) {
+			es.shutdown();
+		}
+	}
+	
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execWithProcessID(getJVMOptionsString());
@@ -1032,7 +1038,8 @@ public class Experiment implements ExperimentSummary {
 		uploadFilesToSharepoint();
 
 		//resetNodes();
-		killJavaProcess();
+
+		closeThreadPool();
 	}
 
 	/**
@@ -1057,7 +1064,7 @@ public class Experiment implements ExperimentSummary {
 			node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
 		}
 	}
-	
+
 	void resetNodes() {
 		threadPoolService(sshNodes.stream()
 				.<Runnable>map(node -> () -> {
@@ -1066,15 +1073,6 @@ public class Experiment implements ExperimentSummary {
 				})
 				.collect(Collectors.toList()));
 		sshNodes.clear();
-	}
-
-	void killJavaProcess() {
-		threadPoolService(sshNodes.stream()
-				.<Runnable>map(node -> () -> {
-					node.killJavaProcess();
-					node.close();
-				})
-				.collect(Collectors.toList()));
 	}
 
 	private void uploadFilesToSharepoint() {
