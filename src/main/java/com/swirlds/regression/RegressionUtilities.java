@@ -136,7 +136,7 @@ public class RegressionUtilities {
 
 	public static final String GIT_NOT_FOUND = "Git repo was not found in base directory.\n";
 
-	public static final int EXCEPTIONS_SIZE = 1000;
+	public static final int EXCEPTIONS_SIZE = 50;
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
