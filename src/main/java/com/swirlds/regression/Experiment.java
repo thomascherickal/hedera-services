@@ -256,16 +256,23 @@ public class Experiment implements ExperimentSummary {
 	 * 		A list of runnable task
 	 */
 	private void threadPoolService(List<Runnable> tasks) {
-		if (tasks.size() > 0) {
-			if (es == null) {
-				int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
-				es = Executors.newFixedThreadPool(poolSize);
+		if(useThreadPool) {
+			if (tasks.size() > 0) {
+				if (es == null) {
+					int poolSize = Runtime.getRuntime().availableProcessors() * 2;
+					es = Executors.newFixedThreadPool(poolSize);
+				}
+				//Wait all thread future done
+				CompletableFuture<?>[] futures = tasks.stream()
+						.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
+						.toArray(CompletableFuture[]::new);
+				CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 			}
-			//Wait all thread future done
-			CompletableFuture<?>[] futures = tasks.stream()
-					.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
-					.toArray(CompletableFuture[]::new);
-			CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
+		}
+		else {
+			for (Runnable task : tasks) {
+				task.run();
+			}
 		}
 	}
 
@@ -278,7 +285,7 @@ public class Experiment implements ExperimentSummary {
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+			log.info(MARKER, "node:{} swirlds.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 
