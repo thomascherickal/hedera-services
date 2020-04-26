@@ -259,8 +259,9 @@ public class Experiment implements ExperimentSummary {
 		if(useThreadPool) {
 			if (tasks.size() > 0) {
 				if (es == null) {
-					int poolSize = Runtime.getRuntime().availableProcessors() * 2;
-					es = Executors.newFixedThreadPool(poolSize);
+					/* this allows the same threadpool to be used for all experiments instead of creating and destroying
+					 them each time */
+					es = ThreadPool.getESInstance();
 				}
 				//Wait all thread future done
 				CompletableFuture<?>[] futures = tasks.stream()
@@ -269,16 +270,11 @@ public class Experiment implements ExperimentSummary {
 				CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 			}
 		}
+		/* run tasks sequentially on main thread if thread poll use is not requested */
 		else {
 			for (Runnable task : tasks) {
 				task.run();
 			}
-		}
-	}
-
-	private void closeThreadPool() {
-		if (es != null) {
-			es.shutdown();
 		}
 	}
 	
@@ -1087,7 +1083,6 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
-		closeThreadPool();
 	}
 
 	/**
