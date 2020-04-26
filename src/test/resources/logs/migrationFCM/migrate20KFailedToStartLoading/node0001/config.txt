@@ -1,0 +1,9 @@
+###############################################################################################
+# Swirlds configuration file, for automatically running multiple instances
+###############################################################################################
+swirld, 123
+app, MigrationTestingApp.jar, 4685095852903873060, 5000, 4
+address, MigrationTestingApp0, MigrationTestingApp0, 1250000000000000000, 172.31.11.120, 40124, 3.22.74.130, 40124
+address, MigrationTestingApp1, MigrationTestingApp1, 1250000000000000000, 172.31.13.62, 40125, 3.14.131.29, 40125
+address, MigrationTestingApp2, MigrationTestingApp2, 1250000000000000000, 172.31.14.49, 40126, 3.22.75.191, 40126
+address, MigrationTestingApp3, MigrationTestingApp3, 1250000000000000000, 172.31.6.99, 40127, 3.135.246.129, 40127

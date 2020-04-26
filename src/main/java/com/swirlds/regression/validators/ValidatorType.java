@@ -30,5 +30,6 @@ public enum ValidatorType {
 	THROTTLE,
 	PTA_THROTTLE,
 	BLOB_STATE,
+	MIGRATION,
 	STDOUT
 }

@@ -1,20 +1,24 @@
 {
-  "name":"regression-suite",
+  "name": "regression-suite",
   "result": {
-	"uri":"results"
+	"uri": "results"
   },
-  "cloud":{
-	"service":"aws",
-	"securityGroup":"SwirldsSecGroup",
+  "cloud": {
+	"service": "aws",
+	"securityGroup": "SwirldsSecGroup",
 	"instanceType": "M410xlarge",
 	"instanceKey": "regression-key",
-	"keyLocation":"./keys/my-key",
+	"keyLocation": "./keys/my-key",
 	"login": "ubuntu",
-	"regionList":[
-	  { "region":"us-east-2",
+	"regionList": [
+	  {
+		"region": "us-east-2",
 		"instanceList": [
-			"i-04223a00a2884931c","i-08eafb29a6b39dc22","i-09aceb44773d0b2da","i-0a80c3d91ce61c5f0"
-	    ]
+		  "i-04223a00a2884931c",
+		  "i-08eafb29a6b39dc22",
+		  "i-09aceb44773d0b2da",
+		  "i-0a80c3d91ce61c5f0"
+		]
 	  }
 	]
   },
@@ -26,6 +30,8 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
@@ -39,7 +45,9 @@
 	"configs/testFcm1kThrottlingCfg.json",
 	"configs/testFcmCfg.json",
 	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json"
+	"configs/testFcmLargeBlobCfg.json",
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -48,7 +56,7 @@
 	"port": "5432",
 	"database": "stats"
   },
-  "slack":{
+  "slack": {
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression",
@@ -56,7 +64,10 @@
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
-	"notifyUserIds": ["UA4T7UJQJ", "UA5K2LZ1D" ]
+	"notifyUserIds": [
+	  "UA4T7UJQJ",
+	  "UA5K2LZ1D"
+	]
   },
   "uploadToSharePoint": true
 }

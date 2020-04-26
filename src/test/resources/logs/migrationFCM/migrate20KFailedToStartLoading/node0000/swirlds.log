@@ -1,0 +1,35 @@
+2020-04-09 06:52:27.731 STARTUP 1 main Browser main() started
+2020-04-09 06:52:27.762 STARTUP 1 main About to run startPlatforms()
+2020-04-09 06:52:27.771 STARTUP 1 main About do crypto instantiation
+2020-04-09 06:52:27.843 STARTUP 1 main About start loading keys
+2020-04-09 06:52:29.785 STARTUP 1 main Done loading keys
+2020-04-09 06:52:29.786 STARTUP 1 main About to start creating Crypto objects
+2020-04-09 06:52:30.649 STARTUP 1 main Done creating Crypto objects
+2020-04-09 06:52:30.650 STARTUP 1 main Done with crypto instantiation
+2020-04-09 06:52:30.807 STARTUP 1 main Starting platforms
+2020-04-09 06:52:30.837 STARTUP 1 main Scanning the classpath for RuntimeConstructable classes
+2020-04-09 06:52:31.194 STARTUP 1 main Done with registerConstructables, time taken 355ms
+2020-04-09 06:56:03.189 STARTUP 1 main ERROR: Signed state loaded from disk has an invalid hash!
+disk:[-25, 90, -48, 17, 36, -66, -99, -33, -2, 39, -117, 33, -23, -19, 127, -32, 56, 114, -97, -25, 21, -58, 71, 21, 77, 42, -19, 122, -17, -68, 90, 55, 56, -111, 81, -40, 55, 54, -121, -28, -5, 114, 116, 12, 94, 69, 57, 0]
+calc:[123, -37, 42, -40, -69, -100, 84, -43, -54, -45, 2, 77, -119, 66, -77, 74, -128, 109, 16, -61, 62, -80, 11, -65, -111, -105, -25, 104, -105, -124, 75, 126, -85, 116, 95, 20, -103, 89, 84, 30, -29, 27, 121, 48, 31, 62, -66, -29]
+2020-04-09 06:56:03.199 STARTUP 1 main Last known sequence numbers after restart are [514, 456, 498, 493]
+2020-04-09 06:56:03.221 SNAPSHOT_MANAGER 1 main SnapshotManager: Successfully queued snapshot request [taskType='RESTORE', applicationName='com.swirlds.demo.migration.MigrationTestingAppMain', worldId='123', nodeId=0, roundNumber=113, snapshotId=restore, timeStarted=2020-04-09T06:56:03.203062Z, timeCompleted=null, complete=false, error=false ]
+2020-04-09 06:56:03.288 EXCEPTION 98 < SnapshotManager > SnapshotManager: Process returned an exit code indicating a failure [1]
+2020-04-09 06:56:03.289 STARTUP 1 main ERROR: Failed to restore postgres sql snapshot: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/113/SignedState.swh
+2020-04-09 06:56:03.289 SNAPSHOT_MANAGER 98 < SnapshotManager > SnapshotManager: Completed task [taskType='RESTORE', applicationName='com.swirlds.demo.migration.MigrationTestingAppMain', worldId='123', nodeId=0, roundNumber=113, snapshotId=restore, timeStarted=2020-04-09T06:56:03.203062Z, timeCompleted=2020-04-09T06:56:03.289369Z, complete=true, error=true ]
+2020-04-09 06:56:03.289 EXCEPTION 1 main Saved state not loaded:
+com.swirlds.platform.internal.SignedStateLoadingException: Failed to restore postgres sql snapshot: /home/ubuntu/remoteExperiment/data/saved/com.swirlds.demo.migration.MigrationTestingAppMain/0/123/113/SignedState.swh
+	at com.swirlds.platform.SwirldsPlatform.loadSavedStateFromDisk(SwirldsPlatform.java:456) ~[swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.Browser.createLocalPlatforms(Browser.java:710) [swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.Browser.startPlatforms(Browser.java:953) [swirlds-platform-core-0.6.5.jar:?]
+	at com.swirlds.platform.Browser.main(Browser.java:369) [swirlds-platform-core-0.6.5.jar:?]
+2020-04-09 06:56:03.296 STARTUP 1 main BinaryObject: Recovery Starting
+2020-04-09 06:56:03.296 STARTUP 1 main BinaryObject: Recovering Objects [ objectCount = 20000, uniqueObjectCount = 1 ]
+2020-04-09 06:56:03.331 STARTUP 1 main BinaryObject: Recovery Finished
+2020-04-09 06:56:03.331 STARTUP 1 main Done with starting platforms
+2020-04-09 06:56:03.335 STARTUP 101 <     platformRun  0   > Platform 0 has loaded a saved state for round 113. Will freeze until: 2020-04-09T06:56:13.331491
+2020-04-09 06:56:03.433 MIGRATION 106 <      appMainRun  0   > MigrationTestingApp started handling 5000 transactions with seed 4685095852903873060 and 4 nodes
+2020-04-09 06:56:03.476 STARTUP 1 main Browser main() finished
+2020-04-09 06:56:03.625 PLATFORM_STATUS 122 <       heartbeat  0  3> Platform status changed to: STARTING_UP
+2020-04-09 06:56:13.381 PLATFORM_STATUS 88 < pollIntakeQueue  0   > Platform status changed to: ACTIVE
+2020-04-09 06:56:16.706 MIGRATION 106 <      appMainRun  0   > MigrationTestingApp finished handling 5000 transactions with seed 4685095852903873060 and 4 nodes

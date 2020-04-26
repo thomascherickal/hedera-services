@@ -71,20 +71,26 @@ import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
+import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
@@ -103,7 +109,9 @@ import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
+import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
+import static com.swirlds.regression.RegressionUtilities.TEST_TIME_EXCEEDED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
 import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
 import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
@@ -128,6 +136,7 @@ public class Experiment implements ExperimentSummary {
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
+	static final int EXPERIMENT_START_DELAY = 2;
 	static final int EXPERIMENT_FREEZE_SECOND_AFTER_STARTUP = 10;
 
 
@@ -143,6 +152,10 @@ public class Experiment implements ExperimentSummary {
 	private CloudService cloud = null;
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
 	private NodeMemory nodeMemoryProfile;
+	//Executor of thread pool to run ssh session
+	private ExecutorService es;
+	//Whether use thread pool to run ssh session in parallel mode
+	private boolean useThreadPool = false;
 
 	// Is used for validating reconnection after running startFromX test, should be the max value of roundNumber of
 	// savedState the nodes start from;
@@ -167,6 +180,11 @@ public class Experiment implements ExperimentSummary {
 	@Override
 	public boolean hasExceptions() {
 		return exceptions;
+	}
+
+	public void setUseThreadPool(boolean useThreadPool) {
+		log.info(MARKER, "Set useThreadPool as {}", useThreadPool);
+		this.useThreadPool = useThreadPool;
 	}
 
 	void setExperimentTime() {
@@ -230,17 +248,43 @@ public class Experiment implements ExperimentSummary {
 		}
 	}
 
-	public void startAllSwirlds() {
-		for (SSHService node : sshNodes) {
-			node.execWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+	/**
+	 * Use thread pool to finish a list of runnable task in parallel fashion.
+	 * thread pool size depends on the number of CPU cores
+	 *
+	 * @param tasks
+	 * 		A list of runnable task
+	 */
+	private void threadPoolService(List<Runnable> tasks) {
+		if (tasks.size() > 0) {
+			if (es == null) {
+				int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
+				es = Executors.newFixedThreadPool(poolSize);
+			}
+			//Wait all thread future done
+			CompletableFuture<?>[] futures = tasks.stream()
+					.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
+					.toArray(CompletableFuture[]::new);
+			CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 		}
 	}
 
-	public void stopAllSwirlds() {
-		for (SSHService currentNode : sshNodes) {
-			currentNode.killJavaProcess();
+	private void closeThreadPool() {
+		if (es != null) {
+			es.shutdown();
 		}
+	}
+	
+	public void startAllSwirlds() {
+		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
+			node.execWithProcessID(getJVMOptionsString());
+			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+		}).collect(Collectors.toList()));
+	}
+
+	public void stopAllSwirlds() {
+		threadPoolService(sshNodes.stream().<Runnable>map(currentNode -> currentNode::killJavaProcess)
+				.collect(Collectors.toList()));
 	}
 
 	public void stopLastSwirlds() {
@@ -303,6 +347,7 @@ public class Experiment implements ExperimentSummary {
 					return;
 				}
 			}
+			log.trace(MARKER, TEST_TIME_EXCEEDED_MSG);
 		} else {
 			try {
 				//TODO: should this check for test finishing as well for local test > JAVA_PROC_CHECK_INTERVAL?
@@ -347,6 +392,7 @@ public class Experiment implements ExperimentSummary {
 					}
 				}
 			}
+			log.trace(MARKER, TEST_TIME_EXCEEDED_MSG);
 		} else {
 			try {
 				log.info(MARKER, "sleeping for {} seconds ", testDuration / MILLIS);
@@ -358,7 +404,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Whether all nodes find defined number of messages in log file
+	 * Whether all node find defined number of messages in log file
 	 *
 	 * @param msgList
 	 * 		A list of message to search for
@@ -380,6 +426,26 @@ public class Experiment implements ExperimentSummary {
 			}
 		}
 		return isEnoughMsgFound;
+	}
+
+	/**
+	 * Whether any node find at least one of the message
+	 *
+	 * @param msgList
+	 * 		A list of message to search for
+	 * @param fileName
+	 * 		File name to search for the message
+	 * @return return true if found at least one occurrence
+	 */
+	public boolean isAnyNodeFoundMessage(List<String> msgList, String fileName) {
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			if (node.countSpecifiedMsg(msgList, fileName) > 0) {
+				log.info(MARKER, "Node {} found at least one message {}", i, msgList);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -487,6 +553,21 @@ public class Experiment implements ExperimentSummary {
 	public boolean isFoundTwoPTDFinishMessage() {
 		return isAllNodesFoundEnoughMessage(PTD_LOG_SUCCESS_OR_FAIL_MESSAGES, 2, REMOTE_SWIRLDS_LOG);
 	}
+
+	/**
+	 * Whether state recover finished message found in the log file
+	 */
+	public boolean isFoundStateRecoverDoneMessage() {
+		return isAllNodesFoundEnoughMessage(Collections.singletonList(STATE_SAVED_MSG), 1, REMOTE_SWIRLDS_LOG);
+	}
+	/**
+	 * Whether any node found fall behind message
+	 */
+	public boolean isAnyNodeFoundFallBehindMessage() {
+		return isAnyNodeFoundMessage(Collections.singletonList(FALL_BEHIND_MSG), REMOTE_SWIRLDS_LOG);
+	}
+
+
 
 	public boolean isProcessFinished() {
 		ArrayList<Boolean> isProcDown = new ArrayList<>();
@@ -791,9 +872,9 @@ public class Experiment implements ExperimentSummary {
 		settingsFile.exportSettingsFile();
 		ArrayList<File> newUploads = new ArrayList<>();
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + SETTINGS_FILE));
-		for (SSHService currentNode : sshNodes) {
-			currentNode.scpToSpecificFiles(newUploads);
-		}
+		threadPoolService(
+				sshNodes.stream().<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads)).collect(
+						Collectors.toList()));
 	}
 
 	private void setIPsAndStakesInConfig() {
@@ -834,9 +915,9 @@ public class Experiment implements ExperimentSummary {
 
 		ArrayList<File> newUploads = new ArrayList<>();
 		newUploads.add(new File(WRITE_FILE_DIRECTORY + CONFIG_FILE));
-		for (SSHService currentNode : sshNodes) {
-			currentNode.scpToSpecificFiles(newUploads);
-		}
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads))
+				.collect(Collectors.toList()));
 	}
 
 	public void sendSlackMessage(SlackTestMsg msg, String channel) {
@@ -897,57 +978,69 @@ public class Experiment implements ExperimentSummary {
 
 		setIPsAndStakesInConfig();
 		setupSSHServices();
-		SSHService firstNode = null;
 		int nodeNumber = sshNodes.size();
-		for (int i = 0; i < nodeNumber; i++) {
-			SSHService currentNode = sshNodes.get(i);
+		ArrayList<File> addedFiles = buildAdditionalFileList();
 
-			ArrayList<File> addedFiles = buildAdditionalFileList();
-			//currentNode.buildSession();
+		//Step 1, send tar to node 0
+		final SSHService firstNode = sshNodes.get(0);
+		calculateNodeMemoryProfile(firstNode);
+		sendTarToNode(firstNode, addedFiles);
 
-			if (firstNode == null) {
-				firstNode = currentNode;
-				calculateNodeMemoryProfile(currentNode);
-				sendTarToNode(currentNode, addedFiles);
-			} else {
-				firstNode.rsyncTo(addedFiles, currentNode.getIpAddress(), new File(testConfig.getLog4j2File()));
-			}
+		//Step 2, node 0 use a rsync to send files to other nodes in parallel mode
+		//ATF server launch a single SSH session on node0, and node0 uses N-1 rsync sessions
+		// to send files to other N-1 nodes
 
-			// copy a saved state if set in config
-			SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
-			if (savedState != null) {
-				double thisSavedStateRoundNum = savedState.getRound();
-				if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
-					savedStateStartRoundNumber = thisSavedStateRoundNum;
-				}
+		// Get list of address of other N-1 nodes
+		List<String> ipAddresses = IntStream.range(1, sshNodes.size()).mapToObj(
+				i -> sshNodes.get(i).getIpAddress()).collect(Collectors.toList());
+		firstNode.rsyncTo(addedFiles, new File(testConfig.getLog4j2File()), ipAddresses);
+		log.info(MARKER, "upload to nodes has finished");
 
-				String ssPath = RegressionUtilities.getRemoteSavedStatePath(
-						savedState.getMainClass(),
-						i,
-						savedState.getSwirldName(),
-						savedState.getRound()
-				);
-				FileLocationType locationType = savedState.getLocationType();
-				switch (locationType) {
-					case AWS_S3:
-						log.info(MARKER, "Downloading saved state for S3 to node {}", i);
-						currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
-						// list files in destination directory for validation
-						currentNode.listDirFiles(ssPath);
-						break;
-					case LOCAL:
-						log.info(MARKER, "Uploading local saved state to node {}", i);
-						currentNode.scpFilesToRemoteDir(
-								RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
-								ssPath
+		//Step 3, copy saved state to nodes if necessary
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService currentNode = sshNodes.get(i);
+					// copy a saved state if set in config
+					SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
+					if (savedState != null) {
+						double thisSavedStateRoundNum = savedState.getRound();
+						if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
+							savedStateStartRoundNumber = thisSavedStateRoundNum;
+						}
+
+						String ssPath = RegressionUtilities.getRemoteSavedStatePath(
+								savedState.getMainClass(),
+								i,
+								savedState.getSwirldName(),
+								savedState.getRound()
 						);
-						break;
-				}
-				if (savedState.isRestoreDb()) {
-					currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
-				}
-			}
-		}
+						FileLocationType locationType = savedState.getLocationType();
+						switch (locationType) {
+							case AWS_S3:
+								log.info(MARKER, "Downloading saved state for S3 to node {}", i);
+								currentNode.copyS3ToInstance(savedState.getLocation(), ssPath);
+								// list files in destination directory for validation
+								currentNode.listDirFiles(ssPath);
+								break;
+							case LOCAL:
+								log.info(MARKER, "Uploading local saved state to node {}", i);
+								try {
+									currentNode.scpFilesToRemoteDir(
+											RegressionUtilities.getFilesInDir(savedState.getLocation(), true),
+											ssPath
+									);
+								} catch (IOException e) {
+									log.error(ERROR, "Fail to scp saved state from local ", e);
+								}
+								break;
+						}
+						if (savedState.isRestoreDb()) {
+							currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
+						}
+					}
+
+				}).collect(Collectors.toList()));
+
 		log.info(MARKER, "upload to nodes has finished");
 
 		log.info(MARKER, "Sleeping for {} seconds to allow PostGres to start", POSTGRES_WAIT_MILLIS / MILLIS);
@@ -972,7 +1065,7 @@ public class Experiment implements ExperimentSummary {
         }
 
 		//TODO maybe move the kill to the TestRun
-		stopAllSwirlds();
+		stopAllSwirlds(); //kill swirlds.jar java process
 
 		// call badgerize.sh that tars all the database logs
 
@@ -985,21 +1078,21 @@ public class Experiment implements ExperimentSummary {
 
 		/* make sure that more streaming client than nodes were not requested */
 		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
-		for (int i = 0; i < eventFileWriters; i++) {
-			SSHService node = sshNodes.get(i);
-			node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
-			log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
-		}
+		threadPoolService(IntStream.range(0, eventFileWriters)
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = sshNodes.get(i);
+					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
+					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
+				}).collect(Collectors.toList()));
 
-
-		for (int i = 0; i < sshNodes.size(); i++) {
-			SSHService node = sshNodes.get(i);
-			boolean success = false;
-			while (!success)
-				success = node.scpFrom(getExperimentResultsFolderForNode(i),
-						(ArrayList<String>) testConfig.getResultFiles());
-		}
-
+		threadPoolService(IntStream.range(0, sshNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = sshNodes.get(i);
+					boolean success = false;
+					while (!success)
+						success = node.scpFrom(getExperimentResultsFolderForNode(i),
+								(ArrayList<String>) testConfig.getResultFiles());
+				}).collect(Collectors.toList()));
 		log.info(MARKER, "Downloaded experiment data");
 
 		validateTest();
@@ -1007,7 +1100,9 @@ public class Experiment implements ExperimentSummary {
 		uploadFilesToSharepoint();
 
 		//resetNodes();
-		killJavaProcess();
+
+		killJavaProcess(); //kill any data collecting java process
+		closeThreadPool();
 	}
 
 	/**
@@ -1020,9 +1115,9 @@ public class Experiment implements ExperimentSummary {
 	private void calculateNodeMemoryProfile(SSHService currentNode) {
 		String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
 		nodeMemoryProfile = new NodeMemory(totalNodeMemory);
-    }
+	}
 
-    void scpSavedFolder() {
+	void scpSavedFolder() {
 		ArrayList<String> blobStateScpList = new ArrayList<>();
 		blobStateScpList.add(REMOTE_SAVED_FOLDER + "$");
 
@@ -1034,18 +1129,22 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	void resetNodes() {
-		for (final SSHService node : sshNodes) {
-			node.reset();
-			node.close();
-		}
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.reset();
+					node.close();
+				})
+				.collect(Collectors.toList()));
 		sshNodes.clear();
 	}
 
 	void killJavaProcess() {
-		for (final SSHService node : sshNodes) {
-			node.killJavaProcess();
-			node.close();
-		}
+		threadPoolService(sshNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.killJavaProcess();
+					node.close();
+				})
+				.collect(Collectors.toList()));
 	}
 
 	private void uploadFilesToSharepoint() {
@@ -1056,7 +1155,6 @@ public class Experiment implements ExperimentSummary {
 		}
 		SharePointManager spm = new SharePointManager();
 		spm.login();
-
 		try (Stream<Path> walkerPath = Files.walk(Paths.get(getExperimentFolder()))) {
 			final List<String> foundFiles = walkerPath.filter(Files::isRegularFile).map(x -> x.toString()).collect(
 					Collectors.toList());
@@ -1311,7 +1409,7 @@ public class Experiment implements ExperimentSummary {
 		SSHService node0 = sshNodes.get(0);
 		int node0StateNumber = node0.getNumberOfSignedStates();
 		log.info(MARKER, "Important Node 0 generated {} states", node0StateNumber);
-		for (int i = 1; i < sshNodes.size() - 1; i++) {
+		for (int i = 1; i < sshNodes.size(); i++) {
 			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
 			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
 			if (stateNumber != node0StateNumber) {
