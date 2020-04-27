@@ -36,6 +36,8 @@ public abstract class Validator {
 	List<String> warnMessages = new LinkedList<>();
 	List<String> errorMessages = new LinkedList<>();
 
+	private int lastStakedNode;
+
 	void addInfo(String msg) {
 		infoMessages.add(msg);
 	}
@@ -60,11 +62,11 @@ public abstract class Validator {
 		return errorMessages;
 	}
 
-	public boolean hasErrors(){
+	public boolean hasErrors() {
 		return errorMessages.size() > 0;
 	}
 
-	public boolean hasWarnings(){
+	public boolean hasWarnings() {
 		return warnMessages.size() > 0;
 	}
 
@@ -72,7 +74,7 @@ public abstract class Validator {
 		StringBuilder sb = new StringBuilder();
 		if (infoMessages.size() > 0) {
 			sb.append("<<INFO>>");
-			infoMessages.forEach((msg)->{
+			infoMessages.forEach((msg) -> {
 				sb.append('\n');
 				sb.append(msg);
 			});
@@ -80,7 +82,7 @@ public abstract class Validator {
 		if (warnMessages.size() > 0) {
 			sb.append('\n');
 			sb.append("<<WARNING>>");
-			warnMessages.forEach((msg)->{
+			warnMessages.forEach((msg) -> {
 				sb.append('\n');
 				sb.append(msg);
 			});
@@ -88,7 +90,7 @@ public abstract class Validator {
 		if (errorMessages.size() > 0) {
 			sb.append('\n');
 			sb.append("<<ERROR>>");
-			errorMessages.forEach((msg)->{
+			errorMessages.forEach((msg) -> {
 				sb.append('\n');
 				sb.append(msg);
 			});
@@ -101,4 +103,12 @@ public abstract class Validator {
 	public abstract void validate() throws IOException;
 
 	public abstract boolean isValid();
+
+	public int getLastStakedNode() {
+		return lastStakedNode;
+	}
+
+	public void setLastStakedNode(final int lastStakedNode) {
+		this.lastStakedNode = lastStakedNode;
+	}
 }

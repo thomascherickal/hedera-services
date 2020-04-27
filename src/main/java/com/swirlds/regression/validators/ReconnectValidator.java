@@ -104,7 +104,7 @@ public class ReconnectValidator extends NodeValidator {
 	@Override
 	public void validate() throws IOException {
 		int nodeNum = nodeData.size();
-		final int reconnectNodeId = nodeNum - 1;
+		final int reconnectNodeId = getLastStakedNode();
 
 		double minLastRoundSup = 0; //minimum last entry of roundSup among all node except the reconnected node
 		double maxLastRoundSup = 0; //maximum last entry of roundSup among all node except the reconnected node
