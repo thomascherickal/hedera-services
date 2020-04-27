@@ -270,7 +270,7 @@ public class Experiment implements ExperimentSummary {
 				CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 			}
 		}
-		/* run tasks sequentially on main thread if thread poll use is not requested */
+		/* run tasks sequentially on main thread if thread pool use is not requested */
 		else {
 			for (Runnable task : tasks) {
 				task.run();
