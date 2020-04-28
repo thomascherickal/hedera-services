@@ -255,29 +255,32 @@ public class Experiment implements ExperimentSummary {
 	 * 		A list of runnable task
 	 */
 	private void threadPoolService(List<Runnable> tasks) {
-		if (tasks.size() > 0) {
-			if (es == null) {
-				int poolSize = useThreadPool ? Runtime.getRuntime().availableProcessors() * 2 : 1;
-				es = Executors.newFixedThreadPool(poolSize);
+		if(useThreadPool) {
+			if (tasks.size() > 0) {
+				if (es == null) {
+					/* this allows the same threadpool to be used for all experiments instead of creating and destroying
+					 them each time */
+					es = ThreadPool.getESInstance();
+				}
+				//Wait all thread future done
+				CompletableFuture<?>[] futures = tasks.stream()
+						.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
+						.toArray(CompletableFuture[]::new);
+				CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 			}
-			//Wait all thread future done
-			CompletableFuture<?>[] futures = tasks.stream()
-					.map(task -> CompletableFuture.runAsync(task, es).orTimeout(3600, TimeUnit.SECONDS))
-					.toArray(CompletableFuture[]::new);
-			CompletableFuture.allOf(futures).orTimeout(3600, TimeUnit.SECONDS).join();
 		}
-	}
-
-	private void closeThreadPool() {
-		if (es != null) {
-			es.shutdown();
+		/* run tasks sequentially on main thread if thread pool use is not requested */
+		else {
+			for (Runnable task : tasks) {
+				task.run();
+			}
 		}
 	}
 
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:" + node.getIpAddress() + "swirlds.jar started.");
+			log.info(MARKER, "node:{} swirlds.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 
@@ -1104,7 +1107,6 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
-		closeThreadPool();
 	}
 
 	/**

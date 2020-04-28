@@ -91,6 +91,8 @@ public class RegressionMain {
 			/* run local experiments */
 			runExperiments(null);
 		}
+		// shutdown the ThreadPool if there was one created fo regression
+		ThreadPool.closeThreadPool();
 	}
 
 	private void RunCloudExperiment() {
