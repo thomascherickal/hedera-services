@@ -18,15 +18,14 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.logs.LogReader;
-import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.StdoutLogEntry;
 
 import java.io.IOException;
 import java.util.List;
 
 public class StdoutValidator extends NodeValidator {
-	boolean isValidated = false;
-	boolean isValid = true;
+	private boolean isValidated = false;
+	private boolean isValid = true;
 
 	public StdoutValidator(List<NodeData> nodeData) {
 		super(nodeData);
@@ -38,7 +37,10 @@ public class StdoutValidator extends NodeValidator {
 		for (int i = 0; i < nodeNum; i++) {
 			LogReader<StdoutLogEntry> stdoutReader = nodeData.get(i).getStdoutReader();
 			stdoutReader.readFully();
-			if (stdoutReader.getExceptionCount() > 0) {
+
+			final long exceptionCount = stdoutReader.getExceptionCount();
+
+			if (exceptionCount > 0) {
 				addError(String.format("Node %d had %d errors in stdout/stderr", i, stdoutReader.getExceptionCount()));
 				isValid = false;
 			}

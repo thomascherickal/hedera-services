@@ -170,34 +170,34 @@ public class ConfigBuilder {
 		privateIPList = privateIPs;
 	}
 
-	private void moveOldConfigToTempConfig(){
+	private void moveOldConfigToTempConfig() {
 		Path oldConfig = Paths.get("config.txt");
 		Path tempConfig = Paths.get("config.bak");
 		try {
 			Files.move(oldConfig, tempConfig, REPLACE_EXISTING);
-		} catch (IOException e){
+		} catch (IOException e) {
 			log.error(ERROR, "config could not be backed up", e);
 		}
 
 	}
 
-	private void moveTempConfigBackToOldConfig(){
+	private void moveTempConfigBackToOldConfig() {
 		Path oldConfig = Paths.get("config.txt");
 		Path tempConfig = Paths.get("config.bak");
 		try {
 			Files.move(tempConfig, oldConfig, REPLACE_EXISTING);
-		} catch (IOException e){
+		} catch (IOException e) {
 			log.error(ERROR, "config could not be moved back", e);
 		}
 
 	}
 
-	private void moveNewConfigToOldConfig(){
+	private void moveNewConfigToOldConfig() {
 		Path oldConfig = Paths.get("config.txt");
 		Path newConfig = outFile;
 		try {
 			Files.move(newConfig, oldConfig, REPLACE_EXISTING);
-		} catch (IOException e){
+		} catch (IOException e) {
 			log.error(ERROR, "new config could not be written to old config", e);
 		}
 	}

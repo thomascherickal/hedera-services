@@ -39,6 +39,7 @@ public class RegressionConfig {
 	private String jvmOptions = "";
 	private boolean useLifecycleModel = false;
 
+	private int numberOfZeroStakeNodes = 0;
 
 	/**
 	 * Gets the total number of nodes set in this config in all regions, or local nodes if its a local test
@@ -186,13 +187,14 @@ public class RegressionConfig {
 		this.jvmOptionParametersConfig = jvmOptionParametersConfig;
 	}
 
-	public boolean isUseThreadPool() {
-		return useThreadPool;
+	public int getNumberOfZeroStakeNodes() {
+		return numberOfZeroStakeNodes;
 	}
 
-	public void setUseThreadPool(boolean useThreadPool) {
-		this.useThreadPool = useThreadPool;
+	public void setNumberOfZeroStakeNodes(final int numberOfZeroStakeNodes) {
+		this.numberOfZeroStakeNodes = numberOfZeroStakeNodes;
 	}
+	
 	public boolean isUseLifecycleModel() {
 		return useLifecycleModel;
 	}
@@ -200,5 +202,12 @@ public class RegressionConfig {
 	public void setUseLifecycleModel(boolean useLifecycleModel) {
 		this.useLifecycleModel = useLifecycleModel;
 	}
+	
+	public boolean isUseThreadPool() {
+		return useThreadPool;
+	}
 
+	public void setUseThreadPool(boolean useThreadPool) {
+		this.useThreadPool = useThreadPool;
+	}
 }

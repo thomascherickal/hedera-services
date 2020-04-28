@@ -33,8 +33,8 @@ import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
-import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -71,7 +71,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -277,7 +276,7 @@ public class Experiment implements ExperimentSummary {
 			}
 		}
 	}
-	
+
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execWithProcessID(getJVMOptionsString());
@@ -291,7 +290,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void stopLastSwirlds() {
-		SSHService nodeToKill = sshNodes.get(sshNodes.size() - 1);
+		SSHService nodeToKill = sshNodes.get(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToKill.killNetwork();
 		} else {
@@ -300,7 +299,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void startLastSwirlds() {
-		SSHService nodeToReconnect = sshNodes.get(sshNodes.size() - 1);
+		SSHService nodeToReconnect = sshNodes.get(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToReconnect.reviveNetwork();
 		} else {
@@ -452,105 +451,107 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-     * Whether all nodes backed up the last round
-     *
-     * @param fileName
-     * 		File name to search for the saved folder containing rounds relative to
-     * @return return true if the time that the message appeared is equal or larger than messageAmount
-     */
-    public boolean isAllNodesBackedUpLastRound(String fileName) {
-        Long maxRoundSeen = -1L;
-        Boolean allCompleteMaxRound = true;
-        HashMap<Integer,HashMap<Long,Boolean>> nodeRounds = new HashMap<>();
-        HashMap<Integer,SSHService> nodesStillSaving = new HashMap<>();
+	 * Whether all nodes backed up the last round
+	 *
+	 * @param fileName
+	 * 		File name to search for the saved folder containing rounds relative to
+	 * @return return true if the time that the message appeared is equal or larger than messageAmount
+	 */
+	public boolean isAllNodesBackedUpLastRound(String fileName) {
+		Long maxRoundSeen = -1L;
+		Boolean allCompleteMaxRound = true;
+		HashMap<Integer, HashMap<Long, Boolean>> nodeRounds = new HashMap<>();
+		HashMap<Integer, SSHService> nodesStillSaving = new HashMap<>();
 
-        log.info(MARKER,"Checking if all nodes backed up last round");
+		log.info(MARKER, "Checking if all nodes backed up last round");
 
-        for (int i = 0; i < sshNodes.size(); i++) {
-            SSHService node = sshNodes.get(i);
-            HashMap<Long,Boolean> ssProgress = node.checkSavedStateProgress(fileName);
+		for (int i = 0; i < sshNodes.size(); i++) {
+			SSHService node = sshNodes.get(i);
+			HashMap<Long, Boolean> ssProgress = node.checkSavedStateProgress(fileName);
 
-            if (ssProgress == null) {
-                log.info(MARKER,"no saved nodes found for node {}", i);
-                continue;
-            }
+			if (ssProgress == null) {
+				log.info(MARKER, "no saved nodes found for node {}", i);
+				continue;
+			}
 
-            nodeRounds.put(i,ssProgress);
+			nodeRounds.put(i, ssProgress);
 
-            for(Map.Entry<Long,Boolean> entry : ssProgress.entrySet()) {
-                Long roundNum = entry.getKey();
-                Boolean roundComplete = entry.getValue();
+			for (Map.Entry<Long, Boolean> entry : ssProgress.entrySet()) {
+				Long roundNum = entry.getKey();
+				Boolean roundComplete = entry.getValue();
 
-                //reset tracking for max round seen
-                if (roundNum > maxRoundSeen) {
-                    maxRoundSeen = roundNum;
-                    allCompleteMaxRound = roundComplete;
+				//reset tracking for max round seen
+				if (roundNum > maxRoundSeen) {
+					maxRoundSeen = roundNum;
+					allCompleteMaxRound = roundComplete;
 
-                    nodesStillSaving = new HashMap<>();
-                }
+					nodesStillSaving = new HashMap<>();
+				}
 
-                if (roundNum == maxRoundSeen) {
-                    allCompleteMaxRound &= roundComplete;
-                    if (roundComplete == false) {
-                        nodesStillSaving.put(i,node);
-                    }
-                }
-            }
-        }
+				if (roundNum == maxRoundSeen) {
+					allCompleteMaxRound &= roundComplete;
+					if (roundComplete == false) {
+						nodesStillSaving.put(i, node);
+					}
+				}
+			}
+		}
 
-        //kill java process on nodes that have finished the last round
-        for (Map.Entry<Integer,HashMap<Long,Boolean>> entry : nodeRounds.entrySet()) {
-            Integer nodeIndex = entry.getKey();
-            SSHService node = sshNodes.get(nodeIndex);
-            HashMap<Long,Boolean> nodeRoundMap = entry.getValue();
+		//kill java process on nodes that have finished the last round
+		for (Map.Entry<Integer, HashMap<Long, Boolean>> entry : nodeRounds.entrySet()) {
+			Integer nodeIndex = entry.getKey();
+			SSHService node = sshNodes.get(nodeIndex);
+			HashMap<Long, Boolean> nodeRoundMap = entry.getValue();
 
-            if (nodeRoundMap.containsKey(maxRoundSeen)) {
-                //value looked up is the boolean value telling whether the round is completed
-                if (!nodeRoundMap.get(maxRoundSeen)) {
-					nodesStillSaving.put(nodeIndex,node);
-                }
-            } else {
-                nodesStillSaving.put(nodeIndex,node);
-            }
-        }
+			if (nodeRoundMap.containsKey(maxRoundSeen)) {
+				//value looked up is the boolean value telling whether the round is completed
+				if (!nodeRoundMap.get(maxRoundSeen)) {
+					nodesStillSaving.put(nodeIndex, node);
+				}
+			} else {
+				nodesStillSaving.put(nodeIndex, node);
+			}
+		}
 
-        if (allCompleteMaxRound == false) {
-            //retry all nodes that had not completed saving the final round
-            allCompleteMaxRound = true;
+		if (allCompleteMaxRound == false) {
+			//retry all nodes that had not completed saving the final round
+			allCompleteMaxRound = true;
 
-            try {
-                log.trace(MARKER, "sleeping for {} seconds ", testConfig::getSaveStateCheckWait);
-                Thread.sleep(testConfig.getSaveStateCheckWait());
-            } catch (InterruptedException e) {
-                log.error(ERROR, "could not sleep.", e);
-            }
+			try {
+				log.trace(MARKER, "sleeping for {} seconds ", testConfig::getSaveStateCheckWait);
+				Thread.sleep(testConfig.getSaveStateCheckWait());
+			} catch (InterruptedException e) {
+				log.error(ERROR, "could not sleep.", e);
+			}
 
-            for (Map.Entry<Integer,SSHService> entry : nodesStillSaving.entrySet()) {
-                Integer nodeNum = entry.getKey();
-                SSHService node = entry.getValue();
-                HashMap<Long,Boolean> nodeSaveStatus = node.checkSavedStateProgress(fileName);
+			for (Map.Entry<Integer, SSHService> entry : nodesStillSaving.entrySet()) {
+				Integer nodeNum = entry.getKey();
+				SSHService node = entry.getValue();
+				HashMap<Long, Boolean> nodeSaveStatus = node.checkSavedStateProgress(fileName);
 
-                if (nodeSaveStatus.containsKey(maxRoundSeen)) {
-                    if (!nodeSaveStatus.get(maxRoundSeen)) {
-                        log.error(ERROR,"node {} did not contain saved state and postgres backup for round {}", nodeNum, maxRoundSeen);
-                        allCompleteMaxRound = false;
-                    }
-                } else {
-                    allCompleteMaxRound = false;
-                }
-            }
-        }
+				if (nodeSaveStatus.containsKey(maxRoundSeen)) {
+					if (!nodeSaveStatus.get(maxRoundSeen)) {
+						log.error(ERROR, "node {} did not contain saved state and postgres backup for round {}",
+								nodeNum,
+								maxRoundSeen);
+						allCompleteMaxRound = false;
+					}
+				} else {
+					allCompleteMaxRound = false;
+				}
+			}
+		}
 
-        if (allCompleteMaxRound) {
-            log.info(MARKER,"All nodes finishes saving up to round " + maxRoundSeen);
-        } else {
-            log.error(ERROR,"Not all nodes finished saving for round " + maxRoundSeen);
-        }
+		if (allCompleteMaxRound) {
+			log.info(MARKER, "All nodes finishes saving up to round " + maxRoundSeen);
+		} else {
+			log.error(ERROR, "Not all nodes finished saving for round " + maxRoundSeen);
+		}
 
-        return allCompleteMaxRound;
-    }
+		return allCompleteMaxRound;
+	}
 
-    /**
+	/**
 	 * Whether test finished message can be found at least twice in the log file
 	 */
 	public boolean isFoundTwoPTDFinishMessage() {
@@ -563,13 +564,13 @@ public class Experiment implements ExperimentSummary {
 	public boolean isFoundStateRecoverDoneMessage() {
 		return isAllNodesFoundEnoughMessage(Collections.singletonList(STATE_SAVED_MSG), 1, REMOTE_SWIRLDS_LOG);
 	}
+
 	/**
 	 * Whether any node found fall behind message
 	 */
 	public boolean isAnyNodeFoundFallBehindMessage() {
 		return isAnyNodeFoundMessage(Collections.singletonList(FALL_BEHIND_MSG), REMOTE_SWIRLDS_LOG);
 	}
-
 
 
 	public boolean isProcessFinished() {
@@ -720,7 +721,7 @@ public class Experiment implements ExperimentSummary {
 		final ExpectedMapData mapData = new ExpectedMapData();
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
 			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
-			if (!new File(expectedMap).exists()){
+			if (!new File(expectedMap).exists()) {
 				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
@@ -813,6 +814,7 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
 				}
+				item.setLastStakedNode(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
 				item.validate();
 				slackMsg.addValidatorInfo(item);
 			} catch (Throwable e) {
@@ -840,6 +842,10 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void sendSettingFileToNodes() {
+		if (regConfig.getNumberOfZeroStakeNodes() > 0) {
+			settingsFile.addSetting("enableBetaMirror", "1");
+		}
+
 		if (regConfig.getEventFilesWriters() == 0) {
 			sendSettingToNonStreamingNodes();
 		} else {
@@ -880,12 +886,30 @@ public class Experiment implements ExperimentSummary {
 		configFile.setPublicIPList(cloud.getPublicIPList());
 		configFile.setPrivateIPList(cloud.getPrivateIPList());
 		if (USE_STAKES_IN_CONFIG) {
-			configFile.setStakes(
-					// each node gets the same stake
-					Collections.nCopies(
-							regConfig.getTotalNumberOfNodes(),
-							TOTAL_STAKES / regConfig.getTotalNumberOfNodes())
-			);
+			List<Long> stakes = new ArrayList<>();
+
+			if (regConfig.getNumberOfZeroStakeNodes() > 0) {
+				log.debug("Running with Zero Stake Nodes [ zeroStake = {}, totalNodes = {} ]",
+						regConfig::getNumberOfZeroStakeNodes, regConfig::getTotalNumberOfNodes);
+				final int totalStakedNodes =
+						(regConfig.getTotalNumberOfNodes() - regConfig.getNumberOfZeroStakeNodes());
+				final long stakePerActiveNode =
+						TOTAL_STAKES / totalStakedNodes;
+
+				stakes.addAll(Collections.nCopies(totalStakedNodes, stakePerActiveNode));
+
+				for (int i = 0; i < regConfig.getNumberOfZeroStakeNodes(); i++) {
+					stakes.add(0L);
+				}
+			} else {
+				log.debug("Running with Normal Nodes [ totalNodes = {} ]", regConfig::getTotalNumberOfNodes);
+				// each node gets the same stake
+				stakes.addAll(Collections.nCopies(
+						regConfig.getTotalNumberOfNodes(),
+						TOTAL_STAKES / regConfig.getTotalNumberOfNodes()));
+			}
+
+			configFile.setStakes(stakes);
 		}
 		configFile.exportConfigFile();
 	}
@@ -1037,13 +1061,13 @@ public class Experiment implements ExperimentSummary {
 
 		testRun.runTest(testConfig, this);
 
-        if ( testConfig.validators.contains(ValidatorType.BLOB_STATE) ) {
-        	if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
-        		log.error(ERROR,"Not all nodes successfully backed up last round");
+		if (testConfig.validators.contains(ValidatorType.BLOB_STATE)) {
+			if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
+				log.error(ERROR, "Not all nodes successfully backed up last round");
 			}
 
-            scpSavedFolder();
-        }
+			scpSavedFolder();
+		}
 
 		//TODO maybe move the kill to the TestRun
 		stopAllSwirlds(); //kill swirlds.jar java process
@@ -1521,11 +1545,13 @@ public class Experiment implements ExperimentSummary {
 				}
 				tries--;
 				node.printCurrentTime(i);
-				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i, iteration, TestRun.FREEZE_WAIT_MILLIS);
+				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i,
+						iteration, TestRun.FREEZE_WAIT_MILLIS);
 				sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
 			}
 			if (!frozen) {
-				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {} after {} retries", i, iteration, tries);
+				log.error(ERROR, "Node {} hasn't entered MAINTENANCE at iteration {} after {} retries", i, iteration,
+						tries);
 				return false;
 			}
 		}
