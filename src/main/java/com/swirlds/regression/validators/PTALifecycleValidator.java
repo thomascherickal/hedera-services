@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMISSION_FAILED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Delete;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
@@ -294,12 +295,12 @@ public class PTALifecycleValidator extends Validator {
 					ev2.getHash(), nodeNum, "getHash"));
 		}
 
-		if (!Objects.equals(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
+		if (!checkHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getLatestHandledStatus(),
 					ev2.getLatestHandledStatus(), nodeNum, "latestHandledStatus"));
 		}
 
-		if (!Objects.equals(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
+		if (!checkHandledStatus(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
 					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
 		}
@@ -349,5 +350,51 @@ public class PTALifecycleValidator extends Validator {
 				addError(String.format("Something went wrong and entity %s on Node %d has Error." +
 						"Please look at the log for more details", key, nodeNum));
 		}
+	}
+
+	/**
+	 * check if two handled LifecycleStatus match.
+	 * two handled LifecycleStatus match in one of the following cases:
+	 * 		(1) two LifecycleStatus equal;
+	 * 		(2) two LifecycleStatus both have `Rebuild` TransactionType
+	 *		(3)	one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
+	 * 		and the other is (TransactionType except Delete and Expire, HANDLED);
+	 * @param status1
+	 * @param status2
+	 * @return return true if check passes; return false otherwise
+	 */
+	boolean checkHandledStatus(final LifecycleStatus status1, final LifecycleStatus status2) {
+		if (Objects.equals(status1, status2)) {
+			return true;
+		}
+
+		boolean rebuilt1 = isRebuilt(status1);
+		boolean rebuilt2 = isRebuilt(status2);
+
+		if (rebuilt1 && rebuilt2) {
+			return true;
+		}
+		// if they are not equal, and none of them is rebuilt, return false
+		if (!rebuilt1 && !rebuilt2) {
+			return false;
+		}
+
+		if (rebuilt1) {
+			return status2.getTransactionType() != Delete && status2.getTransactionType() != Expire
+					&& status2.getTransactionState() == HANDLED;
+		}
+
+		// here rebuilt2 should be true
+		return status1.getTransactionType() != Delete && status1.getTransactionType() != Expire
+				&& status1.getTransactionState() == HANDLED;
+	}
+
+	/**
+	 * if TransactionType of LifecycleStatus is Rebuild
+	 * @param lifecycleStatus
+	 * @return
+	 */
+	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
+		return lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
 	}
 }
