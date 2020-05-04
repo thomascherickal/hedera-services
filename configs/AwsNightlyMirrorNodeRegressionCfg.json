@@ -1,5 +1,5 @@
 {
-  "name": "regression-suite",
+  "name": "MIRROR-node-regression-suite",
   "result": {
 	"uri": "results"
   },
@@ -16,39 +16,41 @@
 		  "numberOfNodes": 6,
 		"instanceList": [
 			"i-0dc54fb85cec6367d","i-094c2bc2be7fe02b5","i-0977001c8b1186caa","i-040e9d8465982b85a"
+			 ,"i-0c48221f8d9f79a7b","i-0a98fcc5d919eb428"
 		]
 	  }
 	]
   },
   "numberOfZeroStakeNodes": 2,
-  "eventFilesWriters": 4,
+  "eventFilesWriters": 6,
   "log": {
 	"uri":"testing/logs/"
   },
   "experiments": [
 //	"configs/testSigningDemoCfg.json",
 //	"configs/testSigningDemo4KCfg.json",
-	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testStateRecoverBlob.json" ,
-	"configs/testStateRecoverFCQ.json" ,
-//	"configs/testRestartCfg.json",
+//	"configs/testFcmMultipleOperationsCfg.json"
+//  ,
+//	"configs/testStateRecoverBlob.json"
+//  ,
+//	"configs/testStateRecoverFCQ.json" ,
+//  "configs/testRestartCfg.json",
 //	"configs/testRestartBlobCfg.json",
 //	"configs/testFcmFreezeCfg.json",
 //	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcmMultisizeBlobCfg.json",
-//	"configs/testFcmFreezeFCQCfg.json"
-  // ,
-	"configs/testFCM1KFCQCfg.json",
-	"configs/testReconnectFCMMultiReconnectCfg.json",
-	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
-  ,
-	"configs/testFcmCfg.json",
-	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json",
-	"configs/testMigrationAppCfg2K.json",
-	"configs/testFcmFCQ1KSavedStateCfg.json"
+//	"configs/testFcmMultisizeBlobCfg.json",
+//	"configs/testFcmFreezeFCQCfg.json",
+//	"configs/testFCM1KFCQCfg.json"//,
+//	"configs/testReconnectFCMMultiReconnectCfg.json",
+//	"configs/testReconnectFCQMultiReconnectCfg.json",
+//	"configs/testReconnectBlobCfg.json",
+//	"configs/testFcm1kThrottlingCfg.json",
+	//	"configs/testFcmCfg.json",
+//	"configs/testFcmSmallBlobCfg.json",
+//	"configs/testFcmLargeBlobCfg.json",
+	//	"configs/testMigrationAppCfg2K.json",
+//		"configs/testFcmFCQ1KSavedStateCfg.json"
+ "configs/testFcm1K6NodeSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -60,15 +62,15 @@
   "slack": {
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "regression-test",
-	"summaryChannel": "platform-aws-summary",
+	"channel": "UA5K2LZ1D",
+	"summaryChannel": "UA5K2LZ1D",
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
 	"notifyUserIds": [
-	  "UA4T7UJQJ",
+	//  "UA4T7UJQJ",
 	  "UA5K2LZ1D"
 	]
   },
-  "uploadToSharePoint": true
+  "uploadToSharePoint": false
 }

@@ -70,13 +70,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -290,7 +284,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void stopLastSwirlds() {
-		SSHService nodeToKill = sshNodes.get(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
+		SSHService nodeToKill = sshNodes.get(getLastStakedNode());
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToKill.killNetwork();
 		} else {
@@ -299,7 +293,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void startLastSwirlds() {
-		SSHService nodeToReconnect = sshNodes.get(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
+		SSHService nodeToReconnect = sshNodes.get(getLastStakedNode());
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToReconnect.reviveNetwork();
 		} else {
@@ -814,7 +808,7 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
 				}
-				item.setLastStakedNode(sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1);
+				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
 			} catch (Throwable e) {
@@ -832,6 +826,10 @@ public class Experiment implements ExperimentSummary {
 		warnings = warnings || slackMsg.hasWarnings();
 		errors = errors || slackMsg.hasErrors();
 		exceptions = exceptions || slackMsg.hasExceptions();
+	}
+
+	private int getLastStakedNode() {
+		return sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1;
 	}
 
 	private void createStatsFile(String resultsFolder) {
@@ -969,6 +967,22 @@ public class Experiment implements ExperimentSummary {
 		}
 	}
 
+	public SavedState getSavedStateForNode(int nodeIndex, int totalNodes) {
+		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()), testConfig.getStartSavedStates())
+				.filter(Objects::nonNull)
+				.flatMap(Collection::stream)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		for (SavedState ss : all) {
+			if (ss.getNodeIdentifier().isNodeInGroup(nodeIndex, totalNodes, getLastStakedNode())) {
+				return ss;
+			}
+		}
+
+		return null;
+	}
+
 	void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
 		//TODO: unit test for null cld
 		if (cld == null) {
@@ -1004,9 +1018,10 @@ public class Experiment implements ExperimentSummary {
 		//Step 3, copy saved state to nodes if necessary
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
+					log.info(MARKER,"COPY SAVED STATE THREAD FOR NODE: {}",i);
 					SSHService currentNode = sshNodes.get(i);
 					// copy a saved state if set in config
-					SavedState savedState = testConfig.getSavedStateForNode(i, nodeNumber);
+					SavedState savedState = getSavedStateForNode(i, nodeNumber);
 					if (savedState != null) {
 						double thisSavedStateRoundNum = savedState.getRound();
 						if (thisSavedStateRoundNum > savedStateStartRoundNumber) {
