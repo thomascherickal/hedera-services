@@ -301,8 +301,12 @@ public class PTALifecycleValidator extends Validator {
 		}
 
 		if (!checkHandledStatus(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
-			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
-					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
+			if (!checkHistoryStatusOnRebuild(ev1.getHistoryHandledStatus(),
+					ev1.getLatestHandledStatus(), ev2.getHistoryHandledStatus(),
+					ev2.getLatestHandledStatus())) {
+				addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
+						ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
+			}
 		}
 	}
 
@@ -355,10 +359,11 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * check if two handled LifecycleStatus match.
 	 * two handled LifecycleStatus match in one of the following cases:
-	 * 		(1) two LifecycleStatus equal;
-	 * 		(2) two LifecycleStatus both have `Rebuild` TransactionType
-	 *		(3)	one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
-	 * 		and the other is (TransactionType except Delete and Expire, HANDLED);
+	 * (1) two LifecycleStatus equal;
+	 * (2) two LifecycleStatus both have `Rebuild` TransactionType
+	 * (3)	one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
+	 * and the other is (TransactionType except Delete and Expire, HANDLED);
+	 *
 	 * @param status1
 	 * @param status2
 	 * @return return true if check passes; return false otherwise
@@ -391,11 +396,40 @@ public class PTALifecycleValidator extends Validator {
 
 	/**
 	 * if TransactionType of LifecycleStatus is Rebuild
+	 *
 	 * @param lifecycleStatus
 	 * @return
 	 */
 	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
-		return lifecycleStatus.getTransactionType() != null &&
+		return lifecycleStatus != null && lifecycleStatus.getTransactionType() != null &&
 				lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
+	}
+
+	/**
+	 * check if TransactionType of LifecycleStatus is Rebuild and historyHandledStatus is null.
+	 * During reconnect and restart historyHandledStatus can be null
+	 *
+	 * @param historyStatus1
+	 * 		HistoryHandledStatus of first expectedValue to be compared
+	 * @param handledStatus1
+	 * 		LatestHandledStatus of first expectedValue to be compared
+	 * @param historyStatus2
+	 * 		HistoryHandledStatus of second expectedValue to be compared
+	 * @param handledStatus2
+	 * 		LatestHandledStatus of second expectedValue to be compared
+	 * @return
+	 */
+	boolean checkHistoryStatusOnRebuild(final LifecycleStatus historyStatus1,
+			final LifecycleStatus handledStatus1, final LifecycleStatus historyStatus2,
+			final LifecycleStatus handledStatus2) {
+
+		boolean rebuilt1 = isRebuilt(handledStatus1) && historyStatus1 == null;
+		boolean rebuilt2 = isRebuilt(handledStatus2) && historyStatus2 == null;
+
+		// if they are not equal, and none of them is rebuilt, return false
+		if (!rebuilt1 && !rebuilt2) {
+			return false;
+		}
+		return true;
 	}
 }

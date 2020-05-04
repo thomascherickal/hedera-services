@@ -37,16 +37,19 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.swirlds.fcmap.test.lifecycle.EntityType.Blob;
+import static com.swirlds.fcmap.test.lifecycle.EntityType.Crypto;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLE_ENTITY_TYPE_MISMATCH;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLE_FAILED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLE_REJECTED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.INITIALIZED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.INVALID_SIG;
+import static com.swirlds.fcmap.test.lifecycle.TransactionState.RECONNECT_ORIGIN;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMISSION_FAILED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMITTED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Create;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Delete;
+import static com.swirlds.fcmap.test.lifecycle.TransactionType.Rebuild;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Transfer;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Update;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -116,7 +119,7 @@ public class PTALifeCycleValidatorTest {
 
 		assertEquals("Entity: MapKey[0,1,2] has field entityType mismatched. node0: Blob; node1: Crypto",
 				PTALifecycleValidator.buildFieldMissMatchMsg(key, Blob,
-						EntityType.Crypto, 1, "entityType"));
+						Crypto, 1, "entityType"));
 		byte[] content = generateRandomContent();
 		final Hash hash = new Hash(content);
 		assertEquals("Entity: MapKey[0,1,2] has field Hash mismatched. node0: null; node1: " + hash,
@@ -235,7 +238,7 @@ public class PTALifeCycleValidatorTest {
 				buildLifeCycle(HANDLED, Create),
 				null);
 
-		ExpectedValue ev2 = new ExpectedValue(EntityType.Crypto,
+		ExpectedValue ev2 = new ExpectedValue(Crypto,
 				new Hash(generateRandomContent()),
 				true,
 				buildLifeCycle(SUBMITTED, Update),
@@ -265,6 +268,35 @@ public class PTALifeCycleValidatorTest {
 		for (String error : errors) {
 			System.out.println(error);
 		}
+	}
+
+	@Test
+	public void compareValuesRebuildTest() {
+		Hash hash = new Hash(generateRandomContent());
+		ExpectedValue ev1 = new ExpectedValue(Crypto,
+				hash,
+				false,
+				null,
+				buildLifeCycle(HANDLED, Create),
+				buildLifeCycle(HANDLED, Update));
+
+		ExpectedValue ev2 = new ExpectedValue(Crypto,
+				hash,
+				false,
+				null,
+				buildLifeCycle(RECONNECT_ORIGIN, Rebuild),
+				null);
+
+		MapKey key = new MapKey(0, 0, 0);
+
+		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		validator.compareValues(key, ev1, ev2, 4);
+
+		List<String> errors = validator.getErrorMessages();
+		for (String error : errors) {
+			System.out.println(error);
+		}
+		assertEquals(0, errors.size());
 	}
 
 	@Test
