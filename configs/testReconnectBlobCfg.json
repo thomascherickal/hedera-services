@@ -28,7 +28,7 @@
     }
   ],
   "reconnectConfig": {
-    "reconnectTiming": 180,
+    "reconnectTiming": 120,
     "killNetworkReconnect": true
   },
   "experimentConfig": {
