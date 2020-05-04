@@ -395,6 +395,7 @@ public class PTALifecycleValidator extends Validator {
 	 * @return
 	 */
 	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
-		return lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
+		return lifecycleStatus.getTransactionType() != null &&
+				lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
 	}
 }
