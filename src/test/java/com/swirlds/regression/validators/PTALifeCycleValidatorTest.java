@@ -364,6 +364,35 @@ public class PTALifeCycleValidatorTest {
 		return content;
 	}
 
+	@Test
+	public void compareValuesHistoryRebuildTest() {
+		Hash hash = new Hash(generateRandomContent());
+		ExpectedValue ev1 = new ExpectedValue(Crypto,
+				hash,
+				false,
+				null,
+				buildLifeCycle(HANDLED, Create),
+				buildLifeCycle(HANDLED, Update));
+
+		ExpectedValue ev2 = new ExpectedValue(Crypto,
+				hash,
+				false,
+				null,
+				buildLifeCycle(HANDLED, Create),
+				buildLifeCycle(RECONNECT_ORIGIN, Rebuild));
+
+		MapKey key = new MapKey(0, 0, 0);
+
+		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		validator.compareValues(key, ev1, ev2, 4);
+
+		List<String> errors = validator.getErrorMessages();
+		for (String error : errors) {
+			System.out.println(error);
+		}
+		assertEquals(0, errors.size());
+	}
+
 	private Map<Integer, Map<MapKey, ExpectedValue>> setUpMap() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = new HashMap<>();
 		Map<MapKey, ExpectedValue> map0 = new ConcurrentHashMap<>();
