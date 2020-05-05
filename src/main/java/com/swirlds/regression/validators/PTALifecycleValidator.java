@@ -295,12 +295,13 @@ public class PTALifecycleValidator extends Validator {
 					ev2.getHash(), nodeNum, "getHash"));
 		}
 
-		if (!checkHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
+		if (!checkLatestHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getLatestHandledStatus(),
 					ev2.getLatestHandledStatus(), nodeNum, "latestHandledStatus"));
 		}
 
-		if (!checkHandledStatus(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
+		if (!checkHistoryHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus(),
+				ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
 					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
 		}
@@ -353,19 +354,24 @@ public class PTALifecycleValidator extends Validator {
 	}
 
 	/**
-	 * check if two handled LifecycleStatus match.
+	 * check if two latest handled LifecycleStatus match.
 	 * two handled LifecycleStatus match in one of the following cases:
-	 * 		(1) two LifecycleStatus equal;
-	 * 		(2) two LifecycleStatus both have `Rebuild` TransactionType
-	 *		(3)	one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
-	 * 		and the other is (TransactionType except Delete and Expire, HANDLED);
+	 * (1) two LifecycleStatus equal;
+	 * (2) two LifecycleStatus both have `Rebuild` TransactionType
+	 * (3) one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
+	 * and the other is (TransactionType except Delete and Expire, HANDLED);
+	 *
 	 * @param status1
 	 * @param status2
 	 * @return return true if check passes; return false otherwise
 	 */
-	boolean checkHandledStatus(final LifecycleStatus status1, final LifecycleStatus status2) {
+	boolean checkLatestHandledStatus(final LifecycleStatus status1, final LifecycleStatus status2) {
 		if (Objects.equals(status1, status2)) {
 			return true;
+		}
+
+		if (status1 == null || status2 == null) {
+			return false;
 		}
 
 		boolean rebuilt1 = isRebuilt(status1);
@@ -380,21 +386,64 @@ public class PTALifecycleValidator extends Validator {
 		}
 
 		if (rebuilt1) {
-			return status2.getTransactionType() != Delete && status2.getTransactionType() != Expire
-					&& status2.getTransactionState() == HANDLED;
+			return handledNotRemoved(status2);
 		}
 
 		// here rebuilt2 should be true
-		return status1.getTransactionType() != Delete && status1.getTransactionType() != Expire
-				&& status1.getTransactionState() == HANDLED;
+		return handledNotRemoved(status1);
+	}
+
+	/**
+	 * Given two LatestHandledStatus match;
+	 * check if two HistoryHandledStatus matches;
+	 *
+	 * @param latest1
+	 * @param latest2
+	 * @param history1
+	 * @param history2
+	 * @return
+	 */
+	boolean checkHistoryHandledStatus(final LifecycleStatus latest1, final LifecycleStatus latest2,
+			final LifecycleStatus history1, final LifecycleStatus history2) {
+		if (Objects.equals(history1, history2)) {
+			return true;
+		}
+
+		// if an entity is rebuilt during reconnect/restart, its history could be null
+		// of if an entity's history is rebuilt;
+		// when another history is handledNotRemoved, we consider the two match
+		if (history1 == null && isRebuilt(latest1) || isRebuilt(history1)) {
+			return handledNotRemoved(history2);
+		}
+
+		if (history2 == null && isRebuilt(latest2) || isRebuilt(history2)) {
+			return handledNotRemoved(history1);
+		}
+
+		return false;
 	}
 
 	/**
 	 * if TransactionType of LifecycleStatus is Rebuild
+	 *
 	 * @param lifecycleStatus
 	 * @return
 	 */
 	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
-		return lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
+		return lifecycleStatus != null &&
+				lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
+	}
+
+	/**
+	 * if the LifecycleStatus is HANDLED and the entity is not removed,
+	 *
+	 * @param lifecycleStatus
+	 * @return
+	 */
+	boolean handledNotRemoved(final LifecycleStatus lifecycleStatus) {
+		return lifecycleStatus != null &&
+				lifecycleStatus.getTransactionType() != Delete &&
+				lifecycleStatus.getTransactionType() != Expire
+				&& lifecycleStatus.getTransactionState() == HANDLED;
 	}
 }
