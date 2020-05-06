@@ -54,6 +54,11 @@ public class TestConfig implements FileRequirement {
 	private FreezeConfig freezeConfig = null;
 	private RecoverConfig recoverConfig = null;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
+	/**
+	 * Configuration to enable PTALifecycleValidator at the end of the test to validate ExpectedMap.
+	 * For validation to happen, SAVE_EXPECTED_MAP transaction should be sent to save expectedMap
+	 * on the nodes. Else it causes error.
+	 */
 	private boolean useLifecycleModel = false;
 
 	public RunType getRunType() {

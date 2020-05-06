@@ -426,8 +426,8 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * if TransactionType of LifecycleStatus is Rebuild
 	 *
-	 * @param lifecycleStatus
-	 * @return
+	 * @param lifecycleStatus LatestHandledStatus of the entity
+	 * @return true if the transactionType is Rebuild
 	 */
 	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
 		return lifecycleStatus != null && lifecycleStatus.getTransactionType() != null &&
@@ -437,8 +437,8 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * if the LifecycleStatus is HANDLED and the entity is not removed,
 	 *
-	 * @param lifecycleStatus
-	 * @return
+	 * @param lifecycleStatus LatestHandledStatus of the entity
+	 * @return true if the entity is not Deleted or expired
 	 */
 	boolean handledNotRemoved(final LifecycleStatus lifecycleStatus) {
 		return lifecycleStatus != null &&
