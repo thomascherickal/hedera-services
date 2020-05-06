@@ -54,6 +54,7 @@ public class TestConfig implements FileRequirement {
 	private FreezeConfig freezeConfig = null;
 	private RecoverConfig recoverConfig = null;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
+	private boolean useLifecycleModel = false;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -205,6 +206,14 @@ public class TestConfig implements FileRequirement {
 
 	public void setExperimentConfig(ExperimentConfig experimentConfig) {
 		this.experimentConfig = experimentConfig;
+	}
+
+	public boolean isUseLifecycleModel() {
+		return useLifecycleModel;
+	}
+
+	public void setUseLifecycleModel(boolean useLifecycleModel) {
+		this.useLifecycleModel = useLifecycleModel;
 	}
 
 	@Override

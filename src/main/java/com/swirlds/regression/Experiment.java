@@ -803,7 +803,7 @@ public class Experiment implements ExperimentSummary {
 			requiredValidator.add(ssValidator);
 		}
 
-		if (regConfig.isUseLifecycleModel()) {
+		if (testConfig.isUseLifecycleModel()) {
 			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
 					(loadExpectedMapData(testConfig.getName()));
 			requiredValidator.add(lifecycleValidator);
