@@ -803,7 +803,10 @@ public class Experiment implements ExperimentSummary {
 			requiredValidator.add(ssValidator);
 		}
 
-		if (regConfig.isUseLifecycleModel()) {
+		// Enable PTALifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
+		//SAVE_EXPECTED_MAP transaction by node0. If the expectedMaps are not saved on nodes,
+		// this validation fails.
+		if (testConfig.isUseLifecycleModel()) {
 			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
 					(loadExpectedMapData(testConfig.getName()));
 			requiredValidator.add(lifecycleValidator);
