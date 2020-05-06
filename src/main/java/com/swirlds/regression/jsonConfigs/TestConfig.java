@@ -59,7 +59,7 @@ public class TestConfig implements FileRequirement {
 	 * For validation to happen, SAVE_EXPECTED_MAP transaction should be sent to save expectedMap
 	 * on the nodes. Else it causes error.
 	 */
-	private boolean useLifecycleModel = false;
+	private boolean useLifecycleModel = true;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
