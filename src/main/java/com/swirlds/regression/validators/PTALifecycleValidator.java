@@ -361,8 +361,8 @@ public class PTALifecycleValidator extends Validator {
 	 * (3) one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
 	 * and the other is (TransactionType except Delete and Expire, HANDLED);
 	 *
-	 * @param status1
-	 * @param status2
+	 * @param status1 LatestHandledStatus of first entity in comparison
+	 * @param status2 LatestHandledStatus of second entity in comparison
 	 * @return return true if check passes; return false otherwise
 	 */
 	boolean checkLatestHandledStatus(final LifecycleStatus status1, final LifecycleStatus status2) {
@@ -397,11 +397,11 @@ public class PTALifecycleValidator extends Validator {
 	 * Given two LatestHandledStatus match;
 	 * check if two HistoryHandledStatus matches;
 	 *
-	 * @param latest1
-	 * @param latest2
-	 * @param history1
-	 * @param history2
-	 * @return
+	 * @param latest1 LatestHandledStatus of first entity in comparison
+	 * @param latest2 LatestHandledStatus of second entity in comparison
+	 * @param history1 HistoryHandledStatus of first entity in comparison
+	 * @param history2 HistoryHandledStatus of second entity in comparison
+	 * @return true if check pass else returns false
 	 */
 	boolean checkHistoryHandledStatus(final LifecycleStatus latest1, final LifecycleStatus latest2,
 			final LifecycleStatus history1, final LifecycleStatus history2) {
