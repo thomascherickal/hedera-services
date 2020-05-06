@@ -150,13 +150,19 @@ public class PTALifeCycleValidatorTest {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
 		Map<MapKey, ExpectedValue> map0 = expectedMaps.get(0);
 		Map<MapKey, ExpectedValue> map2 = expectedMaps.get(2);
+
 		MapKey key = new MapKey(0, 2, 3);
 		MapKey key2 = new MapKey(0, 1, 3);
+		MapKey key3 = new MapKey(0, 1, 5);
+		map0.put(key3, new ExpectedValue());
+		map2.put(key3, new ExpectedValue());
 
 		setValueStatus(map0, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
 		setValueStatus(map2, key, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Delete));
 		setValueStatus(map0, key2, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
 		setValueStatus(map2, key2, null, buildLifeCycle(HANDLE_REJECTED, Create), buildLifeCycle(HANDLED, Create));
+		setValueStatus(map0, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
+		setValueStatus(map2, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
 
 		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
 
@@ -176,6 +182,19 @@ public class PTALifeCycleValidatorTest {
 		assertEquals("ExpectedValue of Key MapKey[0,2,3] on node 2 has the latestHandledStatus " +
 				"TransactionState as HANDLE_REJECTED. But, the HistoryHandledStatus is not Deleted/Expired. " +
 				"It is Create", errors.get(1));
+
+		validator.checkHandleRejectedStatus(key, map0.get(key3),
+				map2.get(key3), 2);
+		List<String> errors3 = validator.getErrorMessages();
+		assertEquals(4, errors3.size());
+
+		assertEquals("LatestHandledStatus of key MapKey[0,2,3] on node 0 is HANDLE_REJECTED. But, the " +
+				"historyHandledStatus is null. An operation Update is performed on non existing entity when " +
+				"performOnNonExistingEntities is false", errors.get(2));
+		assertEquals("LatestHandledStatus of key MapKey[0,2,3] on node 2 is HANDLE_REJECTED. But, the " +
+				"historyHandledStatus is null. An operation Update is performed on non existing entity when " +
+				"performOnNonExistingEntities is false", errors.get(3));
+
 		for (String error : errors) {
 			System.out.println(error);
 		}
@@ -217,7 +236,8 @@ public class PTALifeCycleValidatorTest {
 		}
 
 		assertEquals("Operation Create on Entity MapKey[0,2,3] in Node 0 failed as entity is " +
-				"Deleted and PerformOnDeleted is false", errors.get(0));
+				"Deleted and PerformOnDeleted is false or entity doesn't exist and " +
+				"performOnNonExistingEntities is false", errors.get(0));
 		assertEquals("Signature is not valid for Entity MapKey[0,2,3] while performing operation Create on Node 2",
 				errors.get(1));
 		assertEquals("Operation Create failed as it is performed on wrong entity type Blob", errors.get(2));
