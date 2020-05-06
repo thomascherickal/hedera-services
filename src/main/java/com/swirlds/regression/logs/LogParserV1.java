@@ -89,10 +89,11 @@ public class LogParserV1 implements PlatformLogParser {
 	private static boolean isException(LogMarkerInfo marker, String s) {
 		s = s.toLowerCase();
 		// In SNAPSHOT_MANAGER log, it would contain "error=false" when it succeeds, we should not consider it to be an exception
+		// In the Lifecycle Model, expectedValue has isErrored field that should not be parsed as error
 		return (marker != null &&
 				(marker.getType() == LogMarkerType.EXCEPTION ||
 						marker.getType() == LogMarkerType.ERROR))
 				|| s.contains("exception")
-				|| (s.contains("error") && !s.contains("error=false"));
+				|| (s.contains("error") && !s.contains("error=false") && !s.toLowerCase().contains("iserrored"));
 	}
 }
