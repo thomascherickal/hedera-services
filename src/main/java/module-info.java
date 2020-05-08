@@ -4,8 +4,7 @@ module com.swirlds.regression {
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
 
-	requires log4j.core;
-	requires log4j.api;
+	requires org.apache.logging.log4j;
 
 	requires java.scripting;
 	requires java.sql;
