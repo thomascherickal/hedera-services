@@ -14,10 +14,10 @@
     "parameterList": ["FCMFCQ1KSavedState.json"]
   },
   "startSavedState": {
-    "location": "s3://swirlds-regression/saved-states/PlatformTestingApp/FCMFCQ1k-Apr-30-2020/2967/",
+    "location": "s3://swirlds-regression/saved-states/PlatformTestingApp/FCMFCQ1K-May-5-2020/1073/",
     "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
     "swirldName": "123",
-    "round": 2967,
+    "round": 1073,
     "restoreDb": true,
     "nodeIdentifier": "ALL_BUT_LAST"
   },
