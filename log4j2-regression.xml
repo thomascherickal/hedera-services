@@ -46,8 +46,6 @@
     <MarkerFilter marker="FCM_COPY_FROM"          onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_TO"            onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_DEMO"               onMatch="DENY"     onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_COPY_FROM_DIFF"     onMatch="DENY"     onMismatch="NEUTRAL"/>
-    <MarkerFilter marker="FCM_COPY_TO_DIFF"       onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FC_SERIALIZATION"       onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="MIGRATION"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="MERKLE_FORCE_FLUSH"     onMatch="DENY"     onMismatch="NEUTRAL"/>
@@ -64,6 +62,7 @@
     <MarkerFilter marker="RECONNECT"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="DEMO_TRANSACTION_INFO"  onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>

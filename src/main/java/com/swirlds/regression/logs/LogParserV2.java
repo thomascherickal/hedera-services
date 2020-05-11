@@ -82,10 +82,11 @@ public class LogParserV2 implements PlatformLogParser {
 
 	private static boolean isException(LogMarkerInfo marker, String s) {
 		s = s.toLowerCase();
+		// In the Lifecycle Model, expectedValue has isErrored field that should not be parsed as error
 		return (marker != null &&
 				(marker.getType() == LogMarkerType.EXCEPTION ||
 						marker.getType() == LogMarkerType.ERROR))
 				|| s.contains("exception")
-				|| (s.contains("error") && !s.contains("error=false"));
+				|| (s.contains("error") && !s.contains("error=false") && !s.toLowerCase().contains("iserrored"));
 	}
 }

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.swirlds.fcmap.test.lifecycle.TransactionState.HANDLED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionState.SUBMISSION_FAILED;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Delete;
 import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
@@ -46,6 +47,9 @@ public class PTALifecycleValidator extends Validator {
 	public static final String HANDLE_REJECTED_ERROR = "ExpectedValue of Key %s on node %d has the " +
 			"latestHandledStatus TransactionState as HANDLE_REJECTED. But, the HistoryHandledStatus " +
 			"is not Deleted/Expired. It is %s";
+	public static final String PERFORM_ON_NON_EXISTING_ERROR = "LatestHandledStatus of key %s on " +
+			"node %d is HANDLE_REJECTED. But, the historyHandledStatus is null. An operation %s is " +
+			"performed on non existing entity when performOnNonExistingEntities is false";
 	public static final String MISSING_KEYS_ERROR = "KeySet of the expectedMap of node %d doesn't match with " +
 			"expectedMap of node %d. " +
 			"Missing keys in node %d : %s, MissingKeys in node 0 : %s";
@@ -171,23 +175,31 @@ public class PTALifecycleValidator extends Validator {
 		}
 
 		if ((baseLifecycle.getTransactionState().equals(TransactionState.HANDLE_REJECTED)))
-			checkHistory(key, baseHistory.getTransactionType(), 0);
+			checkHistory(key, baseLifecycle.getTransactionType(), baseHistory, 0);
 
 		if ((compareLifecycle.getTransactionState().equals(TransactionState.HANDLE_REJECTED)))
-			checkHistory(key, compareHistory.getTransactionType(), nodeNum);
+			checkHistory(key, compareLifecycle.getTransactionType(), compareHistory, nodeNum);
 	}
 
 	/**
-	 * Check the historyHandleStatus of an entity
+	 * Check the historyHandleStatus of an entity when the latestHandledStatus is HANDLE_REJECTED.
 	 *
 	 * @param key
 	 * 		key of the entity
-	 * @param historyType
-	 * 		TransactionType of historyHandleStatus
+	 * @param handledTransactionType
+	 * 		latestHandledTransaction type on the entity
+	 * @param history
+	 * 		historyHandleStatus of the entity
 	 * @param nodeNum
 	 * 		Node number of the node on which entities are being compared
 	 */
-	private void checkHistory(MapKey key, TransactionType historyType, int nodeNum) {
+	private void checkHistory(MapKey key, TransactionType handledTransactionType, LifecycleStatus history,
+			int nodeNum) {
+		if (history == null) {
+			addError(String.format(PERFORM_ON_NON_EXISTING_ERROR, key, nodeNum, handledTransactionType));
+			return;
+		}
+		TransactionType historyType = history.getTransactionType();
 		if (historyType == null) {
 			addError(String.format(HANDLE_REJECTED_ERROR, key, nodeNum, null));
 			return;
@@ -294,12 +306,13 @@ public class PTALifecycleValidator extends Validator {
 					ev2.getHash(), nodeNum, "getHash"));
 		}
 
-		if (!Objects.equals(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
+		if (!checkLatestHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getLatestHandledStatus(),
 					ev2.getLatestHandledStatus(), nodeNum, "latestHandledStatus"));
 		}
 
-		if (!Objects.equals(ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
+		if (!checkHistoryHandledStatus(ev1.getLatestHandledStatus(), ev2.getLatestHandledStatus(),
+				ev1.getHistoryHandledStatus(), ev2.getHistoryHandledStatus())) {
 			addError(buildFieldMissMatchMsg(key, ev1.getHistoryHandledStatus(),
 					ev2.getHistoryHandledStatus(), nodeNum, "historyHandledStatus"));
 		}
@@ -339,7 +352,8 @@ public class PTALifecycleValidator extends Validator {
 				break;
 			case HANDLE_REJECTED:
 				addError(String.format("Operation %s on Entity %s in Node %d failed as entity is Deleted " +
-						"and PerformOnDeleted is false", latestHandleStatus.getTransactionType(), key, nodeNum));
+						"and PerformOnDeleted is false or entity doesn't exist and performOnNonExistingEntities " +
+						"is false", latestHandleStatus.getTransactionType(), key, nodeNum));
 				break;
 			case HANDLE_ENTITY_TYPE_MISMATCH:
 				addError(String.format("Operation %s failed as it is performed on wrong entity type %s",
@@ -349,5 +363,107 @@ public class PTALifecycleValidator extends Validator {
 				addError(String.format("Something went wrong and entity %s on Node %d has Error." +
 						"Please look at the log for more details", key, nodeNum));
 		}
+	}
+
+	/**
+	 * check if two latest handled LifecycleStatus match.
+	 * two handled LifecycleStatus match in one of the following cases:
+	 * (1) two LifecycleStatus equal;
+	 * (2) two LifecycleStatus both have `Rebuild` TransactionType
+	 * (3) one LifecycleStatus is (Rebuild, RESTART_ORIGIN/RECONNECT_ORIGIN),
+	 * and the other is (TransactionType except Delete and Expire, HANDLED);
+	 *
+	 * @param status1
+	 * 		LatestHandledStatus of first entity in comparison
+	 * @param status2
+	 * 		LatestHandledStatus of second entity in comparison
+	 * @return return true if check passes; return false otherwise
+	 */
+	boolean checkLatestHandledStatus(final LifecycleStatus status1, final LifecycleStatus status2) {
+		if (Objects.equals(status1, status2)) {
+			return true;
+		}
+
+		if (status1 == null || status2 == null) {
+			return false;
+		}
+
+		boolean rebuilt1 = isRebuilt(status1);
+		boolean rebuilt2 = isRebuilt(status2);
+
+		if (rebuilt1 && rebuilt2) {
+			return true;
+		}
+		// if they are not equal, and none of them is rebuilt, return false
+		if (!rebuilt1 && !rebuilt2) {
+			return false;
+		}
+
+		if (rebuilt1) {
+			return handledNotRemoved(status2);
+		}
+
+		// here rebuilt2 should be true
+		return handledNotRemoved(status1);
+	}
+
+	/**
+	 * Given two LatestHandledStatus match;
+	 * check if two HistoryHandledStatus matches;
+	 *
+	 * @param latest1
+	 * 		LatestHandledStatus of first entity in comparison
+	 * @param latest2
+	 * 		LatestHandledStatus of second entity in comparison
+	 * @param history1
+	 * 		HistoryHandledStatus of first entity in comparison
+	 * @param history2
+	 * 		HistoryHandledStatus of second entity in comparison
+	 * @return true if check pass else returns false
+	 */
+	boolean checkHistoryHandledStatus(final LifecycleStatus latest1, final LifecycleStatus latest2,
+			final LifecycleStatus history1, final LifecycleStatus history2) {
+		if (Objects.equals(history1, history2)) {
+			return true;
+		}
+
+		// if an entity is rebuilt during reconnect/restart, its history could be null
+		// of if an entity's history is rebuilt;
+		// when another history is handledNotRemoved, we consider the two match
+		if (history1 == null && isRebuilt(latest1) || isRebuilt(history1)) {
+			return handledNotRemoved(history2);
+		}
+
+		if (history2 == null && isRebuilt(latest2) || isRebuilt(history2)) {
+			return handledNotRemoved(history1);
+		}
+
+		return false;
+	}
+
+	/**
+	 * if TransactionType of LifecycleStatus is Rebuild
+	 *
+	 * @param lifecycleStatus
+	 * 		LatestHandledStatus of the entity
+	 * @return true if the transactionType is Rebuild
+	 */
+	boolean isRebuilt(final LifecycleStatus lifecycleStatus) {
+		return lifecycleStatus != null && lifecycleStatus.getTransactionType() != null &&
+				lifecycleStatus.getTransactionType() == TransactionType.Rebuild;
+	}
+
+	/**
+	 * if the LifecycleStatus is HANDLED and the entity is not removed,
+	 *
+	 * @param lifecycleStatus
+	 * 		LatestHandledStatus of the entity
+	 * @return true if the entity is not Deleted or expired
+	 */
+	boolean handledNotRemoved(final LifecycleStatus lifecycleStatus) {
+		return lifecycleStatus != null &&
+				lifecycleStatus.getTransactionType() != Delete &&
+				lifecycleStatus.getTransactionType() != Expire
+				&& lifecycleStatus.getTransactionState() == HANDLED;
 	}
 }
