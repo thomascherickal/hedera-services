@@ -5,12 +5,10 @@ module com.swirlds.regression {
 	requires com.fasterxml.jackson.databind;
 
 	requires org.apache.logging.log4j;
+	requires org.apache.logging.log4j.core;
 
 	requires java.scripting;
 	requires java.sql;
-
-//	requires org.apache.logging.log4j;
-//	requires org.apache.logging.log4j.core;
 
 	requires org.apache.commons.io;
 	requires org.apache.commons.compress;
