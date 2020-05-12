@@ -23,7 +23,7 @@ public class CloudConfig {
 	private String service;
 	private String securityGroup;
 	private String instanceName = "ATF-U18.04-OJDK12.0.1-PSQL10.12-BADGERIZE-V13";
-	private String instanceType = "M4Xlarge";
+	private String instanceType = "M44xlarge";
 	private String instanceKey;
 	private String keyLocation;
 	private String login;

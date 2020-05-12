@@ -37,7 +37,7 @@ public class RegressionConfig {
 	private boolean uploadToSharePoint = false;
 	private boolean useThreadPool = false;
 	private String jvmOptions = "";
-	private boolean useLifecycleModel = false;
+
 
 	private int numberOfZeroStakeNodes = 0;
 
@@ -194,15 +194,7 @@ public class RegressionConfig {
 	public void setNumberOfZeroStakeNodes(final int numberOfZeroStakeNodes) {
 		this.numberOfZeroStakeNodes = numberOfZeroStakeNodes;
 	}
-	
-	public boolean isUseLifecycleModel() {
-		return useLifecycleModel;
-	}
 
-	public void setUseLifecycleModel(boolean useLifecycleModel) {
-		this.useLifecycleModel = useLifecycleModel;
-	}
-	
 	public boolean isUseThreadPool() {
 		return useThreadPool;
 	}
