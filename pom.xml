@@ -45,7 +45,7 @@
 
 		<!-- Dependency Versioning -->
 		<slf4j.version>1.8.0-beta2</slf4j.version>
-		<log4j.version>2.8.2</log4j.version>
+		<log4j.version>2.13.2</log4j.version>
 		<ormlite.version>5.1</ormlite.version>
 		<!--<derby.version>10.14.1.0</derby.version>-->
 		<xchart.version>3.5.2-SIDEWINDER</xchart.version>
