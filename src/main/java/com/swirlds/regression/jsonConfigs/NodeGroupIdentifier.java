@@ -22,9 +22,10 @@ public enum NodeGroupIdentifier {
 	FIRST,
 	LAST,
 	ALL_BUT_LAST,
-	ALL_BUT_FIRST;
+	ALL_BUT_FIRST,
+	ALL_BUT_LAST_STAKED_NODE;
 
-	public boolean isNodeInGroup(int nodeIndex, int total) {
+	public boolean isNodeInGroup(int nodeIndex, int total, int lastStakedNode) {
 		switch (this) {
 			case ALL:
 				return true;
@@ -36,6 +37,8 @@ public enum NodeGroupIdentifier {
 				return nodeIndex < total - 1;
 			case ALL_BUT_FIRST:
 				return nodeIndex > 0;
+			case ALL_BUT_LAST_STAKED_NODE:
+				return nodeIndex != lastStakedNode;
 			default:
 				throw new UnsupportedOperationException("Group not implemented: " + this);
 		}
