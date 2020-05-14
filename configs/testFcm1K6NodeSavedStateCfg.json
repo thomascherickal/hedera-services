@@ -19,7 +19,7 @@
     "swirldName": "123",
     "round": 1891,
     "restoreDb": true,
-    "nodeIdentifier": "ALL_BUT_LAST"
+    "nodeIdentifier": "ALL_BUT_LAST_STAKED_NODE"
   },
   "resultFiles": [
     "swirlds.log"

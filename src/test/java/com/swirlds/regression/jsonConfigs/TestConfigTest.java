@@ -29,26 +29,4 @@ import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.*;
 
 class TestConfigTest {
 
-	@Test
-	void getSavedStateForNode() {
-		List<NodeGroupIdentifier> groups = Arrays.asList(ALL, FIRST, LAST, ALL_BUT_LAST, ALL_BUT_FIRST);
-		List<SavedState> states = groups.stream()
-				.map(ngi -> {
-					SavedState ss =  new SavedState();
-					ss.setLocation(ngi.toString());
-					ss.setNodeIdentifier(ngi);
-					return ss;
-				})
-				.collect(Collectors.toList());
-
-		TestConfig all = new TestConfig();
-		all.setStartSavedState(states.get(0));
-		assertEquals(ALL.toString(), all.getSavedStateForNode(0,4).getLocation());
-		assertEquals(ALL.toString(), all.getSavedStateForNode(3,4).getLocation());
-
-		TestConfig lastDifferent = new TestConfig();
-		lastDifferent.setStartSavedStates(Collections.singletonList(states.get(3)));
-		assertEquals(ALL_BUT_LAST.toString(), lastDifferent.getSavedStateForNode(2,4).getLocation());
-		assertNull(lastDifferent.getSavedStateForNode(3,4));
-	}
 }

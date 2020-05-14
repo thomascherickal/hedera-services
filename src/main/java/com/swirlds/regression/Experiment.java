@@ -979,6 +979,7 @@ public class Experiment implements ExperimentSummary {
 
 		for (SavedState ss : all) {
 			if (ss.getNodeIdentifier().isNodeInGroup(nodeIndex, totalNodes, getLastStakedNode())) {
+				log.info(MARKER, "SAVED STATE RESTORE for Node {} returned true", nodeIndex);
 				return ss;
 			}
 		}
