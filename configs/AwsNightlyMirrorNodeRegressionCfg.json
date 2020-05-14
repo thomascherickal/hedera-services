@@ -1,5 +1,5 @@
 {
-  "name": "regression-suite",
+  "name": "zero-stake-regression-suite",
   "result": {
 	"uri": "results"
   },
@@ -14,10 +14,12 @@
 		{
 		  "region": "us-east-2",
 		  "instanceList": [
-			  "i-04223a00a2884931c",
-			  "i-08eafb29a6b39dc22",
-			  "i-09aceb44773d0b2da",
-			  "i-0a80c3d91ce61c5f0"
+			  "i-0dd3e733eddd50418",
+			  "i-021e942b690dc496f",
+			  "i-0a16ced2310aa915e",
+			  "i-0885f2c73eb631077",
+			  "i-09ee3179b692f0c2c",
+			  "i-033e9aed8924bb574"
 		  ]
 		}
 	]
