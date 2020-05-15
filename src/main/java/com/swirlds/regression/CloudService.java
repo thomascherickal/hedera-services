@@ -304,8 +304,12 @@ class CloudService {
         for (AWSNode node : ec2List) {
             try {
                 if (node.hasInstanceIDs()) {
-                    log.trace(MARKER, "Specific instances were requested");
+                    log.trace(MARKER, "Specific instances were requested: {}", String.join(", ",node.getInstanceIDs()));
                     getExistingInstance(node, nameTag);
+                    if(node.getTotalNodes() > node.getInstanceIDs().size()){
+                        log.trace(MARKER, "{} additional nodes were requested", node.getInstanceIDs().size() - node.getTotalNodes());
+                        startInstance(node,nameTag);
+                    }
                 } else {
                     log.trace(MARKER, "New instances requested");
                     startInstance(node, nameTag);
@@ -341,10 +345,12 @@ class CloudService {
         tag.setResourceType(ResourceType.Instance);
 
         runInstanceRequest = new RunInstancesRequest();
+        /* node.getInstancesIds().size() is the nu,ber of instances already running, so we subtract that from the total
+        we need to ensure we have the proper number without making too many */
         runInstanceRequest.withImageId(instanceID)
                 .withInstanceType(InstanceType.valueOf(cloudConfig.getInstanceType()))
-                .withMinCount(numberOfNodes)
-                .withMaxCount(numberOfNodes)
+                .withMinCount(numberOfNodes - node.getInstanceIDs().size())
+                .withMaxCount(numberOfNodes - node.getInstanceIDs().size())
                 .withSecurityGroups(cloudConfig.getSecurityGroup())
                 .withKeyName(cloudConfig.getInstanceKey())
                 .withTagSpecifications(tag);
@@ -364,12 +370,12 @@ class CloudService {
         //TODO make autocloseable add to Cleaner
 
         for (AWSNode node : ec2List) {
-            if (node.hasInstanceIDs()) {
-                if (!node.isExistingInstance()) {
+            if (node.hasInstanceIDs() || node.getTotalNodes() > node.getTotalPreexistingInstances()) {
+                /* if there were no preexisting nodes or if we added to the preexisting nodes the new nodes need to be shutdown. */
+                if (!node.isExistingInstance() || node.getTotalPreexistingInstances() < node.getTotalNodes()) {
                     AmazonEC2 ec2 = node.getEc2();
                     TerminateInstancesRequest deleteRequest = new TerminateInstancesRequest();
-                    deleteRequest.setInstanceIds(node.getInstanceIDs());
-
+                    deleteRequest.setInstanceIds(node.getInstanceIDsToDelete());
                     ec2.terminateInstances(deleteRequest);
                 } else {
                     setInstanceNames("RegressionNotRunning");

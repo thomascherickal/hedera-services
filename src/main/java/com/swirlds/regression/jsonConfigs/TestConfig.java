@@ -227,20 +227,4 @@ public class TestConfig implements FileRequirement {
 		add(list, freezeConfig, recoverConfig, app);
 		return list;
 	}
-
-	public SavedState getSavedStateForNode(int nodeIndex, int totalNodes) {
-		List<SavedState> all = Stream.of(Collections.singletonList(startSavedState), startSavedStates)
-				.filter(Objects::nonNull)
-				.flatMap(Collection::stream)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-
-		for (SavedState ss : all) {
-			if (ss.getNodeIdentifier().isNodeInGroup(nodeIndex, totalNodes)) {
-				return ss;
-			}
-		}
-
-		return null;
-	}
 }

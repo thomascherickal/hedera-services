@@ -52,7 +52,7 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
-		final int validateNodesNum = reconnect ? ssData.size() - 1 : ssData.size();
+		final int validateNodesNum = reconnect ? getLastStakedNode() : ssData.size();
 
 		final List<String> sha1sumList = new ArrayList<>(validateNodesNum);
 		for (int i = 0; i < validateNodesNum; i++) {

@@ -28,9 +28,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AWSNode {
-	AmazonEC2 ec2;
-	String region;
-	int totalNodes;
+	private AmazonEC2 ec2;
+	private String region;
+	private int totalNodes;
+	private int totalPreexistingInstances;
 	private RunInstancesRequest runInstanceRequest;
 	private ArrayList<Instance> instances;
 	private ArrayList<String> instanceIDs;
@@ -49,9 +50,10 @@ public class AWSNode {
 		this.region = rl.getRegion();
 		this.ec2 = AmazonEC2ClientBuilder.standard().withRegion(this.region).build();
 		this.totalNodes = rl.getNumberOfNodes();
+		instanceIDs = new ArrayList<>();
 		if (rl.getInstanceList() != null) {
-			instanceIDs = new ArrayList<>();
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
+			totalPreexistingInstances = rl.getInstanceList().length;
 			isExistingInstance = true;
 		}
 
@@ -96,6 +98,10 @@ public class AWSNode {
 		this.totalNodes = totalNodes;
 	}
 
+	public int getTotalPreexistingInstances() {
+		return totalPreexistingInstances;
+	}
+
 	public RunInstancesRequest getRunInstanceRequest() {
 		return runInstanceRequest;
 	}
@@ -124,8 +130,15 @@ public class AWSNode {
 		return instanceIDs;
 	}
 
+	/* returns all non-preexisting nodes that need to be shutdown at the end of the regression run. */
+	public ArrayList<String> getInstanceIDsToDelete() {
+		ArrayList<String> returnList = new ArrayList<String>();
+		returnList.addAll(instanceIDs.subList(totalPreexistingInstances,instanceIDs.size()));
+		return returnList;
+	}
+
 	public void setInstanceIDs(ArrayList<String> instanceIDs) {
-		this.instanceIDs = instanceIDs;
+		this.instanceIDs.addAll(instanceIDs);
 	}
 
 	public ArrayList<AmazonEC2> getEc2List() {
