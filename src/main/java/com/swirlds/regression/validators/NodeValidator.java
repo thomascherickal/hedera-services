@@ -17,17 +17,8 @@
 
 package com.swirlds.regression.validators;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.csv.CsvStat;
-import com.swirlds.regression.jsonConfigs.TestConfig;
-import org.junit.jupiter.api.TestTemplate;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,7 +27,7 @@ import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.DISK_SPACE_FREE;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.MAXIMUM_MEMORY;
-import static com.swirlds.common.PlatformStatNames.NEW_SIG_STATE_TIME;
+import static com.swirlds.common.PlatformStatNames.SIGNED_STATE_HASHING_TIME;
 import static com.swirlds.common.PlatformStatNames.ROUNDS_PER_SEC;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.regression.RegressionUtilities.MB;
@@ -118,7 +109,7 @@ public abstract class NodeValidator extends Validator {
 		checkAllNodes((nodeData, nodeId) -> {
 			CsvReader nodeCsv = nodeData.getCsvReader();
 			double maxRoundsSec = nodeCsv.getColumn(ROUNDS_PER_SEC).getMax();
-			double maxHash = nodeCsv.getColumn(NEW_SIG_STATE_TIME).getMax();
+			double maxHash = nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getMax();
 
 			if (1 / maxRoundsSec < maxHash) {
 				return String.format(
