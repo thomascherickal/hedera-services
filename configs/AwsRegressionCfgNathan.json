@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-01897-D-BetaMirrorNode-6N-2ZSN-SMStake",
+  "name": "Nathan-01998-D-GossipFix-4N-0ZSN-HackPanel",
   "result": {
 	"uri": "results"
   },
@@ -13,7 +13,7 @@
 	"regionList": [
 	  {
 		"region": "ca-central-1",
-		"numberOfNodes": 6
+		"numberOfNodes": 4
 	  }
 	]
 	//	"regionList": [
@@ -28,13 +28,13 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 2,
+  "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json"
+	//	"configs/testSigningDemoCfg.json"
 	//	"configs/testSigningDemo4KCfg.json",
 	//	"configs/testFcmMultipleOperationsCfg.json",
 	//	"configs/testRestartCfg.json",
@@ -46,7 +46,7 @@
 	//	"configs/testFCM1KFCQCfg.json",
 	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
-	//	"configs/testReconnectBlobCfg.json"
+	"configs/testReconnectBlobCfg.json"
 	//	"configs/testFcm1kThrottlingCfg.json"
 
 	//	"configs/testFcmCfg.json",
