@@ -9,6 +9,7 @@
     {"name":"reconnectActive", "value": "1"},
     {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
+  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMFCQ1KSavedState.json"]
