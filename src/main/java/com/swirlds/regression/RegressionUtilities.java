@@ -65,9 +65,11 @@ public class RegressionUtilities {
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
-	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
-	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", $1 }' | sed 's/^[[:space:]]*//g'";
+	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions " +
+			"-XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages " +
+			"-XX:MaxDirectMemorySize=%dg";
+	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", " +
+			"$1 }' | sed 's/^[[:space:]]*//g'";
 	/* this section is for dynamic allocation of huge pages and memory of instances */
 	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
 	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
@@ -97,10 +99,15 @@ public class RegressionUtilities {
 
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 
-	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|has fallen behind|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
-	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued snapshot request \\[taskType='BACKUP'|SnapshotManager: Completed task \\[taskType='BACKUP'\" remoteExperiment/swirlds.log";
+	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo" +
+			" -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; " +
+			"sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|has fallen " +
+			"behind|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
+	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued " +
+			"snapshot request \\[taskType='BACKUP'|SnapshotManager: Completed task \\[taskType='BACKUP'\" " +
+			"remoteExperiment/swirlds.log";
 
 	public static final String REMOTE_SWIRLDS_LOG = "remoteExperiment/swirlds.log";
 
@@ -116,10 +123,10 @@ public class RegressionUtilities {
 
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
-	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension crypto;" +
-			" drop database fcfs; create database fcfs with owner = swirlds;\"";
-	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop " +
-			"extension crypto;\"";
+	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension " +
+			"pgcrypto; drop database fcfs; create database fcfs with owner = swirlds;\"";
+	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -d fcfs -c \"drop" +
+			" extension pgcrypto;\"";
 	public static final String DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
 			"database fcfs;\"";
 	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
@@ -141,7 +148,7 @@ public class RegressionUtilities {
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
 	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
-    public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
+	public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
 	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
@@ -356,44 +363,50 @@ public class RegressionUtilities {
 		}
 		return Arrays.stream(dir.listFiles()).filter(File::isFile)
 				.map(returnPaths ? File::getAbsolutePath : File::getName).collect(Collectors.toList());
-    }
+	}
 
 	/**
 	 * Is the current OS windows?
+	 *
 	 * @return return true if windows, false if not
 	 */
 	public static boolean isWindows() {
-        return OS.indexOf("win") >= 0;
-    }
+		return OS.indexOf("win") >= 0;
+	}
 
 	/**
 	 * Get the executable to call on the node based on os type.
+	 *
 	 * @return - python3 for unix flavors, python for windows flavors
 	 */
 
 	public static String getPythonExecutable() {
-        String pythonExecutable = "python3";
-        if (isWindows()) {
-            pythonExecutable = "python";
-        }
-        return pythonExecutable;
-    }
+		String pythonExecutable = "python3";
+		if (isWindows()) {
+			pythonExecutable = "python";
+		}
+		return pythonExecutable;
+	}
 
 	/**
 	 * Build the java parameter string to call the java function with based on the memory variables passed in
-	 * @param maxMemory - maximum memory allowed for the JVM
-	 * @param minMemory - minimum memory allowed for the JVM
+	 *
+	 * @param maxMemory
+	 * 		- maximum memory allowed for the JVM
+	 * @param minMemory
+	 * 		- minimum memory allowed for the JVM
 	 * @param maxDirectMemory
-	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
-	 *   EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-	 * 				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote
+	 * 		node.
+	 * 		EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 		"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
 	 */
-    public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
+	public static String buildParameterString(int maxMemory, int minMemory, int maxDirectMemory) {
 
 		/* parameter string: "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 				"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg"
 		 */
-		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+		if (maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
 			return JVM_OPTIONS_DEFAULT;
 		} else {
 			return String.format(JVM_OPTIONS_PARAMETER_STRING, maxMemory, minMemory, maxDirectMemory);
@@ -401,21 +414,23 @@ public class RegressionUtilities {
 	}
 
 	/**
-	 *
-	 * @param jvmOptionParametersConfig - Object with JVM option parameters loaded from the experiment JSON file
-	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote node.
-	 * 	  EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-	 * 	 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
+	 * @param jvmOptionParametersConfig
+	 * 		- Object with JVM option parameters loaded from the experiment JSON file
+	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote
+	 * 		node.
+	 * 		EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
+	 * 		"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
 	 */
 	public static String buildParameterString(JvmOptionParametersConfig jvmOptionParametersConfig) {
-		if(jvmOptionParametersConfig == null) { return JVM_OPTIONS_DEFAULT; }
+		if (jvmOptionParametersConfig == null) {
+			return JVM_OPTIONS_DEFAULT;
+		}
 		int maxMemory = jvmOptionParametersConfig.getMaxMemory();
 		int minMemory = jvmOptionParametersConfig.getMinMemory();
 		int maxDirectMemory = jvmOptionParametersConfig.getMaxDirectMemory();
-		if(maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
+		if (maxMemory <= 0 || minMemory <= 0 || maxDirectMemory <= 0) {
 			return JVM_OPTIONS_DEFAULT;
-		}
-		else {
+		} else {
 			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
 		}
 	}
