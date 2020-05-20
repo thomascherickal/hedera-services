@@ -29,6 +29,7 @@
       "value": "300"
     }
   ],
+  "useLifecycleModel" : true,
   "restartConfig": {
     "restartTiming": 2
   },
