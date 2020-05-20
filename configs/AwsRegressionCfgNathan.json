@@ -10,23 +10,23 @@
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
+	//	"regionList": [
+	//	  {
+	//		"region": "ca-central-1",
+	//		"numberOfNodes": 4
+	//	  }
+	//	]
 	"regionList": [
 	  {
 		"region": "ca-central-1",
-		"numberOfNodes": 4
+		"instanceList": [
+		  "i-0c619546f2e29379f",
+		  "i-09a1e24395cdbc01a",
+		  "i-0a4f708ebf98ecdaa",
+		  "i-005cadf7002c79c8e"
+		]
 	  }
 	]
-	//	"regionList": [
-	//	  {
-	//		"region": "us-west-2",
-	//		"instanceList": [
-	//		  "i-0bd1b4cfad2edfeae",
-	//		  "i-0079b250fe9ffa68b",
-	//		  "i-00610640b4c749276",
-	//		  "i-0b3a7ec82f4b9b84c"
-	//		]
-	//	  }
-	//	]
   },
   "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
@@ -44,7 +44,7 @@
 	//	"configs/testFcmMultisizeBlobCfg.json",
 	//	"configs/testFcmFreezeFCQCfg.json",
 	//	"configs/testFCM1KFCQCfg.json",
-	//	"configs/testReconnectFCMMultiReconnectCfg.json",
+	//	"configs/testReconnectFCMMultiReconnectCfg.json"
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	"configs/testReconnectBlobCfg.json"
 	//	"configs/testFcm1kThrottlingCfg.json"
