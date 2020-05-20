@@ -55,6 +55,7 @@
     <MarkerFilter marker="LOCKS"                  onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="TIME_MEASURE"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STARTUP"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="SIGNED_STATE"           onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STATE_SIG_DIST"         onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="OPENCL_INIT_EXCEPTIONS" onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="ADV_CRYPTO_SYSTEM"      onMatch="DENY"     onMismatch="NEUTRAL"/>
