@@ -101,11 +101,9 @@ public class RegressionUtilities {
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 
 	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo" +
-			" " +
-			"-n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+			" -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; " +
-			"sudo" +
-			" -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+			"sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|has fallen " +
 			"behind|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued " +
