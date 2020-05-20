@@ -66,11 +66,10 @@ public class RegressionUtilities {
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
 	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions " +
-			"-XX:+UseZGC " +
-			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
+			"-XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages " +
+			"-XX:MaxDirectMemorySize=%dg";
 	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", " +
-			"$1" +
-			" }' | sed 's/^[[:space:]]*//g'";
+			"$1 }' | sed 's/^[[:space:]]*//g'";
 	/* this section is for dynamic allocation of huge pages and memory of instances */
 	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
 	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
