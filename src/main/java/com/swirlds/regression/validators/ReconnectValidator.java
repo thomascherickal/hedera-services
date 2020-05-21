@@ -214,8 +214,8 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %f is less than " +
-								"savedStateStartRoundNumber %f",
+				addError(String.format("Node %d 's last Entry of roundSup %.0f is less than " +
+								"savedStateStartRoundNumber %.0f",
 						reconnectNodeId, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
