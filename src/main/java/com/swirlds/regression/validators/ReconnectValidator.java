@@ -39,8 +39,6 @@ import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
 import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
 import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
-import static com.swirlds.common.logging.PlatformLogMessages.SYNC_STALE_COMPENSATION_FAILURE;
-import static com.swirlds.common.logging.PlatformLogMessages.SYNC_STALE_COMPENSATION_SUCCESS;
 
 public class ReconnectValidator extends NodeValidator {
 	private TestConfig testConfig;
@@ -159,8 +157,7 @@ public class ReconnectValidator extends NodeValidator {
 			//PlatformLogEntry start = nodeLog.nextEntryContaining(Arrays.asList(START_RECONNECT,
 			// RECV_STATE_HASH_MISMATCH));
 			PlatformLogEntry start = nodeLog.nextEntryContaining(
-					Arrays.asList(CHANGED_TO_ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH,
-							SYNC_STALE_COMPENSATION_SUCCESS, SYNC_STALE_COMPENSATION_FAILURE));
+					Arrays.asList(CHANGED_TO_ACTIVE, START_RECONNECT, RECV_STATE_HASH_MISMATCH));
 			if (start == null) {
 				break;
 			} else if (start.getLogEntry().contains(RECV_STATE_HASH_MISMATCH)) {
@@ -169,12 +166,6 @@ public class ReconnectValidator extends NodeValidator {
 			} else if (start.getLogEntry().contains(CHANGED_TO_ACTIVE)) {
 				active = start.getTime();
 				continue; // Record the time when platform status changes to ACTIVE
-			} else if (start.getLogEntry().contains(SYNC_STALE_COMPENSATION_SUCCESS)) {
-				addWarning("SYNC: Compensated for stale events during gossip.");
-				continue;
-			} else if (start.getLogEntry().contains(SYNC_STALE_COMPENSATION_FAILURE)) {
-				addError("SYNC: Failed to compensate for stale events during gossip due to threshold limits.");
-				continue;
 			}
 			// we have a START_RECONNECT now, try to find FINISHED_RECONNECT or RECV_STATE_ERROR or
 			// RECV_STATE_IO_EXCEPTION
