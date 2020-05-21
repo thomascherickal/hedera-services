@@ -970,7 +970,7 @@ public class SSHService {
                 "Restore db from file '%s'",
                 tarGzPath
         );
-        Session.Command cmd = execCommand(command, description);
+        Session.Command cmd = execCommand(command, description,120);
         throwIfExitCodeBad(cmd, description);
     }
 

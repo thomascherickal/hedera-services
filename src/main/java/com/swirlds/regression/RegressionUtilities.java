@@ -66,10 +66,10 @@ public class RegressionUtilities {
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
 	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions " +
-			"-XX:+UseZGC " +
-			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg";
-	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", $1" +
-			" }' | sed 's/^[[:space:]]*//g'";
+			"-XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages " +
+			"-XX:MaxDirectMemorySize=%dg";
+	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", " +
+			"$1 }' | sed 's/^[[:space:]]*//g'";
 	/* this section is for dynamic allocation of huge pages and memory of instances */
 	public static final String STOP_POSTGRESQL_SERVICE = "sudo systemctl stop postgresql;";
 	public static final String START_POSTGRESQL_SERVICE = "sudo systemctl start postgresql";
@@ -99,10 +99,10 @@ public class RegressionUtilities {
 
 	public static final String KILL_REGRESSION_PROC_COMMAND = "sudo pkill -f regression";
 
-	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo " +
-			"-n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
-	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; sudo" +
-			" -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String KILL_NET_COMMAND = "sudo -n iptables -A INPUT -p tcp --dport 10000:65535 -j DROP; sudo" +
+			" -n iptables -A OUTPUT -p tcp --sport 10000:65535 -j DROP;";
+	public static final String REVIVE_NET_COMMAND = "sudo -n iptables -D INPUT -p tcp --dport 10000:65535 -j DROP; " +
+			"sudo -n iptables -D OUTPUT -p tcp --sport 10000:65535 -j DROP;";
 	public static final String CHECK_FOR_PTD_TEST_MESSAGE = "egrep \"TEST SUCCESS|TEST FAIL|has fallen " +
 			"behind|TRANSACTIONS FINISHED|TEST ERROR\" remoteExperiment/swirlds.log";
 	public static final String CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE = "egrep \"SnapshotManager: Successfully queued " +
@@ -124,10 +124,9 @@ public class RegressionUtilities {
 	public static final ArrayList<String> PTD_LOG_FINISHED_MESSAGES = new ArrayList<>(
 			Arrays.asList(PTD_SUCCESS, PTD_FINISH));
 	public static final String DROP_DATABASE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop extension " +
-			"pgcrypto;" +
-			" drop database fcfs; create database fcfs with owner = swirlds;\"";
-	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \"drop " +
-			"extension pgcrypto;\"";
+			"pgcrypto; drop database fcfs; create database fcfs with owner = swirlds;\"";
+	public static final String DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -d fcfs -c \"drop" +
+			" extension pgcrypto;\"";
 	public static final String DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST = "sudo -i -u postgres psql -c \" drop " +
 			"database fcfs;\"";
 	public static final ArrayList<String> PTD_LOG_SUCCESS_OR_FAIL_MESSAGES = new ArrayList<>(
@@ -396,7 +395,7 @@ public class RegressionUtilities {
 	 * 		- minimum memory allowed for the JVM
 	 * @param maxDirectMemory
 	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote
-	 * node.
+	 * 		node.
 	 * 		EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 	 * 		"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
 	 */
@@ -416,7 +415,7 @@ public class RegressionUtilities {
 	 * @param jvmOptionParametersConfig
 	 * 		- Object with JVM option parameters loaded from the experiment JSON file
 	 * @return - formatted string with list of parameters and their values to use when launching the JVM on a remote
-	 * node.
+	 * 		node.
 	 * 		EX. "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 	 * 		"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=%dg
 	 */
