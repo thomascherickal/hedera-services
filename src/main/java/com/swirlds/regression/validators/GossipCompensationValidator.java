@@ -104,10 +104,18 @@ public class GossipCompensationValidator extends NodeValidator {
 		final Instant time = entry.getTime();
 
 		if (time != null) {
-			sb.append(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(time)).append(" ");
+			sb.append(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(time)).append(" -> ");
 		}
 
-		reportingMethod.accept(sb.append("Node ").append(nodeId).append(": ").append(entry.getLogEntry()).toString());
+		reportingMethod
+				.accept(
+						sb
+//								.append("Node ")
+//						.append(nodeId)
+//						.append(": ")
+								.append(entry.getLogEntry())
+								.toString()
+				);
 	}
 
 }
