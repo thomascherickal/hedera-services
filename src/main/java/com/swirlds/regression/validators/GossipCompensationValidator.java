@@ -59,7 +59,7 @@ public class GossipCompensationValidator extends NodeValidator {
 				}
 
 				if (logEntryContains(logEntry, SYNC_STALE_COMPENSATION_SUCCESS)) {
-					reportLogEntry(this::addInfo, logEntry, i);
+					reportLogEntry(this::addWarning, logEntry, i);
 				} else if (logEntryContains(logEntry, SYNC_STALE_COMPENSATION_FAILURE)) {
 					reportLogEntry(this::addError, logEntry, i);
 					valid = false;
