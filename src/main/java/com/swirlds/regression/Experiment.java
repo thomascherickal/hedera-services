@@ -1503,6 +1503,24 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
+	 * Hide expected map directory
+	 */
+	public void backupSavedExpectedMap() {
+		for (SSHService node : sshNodes) {
+			node.backupSavedExpectedMap();
+		}
+	}
+
+	/**
+	 * Restore expected map directory
+	 */
+	public void restoreSavedExpectedMap() {
+		for (SSHService node : sshNodes) {
+			node.restoreSavedExpectedMap();
+		}
+	}
+
+	/**
 	 * Backup signed state to a temp directory
 	 */
 	public void backupSavedSignedState(String tempDir) {
