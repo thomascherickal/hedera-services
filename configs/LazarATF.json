@@ -19,7 +19,7 @@
     "uri":"testing/logs/"
   },
   "experiments": [
-    "configs/testMigrationAppCfg2K.json"
+    "configs/testRestartCfg.json"
   ],
   "db": {
     "type": "postgresql",
