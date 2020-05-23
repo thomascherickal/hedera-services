@@ -23,5 +23,5 @@
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": ["STATS", "MIGRATION" ]
+  "validator": ["STATS", "STANDARD", "MIGRATION" ]
 }
