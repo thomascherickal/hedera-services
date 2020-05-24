@@ -19,7 +19,17 @@
     "uri":"testing/logs/"
   },
   "experiments": [
-    "configs/testRestartCfg.json"
+    "configs/testSigningDemoCfg.json",
+    "configs/testRestartCfg.json",
+    "configs/testRestartBlobCfg.json",
+    "configs/testFcmFreezeCfg.json",
+    "configs/testFcmFreezeBlobCfg.json",
+    "configs/testFcmMultisizeBlobCfg.json",
+    "configs/testFcmFreezeFCQCfg.json",
+    "configs/testFCM1KFCQCfg.json",
+    "configs/testFcm1kThrottlingCfg.json",
+    "configs/testFcmSmallBlobCfg.json",
+    "configs/testMigrationAppCfg2K.json"
   ],
   "db": {
     "type": "postgresql",
