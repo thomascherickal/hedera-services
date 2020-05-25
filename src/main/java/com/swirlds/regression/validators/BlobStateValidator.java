@@ -89,7 +89,7 @@ public class BlobStateValidator extends Validator {
 		PlatformTestingDemoState ptdState = new PlatformTestingDemoState();
 		SignedState signedState = new SignedState(ptdState);
 		try {
-			SignedStateFileManager.readObjectFromFile(file, signedState);
+			signedState = SignedStateFileManager.readSignedStateFromFile(file, signedState);
 		} catch (IOException e) {
 			addError("could not read signed state");
 			return null;
