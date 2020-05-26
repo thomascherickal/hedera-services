@@ -23,9 +23,11 @@ import com.swirlds.regression.logs.PlatformLogEntry;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import static com.swirlds.common.logging.PlatformLogMessages.SYNC_STALE_COMPENSATION_FAILURE;
@@ -104,7 +106,11 @@ public class GossipCompensationValidator extends NodeValidator {
 		final Instant time = entry.getTime();
 
 		if (time != null) {
-			sb.append(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(time)).append(" -> ");
+			final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+					.withLocale(Locale.US)
+					.withZone(ZoneId.of("UTC"));
+
+			sb.append(formatter.format(time)).append(" -> ");
 		}
 
 		reportingMethod
