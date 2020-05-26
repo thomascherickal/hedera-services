@@ -61,6 +61,8 @@ public class ValidatorFactory {
 				return new MigrationValidator(nodeData);
 			case STDOUT:
 				return new StdoutValidator(nodeData);
+			case GOSSIP_COMPENSATION:
+				return new GossipCompensationValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}
