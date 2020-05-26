@@ -1,26 +1,54 @@
 {
-  "name":"Test-State-Recover-FCM1M",
-  "description" : "Test-State-Recover-FCM1M",
+  "name": "Test-State-Recover-FCM1M",
+  "description": "Test-State-Recover-FCM1M",
   "duration": 3600,
   "settings": [
-    {"name":"showInternalStats", "value": "1" },
-    {"name":"csvFileName", "value":"PlatformTesting" },
-    {"name":"csvAppend", "value":"true"},
-    {"name":"state.saveStatePeriod", "value":"15"},
-    {"name":"state.signedStateDisk", "value":"100"},
-    {"name":"enableEventStreaming", "value":"true"},
-    {"name":"eventsLogDir", "value":"data/eventStream"}
+	{
+	  "name": "showInternalStats",
+	  "value": "1"
+	},
+	{
+	  "name": "csvFileName",
+	  "value": "PlatformTesting"
+	},
+	{
+	  "name": "csvAppend",
+	  "value": "true"
+	},
+	{
+	  "name": "state.saveStatePeriod",
+	  "value": "15"
+	},
+	{
+	  "name": "state.signedStateDisk",
+	  "value": "100"
+	},
+	{
+	  "name": "enableEventStreaming",
+	  "value": "true"
+	},
+	{
+	  "name": "eventsLogDir",
+	  "value": "data/eventStream"
+	}
   ],
-  "recoverConfig":{
-    "eventDir" : "data/eventStreamRecover",
-    "sqlFile" : "drop_database.psql"
+  "recoverConfig": {
+	"eventDir": "data/eventStreamRecover",
+	"sqlFile": "drop_database.psql"
   },
   "app": {
-    "jar": "PlatformTestingApp.jar",
-    "parameterList": ["TEST_RECOVER_FCM1M.json"]
+	"jar": "PlatformTestingApp.jar",
+	"parameterList": [
+	  "TEST_RECOVER_FCM1M.json"
+	]
   },
   "resultFiles": [
-    "swirlds.log"
+	"swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECOVER_STATE"]
+  "validator": [
+	"STATS",
+	"PLATFORM_TESTING_DEMO",
+	"RECOVER_STATE",
+	"GOSSIP_COMPENSATION"
+  ]
 }

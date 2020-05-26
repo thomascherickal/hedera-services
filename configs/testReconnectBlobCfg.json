@@ -57,6 +57,7 @@
   ],
   "validator": [
 	"STATS",
-	"RECONNECT"
+	"RECONNECT",
+	"GOSSIP_COMPENSATION"
   ]
 }
