@@ -249,20 +249,6 @@ public class ReconnectValidator extends NodeValidator {
 		return false;
 	}
 
-	/**
-	 * check whether nodeLog is null, if it is, log an error
-	 *
-	 * @param nodeLog
-	 * @param nodeId
-	 * @return
-	 */
-	boolean nodeLogIsNull(final LogReader nodeLog, final int nodeId) {
-		if (nodeLog == null) {
-			addError("could not load log, exiting validation for node " + nodeId);
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * check whether nodeCsv is null, if it is, log an error
