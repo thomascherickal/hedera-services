@@ -18,17 +18,25 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.logs.LogEntry;
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogEntry;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
 
 import static com.swirlds.common.PlatformStatNames.CONSENSUS_QUEUE_SIZE;
 import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.DISK_SPACE_FREE;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.MAXIMUM_MEMORY;
-import static com.swirlds.common.PlatformStatNames.SIGNED_STATE_HASHING_TIME;
 import static com.swirlds.common.PlatformStatNames.ROUNDS_PER_SEC;
+import static com.swirlds.common.PlatformStatNames.SIGNED_STATE_HASHING_TIME;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.regression.RegressionUtilities.MB;
 
@@ -68,7 +76,6 @@ public abstract class NodeValidator extends Validator {
 		}
 		return sum / nodeData.size();
 	}
-
 
 
 	public void checkC2CVariation() {
@@ -179,6 +186,79 @@ public abstract class NodeValidator extends Validator {
 					warnMsg + " " + String.join(" ", nodeMsgs)
 			);
 		}
+	}
+
+	/**
+	 * check whether nodeLog is null, if it is, log an error
+	 *
+	 * @param nodeLog
+	 * @param nodeId
+	 * @return
+	 */
+	protected <T extends LogEntry> boolean nodeLogIsNull(final LogReader<T> nodeLog, final int nodeId) {
+		if (nodeLog == null) {
+			addError(String.format("Failed to load the swirlds.log, exiting validation for node %d", nodeId));
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Null-safe test for determining if a log entry matches the provided text.
+	 *
+	 * @param entry
+	 * 		the entry to compare against
+	 * @param text
+	 * 		the text that should be contained in the log entry
+	 * @param <T>
+	 * 		the type of the log entry
+	 * @return true if the log entry matches the provided text; otherwise, false if {@code entry} is null or does not
+	 * 		match
+	 */
+	protected <T extends LogEntry> boolean logEntryContains(final T entry, final String text) {
+		if (entry.getLogEntry() == null || entry.getLogEntry().isEmpty()) {
+			return false;
+		}
+
+		return entry.getLogEntry().contains(text);
+	}
+
+	/**
+	 * Generic method for reporting a timestamped validator info/warning/error with the raw contents of the log entry.
+	 *
+	 * @param reportingMethod
+	 * 		the validator reporting method to be used
+	 * @param entry
+	 * 		the log entry to be reported
+	 * @param nodeId
+	 * 		the id of the node from which the log entry originated
+	 * @param <T>
+	 * 		the type of the log entry
+	 */
+	protected <T extends PlatformLogEntry> void reportLogEntry(final Consumer<String> reportingMethod, final T entry,
+			final int nodeId) {
+		final StringBuilder sb = new StringBuilder();
+
+		final Instant time = entry.getTime();
+
+		if (time != null) {
+			final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+					.withLocale(Locale.US)
+					.withZone(ZoneId.of("UTC"));
+
+			sb.append(formatter.format(time)).append(" -> ");
+		}
+
+		reportingMethod
+				.accept(
+						sb
+//								.append("Node ")
+//						.append(nodeId)
+//						.append(": ")
+								.append(entry.getLogEntry())
+								.toString()
+				);
 	}
 
 	private static interface NodeStatsCheck {
