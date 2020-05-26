@@ -1095,6 +1095,24 @@ public class SSHService {
 
     }
 
+
+    /**
+     * Hide expected map directory
+     */
+    void backupSavedExpectedMap() {
+        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup";
+        Session.Command cmd = executeCmd(mvCmd);
+    }
+
+    /**
+     * Restore expected map directory
+     */
+    void restoreSavedExpectedMap() {
+        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting";
+        Session.Command cmd = executeCmd(mvCmd);
+    }
+
+
     /**
      * Backup signed state to a temp directory
      */
