@@ -73,7 +73,7 @@ public class SSHService {
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
     private static final long MAX_COMMAND_OUTPUT_WATCH = 5000000000l;
-    private static final long MAXIMUM_TIMEOUT_ALLOWANCE = 30; // seconds
+    private static final long MAXIMUM_TIMEOUT_ALLOWANCE = 500; // seconds
 
 
     private String user;
