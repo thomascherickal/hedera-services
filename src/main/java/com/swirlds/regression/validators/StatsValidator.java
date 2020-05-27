@@ -18,8 +18,8 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogEntry;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -29,7 +29,7 @@ import java.util.List;
 import static com.swirlds.common.PlatformStatNames.CREATION_TO_CONSENSUS_SEC;
 import static com.swirlds.common.PlatformStatNames.DISK_SPACE_USED;
 import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
-import static com.swirlds.common.PlatformStatNames.NEW_SIG_STATE_TIME;
+import static com.swirlds.common.PlatformStatNames.SIGNED_STATE_HASHING_TIME;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
 import static com.swirlds.regression.RegressionUtilities.MB;
@@ -83,10 +83,10 @@ public class StatsValidator extends NodeValidator {
 
 			maxDiskSpaceUsed = Math.max(maxDiskSpaceUsed, nodeCsv.getColumn(DISK_SPACE_USED).getMax());
 
-			signedStateHashingAvg += nodeCsv.getColumn(NEW_SIG_STATE_TIME).getAverage();
+			signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
 			signedStateHashingMax = Math.max(
 					signedStateHashingMax,
-					nodeCsv.getColumn(NEW_SIG_STATE_TIME).getMax());
+					nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getMax());
 		}
 		transHandleAverage /= nodeNum;
 		signedStateHashingAvg /= nodeNum;

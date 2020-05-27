@@ -70,6 +70,8 @@ public class RecoverStateRun implements TestRun {
 			return;
 		}
 
+		experiment.backupSavedExpectedMap();
+
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
 		settingsBuilder.addSetting("playbackStreamFileDirectory", oldEventsLogDir);
@@ -101,6 +103,8 @@ public class RecoverStateRun implements TestRun {
 		/**************************
 		 Stage 3 resume run
 		 **************************/
+
+		experiment.restoreSavedExpectedMap();
 		settingsBuilder.addSetting("enableStateRecovery", "false");
 
 		// restore event to original directory
