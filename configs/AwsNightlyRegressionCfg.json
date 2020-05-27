@@ -30,6 +30,8 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
