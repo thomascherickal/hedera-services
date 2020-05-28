@@ -73,6 +73,7 @@ public class SSHService {
     private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
     private static final long MAX_COMMAND_OUTPUT_WATCH = 5000000000l;
+    private static final long MAXIMUM_TIMEOUT_ALLOWANCE = 500; // seconds
 
 
     private String user;
@@ -539,7 +540,7 @@ public class SSHService {
             session = ssh.startSession();
             final Session.Command cmd = session.exec(command);
             if (joinSec <= 0) {
-                cmd.join();
+                cmd.join(MAXIMUM_TIMEOUT_ALLOWANCE, TimeUnit.SECONDS);
             } else {
                 cmd.join(joinSec, TimeUnit.SECONDS);
             }
@@ -969,7 +970,7 @@ public class SSHService {
                 "Restore db from file '%s'",
                 tarGzPath
         );
-        Session.Command cmd = execCommand(command, description);
+        Session.Command cmd = execCommand(command, description,120);
         throwIfExitCodeBad(cmd, description);
     }
 
@@ -1093,6 +1094,24 @@ public class SSHService {
         log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
 
     }
+
+
+    /**
+     * Hide expected map directory
+     */
+    void backupSavedExpectedMap() {
+        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup";
+        Session.Command cmd = executeCmd(mvCmd);
+    }
+
+    /**
+     * Restore expected map directory
+     */
+    void restoreSavedExpectedMap() {
+        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting";
+        Session.Command cmd = executeCmd(mvCmd);
+    }
+
 
     /**
      * Backup signed state to a temp directory

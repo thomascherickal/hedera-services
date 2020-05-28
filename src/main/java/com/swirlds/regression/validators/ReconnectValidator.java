@@ -205,8 +205,8 @@ public class ReconnectValidator extends NodeValidator {
 			double roundSup = nodeCsv.getColumn(ROUND_SUPER_MAJORITY).getLastEntryAsDouble();
 
 			if (roundSup < savedStateStartRoundNumber) {
-				addError(String.format("Node %d 's last Entry of roundSup %d is less than " +
-								"savedStateStartRoundNumber %d",
+				addError(String.format("Node %d 's last Entry of roundSup %.0f is less than " +
+								"savedStateStartRoundNumber %.0f",
 						reconnectNodeId, roundSup, savedStateStartRoundNumber));
 				isValid = false;
 			}
@@ -257,20 +257,6 @@ public class ReconnectValidator extends NodeValidator {
 		return false;
 	}
 
-	/**
-	 * check whether nodeLog is null, if it is, log an error
-	 *
-	 * @param nodeLog
-	 * @param nodeId
-	 * @return
-	 */
-	boolean nodeLogIsNull(final LogReader nodeLog, final int nodeId) {
-		if (nodeLog == null) {
-			addError("could not load log, exiting validation for node " + nodeId);
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * check whether nodeCsv is null, if it is, log an error

@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-01897-D-BetaMirrorNode-6N-2ZSN-SMStake",
+  "name": "Nathan-02063-D-GossipLogging-4N-0ZSN-InitialPanel",
   "result": {
 	"uri": "results"
   },
@@ -10,31 +10,31 @@
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
+	//	"regionList": [
+	//	  {
+	//		"region": "ca-central-1",
+	//		"numberOfNodes": 4
+	//	  }
+	//	]
 	"regionList": [
 	  {
 		"region": "ca-central-1",
-		"numberOfNodes": 6
+		"instanceList": [
+		  "i-00073f766bab408b5",
+		  "i-064928acb5489057c",
+		  "i-08e20b65dcb0306e3",
+		  "i-0ba562187f151074e"
+		]
 	  }
 	]
-	//	"regionList": [
-	//	  {
-	//		"region": "us-west-2",
-	//		"instanceList": [
-	//		  "i-0bd1b4cfad2edfeae",
-	//		  "i-0079b250fe9ffa68b",
-	//		  "i-00610640b4c749276",
-	//		  "i-0b3a7ec82f4b9b84c"
-	//		]
-	//	  }
-	//	]
   },
-  "numberOfZeroStakeNodes": 2,
+  "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json"
+	//	"configs/testSigningDemoCfg.json"
 	//	"configs/testSigningDemo4KCfg.json",
 	//	"configs/testFcmMultipleOperationsCfg.json",
 	//	"configs/testRestartCfg.json",
@@ -44,9 +44,9 @@
 	//	"configs/testFcmMultisizeBlobCfg.json",
 	//	"configs/testFcmFreezeFCQCfg.json",
 	//	"configs/testFCM1KFCQCfg.json",
-	//	"configs/testReconnectFCMMultiReconnectCfg.json",
+	//	"configs/testReconnectFCMMultiReconnectCfg.json"
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
-	//	"configs/testReconnectBlobCfg.json"
+	"configs/testReconnectBlobCfg.json"
 	//	"configs/testFcm1kThrottlingCfg.json"
 
 	//	"configs/testFcmCfg.json",
@@ -64,6 +64,8 @@
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
 	"channel": "regression-pcr",
+	"summaryChannel": "regression-pcr",
+	"notifyChannel": false,
 	"notifyUserIds": [
 	  "UA66NE2NT"
 	],

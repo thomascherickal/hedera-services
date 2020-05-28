@@ -289,7 +289,8 @@ default_stat_names = [
     "expandDoneWaitCount", "expandDoneWaitTime", "zeroSigsCountExpand", "zeroSigsCountHandle",
     "threads", "stateSigs", "secStateCopy", "acctLookupRetries/sec",
     "avgAcctLookupRetryAttempts", "avgAcctRetryWaitMs", "fracSyncSlowed",
-    "conns", "events/sec", "rescuedEv/sec","rounds/sec","ping"
+    "conns", "events/sec", "rescuedEv/sec","rounds/sec",
+    "sigStateHash", "ping"
 ]
 
 occuurence = {

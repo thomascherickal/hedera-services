@@ -17,9 +17,7 @@
 
 package com.swirlds.regression;
 
-import com.swirlds.regression.jsonConfigs.DBConfig;
-import com.swirlds.regression.jsonConfigs.RegressionConfig;
-import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.jsonConfigs.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -30,10 +28,12 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 public class ExperimentTest {
@@ -81,6 +81,39 @@ public class ExperimentTest {
 		HashMap<Integer, String> loadingRoundNum = exp.getRoundNumbers(searchPhrases[new Integer(0)], secondSearch);
 		assertEquals(loadingRoundNum.get(0), "2011");
 	}*/
+
+	@Test
+	void getSavedStateForNode() {
+		List<NodeGroupIdentifier> groups = Arrays.asList(ALL, FIRST, LAST, ALL_BUT_LAST, ALL_BUT_FIRST);
+		List<SavedState> states = groups.stream()
+				.map(ngi -> {
+					SavedState ss =  new SavedState();
+					ss.setLocation(ngi.toString());
+					ss.setNodeIdentifier(ngi);
+					return ss;
+				})
+				.collect(Collectors.toList());
+
+		TestConfig all = new TestConfig();
+		Experiment exp = new Experiment(new RegressionConfig(), all);
+		all.setStartSavedState(states.get(0));
+		assertEquals(ALL.toString(), exp.getSavedStateForNode(0,4).getLocation());
+		assertEquals(ALL.toString(), exp.getSavedStateForNode(3,4).getLocation());
+
+		TestConfig lastDifferent = new TestConfig();
+		Experiment lastDifferentExp = new Experiment(new RegressionConfig(), lastDifferent);
+		lastDifferent.setStartSavedStates(Collections.singletonList(states.get(3)));
+		assertEquals(ALL_BUT_LAST.toString(), lastDifferentExp.getSavedStateForNode(2,4).getLocation());
+		assertNull(lastDifferentExp.getSavedStateForNode(3,4));
+
+		TestConfig lastStakeDifferent = new TestConfig();
+		RegressionConfig lastStakeDifferentReg = new RegressionConfig();
+		lastStakeDifferentReg.setNumberOfZeroStakeNodes(1);
+		Experiment lastStakedDifferentExp = new Experiment(lastStakeDifferentReg, lastStakeDifferent);
+		lastStakeDifferent.setStartSavedStates(Collections.singletonList(states.get(3)));
+		assertEquals(ALL_BUT_LAST.toString(), lastStakedDifferentExp.getSavedStateForNode(2,4).getLocation());
+		assertNull(lastStakedDifferentExp.getSavedStateForNode(3,4));
+	}
 
 
 }

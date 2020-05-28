@@ -1,5 +1,5 @@
 {
-  "name": "regression-suite",
+  "name": "ZERO_STAKE_MIRROR-regression-suite",
   "result": {
 	"uri": "results"
   },
@@ -11,18 +11,21 @@
 	"keyLocation": "./keys/my-key",
 	"login": "ubuntu",
 	"regionList": [
-	  {
-		"region": "us-east-2",
-		"instanceList": [
-		  "i-04223a00a2884931c",
-		  "i-08eafb29a6b39dc22",
-		  "i-09aceb44773d0b2da",
-		  "i-0a80c3d91ce61c5f0"
-		]
-	  }
+		{
+		  "region": "us-east-2",
+		  "instanceList": [
+			  "i-0dd3e733eddd50418",
+			  "i-021e942b690dc496f",
+			  "i-0a16ced2310aa915e",
+			  "i-0885f2c73eb631077",
+			  "i-09ee3179b692f0c2c",
+			  "i-033e9aed8924bb574"
+		  ]
+		}
 	]
   },
-  "eventFilesWriters": 4,
+  "numberOfZeroStakeNodes": 2,
+  "eventFilesWriters": 6,
   "log": {
 	"uri":"testing/logs/"
   },
@@ -30,8 +33,8 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testStateRecoverBlob.json" ,
-	"configs/testStateRecoverFCQ.json" ,
+	"configs/testStateRecoverBlob.json",
+	"configs/testStateRecoverFCQ.json",
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
@@ -47,7 +50,8 @@
 	"configs/testFcmSmallBlobCfg.json",
 	"configs/testFcmLargeBlobCfg.json",
 	"configs/testMigrationAppCfg2K.json",
-	"configs/testFcmFCQ1KSavedStateCfg.json"
+	"configs/testFcmFCQ1KSavedStateCfg.json",
+	"configs/testFcm1K6NodeSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -65,7 +69,6 @@
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
 	"notifyUserIds": [
-	  "UA4T7UJQJ",
 	  "UA5K2LZ1D"
 	]
   },

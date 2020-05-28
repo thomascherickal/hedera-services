@@ -6,7 +6,7 @@
   "cloud": {
 	"service": "aws",
 	"securityGroup": "SwirldsSecGroup",
-	"instanceType": "M4Xlarge",
+	"instanceType": "M410xlarge",
 	"instanceKey": "cody-littley",
 	"keyLocation": "keys/cody-littley",
 	"login": "ubuntu",
@@ -17,19 +17,26 @@
 	  }
 	]
   },
+  "eventFilesWriters": 4,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
 	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
 	"configs/testRestartCfg.json",
+	"configs/testRestartBlobCfg.json",
+	"configs/testFcmFreezeCfg.json",
 	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcm4kx100KBlobCfg.json",
+	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectFCQMultiReconnectCfg.json",
 	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testMigrationAppCfg2K.json"
   ],
   "db": {
 	"type": "postgresql",

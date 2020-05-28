@@ -3,52 +3,60 @@
   "description": "platform testing demo - reconnect",
   "duration": 1560,
   "settings": [
-    {"name": "throttle7extra", "value": "0.02" },
-    {"name":"throttle7", "value": "1" },
-    {
-      "name": "throttle7threshold",
-      "value": "1.5"
-    },
-    {
-      "name": "showInternalStats",
-      "value": "1"
-    },
-    {
-      "name": "csvFileName",
-      "value": "PlatformTesting"
-    },
-    {
-      "name": "csvAppend",
-      "value": "true"
-    },
-    {
-      "name": "reconnectActive",
-      "value": "1"
-    },
-    {
-      "name": "roundsExpired",
-      "value": "50"
-    }
+	{
+	  "name": "throttle7extra",
+	  "value": "0.02"
+	},
+	{
+	  "name": "throttle7",
+	  "value": "1"
+	},
+	{
+	  "name": "throttle7threshold",
+	  "value": "1.5"
+	},
+	{
+	  "name": "showInternalStats",
+	  "value": "1"
+	},
+	{
+	  "name": "csvFileName",
+	  "value": "PlatformTesting"
+	},
+	{
+	  "name": "csvAppend",
+	  "value": "true"
+	},
+	{
+	  "name": "reconnectActive",
+	  "value": "1"
+	},
+	{
+	  "name": "roundsExpired",
+	  "value": "50"
+	}
   ],
   "reconnectConfig": {
-    "reconnectTiming": 180
+	"reconnectTiming": 180
   },
   "experimentConfig": {
-    "experimentRestartDelay": "5",
-    "experimentStartDelay": "2",
-    "freezeWaitMillis": "30000"
+	"experimentRestartDelay": "5",
+	"experimentStartDelay": "2",
+	"freezeWaitMillis": "30000"
   },
+  "useLifecycleModel" : true,
   "app": {
-    "jar": "PlatformTestingApp.jar",
-    "parameterList": [
-      "FCMMultiReconnectFCQ.json"
-    ]
+	"jar": "PlatformTestingApp.jar",
+	"parameterList": [
+	  "FCMMultiReconnectFCQ.json"
+	]
   },
   "resultFiles": [
-    "swirlds.log"
+	"swirlds.log"
   ],
   "validator": [
-    "STATS",
-    "RECONNECT"
+	"STATS",
+	"RECONNECT",
+	"GOSSIP_COMPENSATION"
   ]
 }
