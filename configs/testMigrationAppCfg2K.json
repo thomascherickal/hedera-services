@@ -6,7 +6,7 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"MigrationTestingApp"},
     {"name":"csvAppend", "value":"true"},
-    {"name": "checkSignedStateFromDisk", "value": "true"}
+    {"name": "checkSignedStateFromDisk", "value": "false"}
   ],
   "useLifecycleModel" : true,
   "app": {
