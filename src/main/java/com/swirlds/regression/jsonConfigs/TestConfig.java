@@ -54,6 +54,8 @@ public class TestConfig implements FileRequirement {
 	private FreezeConfig freezeConfig = null;
 	private RecoverConfig recoverConfig = null;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
+	private MemoryLeakCheckConfig memoryLeakCheckConfig = null;
+
 	/**
 	 * Configuration to enable PTALifecycleValidator at the end of the test to validate ExpectedMap.
 	 * For validation to happen, SAVE_EXPECTED_MAP transaction should be sent to save expectedMap
@@ -220,6 +222,15 @@ public class TestConfig implements FileRequirement {
 	public void setUseLifecycleModel(boolean useLifecycleModel) {
 		this.useLifecycleModel = useLifecycleModel;
 	}
+
+	public MemoryLeakCheckConfig getMemoryLeakCheckConfig() {
+		return memoryLeakCheckConfig;
+	}
+
+	public void setMemoryLeakCheckConfig(MemoryLeakCheckConfig memoryLeakCheckConfig) {
+		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
+	}
+
 
 	@Override
 	public List<String> getFilesNeeded() {
