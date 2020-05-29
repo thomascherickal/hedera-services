@@ -7,6 +7,7 @@
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"}
   ],
+  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMMultipleOperations.json"]
