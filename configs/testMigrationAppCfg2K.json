@@ -6,8 +6,9 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"MigrationTestingApp"},
     {"name":"csvAppend", "value":"true"},
-    {"name": "checkSignedStateFromDisk", "value": "true"}
+    {"name": "checkSignedStateFromDisk", "value": "false"}
   ],
+  "useLifecycleModel" : true,
   "app": {
     "jar": "MigrationTestingApp.jar",
     "parameterList": [4685095852903873060, 500,	4]
