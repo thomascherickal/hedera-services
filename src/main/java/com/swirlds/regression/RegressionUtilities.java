@@ -333,8 +333,6 @@ public class RegressionUtilities {
 		//returnIterator.add("stream_*");
 		returnIterator.add("postgres_reports"); // badgerized web summaries
 		returnIterator.add("latest_postgres*"); // raw log files(s)
-		returnIterator.add("gc.log*");
-		returnIterator.add("*.jfr");
 
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);
