@@ -18,7 +18,6 @@
 package com.swirlds.regression.slack;
 
 import com.hubspot.slack.client.models.Attachment;
-import com.swirlds.regression.Experiment;
 import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -27,7 +26,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
