@@ -17,6 +17,9 @@
 
 package com.swirlds.regression.validators;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import org.apache.commons.io.IOUtils;
 
@@ -39,13 +42,35 @@ public class MemoryLeakValidator extends Validator {
 	private boolean isValidated = false;
 	private boolean isValid = false;
 	private File experimentFolder;
-	private final String GC_LOG_FILES = "gc*.log";
-	private final String NODE_FOLDER_NAME = "node*";
-	private final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
+	private static final String GC_LOG_FILES = "gc*.log";
+	private static final String NODE_FOLDER_NAME = "node*";
+	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
+	/**
+	 * 	if isProblem in response is true, log an error
+	 */
+	private static final String IS_PROBLEM_FIELD = "isProblem";
+	/**
+	 * if isProblem in response is true, we should report problem content
+	 */
+	private static final String PROBLEM_FIELD = "problem";
+	/**
+	 * 	if API key is missing or invalid, response would contain this field
+	 */
+	private static final String FAULT_FIELD = "fault";
+	/**
+	 * in this field is not null in response, log an info which contains a link of webReport
+	 */
+	private static final String WEB_REPORT_FIELD = "webReport";
 
-	public static final String ERROR_READ_STREAM = "MemoryLeakValidator got IOException when reading from inputStream: ";
-	public static final String ERROR_STREAM = "MemoryLeakValidator got error message from GCEasy API: ";
+	public static final String FAULT_FIELD_MSG = "fault message in response: ";
+	public static final String PROBLEM_FIELD_MSG = "problem message in response: ";
+	public static final String WEB_REPORT_FIELD_MSG = "GC webReport URL: ";
+
+	public static final String ERROR_READ_STREAM = "got IOException when reading from " +
+			"inputStream: ";
+	public static final String ERROR_PARSE_RESPONSE = "got Exception when parsing response to Json";
+	public static final String ERROR_STREAM = "got error message from GCEasy API: ";
 	public static final String RESPONSE_CODE = "ResponseCode: ";
 	public static final String RESPONSE_CODE_OK = "ResponseCode: OK";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
@@ -90,9 +115,8 @@ public class MemoryLeakValidator extends Validator {
 		showResponseCode(responseCode);
 
 		String response = readFromStream(con.getInputStream());
-		if (response == null) {
-			addWarning(RESPONSE_EMPTY);
-		}
+		checkResponse(response);
+
 		String errMsg = readFromStream(con.getErrorStream());
 		if (errMsg != null) {
 			addWarning(ERROR_STREAM + errMsg);
@@ -102,6 +126,7 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * build URL for sending GC log to GCEasy API
+	 *
 	 * @return
 	 * @throws MalformedURLException
 	 */
@@ -111,6 +136,7 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * read content from inputStreamE
+	 *
 	 * @param inputStream
 	 * @return
 	 */
@@ -127,27 +153,62 @@ public class MemoryLeakValidator extends Validator {
 				response.append(output);
 			}
 		} catch (IOException ex) {
-			addError(ERROR_READ_STREAM + ex.getMessage());
+			addWarning(ERROR_READ_STREAM + ex.getMessage());
 		}
 		return response.toString();
 	}
 
 	/**
+	 * check response, log an error when `isProblem` in response is true
+	 *
+	 * @param response
+	 * @return return false when `isProblem` is true; otherwise return true;
+	 */
+	boolean checkResponse(final String response) {
+		if (response == null || response.isBlank()) {
+			addWarning(RESPONSE_EMPTY);
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode jsonNode = mapper.readTree(response);
+			// if there is an `fault` field, it means API key is missing or invalid
+			if (jsonNode.has(FAULT_FIELD)) {
+				addWarning(FAULT_FIELD_MSG + jsonNode.get(FAULT_FIELD));
+			}
+			// if `isProblem` is true, log an error with problem content
+			if (jsonNode.has(IS_PROBLEM_FIELD)) {
+				boolean isProblem = jsonNode.get(IS_PROBLEM_FIELD).booleanValue();
+				if (isProblem) {
+					addError(PROBLEM_FIELD_MSG + jsonNode.get(PROBLEM_FIELD));
+				}
+			}
+			// if there is an `webReport` field, show the link
+			if (jsonNode.has(WEB_REPORT_FIELD)) {
+				addInfo(WEB_REPORT_FIELD_MSG + jsonNode.get(WEB_REPORT_FIELD));
+			}
+		} catch (JsonProcessingException ex) {
+			addWarning(ERROR_PARSE_RESPONSE + ex.getMessage());
+		}
+		return true;
+	}
+
+	/**
 	 * show responseCode in message
+	 *
 	 * @param responseCode
 	 */
 	void showResponseCode(final int responseCode) {
 		if (responseCode == HttpURLConnection.HTTP_OK) {
-			addInfo("ResponseCode: OK");
+			addInfo(RESPONSE_CODE_OK);
 		} else if (responseCode / 100 == 2) {
 			// 1xx: Informational
 			// 2xx: Success
-			addInfo("ResponseCode: " + responseCode);
+			addInfo(RESPONSE_CODE + responseCode);
 		} else {
 			// 3xx: Redirection
 			// 4xx: Client Error
 			// 5xx: Server Error
-			addWarning("ResponseCode: " + responseCode);
+			addWarning(RESPONSE_CODE + responseCode);
 		}
 	}
 }

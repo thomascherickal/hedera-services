@@ -25,7 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.GCEASY_URL;
+import static com.swirlds.regression.validators.MemoryLeakValidator.PROBLEM_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.RESPONSE_CODE_OK;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +40,12 @@ public class MemoryLeakValidatorTest {
 		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
 		System.out.println(path);
 		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL());
-		assertTrue(memoryLeakValidator.getInfoMessages().contains(RESPONSE_CODE_OK));
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.getErrorMessages().stream()
+				.anyMatch((str) -> (str.contains(PROBLEM_FIELD_MSG))));
 	}
 
 	/**
@@ -50,9 +57,8 @@ public class MemoryLeakValidatorTest {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(
 				new MemoryLeakCheckConfig(), 4);
 		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
-		System.out.println(path);
 		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL));
-		System.out.println(memoryLeakValidator.getErrorMessages());
-		//assertTrue(memoryLeakValidator.getInfoMessages().contains(RESPONSE_CODE_OK));
+		assertTrue(memoryLeakValidator.getWarningMessages().stream()
+				.anyMatch((str) -> (str.contains(FAULT_FIELD_MSG))));
 	}
 }
