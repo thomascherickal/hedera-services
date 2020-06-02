@@ -35,6 +35,7 @@ import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.ExpectedMapData;
+import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -86,6 +87,7 @@ import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
+import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
 import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
@@ -806,6 +808,11 @@ public class Experiment implements ExperimentSummary {
 			requiredValidator.add(lifecycleValidator);
 		}
 
+		if (testConfig.getMemoryLeakCheckConfig() != null) {
+			requiredValidator.add(new MemoryLeakValidator(
+					testConfig.getMemoryLeakCheckConfig(), regConfig.getTotalNumberOfNodes()));
+		}
+
 		for (Validator item : requiredValidator) {
 			try {
 				if (item instanceof ReconnectValidator) {
@@ -1327,7 +1334,7 @@ public class Experiment implements ExperimentSummary {
 	 *
 	 * @return string containing JVM options
 	 */
-	private String getJVMOptionsString() {
+	String getJVMOptionsString() {
 		String javaOptions;
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.
@@ -1339,6 +1346,10 @@ public class Experiment implements ExperimentSummary {
 		}
 		if (!regConfig.getJvmOptions().isEmpty()) {
 			javaOptions = regConfig.getJvmOptions();
+		}
+		// generate gc logs if the testConfig contains MemoryLeakCheckConfig
+		if (testConfig.getMemoryLeakCheckConfig() != null) {
+			javaOptions += JVM_OPTIONS_GC_LOG;
 		}
 		return javaOptions;
 	}
