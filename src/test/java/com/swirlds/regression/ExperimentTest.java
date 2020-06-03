@@ -31,9 +31,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
 import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ExperimentTest {
@@ -45,7 +47,7 @@ public class ExperimentTest {
 	static ArrayList<String> logs = new ArrayList<String>();
 	static String[] searchPhrases = {"Freeze state is about to be saved to disk","has loaded a saved state for round"};
 
-	@BeforeAll
+	//@BeforeAll
 	public static void init() {
 		exp = new Experiment(RegressionUtilities.importRegressionConfig(), RegressionUtilities.TEST_CONFIG);
 
@@ -115,5 +117,14 @@ public class ExperimentTest {
 		assertNull(lastStakedDifferentExp.getSavedStateForNode(3,4));
 	}
 
+	@Test
+	public void getJVMOptionsStringTest() {
+		TestConfig testConfig = new TestConfig();
+		MemoryLeakCheckConfig memoryLeakCheckConfig = new MemoryLeakCheckConfig();
+		memoryLeakCheckConfig.setNodeGroupIdentifier(ALL);
+		testConfig.setMemoryLeakCheckConfig(memoryLeakCheckConfig);
 
+		Experiment experiment = new Experiment(new RegressionConfig(), testConfig);
+		assertTrue(experiment.getJVMOptionsString().contains(JVM_OPTIONS_GC_LOG));
+	}
 }

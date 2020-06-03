@@ -24,6 +24,7 @@ import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
+import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
@@ -45,6 +46,7 @@ import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
 import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -60,7 +62,9 @@ import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -71,10 +75,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -85,6 +95,9 @@ import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_FILES;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_FILES_REGEX;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
@@ -251,7 +264,7 @@ public class Experiment implements ExperimentSummary {
 	 * 		A list of runnable task
 	 */
 	private void threadPoolService(List<Runnable> tasks) {
-		if(useThreadPool) {
+		if (useThreadPool) {
 			if (tasks.size() > 0) {
 				if (es == null) {
 					/* this allows the same threadpool to be used for all experiments instead of creating and destroying
@@ -727,6 +740,33 @@ public class Experiment implements ExperimentSummary {
 		return mapData;
 	}
 
+	/**
+	 * get GC Files for nodes we want to check GC logs
+	 * @return
+	 */
+	private Map<Integer, File> getGCLogsForNodes() {
+		final Map<Integer, File> gcFilesMap = new HashMap<>();
+		if ( testConfig != null) {
+			final MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
+			if (memoryLeakCheckConfig != null) {
+				final int totalNum = regConfig.getTotalNumberOfNodes();
+				final int lastStakedNode = getLastStakedNode();
+				for (int i = 0; i < totalNum; i++) {
+					// only check GC log for nodes specified in MemoryLeakCheckConfig
+					if (memoryLeakCheckConfig.shouldCheck(i, totalNum, lastStakedNode)) {
+						String folder = getExperimentResultsFolderForNode(i);
+						File[] files = RegressionUtilities.getGCLogs(folder);
+						File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
+						RegressionUtilities.zip(files, zipFile);
+						gcFilesMap.put(i, zipFile);
+					}
+				}
+			}
+		}
+
+		return gcFilesMap;
+	}
+
 	private void validateTest() {
 		SlackTestMsg slackMsg = new SlackTestMsg(
 				getUniqueId(),
@@ -809,8 +849,7 @@ public class Experiment implements ExperimentSummary {
 		}
 
 		if (testConfig.getMemoryLeakCheckConfig() != null) {
-			requiredValidator.add(new MemoryLeakValidator(
-					testConfig.getMemoryLeakCheckConfig(), regConfig.getTotalNumberOfNodes()));
+			requiredValidator.add(new MemoryLeakValidator(getGCLogsForNodes()));
 		}
 
 		for (Validator item : requiredValidator) {
@@ -978,7 +1017,8 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public SavedState getSavedStateForNode(int nodeIndex, int totalNodes) {
-		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()), testConfig.getStartSavedStates())
+		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()),
+				testConfig.getStartSavedStates())
 				.filter(Objects::nonNull)
 				.flatMap(Collection::stream)
 				.filter(Objects::nonNull)
@@ -1029,7 +1069,7 @@ public class Experiment implements ExperimentSummary {
 		//Step 3, copy saved state to nodes if necessary
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
-					log.info(MARKER,"COPY SAVED STATE THREAD FOR NODE: {}",i);
+					log.info(MARKER, "COPY SAVED STATE THREAD FOR NODE: {}", i);
 					SSHService currentNode = sshNodes.get(i);
 					// copy a saved state if set in config
 					SavedState savedState = getSavedStateForNode(i, nodeNumber);
@@ -1347,6 +1387,7 @@ public class Experiment implements ExperimentSummary {
 		if (!regConfig.getJvmOptions().isEmpty()) {
 			javaOptions = regConfig.getJvmOptions();
 		}
+
 		// generate gc logs if the testConfig contains MemoryLeakCheckConfig
 		if (testConfig.getMemoryLeakCheckConfig() != null) {
 			javaOptions += JVM_OPTIONS_GC_LOG;

@@ -32,22 +32,22 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
  */
 public class MemoryLeakValidator extends Validator {
-	private MemoryLeakCheckConfig config;
-	private int nodesNum;
+	private Map<Integer, File> gcFilesMap;
+
 	private boolean isValidated = false;
 	private boolean isValid = false;
 	private File experimentFolder;
-	private static final String GC_LOG_FILES = "gc*.log";
-	private static final String NODE_FOLDER_NAME = "node*";
+
 	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
 	/**
-	 * 	if isProblem in response is true, log an error
+	 * if isProblem in response is true, log an error
 	 */
 	private static final String IS_PROBLEM_FIELD = "isProblem";
 	/**
@@ -55,7 +55,7 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	private static final String PROBLEM_FIELD = "problem";
 	/**
-	 * 	if API key is missing or invalid, response would contain this field
+	 * if API key is missing or invalid, response would contain this field
 	 */
 	private static final String FAULT_FIELD = "fault";
 	/**
@@ -75,15 +75,26 @@ public class MemoryLeakValidator extends Validator {
 	public static final String RESPONSE_CODE_OK = "ResponseCode: OK";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
 
-	public MemoryLeakValidator(final MemoryLeakCheckConfig config, final int nodesNum) {
-		this.config = config;
-		this.nodesNum = nodesNum;
+	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
+
+	public MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
+		this.gcFilesMap = gcFilesMap;
 	}
 
 	@Override
 	public void validate() {
-		isValid = true;
-		isValidated = true;
+		// get gc*.log for this node
+
+		//		add warn if gc*.log is missing;
+		//		zip log file;
+		//		checkGCFile
+		gcFilesMap.forEach((id, file) -> {
+			if (!file.exists()) {
+				addWarning(String.format(GC_LOG_FILE_MISS, id));
+			} else {
+
+			}
+		});
 	}
 
 	@Override
@@ -211,4 +222,6 @@ public class MemoryLeakValidator extends Validator {
 			addWarning(RESPONSE_CODE + responseCode);
 		}
 	}
+
+
 }

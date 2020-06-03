@@ -30,6 +30,8 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -43,6 +45,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
@@ -63,11 +67,15 @@ public class RegressionUtilities {
 	public static final String RESULTS_FOLDER = "results";
 	public static final String TAR_NAME = "remoteExperiment.tar.gz";
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
+	public static final String GC_LOG_FILES = "gc*.log";
+	public static final String GC_LOG_FILES_REGEX = "gc(.*).log";
+	public static final String GC_LOG_ZIP_FILE = "gcLog.zip";
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
+			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g " +
+			"-XX:MetaspaceSize=1g";
 	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions " +
 			"-XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages " +
-			"-XX:MaxDirectMemorySize=%dg";
+			"-XX:MaxDirectMemorySize=%dg -XX:MetaspaceSize=1g";
 	public static final String JVM_OPTIONS_GC_LOG = "-Xlog:gc*:gc.log –XX:+PrintGCDetails -XX:+PrintGCDateStamps";
 	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", " +
 			"$1 }' | sed 's/^[[:space:]]*//g'";
@@ -335,7 +343,7 @@ public class RegressionUtilities {
 		returnIterator.add("postgres_reports"); // badgerized web summaries
 		returnIterator.add("latest_postgres*"); // raw log files(s)
 		// download GC log
-		returnIterator.add("gc*.log");
+		returnIterator.add(GC_LOG_FILES);
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);
 		}
@@ -432,6 +440,54 @@ public class RegressionUtilities {
 			return JVM_OPTIONS_DEFAULT;
 		} else {
 			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
+		}
+	}
+
+
+	/**
+	 * get GC log files in the given folder
+	 *
+	 * @param folderPath
+	 * @return
+	 */
+	public static File[] getGCLogs(final String folderPath) {
+		File folder = new File(folderPath);
+		if (!folder.exists() || !folder.isDirectory()) {
+			return null;
+		}
+
+		return folder.listFiles((dir, name) -> name.toLowerCase().matches(GC_LOG_FILES_REGEX));
+	}
+
+	/**
+	 * zip a file
+	 *
+	 * @param files
+	 * 		files to be zipped
+	 * @param zipFile
+	 * 		result zip file
+	 * @return
+	 */
+	public static void zip(final File[] files, final File zipFile) {
+		if (files == null || files.length == 0) {
+			log.error(ERROR, "Files is empty. Fail to files as {}", zipFile.getName());
+		}
+		try (ZipOutputStream zipOut = new ZipOutputStream(
+				new FileOutputStream(zipFile))) {
+			for (File file : files) {
+				zipOut.putNextEntry(new ZipEntry(file.getName()));
+				try (FileInputStream input = new FileInputStream(file)) {
+					byte[] bytes = new byte[1024];
+					int length;
+					while ((length = input.read(bytes)) > 0) {
+						zipOut.write(bytes, 0, length);
+					}
+					zipOut.closeEntry();
+				}
+			}
+		} catch (IOException e) {
+			log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
+			e.printStackTrace();
 		}
 	}
 }
