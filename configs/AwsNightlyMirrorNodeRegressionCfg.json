@@ -13,14 +13,7 @@
 	"regionList": [
 		{
 		  "region": "us-east-2",
-		  "instanceList": [
-			  "i-0dd3e733eddd50418",
-			  "i-021e942b690dc496f",
-			  "i-0a16ced2310aa915e",
-			  "i-0885f2c73eb631077",
-			  "i-09ee3179b692f0c2c",
-			  "i-033e9aed8924bb574"
-		  ]
+			"numberOfNodes": 6
 		}
 	]
   },
