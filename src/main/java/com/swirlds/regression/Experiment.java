@@ -1078,6 +1078,7 @@ public class Experiment implements ExperimentSummary {
 		testRun.preRun(testConfig, this);
 		sendSettingFileToNodes();
 
+		setupNetworkErrorCfg();
 		testRun.runTest(testConfig, this);
 
 		if (testConfig.validators.contains(ValidatorType.BLOB_STATE)) {
@@ -1126,6 +1127,26 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
+		cleanNetworkErrorCfg();
+	}
+
+	void setupNetworkErrorCfg() {
+		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
+			int cfgAmount = Math.min(sshNodes.size(), regConfig.getNetErrorCfg().size());
+			for (int i = 0; i < cfgAmount; i++) {
+				SSHService node = sshNodes.get(i);
+				node.setupNetworkErrorCfg(regConfig.getNetErrorCfg().get(i));
+			}
+		}
+	}
+
+	void cleanNetworkErrorCfg() {
+		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
+			for (int i = 0; i < sshNodes.size(); i++) {
+				SSHService node = sshNodes.get(i);
+				node.cleanNetworkErrorCfg();
+			}
+		}
 	}
 
 	/**

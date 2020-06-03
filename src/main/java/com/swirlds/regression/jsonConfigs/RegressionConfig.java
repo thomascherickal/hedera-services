@@ -29,6 +29,8 @@ public class RegressionConfig {
 	private CloudConfig cloud = null;
 	private LocalConfig local = null;
 	private List<String> experiments;
+	private List<NetworkErrorConfig> netErrorCfg;
+
 	private SlackConfig slack;
 	private JvmOptionParametersConfig jvmOptionParametersConfig = null;
 
@@ -193,6 +195,14 @@ public class RegressionConfig {
 
 	public void setNumberOfZeroStakeNodes(final int numberOfZeroStakeNodes) {
 		this.numberOfZeroStakeNodes = numberOfZeroStakeNodes;
+	}
+
+	public List<NetworkErrorConfig> getNetErrorCfg() {
+		return netErrorCfg;
+	}
+
+	public void setNetErrorCfg(List<NetworkErrorConfig> netErrorCfg) {
+		this.netErrorCfg = netErrorCfg;
 	}
 
 	public boolean isUseThreadPool() {

@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.jsonConfigs.NetworkErrorConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -214,10 +215,10 @@ public class SSHService {
 
 		if (dataExtensionCount > 0) {
 			String dataCommandStr = "find . | grep " + dataExtensions;
-			
+
 			Session.Command dataCmd = null;
 			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
-			
+
 				try {
 	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
 	                Thread.sleep(10000);
@@ -1255,4 +1256,48 @@ public class SSHService {
         String cmdResult = readCommandOutput(cmd).toString();
         log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
     }
+
+	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
+		if (config.isBlockNetwork()) {
+			System.out.println("current directory " + System.getProperty("user.dir"));
+
+			// copy script to target directory and run the background script
+			// to periodically block and restart sync port
+			try {
+				ssh.newSCPFileTransfer().upload("src/main/resources/block_ubuntu.sh", REMOTE_EXPERIMENT_LOCATION);
+				Session.Command cmd = execCommand("nohup ./remoteExperiment/block_ubuntu.sh &",
+						"Block network sync port");
+				throwIfExitCodeBad(cmd, "Block network sync port");
+				// if the network interface is blocked no need to setup packet loss or delay
+				return;
+			} catch (IOException e) {
+				log.error(ERROR, "Exception ", e);
+			}
+		}
+
+		if (config.isEnablePktDelay()) {
+			String cmdString = String.format(
+					"tc qdisc add dev ens3 root netem delay %fms",
+					config.getPacketDelayMS());
+			Session.Command cmd = execCommand(cmdString, "Enable packet delay");
+			throwIfExitCodeBad(cmd, "Enable packet delay");
+		}
+
+		if (config.isEnablePktLoss()) { //drop packet at network input face
+			String cmdString = String.format(
+					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
+					config.getPacketLossPercentage() / 100f);
+			Session.Command cmd = execCommand(cmdString, "Enable packet loss");
+			throwIfExitCodeBad(cmd, "Enable packet loss");
+		}
+		Session.Command cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
+	}
+
+	public void cleanNetworkErrorCfg() {
+		Session.Command cmd = execCommand(
+				"sudo tc qdisc del dev ens3 root; sudo iptables --flush; sudo pkill -f block_ubuntu.sh",
+				"Clean network rules");
+		throwIfExitCodeBad(cmd, "Clean network rules");
+	}
+
 }
