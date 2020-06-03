@@ -1,0 +1,22 @@
+{
+  "name":"FCM-2.5MC-5MU-5MT-250KD-2.5KTPS",
+  "description" : "platform testing demo - FCM-1MC-5MU-5MT-250KD-2.5KTPS",
+  "duration": 6600,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"}
+  ],
+  "useLifecycleModel" : true,
+  "app": {
+    "jar": "PlatformTestingApp.jar",
+    "parameterList": ["FCM1M.json"]
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "memoryLeakCheckConfig": {
+    "nodesToCheck": [0, 3]
+  },
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+}
