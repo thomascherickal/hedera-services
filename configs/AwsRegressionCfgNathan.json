@@ -66,9 +66,9 @@
 	"channel": "regression-pcr",
 	"summaryChannel": "regression-pcr",
 	"notifyChannel": false,
+	"notifyOn": "ALL",
 	"notifyUserIds": [
 	  "UA66NE2NT"
-	],
-	"notifyOn": "ALL"
+	]
   }
 }
