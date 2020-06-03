@@ -43,6 +43,7 @@
 		<maven.compiler.source>12</maven.compiler.source>
 		<maven.compiler.target>12</maven.compiler.target>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<maven.test.skip>true</maven.test.skip>
 
 		<!-- Dependency Versioning -->
 		<slf4j.version>1.8.0-beta2</slf4j.version>
