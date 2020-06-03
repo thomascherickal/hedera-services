@@ -46,7 +46,6 @@ import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
 import org.apache.commons.io.filefilter.FalseFileFilter;
-import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -62,9 +61,7 @@ import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -95,8 +92,6 @@ import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_FILES;
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_FILES_REGEX;
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
@@ -742,11 +737,12 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * get GC Files for nodes we want to check GC logs
+	 *
 	 * @return
 	 */
 	private Map<Integer, File> getGCLogsForNodes() {
 		final Map<Integer, File> gcFilesMap = new HashMap<>();
-		if ( testConfig != null) {
+		if (testConfig != null) {
 			final MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
 			if (memoryLeakCheckConfig != null) {
 				final int totalNum = regConfig.getTotalNumberOfNodes();

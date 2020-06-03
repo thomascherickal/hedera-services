@@ -42,6 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MemoryLeakValidatorTest {
 
+
+
 	@Test
 	public void getGCLogsTest() {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest").getPath();
