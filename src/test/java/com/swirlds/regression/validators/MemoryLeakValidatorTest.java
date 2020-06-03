@@ -67,8 +67,7 @@ public class MemoryLeakValidatorTest {
 	public void checkGCFileTest() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
-		System.out.println(path);
-		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL());
+		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
@@ -85,7 +84,7 @@ public class MemoryLeakValidatorTest {
 	public void checkGCFile_Negative_Test() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
-		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL));
+		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL), 0);
 		assertTrue(memoryLeakValidator.getWarningMessages().stream()
 				.anyMatch((str) -> (str.contains(FAULT_FIELD_MSG))));
 	}

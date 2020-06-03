@@ -20,7 +20,6 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
@@ -42,7 +41,6 @@ public class MemoryLeakValidator extends Validator {
 
 	private boolean isValidated = false;
 	private boolean isValid = false;
-	private File experimentFolder;
 
 	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
@@ -64,11 +62,12 @@ public class MemoryLeakValidator extends Validator {
 	private static final String WEB_REPORT_FIELD = "webReport";
 
 	public static final String FAULT_FIELD_MSG = "fault message in response: ";
-	public static final String PROBLEM_FIELD_MSG = "problem message in response: ";
+	public static final String PROBLEM_FIELD_MSG = "has problem message in response: ";
 	public static final String WEB_REPORT_FIELD_MSG = "GC webReport URL: ";
 
 	public static final String ERROR_READ_STREAM = "got IOException when reading from " +
 			"inputStream: ";
+	public static final String ERROR_CONN_API = "got IOException when communicating with GCEasy API: ";
 	public static final String ERROR_PARSE_RESPONSE = "got Exception when parsing response to Json";
 	public static final String ERROR_STREAM = "got error message from GCEasy API: ";
 	public static final String RESPONSE_CODE = "ResponseCode: ";
@@ -83,18 +82,21 @@ public class MemoryLeakValidator extends Validator {
 
 	@Override
 	public void validate() {
-		// get gc*.log for this node
-
-		//		add warn if gc*.log is missing;
-		//		zip log file;
-		//		checkGCFile
-		gcFilesMap.forEach((id, file) -> {
-			if (!file.exists()) {
-				addWarning(String.format(GC_LOG_FILE_MISS, id));
-			} else {
-
-			}
-		});
+		// get gcLog.zip for this node
+		// add warn if gc*.log is missing;
+		try {
+			URL url = buildURL();
+			gcFilesMap.forEach((id, file) -> {
+				if (!file.exists()) {
+					addWarning(String.format(GC_LOG_FILE_MISS, id));
+				} else {
+					checkGCFile(file, url, id);
+				}
+			});
+			isValidated = true;
+		} catch (MalformedURLException ex) {
+			addWarning("Got MalformedURLException when building URL");
+		}
 	}
 
 	@Override
@@ -102,37 +104,34 @@ public class MemoryLeakValidator extends Validator {
 		return isValidated && isValid;
 	}
 
-	public void setFolder(String experimentFolder) {
-		this.experimentFolder = new File(experimentFolder);
-		if (!this.experimentFolder.exists()) {
-			addError("experiment path did not exist");
-		}
-	}
-
 	/**
-	 * return
+	 * send zipLogFile to GCEasy API and parse response;
+	 * return false when problem field is not empty, else return true
 	 */
-	void checkGCFile(final File logFile, final URL url) throws Exception {
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+	void checkGCFile(final File zipLogFile, final URL url, final int nodeId) {
+		try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Content-Type", "text");
+			con.setRequestProperty("Content-Encoding", "zip");
 
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Content-Type", "text");
-		con.setRequestProperty("Content-Encoding", "zip");
+			con.setDoOutput(true);
+			IOUtils.copy(fileInputStream, con.getOutputStream());
 
-		con.setDoOutput(true);
-		IOUtils.copy(new FileInputStream(logFile), con.getOutputStream());
+			int responseCode = con.getResponseCode();
+			showResponseCode(responseCode);
 
-		int responseCode = con.getResponseCode();
-		showResponseCode(responseCode);
+			String response = readFromStream(con.getInputStream());
+			checkResponse(response, nodeId);
 
-		String response = readFromStream(con.getInputStream());
-		checkResponse(response);
-
-		String errMsg = readFromStream(con.getErrorStream());
-		if (errMsg != null) {
-			addWarning(ERROR_STREAM + errMsg);
+			String errMsg = readFromStream(con.getErrorStream());
+			if (errMsg != null) {
+				addWarning(ERROR_STREAM + errMsg);
+			}
+			con.disconnect();
+		} catch (IOException ex) {
+			addWarning(ERROR_CONN_API + ex.getMessage());
 		}
-		System.out.println("response:" + response);
 	}
 
 	/**
@@ -171,14 +170,14 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * check response, log an error when `isProblem` in response is true
-	 *
-	 * @param response
-	 * @return return false when `isProblem` is true; otherwise return true;
 	 */
-	boolean checkResponse(final String response) {
+	void checkResponse(final String response, final int nodeId) {
+
 		if (response == null || response.isBlank()) {
 			addWarning(RESPONSE_EMPTY);
+			return;
 		}
+
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			JsonNode jsonNode = mapper.readTree(response);
@@ -186,21 +185,23 @@ public class MemoryLeakValidator extends Validator {
 			if (jsonNode.has(FAULT_FIELD)) {
 				addWarning(FAULT_FIELD_MSG + jsonNode.get(FAULT_FIELD));
 			}
-			// if `isProblem` is true, log an error with problem content
+
 			if (jsonNode.has(IS_PROBLEM_FIELD)) {
-				boolean isProblem = jsonNode.get(IS_PROBLEM_FIELD).booleanValue();
-				if (isProblem) {
-					addError(PROBLEM_FIELD_MSG + jsonNode.get(PROBLEM_FIELD));
+				// if `isProblem` is true, log an error with problem content
+				if (jsonNode.get(IS_PROBLEM_FIELD).booleanValue()) {
+					addError(String.format("node%d %s %s", nodeId,
+							PROBLEM_FIELD_MSG, jsonNode.get(PROBLEM_FIELD)));
+					isValid = false;
 				}
 			}
 			// if there is an `webReport` field, show the link
 			if (jsonNode.has(WEB_REPORT_FIELD)) {
-				addInfo(WEB_REPORT_FIELD_MSG + jsonNode.get(WEB_REPORT_FIELD));
+				addInfo(String.format("node%d's %s %s", nodeId,
+						WEB_REPORT_FIELD_MSG, jsonNode.get(WEB_REPORT_FIELD)));
 			}
 		} catch (JsonProcessingException ex) {
 			addWarning(ERROR_PARSE_RESPONSE + ex.getMessage());
 		}
-		return true;
 	}
 
 	/**
