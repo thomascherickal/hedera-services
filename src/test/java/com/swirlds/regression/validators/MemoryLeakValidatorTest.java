@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
@@ -57,7 +58,50 @@ public class MemoryLeakValidatorTest {
 	}
 
 	@Test
-	public void checkGCFileTest() throws Exception {
+	public void checkGCFile_HasProblemTest() throws Exception {
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
+		String file = "logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip";
+		File path = new File(getClass().getClassLoader().getResource(file).toURI());
+		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.getErrorMessages().stream()
+				.anyMatch((str) -> (str.contains(PROBLEM_FIELD_MSG))));
+		assertFalse(memoryLeakValidator.isValid());
+	}
+
+	@Test
+	public void checkGCFile_SUCCESS_Test() throws Exception {
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
+		String file = "logs/MemoryLeak/singleFile/gcLog.zip";
+		File path = new File(getClass().getClassLoader().getResource(file).toURI());
+		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.getInfoMessages().stream()
+				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		assertTrue(memoryLeakValidator.isValid());
+	}
+
+	/**
+	 * if not provide GC_API_KEY, the response would contain: "fault":{"reason":"apiKey is missing"}
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void checkGCFile_Fault_Test() throws Exception {
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
+		File path = new File(getClass().getClassLoader().getResource(
+				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
+		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL), 0);
+		assertTrue(memoryLeakValidator.getWarningMessages().stream()
+				.anyMatch((str) -> (str.contains(FAULT_FIELD_MSG))));
+	}
+
+	@Test
+	public void checkGCFileForNodesTest() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		File path = new File(getClass().getClassLoader().getResource(
 				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
@@ -68,20 +112,5 @@ public class MemoryLeakValidatorTest {
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
 		assertTrue(memoryLeakValidator.getErrorMessages().stream()
 				.anyMatch((str) -> (str.contains(PROBLEM_FIELD_MSG))));
-	}
-
-	/**
-	 * if not provide GC_API_KEY, the response would contain: "fault":{"reason":"apiKey is missing"}
-	 *
-	 * @throws Exception
-	 */
-	@Test
-	public void checkGCFile_Negative_Test() throws Exception {
-		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
-		File path = new File(getClass().getClassLoader().getResource(
-				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
-		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL), 0);
-		assertTrue(memoryLeakValidator.getWarningMessages().stream()
-				.anyMatch((str) -> (str.contains(FAULT_FIELD_MSG))));
 	}
 }

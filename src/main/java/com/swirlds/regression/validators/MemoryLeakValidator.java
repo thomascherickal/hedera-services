@@ -40,7 +40,7 @@ public class MemoryLeakValidator extends Validator {
 	private Map<Integer, File> gcFilesMap;
 
 	private boolean isValidated = false;
-	private boolean isValid = false;
+	private boolean isValid = true;
 
 	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
@@ -123,7 +123,7 @@ public class MemoryLeakValidator extends Validator {
 
 			String response = readFromStream(con.getInputStream());
 			checkResponse(response, nodeId);
-
+			System.out.println(response);
 			String errMsg = readFromStream(con.getErrorStream());
 			if (errMsg != null) {
 				addWarning(ERROR_STREAM + errMsg);
