@@ -42,6 +42,10 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	private Map<Integer, File> gcFilesMap;
 	/**
+	 * the URL for sending GC log to GCEasy API
+	 */
+	private URL url;
+	/**
 	 * whether GC log Files has been validated or not
 	 */
 	private boolean isValidated = false;
@@ -54,7 +58,7 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
 	/**
-	 * GCEASY URL which we send GC logs to get analyse report
+	 * GCEASY URL which we send GC logs for getting analyse report
 	 */
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
 	/**
@@ -95,27 +99,36 @@ public class MemoryLeakValidator extends Validator {
 	public static final String CHECK_GC_LOG = "checking GC log file for node%d";
 
 	public MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
+		this.url = buildURL();
 		this.gcFilesMap = gcFilesMap;
+	}
+
+	/**
+	 * for unit test
+	 */
+	MemoryLeakValidator(final Map<Integer, File> gcFilesMap, final URL url) {
+		this.gcFilesMap = gcFilesMap;
+		this.url = url;
 	}
 
 	@Override
 	public void validate() {
+		if (url == null) {
+			addWarning("URL is null");
+			return;
+		}
 		// get gcLog.zip for this node
 		// add warn if gc*.log is missing;
-		try {
-			URL url = buildURL();
-			gcFilesMap.forEach((id, file) -> {
-				if (!file.exists()) {
-					addWarning(String.format(GC_LOG_FILE_MISS, id));
-				} else {
-					addInfo(String.format(CHECK_GC_LOG, id));
-					checkGCFile(file, url, id);
-				}
-			});
-			isValidated = true;
-		} catch (MalformedURLException ex) {
-			addWarning("Got MalformedURLException when building URL");
-		}
+		gcFilesMap.forEach((id, file) -> {
+			if (!file.exists()) {
+				addWarning(String.format(GC_LOG_FILE_MISS, id));
+			} else {
+				addInfo(String.format(CHECK_GC_LOG, id));
+				checkGCFile(file, url, id);
+			}
+		});
+
+		isValidated = true;
 	}
 
 	@Override
@@ -141,7 +154,7 @@ public class MemoryLeakValidator extends Validator {
 
 			String response = readFromStream(con.getInputStream());
 			checkResponse(response, nodeId);
-			System.out.println(response);
+
 			String errMsg = readFromStream(con.getErrorStream());
 			if (errMsg != null) {
 				addWarning(ERROR_STREAM + errMsg);
@@ -154,12 +167,14 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * build URL for sending GC log to GCEasy API
-	 *
-	 * @return
-	 * @throws MalformedURLException
 	 */
-	URL buildURL() throws MalformedURLException {
-		return new URL(GCEASY_URL + "?apiKey=" + GC_API_KEY);
+	URL buildURL() {
+		try {
+			return new URL(GCEASY_URL + "?apiKey=" + GC_API_KEY);
+		} catch (MalformedURLException ex) {
+			addWarning("Got MalformedURLException when building URL");
+		}
+		return null;
 	}
 
 	/**
@@ -241,6 +256,4 @@ public class MemoryLeakValidator extends Validator {
 			addWarning(RESPONSE_CODE + responseCode);
 		}
 	}
-
-
 }
