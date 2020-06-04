@@ -1258,26 +1258,19 @@ public class SSHService {
     }
 
 	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
-		if (config.isBlockNetwork()) {
-			System.out.println("current directory " + System.getProperty("user.dir"));
-
-			// copy script to target directory and run the background script
-			// to periodically block and restart sync port
-			try {
-				ssh.newSCPFileTransfer().upload("src/main/resources/block_ubuntu.sh", REMOTE_EXPERIMENT_LOCATION);
-				Session.Command cmd = execCommand("nohup ./remoteExperiment/block_ubuntu.sh &",
-						"Block network sync port");
-				throwIfExitCodeBad(cmd, "Block network sync port");
-				// if the network interface is blocked no need to setup packet loss or delay
-				return;
-			} catch (IOException e) {
-				log.error(ERROR, "Exception ", e);
-			}
-		}
+        if (config.isBlockNetwork()) {
+            // run background script
+            // to periodically block and restart sync port
+            Session.Command cmd = execCommand("nohup ./remoteExperiment/block_ubuntu.sh &",
+                    "Block network sync port");
+            throwIfExitCodeBad(cmd, "Block network sync port");
+            // if the network interface is blocked no need to setup packet loss or delay
+            return;
+        }
 
 		if (config.isEnablePktDelay()) {
 			String cmdString = String.format(
-					"tc qdisc add dev ens3 root netem delay %fms",
+					"sudo tc qdisc add dev ens3 root netem delay %dms",
 					config.getPacketDelayMS());
 			Session.Command cmd = execCommand(cmdString, "Enable packet delay");
 			throwIfExitCodeBad(cmd, "Enable packet delay");
@@ -1293,11 +1286,21 @@ public class SSHService {
 		Session.Command cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
 	}
 
-	public void cleanNetworkErrorCfg() {
+	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
+        if (config.isEnablePktDelay()) {
+            Session.Command cmd = execCommand(
+                    "sudo tc qdisc del dev ens3 root",
+                    "Clean network delay rules");
+            throwIfExitCodeBad(cmd, "Clean network delay rules");
+        }
 		Session.Command cmd = execCommand(
-				"sudo tc qdisc del dev ens3 root; sudo iptables --flush; sudo pkill -f block_ubuntu.sh",
+				"sudo iptables --flush",
 				"Clean network rules");
 		throwIfExitCodeBad(cmd, "Clean network rules");
+        cmd = execCommand(
+                "sudo pkill -f block_ubuntu.sh",
+                "Clean network rules");
+        throwIfExitCodeBad(cmd, "Clean network rules");
 	}
 
 }

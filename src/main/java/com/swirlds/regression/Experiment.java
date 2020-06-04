@@ -1004,6 +1004,9 @@ public class Experiment implements ExperimentSummary {
 		int nodeNumber = sshNodes.size();
 		ArrayList<File> addedFiles = buildAdditionalFileList();
 
+		if (regConfig.getNetErrorCfg() != null){
+			addedFiles.add(new File("src/main/resources/block_ubuntu.sh"));
+		}
 		//Step 1, send tar to node 0
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
@@ -1081,6 +1084,8 @@ public class Experiment implements ExperimentSummary {
 		setupNetworkErrorCfg();
 		testRun.runTest(testConfig, this);
 
+		cleanNetworkErrorCfg();
+
 		if (testConfig.validators.contains(ValidatorType.BLOB_STATE)) {
 			if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
 				log.error(ERROR, "Not all nodes successfully backed up last round");
@@ -1127,7 +1132,6 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
-		cleanNetworkErrorCfg();
 	}
 
 	void setupNetworkErrorCfg() {
@@ -1142,9 +1146,9 @@ public class Experiment implements ExperimentSummary {
 
 	void cleanNetworkErrorCfg() {
 		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
-			for (int i = 0; i < sshNodes.size(); i++) {
+			for (int i = 0; i < regConfig.getNetErrorCfg().size(); i++) {
 				SSHService node = sshNodes.get(i);
-				node.cleanNetworkErrorCfg();
+				node.cleanNetworkErrorCfg(regConfig.getNetErrorCfg().get(i));
 			}
 		}
 	}
