@@ -11,7 +11,7 @@
   "useLifecycleModel" : true,
   "app": {
     "jar": "MigrationTestingApp.jar",
-    "parameterList": [4685095852903873060, 500,	4]
+    "parameterList": [4685095852903873060, 5000,	4]
   },
   "startSavedState": {
     "location": "s3://swirlds-regression/saved-states/MigrationTestingApp/migrate20K/",
