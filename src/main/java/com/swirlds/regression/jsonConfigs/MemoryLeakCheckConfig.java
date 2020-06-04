@@ -18,13 +18,14 @@
 package com.swirlds.regression.jsonConfigs;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class MemoryLeakCheckConfig {
 
 	/**
-	 * an array of nodeIds we want to check GC logs
+	 * an set of nodeIds we want to check GC logs
 	 */
-	private int[] nodesToCheck;
+	private Set<Integer> nodesToCheck;
 
 	/**
 	 * specifies which group of nodes we want to check GC logs;
@@ -32,11 +33,11 @@ public class MemoryLeakCheckConfig {
 	 */
 	private NodeGroupIdentifier nodeGroupIdentifier;
 
-	public int[] getNodesToCheck() {
+	public Set<Integer> getNodesToCheck() {
 		return nodesToCheck;
 	}
 
-	public void setNodesToCheck(int[] nodesToCheck) {
+	public void setNodesToCheck(Set<Integer> nodesToCheck) {
 		this.nodesToCheck = nodesToCheck;
 	}
 
@@ -54,8 +55,8 @@ public class MemoryLeakCheckConfig {
 	 * @return whether we need to check GC log of this node
 	 */
 	public boolean shouldCheck(final int nodeId, final int totalNum, final int lastStakedNode) {
-		if (nodesToCheck != null || nodesToCheck.length != 0) {
-			return Arrays.stream(nodesToCheck).anyMatch(id -> id == nodeId);
+		if (nodesToCheck != null && !nodesToCheck.isEmpty()) {
+			return nodesToCheck.contains(nodeId);
 		} else if (nodeGroupIdentifier != null){
 			return nodeGroupIdentifier.isNodeInGroup(nodeId, totalNum, lastStakedNode);
 		}

@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
 
 import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.FIRST_AND_LAST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -100,13 +101,14 @@ public class RegressionUtilitiesTest {
 
 	@Test
 	public void loadMemoryLeakCheckConfig_Array_Test() throws Exception {
+		// "nodesToCheck": [0, 3]
 		URL testCfgPath = getClass().getClassLoader().getResource("logs/MemoryLeak/testCfg-NodesToCheck.json");
 		TestConfig testConfig = RegressionUtilities.importExperimentConfig(testCfgPath.toURI());
 		MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
 		assertTrue(memoryLeakCheckConfig != null);
 		assertNull(memoryLeakCheckConfig.getNodeGroupIdentifier());
-		int[] nodesToCheck = memoryLeakCheckConfig.getNodesToCheck();
-		assertTrue(nodesToCheck.length == 2);
+		Set<Integer> nodesToCheck = memoryLeakCheckConfig.getNodesToCheck();
+		assertTrue(nodesToCheck.size() == 2);
 	}
 
 	@Test

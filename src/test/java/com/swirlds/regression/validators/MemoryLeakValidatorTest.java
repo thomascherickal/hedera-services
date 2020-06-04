@@ -17,20 +17,12 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.Experiment;
 import com.swirlds.regression.RegressionUtilities;
-import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
@@ -41,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MemoryLeakValidatorTest {
-
 
 
 	@Test
@@ -68,7 +59,8 @@ public class MemoryLeakValidatorTest {
 	@Test
 	public void checkGCFileTest() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
-		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
+		File path = new File(getClass().getClassLoader().getResource(
+				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
 		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
@@ -80,12 +72,14 @@ public class MemoryLeakValidatorTest {
 
 	/**
 	 * if not provide GC_API_KEY, the response would contain: "fault":{"reason":"apiKey is missing"}
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void checkGCFile_Negative_Test() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
-		File path = new File(getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
+		File path = new File(getClass().getClassLoader().getResource(
+				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
 		memoryLeakValidator.checkGCFile(path, new URL(GCEASY_URL), 0);
 		assertTrue(memoryLeakValidator.getWarningMessages().stream()
 				.anyMatch((str) -> (str.contains(FAULT_FIELD_MSG))));

@@ -1371,23 +1371,23 @@ public class Experiment implements ExperimentSummary {
 	 * @return string containing JVM options
 	 */
 	String getJVMOptionsString() {
-		String javaOptions;
+		String javaOptions = "";
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.
          */
 		if (regConfig.getJvmOptionParametersConfig() != null) {
 			javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
 		} else {
-			javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
+			// generate gc logs if the testConfig contains MemoryLeakCheckConfig
+			if (testConfig.getMemoryLeakCheckConfig() != null) {
+				javaOptions = JVM_OPTIONS_GC_LOG;
+			}
+			javaOptions += new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
 		}
 		if (!regConfig.getJvmOptions().isEmpty()) {
 			javaOptions = regConfig.getJvmOptions();
 		}
 
-		// generate gc logs if the testConfig contains MemoryLeakCheckConfig
-		if (testConfig.getMemoryLeakCheckConfig() != null) {
-			javaOptions += JVM_OPTIONS_GC_LOG;
-		}
 		return javaOptions;
 	}
 
