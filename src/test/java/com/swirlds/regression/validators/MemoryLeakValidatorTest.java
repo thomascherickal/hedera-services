@@ -21,6 +21,7 @@ import com.swirlds.regression.RegressionUtilities;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,12 +60,9 @@ public class MemoryLeakValidatorTest {
 
 	@Test
 	public void checkGCFile_HasProblemTest() throws Exception {
-		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		String file = "logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip";
-		File path = new File(getClass().getClassLoader().getResource(file).toURI());
-		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
-		assertTrue(memoryLeakValidator.getInfoMessages().stream()
-				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(0, file));
+		memoryLeakValidator.validate();
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
 		assertTrue(memoryLeakValidator.getErrorMessages().stream()
@@ -74,14 +72,12 @@ public class MemoryLeakValidatorTest {
 
 	@Test
 	public void checkGCFile_SUCCESS_Test() throws Exception {
-		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		String file = "logs/MemoryLeak/singleFile/gcLog.zip";
-		File path = new File(getClass().getClassLoader().getResource(file).toURI());
-		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(0, file));
+		memoryLeakValidator.validate();
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
-		assertTrue(memoryLeakValidator.getInfoMessages().stream()
-				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+
 		assertTrue(memoryLeakValidator.isValid());
 	}
 
@@ -102,15 +98,18 @@ public class MemoryLeakValidatorTest {
 
 	@Test
 	public void checkGCFileForNodesTest() throws Exception {
-		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
-		File path = new File(getClass().getClassLoader().getResource(
-				"logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip").toURI());
-		memoryLeakValidator.checkGCFile(path, memoryLeakValidator.buildURL(), 0);
-		assertTrue(memoryLeakValidator.getInfoMessages().stream()
-				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
+		String file = "logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip";
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(0, file));
+		memoryLeakValidator.validate();
 		assertTrue(memoryLeakValidator.getInfoMessages().stream()
 				.anyMatch((str) -> (str.contains(RESPONSE_CODE_OK))));
 		assertTrue(memoryLeakValidator.getErrorMessages().stream()
 				.anyMatch((str) -> (str.contains(PROBLEM_FIELD_MSG))));
+	}
+
+	Map<Integer, File> buildGCLogMap(final int nodeId, final String filePath) throws Exception {
+		Map<Integer, File> map = new HashMap<>();
+		map.put(nodeId, new File(getClass().getClassLoader().getResource(filePath).toURI()));
+		return map;
 	}
 }

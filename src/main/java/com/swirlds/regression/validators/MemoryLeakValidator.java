@@ -37,26 +37,43 @@ import java.util.Map;
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
  */
 public class MemoryLeakValidator extends Validator {
+	/**
+	 * key: nodeId, value: GC log zip file
+	 */
 	private Map<Integer, File> gcFilesMap;
-
+	/**
+	 * whether GC log Files has been validated or not
+	 */
 	private boolean isValidated = false;
+	/**
+	 * isValid would be false when a node's GCLog has `problem` in the report
+	 */
 	private boolean isValid = true;
-
+	/**
+	 * API KEY
+	 */
 	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
+	/**
+	 * GCEASY URL which we send GC logs to get analyse report
+	 */
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
 	/**
+	 * `isProblem` field in response
 	 * if isProblem in response is true, log an error
 	 */
 	private static final String IS_PROBLEM_FIELD = "isProblem";
 	/**
+	 * `problem` field in response
 	 * if isProblem in response is true, we should report problem content
 	 */
 	private static final String PROBLEM_FIELD = "problem";
 	/**
+	 * `fault` field in response
 	 * if API key is missing or invalid, response would contain this field
 	 */
 	private static final String FAULT_FIELD = "fault";
 	/**
+	 * `webReport` field in response
 	 * in this field is not null in response, log an info which contains a link of webReport
 	 */
 	private static final String WEB_REPORT_FIELD = "webReport";
@@ -75,6 +92,7 @@ public class MemoryLeakValidator extends Validator {
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
 
 	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
+	public static final String CHECK_GC_LOG = "checking GC log file for node%d";
 
 	public MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
 		this.gcFilesMap = gcFilesMap;
@@ -90,6 +108,7 @@ public class MemoryLeakValidator extends Validator {
 				if (!file.exists()) {
 					addWarning(String.format(GC_LOG_FILE_MISS, id));
 				} else {
+					addInfo(String.format(CHECK_GC_LOG, id));
 					checkGCFile(file, url, id);
 				}
 			});
@@ -105,8 +124,7 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * send zipLogFile to GCEasy API and parse response;
-	 * return false when problem field is not empty, else return true
+	 * send zipLogFile to GCEasy API and parse response
 	 */
 	void checkGCFile(final File zipLogFile, final URL url, final int nodeId) {
 		try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
