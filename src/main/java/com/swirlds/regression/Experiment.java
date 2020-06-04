@@ -36,7 +36,7 @@ import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.NodeData;
-import com.swirlds.regression.validators.PTALifecycleValidator;
+import com.swirlds.regression.validators.LifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -73,7 +73,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -116,7 +115,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
-import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
+import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -797,11 +796,11 @@ public class Experiment implements ExperimentSummary {
 			requiredValidator.add(ssValidator);
 		}
 
-		// Enable PTALifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
+		// Enable LifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
 		//SAVE_EXPECTED_MAP transaction by node0. If the expectedMaps are not saved on nodes,
 		// this validation fails.
 		if (testConfig.isUseLifecycleModel()) {
-			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
+			LifecycleValidator lifecycleValidator = new LifecycleValidator
 					(loadExpectedMapData(testConfig.getName()));
 			requiredValidator.add(lifecycleValidator);
 		}
