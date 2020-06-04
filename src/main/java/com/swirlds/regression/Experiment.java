@@ -1371,18 +1371,23 @@ public class Experiment implements ExperimentSummary {
 	 * @return string containing JVM options
 	 */
 	String getJVMOptionsString() {
-		String javaOptions = "";
+		String javaOptions;
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.
          */
 		if (regConfig.getJvmOptionParametersConfig() != null) {
 			javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
 		} else {
+			javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
+			// when we don't set MetaspaceSize, it was allocated 50M
+			// from GC log report, FCM2.5M test got: "Our analysis tells that GCs are triggered because
+			// Metadata occupancy is reaching it's limits quite often. 4 GCs were triggered because of this reason.
+			// You can consider increasing the metaspace size so that this GC activity can be minimzed."
+			javaOptions += " -XX:MetaspaceSize=100M ";
 			// generate gc logs if the testConfig contains MemoryLeakCheckConfig
 			if (testConfig.getMemoryLeakCheckConfig() != null) {
-				javaOptions = JVM_OPTIONS_GC_LOG;
+				javaOptions += JVM_OPTIONS_GC_LOG;
 			}
-			javaOptions += new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
 		}
 		if (!regConfig.getJvmOptions().isEmpty()) {
 			javaOptions = regConfig.getJvmOptions();

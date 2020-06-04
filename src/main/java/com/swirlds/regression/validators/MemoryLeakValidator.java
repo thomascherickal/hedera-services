@@ -238,14 +238,12 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * show responseCode in message
+	 * if responseCode is not 200(OK), show responseCode in message
 	 *
 	 * @param responseCode
 	 */
 	void showResponseCode(final int responseCode) {
-		if (responseCode == HttpURLConnection.HTTP_OK) {
-			addInfo(RESPONSE_CODE_OK);
-		} else if (responseCode / 100 == 2) {
+		if (responseCode != HttpURLConnection.HTTP_OK && responseCode / 100 <= 2) {
 			// 1xx: Informational
 			// 2xx: Success
 			addInfo(RESPONSE_CODE + responseCode);
