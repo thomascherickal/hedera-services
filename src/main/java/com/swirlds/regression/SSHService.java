@@ -1261,7 +1261,7 @@ public class SSHService {
         if (config.isBlockNetwork()) {
             // run background script
             // to periodically block and restart sync port
-            Session.Command cmd = execCommand("nohup ./remoteExperiment/block_ubuntu.sh &",
+            Session.Command cmd = execCommand("cd remoteExperiment; nohup block_ubuntu.sh &",
                     "Block network sync port");
             throwIfExitCodeBad(cmd, "Block network sync port");
             // if the network interface is blocked no need to setup packet loss or delay
