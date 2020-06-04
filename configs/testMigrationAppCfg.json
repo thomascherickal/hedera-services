@@ -8,15 +8,16 @@
     {"name":"csvAppend", "value":"true"},
     {"name": "checkSignedStateFromDisk", "value": "false"}
   ],
+  "useLifecycleModel" : true,
   "app": {
     "jar": "MigrationTestingApp.jar",
-    "parameterList": [4685095852903873060, 5000,	4]
+    "parameterList": [4685095852903873060, 500,	4]
   },
   "startSavedState": {
     "location": "s3://swirlds-regression/saved-states/MigrationTestingApp/migrate20K/",
     "mainClass": "com.swirlds.demo.migration.MigrationTestingAppMain",
     "swirldName": "123",
-    "round": 113,
+    "round": 150,
     "restoreDb": true,
     "nodeIdentifier": "ALL"
   },

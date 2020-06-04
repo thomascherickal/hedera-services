@@ -45,6 +45,7 @@
 	"configs/testFcmSmallBlobCfg.json",
 	"configs/testFcmLargeBlobCfg.json",
 	"configs/testMigrationAppCfg2K.json",
+	"configs/testMigrationAppCfg.json",
 	"configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
