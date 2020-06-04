@@ -31,11 +31,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
 import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ExperimentTest {
@@ -47,7 +45,7 @@ public class ExperimentTest {
 	static ArrayList<String> logs = new ArrayList<String>();
 	static String[] searchPhrases = {"Freeze state is about to be saved to disk","has loaded a saved state for round"};
 
-	//@BeforeAll
+	@BeforeAll
 	public static void init() {
 		exp = new Experiment(RegressionUtilities.importRegressionConfig(), RegressionUtilities.TEST_CONFIG);
 
@@ -116,4 +114,6 @@ public class ExperimentTest {
 		assertEquals(ALL_BUT_LAST.toString(), lastStakedDifferentExp.getSavedStateForNode(2,4).getLocation());
 		assertNull(lastStakedDifferentExp.getSavedStateForNode(3,4));
 	}
+
+
 }
