@@ -459,7 +459,7 @@ public class RegressionUtilities {
 	}
 
 	/**
-	 * zip a file
+	 * zip files
 	 *
 	 * @param files
 	 * 		files to be zipped

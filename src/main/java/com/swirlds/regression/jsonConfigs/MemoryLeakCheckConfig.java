@@ -17,9 +17,14 @@
 
 package com.swirlds.regression.jsonConfigs;
 
-import java.util.Arrays;
 import java.util.Set;
 
+/**
+ * When MemoryLeakCheckConfig is provided in TestConfig, GC logs of all nodes would be
+ * generated and downloaded;
+ * GC logs of certain nodes which are specified in this config would be sent to GCEasy API
+ * for analyzing
+ */
 public class MemoryLeakCheckConfig {
 
 	/**
@@ -50,14 +55,16 @@ public class MemoryLeakCheckConfig {
 	}
 
 	/**
-	 * examine whether the nodeId is in {@link MemoryLeakCheckConfig#nodesToCheck}, or {@link MemoryLeakCheckConfig#nodeGroupIdentifier}
+	 * examine whether the nodeId is in {@link MemoryLeakCheckConfig#nodesToCheck}, or {@link
+	 * MemoryLeakCheckConfig#nodeGroupIdentifier}
+	 *
 	 * @param nodeId
 	 * @return whether we need to check GC log of this node
 	 */
 	public boolean shouldCheck(final int nodeId, final int totalNum, final int lastStakedNode) {
 		if (nodesToCheck != null && !nodesToCheck.isEmpty()) {
 			return nodesToCheck.contains(nodeId);
-		} else if (nodeGroupIdentifier != null){
+		} else if (nodeGroupIdentifier != null) {
 			return nodeGroupIdentifier.isNodeInGroup(nodeId, totalNum, lastStakedNode);
 		}
 		return false;
