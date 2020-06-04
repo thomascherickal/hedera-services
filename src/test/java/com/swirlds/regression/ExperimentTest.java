@@ -116,15 +116,4 @@ public class ExperimentTest {
 		assertEquals(ALL_BUT_LAST.toString(), lastStakedDifferentExp.getSavedStateForNode(2,4).getLocation());
 		assertNull(lastStakedDifferentExp.getSavedStateForNode(3,4));
 	}
-
-	@Test
-	public void getJVMOptionsStringTest() {
-		TestConfig testConfig = new TestConfig();
-		MemoryLeakCheckConfig memoryLeakCheckConfig = new MemoryLeakCheckConfig();
-		memoryLeakCheckConfig.setNodeGroupIdentifier(ALL);
-		testConfig.setMemoryLeakCheckConfig(memoryLeakCheckConfig);
-
-		Experiment experiment = new Experiment(new RegressionConfig(), testConfig);
-		assertTrue(experiment.getJVMOptionsString().contains(JVM_OPTIONS_GC_LOG));
-	}
 }
