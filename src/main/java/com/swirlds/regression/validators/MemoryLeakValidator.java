@@ -92,7 +92,6 @@ public class MemoryLeakValidator extends Validator {
 	public static final String ERROR_PARSE_RESPONSE = "got Exception when parsing response to Json";
 	public static final String ERROR_STREAM = "got error message from GCEasy API: ";
 	public static final String RESPONSE_CODE = "ResponseCode: ";
-	public static final String RESPONSE_CODE_OK = "ResponseCode: OK";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
 
 	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
@@ -238,12 +237,12 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * if responseCode is not 200(OK), show responseCode in message
+	 * show responseCode in message
 	 *
 	 * @param responseCode
 	 */
 	void showResponseCode(final int responseCode) {
-		if (responseCode != HttpURLConnection.HTTP_OK && responseCode / 100 <= 2) {
+		if (responseCode / 100 <= 2) {
 			// 1xx: Informational
 			// 2xx: Success
 			addInfo(RESPONSE_CODE + responseCode);
