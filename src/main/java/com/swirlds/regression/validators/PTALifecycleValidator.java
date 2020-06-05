@@ -63,6 +63,8 @@ public class PTALifecycleValidator extends Validator {
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		if (mapData != null) {
 			expectedMaps = mapData.getExpectedMaps();
+		} else {
+			expectedMaps = null;
 		}
 		isValid = false;
 		isValidated = false;
