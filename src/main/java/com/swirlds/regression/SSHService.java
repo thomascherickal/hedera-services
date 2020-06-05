@@ -971,7 +971,7 @@ public class SSHService {
                 "Restore db from file '%s'",
                 tarGzPath
         );
-        Session.Command cmd = execCommand(command, description,120);
+        Session.Command cmd = execCommand(command, description, (int) MAXIMUM_TIMEOUT_ALLOWANCE);
         throwIfExitCodeBad(cmd, description);
     }
 
