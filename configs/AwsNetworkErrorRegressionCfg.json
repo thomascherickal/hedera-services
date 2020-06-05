@@ -33,7 +33,7 @@
   ],
   "experiments": [
 	// "configs/testFcmMultipleOperationsNetworkError.json",
-	"configs/testFCM1KFCQCfgNetworkError.json"
+	"configs/testFCM1KFCQNetworkError.json"
   ],
   "db": {
 	"type": "postgresql",

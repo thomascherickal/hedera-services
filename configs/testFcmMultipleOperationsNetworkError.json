@@ -1,55 +1,20 @@
 {
-  "name": "network-error-regression-suite",
-  "result": {
-	"uri": "results"
-  },
-  "cloud": {
-	"service": "aws",
-	"securityGroup": "SwirldsSecGroup",
-	"instanceType": "M410xlarge",
-	"instanceKey": "SwirldsAIDA3H2HKDTUXYPNRPLET",
-	"keyLocation": "./keys/my-key",
-	"login": "ubuntu",
-	"regionList":[
-		{ "region":"us-east-1", "numberOfNodes":4}
-	  ]
+	"name":"FCMMultipleOperations",
+	"description" : "platform testing demo - FCM Multiple Operations",
+	"duration": 3600,
+	"settings": [
+	  {"name":"showInternalStats", "value": "1" },
+	  {"name":"csvFileName", "value":"PlatformTesting" },
+	  {"name":"csvAppend", "value":"true"}
+	],
+	"useLifecycleModel" : true,
+	"app": {
+	  "jar": "PlatformTestingApp.jar",
+	  "parameterList": ["FCMMultipleOperationsNetworkError.json"]
+	},
+	"resultFiles": [
+	  "swirlds.log"
+	],
+	"validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+  }
   
-  },
-  "eventFilesWriters": 4,
-  "log": {
-	"uri":"testing/logs/"
-  },
-  "netErrorCfg" :[
-	  {
-		  "blockNetwork" : true
-	  }
-	//   ,
-	//   {
-	// 	"enablePktLoss" : true
-	// },
-	// {
-	// 	"enablePktDelay" : true
-	// }
-  ],
-  "experiments": [
-	// "configs/testFcmMultipleOperationsNetworkError.json",
-	"configs/testFCM1KFCQCfgNetworkError.json"
-  ],
-  "db": {
-	"type": "postgresql",
-	"login": "dbregression",
-	"address": "localhost",
-	"port": "5432",
-	"database": "stats"
-  },
-  "slack": {
-	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
-	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "regression-test",
-	// "notifyOn" options: ALL, WARNING, ERROR
-	"notifyOn": "ERROR",
-	"notifyChannel": false,
-	"notifyUserIds": ["UB15L2FLJ"]
-  },
-  "uploadToSharePoint": false
-}
