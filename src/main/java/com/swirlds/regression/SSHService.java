@@ -1261,9 +1261,14 @@ public class SSHService {
         if (config.isBlockNetwork()) {
             // run background script
             // to periodically block and restart sync port
-            Session.Command cmd = execCommand("cd remoteExperiment; nohup block_ubuntu.sh &",
+            Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_ubuntu.sh; ",
+                    "Change permission");
+            throwIfExitCodeBad(cmd, "Change permissio");
+
+            execCommand("cd remoteExperiment; nohup ./block_ubuntu.sh >> exec.log & ",
                     "Block network sync port");
             throwIfExitCodeBad(cmd, "Block network sync port");
+
             // if the network interface is blocked no need to setup packet loss or delay
             return;
         }
@@ -1295,12 +1300,13 @@ public class SSHService {
         }
 		Session.Command cmd = execCommand(
 				"sudo iptables --flush",
-				"Clean network rules");
-		throwIfExitCodeBad(cmd, "Clean network rules");
+				"Clean iptables");
+		throwIfExitCodeBad(cmd, "Clean iptables");
+
         cmd = execCommand(
                 "sudo pkill -f block_ubuntu.sh",
-                "Clean network rules");
-        throwIfExitCodeBad(cmd, "Clean network rules");
+                "Kill background script");
+        throwIfExitCodeBad(cmd, "Kill background script");
 	}
 
 }
