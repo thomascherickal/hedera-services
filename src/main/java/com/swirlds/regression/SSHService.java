@@ -1261,11 +1261,11 @@ public class SSHService {
         if (config.isBlockNetwork()) {
             // run background script
             // to periodically block and restart sync port
-            Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_ubuntu.sh; ",
+            Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
                     "Change permission");
             throwIfExitCodeBad(cmd, "Change permissio");
 
-            execCommand("cd remoteExperiment; nohup ./block_ubuntu.sh >> exec.log & ",
+            execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
                     "Block network sync port");
             throwIfExitCodeBad(cmd, "Block network sync port");
 
@@ -1304,7 +1304,7 @@ public class SSHService {
 		throwIfExitCodeBad(cmd, "Clean iptables");
 
         cmd = execCommand(
-                "sudo pkill -f block_ubuntu.sh",
+                "sudo pkill -f block_sync_port.sh",
                 "Kill background script");
         throwIfExitCodeBad(cmd, "Kill background script");
 	}

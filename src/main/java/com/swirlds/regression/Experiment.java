@@ -1005,7 +1005,7 @@ public class Experiment implements ExperimentSummary {
 		ArrayList<File> addedFiles = buildAdditionalFileList();
 
 		if (regConfig.getNetErrorCfg() != null){
-			addedFiles.add(new File("src/main/resources/block_ubuntu.sh"));
+			addedFiles.add(new File("src/main/resources/block_sync_port.sh"));
 		}
 		//Step 1, send tar to node 0
 		final SSHService firstNode = sshNodes.get(0);
