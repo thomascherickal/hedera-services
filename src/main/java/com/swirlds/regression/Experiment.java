@@ -657,7 +657,7 @@ public class Experiment implements ExperimentSummary {
 		return inputStream;
 	}
 
-	private List<NodeData> loadNodeData(String directory) {
+	private List<NodeData> loadNodeData() {
 		int numberOfNodes;
 		if (regConfig.getLocal() != null) {
 			numberOfNodes = regConfig.getLocal().getNumberOfNodes();
@@ -761,12 +761,13 @@ public class Experiment implements ExperimentSummary {
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
+		List<NodeData> nodeData = loadNodeData();
 		for (ValidatorType item : testConfig.validators) {
 			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
 				reconnect = true;
 			}
 
-			List<NodeData> nodeData = loadNodeData(testConfig.getName());
+
 			if (nodeData == null || nodeData.size() == 0) {
 				slackMsg.addError("No data found for " + item);
 				continue;
@@ -783,7 +784,6 @@ public class Experiment implements ExperimentSummary {
 			}
 			requiredValidator.add(validatorToAdd);
 		}
-		List<NodeData> nodeData = loadNodeData(testConfig.getName());
 		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
 
 		// Add stream server validator if event streaming is configured
