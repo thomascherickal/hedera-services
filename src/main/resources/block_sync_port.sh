@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-# repeatedly block and unblock one of the TCP port
+# repeatedly block and unblock TCP ports used by synchronization
 # used by node
 
 set -eE

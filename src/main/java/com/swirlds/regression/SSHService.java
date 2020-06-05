@@ -1258,20 +1258,20 @@ public class SSHService {
     }
 
 	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
-        if (config.isBlockNetwork()) {
-            // run background script
-            // to periodically block and restart sync port
-            Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
-                    "Change permission");
-            throwIfExitCodeBad(cmd, "Change permissio");
+		if (config.isBlockNetwork()) {
+			// run background script
+			// to periodically block and restart sync port
+			Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
+					"Change permission");
+			throwIfExitCodeBad(cmd, "Change permission");
 
-            execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
-                    "Block network sync port");
-            throwIfExitCodeBad(cmd, "Block network sync port");
+			execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
+					"Block network sync port");
+			throwIfExitCodeBad(cmd, "Block network sync port");
 
-            // if the network interface is blocked no need to setup packet loss or delay
-            return;
-        }
+			// if the network interface is blocked no need to setup packet loss or delay
+			return;
+		}
 
 		if (config.isEnablePktDelay()) {
 			String cmdString = String.format(
@@ -1292,21 +1292,21 @@ public class SSHService {
 	}
 
 	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
-        if (config.isEnablePktDelay()) {
-            Session.Command cmd = execCommand(
-                    "sudo tc qdisc del dev ens3 root",
-                    "Clean network delay rules");
-            throwIfExitCodeBad(cmd, "Clean network delay rules");
-        }
+		if (config.isEnablePktDelay()) {
+			Session.Command cmd = execCommand(
+					"sudo tc qdisc del dev ens3 root",
+					"Clean network delay rules");
+			throwIfExitCodeBad(cmd, "Clean network delay rules");
+		}
 		Session.Command cmd = execCommand(
 				"sudo iptables --flush",
 				"Clean iptables");
 		throwIfExitCodeBad(cmd, "Clean iptables");
 
-        cmd = execCommand(
-                "sudo pkill -f block_sync_port.sh",
-                "Kill background script");
-        throwIfExitCodeBad(cmd, "Kill background script");
+		cmd = execCommand(
+				"sudo pkill -f block_sync_port.sh",
+				"Kill background script");
+		throwIfExitCodeBad(cmd, "Kill background script");
 	}
 
 }
