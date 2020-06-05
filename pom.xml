@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>com.swirlds</groupId>
 		<artifactId>swirlds-platform</artifactId>
-		<version>0.6.5</version>
+		<version>0.7.0-alpha.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -43,6 +43,7 @@
 		<maven.compiler.source>12</maven.compiler.source>
 		<maven.compiler.target>12</maven.compiler.target>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<maven.test.skip>true</maven.test.skip>
 
 		<!-- Dependency Versioning -->
 		<slf4j.version>1.8.0-beta2</slf4j.version>
@@ -195,7 +196,7 @@
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-common</artifactId>
-			<version>0.6.5</version>
+			<version>0.7.0-alpha.1</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
@@ -235,18 +236,18 @@
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>fcmap-test</artifactId>
-			<version>0.6.5</version>
+			<version>0.7.0-alpha.1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-fcmap</artifactId>
-			<version>0.6.5</version>
+			<version>0.7.0-alpha.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>PlatformTestingApp</artifactId>
-			<version>0.6.5</version>
+			<version>0.7.0-alpha.1</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -286,22 +287,22 @@
 	<!-- Build Configuration -->
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-						<version>7.1</version>
-					</dependency>
-				</dependencies>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-compiler-plugin</artifactId>-->
+<!--				<version>3.8.1</version>-->
+<!--				<dependencies>-->
+<!--					<dependency>-->
+<!--						<groupId>org.ow2.asm</groupId>-->
+<!--						<artifactId>asm</artifactId>-->
+<!--						<version>7.1</version>-->
+<!--					</dependency>-->
+<!--				</dependencies>-->
+<!--			</plugin>-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.1</version>
+<!--				<version>3.1.1</version>-->
 				<executions>
 					<execution>
 						<id>copy</id>
@@ -339,7 +340,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.2</version>
+<!--				<version>3.1.2</version>-->
 				<configuration>
 					<archive>
 						<manifest>
