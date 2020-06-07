@@ -63,8 +63,6 @@ public class PTALifecycleValidator extends Validator {
 	public PTALifecycleValidator(ExpectedMapData mapData) {
 		if (mapData != null) {
 			expectedMaps = mapData.getExpectedMaps();
-		} else {
-			expectedMaps = null;
 		}
 		isValid = false;
 		isValidated = false;
@@ -109,8 +107,8 @@ public class PTALifecycleValidator extends Validator {
 	 * expectedMaps from all nodes
 	 */
 	private void validateExpectedMaps() {
-		if (expectedMaps == null) {
-			addError("ExpectedMap doesn't exist on nodes for validation");
+		if (expectedMaps == null || expectedMaps.size() == 0) {
+			addError("ExpectedMap doesn't exist for validation");
 			isValid = false;
 			isValidated = true;
 			return;
