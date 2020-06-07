@@ -63,6 +63,8 @@ public class LifecycleValidator extends Validator {
 	public LifecycleValidator(ExpectedMapData mapData) {
 		if (mapData != null) {
 			expectedMaps = mapData.getExpectedMaps();
+		} else {
+			expectedMaps = null;
 		}
 		isValid = false;
 		isValidated = false;
