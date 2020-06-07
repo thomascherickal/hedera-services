@@ -39,9 +39,9 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
 public class PTALifecycleValidator extends Validator {
-	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = null;
-	private static boolean isValid;
-	private static boolean isValidated;
+	private Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+	private boolean isValid;
+	private boolean isValidated;
 	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
 
 	public static final String HANDLE_REJECTED_ERROR = "ExpectedValue of Key %s on node %d has the " +
