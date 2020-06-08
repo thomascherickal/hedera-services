@@ -30,6 +30,9 @@
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testStateRecover.json" ,
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
 	"configs/testRestartCfg.json",
 	"configs/testRestartBlobCfg.json",
 	"configs/testFcmFreezeCfg.json",
@@ -64,9 +67,14 @@
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
 	"notifyUserIds": [
-	  "UA4T7UJQJ",
 	  "UA5K2LZ1D"
-	]
+	],
+	  "webServer":
+	  {
+		  "useWebServer": true,
+		  "webServerPort": "8070",
+		  "webServerAddress": "18.222.60.10"
+	  }
   },
-  "uploadToSharePoint": true
+  "uploadToSharePoint": false
 }
