@@ -34,6 +34,7 @@ import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
@@ -753,10 +754,16 @@ public class Experiment implements ExperimentSummary {
 			// only check GC log for nodes specified in MemoryLeakCheckConfig
 			if (memoryLeakCheckConfig.shouldCheck(nodeIndex, totalNum, lastStakedNode)) {
 				String folder = getExperimentResultsFolderForNode(nodeIndex);
-				File[] files = RegressionUtilities.getGCLogs(folder);
+				File[] files = FileUtils.getGCLogs(folder);
 				File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
-				RegressionUtilities.zip(files, zipFile);
-				gcFilesMap.put(nodeIndex, zipFile);
+				try {
+					FileUtils.zip(files, zipFile);
+					gcFilesMap.put(nodeIndex, zipFile);
+				} catch (IOException e) {
+					log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
+					e.printStackTrace();
+					gcFilesMap.put(nodeIndex, null);
+				}
 			}
 		}
 		return gcFilesMap;

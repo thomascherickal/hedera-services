@@ -68,7 +68,7 @@ public class RegressionUtilities {
 	public static final String TAR_NAME = "remoteExperiment.tar.gz";
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
 	public static final String GC_LOG_FILES = "gc*.log";
-	public static final String GC_LOG_FILES_REGEX = "gc(.*).log";
+
 	public static final String GC_LOG_ZIP_FILE = "gcLog.zip";
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g ";
@@ -439,55 +439,6 @@ public class RegressionUtilities {
 			return JVM_OPTIONS_DEFAULT;
 		} else {
 			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
-		}
-	}
-
-
-	/**
-	 * get GC log files in the given folder
-	 *
-	 * @param folderPath
-	 * @return
-	 */
-	public static File[] getGCLogs(final String folderPath) {
-		File folder = new File(folderPath);
-		if (!folder.exists() || !folder.isDirectory()) {
-			return null;
-		}
-
-		return folder.listFiles((dir, name) -> name.toLowerCase().matches(GC_LOG_FILES_REGEX));
-	}
-
-	/**
-	 * zip files
-	 *
-	 * @param files
-	 * 		files to be zipped
-	 * @param zipFile
-	 * 		result zip file
-	 * @return
-	 */
-	public static void zip(final File[] files, final File zipFile) {
-		if (files == null || files.length == 0) {
-			log.error(ERROR, "Files is empty. Fail to zip files as {}", zipFile.getName());
-			return;
-		}
-		try (ZipOutputStream zipOut = new ZipOutputStream(
-				new FileOutputStream(zipFile))) {
-			for (File file : files) {
-				zipOut.putNextEntry(new ZipEntry(file.getName()));
-				try (FileInputStream input = new FileInputStream(file)) {
-					byte[] bytes = new byte[1024];
-					int length;
-					while ((length = input.read(bytes)) > 0) {
-						zipOut.write(bytes, 0, length);
-					}
-					zipOut.closeEntry();
-				}
-			}
-		} catch (IOException e) {
-			log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
-			e.printStackTrace();
 		}
 	}
 }

@@ -94,7 +94,7 @@ public class MemoryLeakValidator extends Validator {
 	public static final String RESPONSE_CODE = "ResponseCode: ";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
 
-	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
+	public static final String GC_LOG_FILE_MISS = "node%d's GC log zip file is missing";
 	public static final String CHECK_GC_LOG = "checking GC log file for node%d";
 
 	public MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
@@ -119,7 +119,7 @@ public class MemoryLeakValidator extends Validator {
 		// get gcLog.zip for this node
 		// add warn if gc*.log is missing;
 		gcFilesMap.forEach((id, file) -> {
-			if (!file.exists()) {
+			if (file == null || !file.exists()) {
 				addWarning(String.format(GC_LOG_FILE_MISS, id));
 			} else {
 				addInfo(String.format(CHECK_GC_LOG, id));
