@@ -39,9 +39,9 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
 public class LifecycleValidator extends Validator {
-	private static Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = null;
-	private static boolean isValid;
-	private static boolean isValidated;
+	private Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = null;
+	private boolean isValid;
+	private boolean isValidated;
 	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
 
 	public static final String HANDLE_REJECTED_ERROR = "ExpectedValue of Key %s on node %d has the " +
@@ -63,8 +63,6 @@ public class LifecycleValidator extends Validator {
 	public LifecycleValidator(ExpectedMapData mapData) {
 		if (mapData != null) {
 			expectedMaps = mapData.getExpectedMaps();
-		} else {
-			expectedMaps = null;
 		}
 		isValid = false;
 		isValidated = false;
@@ -109,8 +107,8 @@ public class LifecycleValidator extends Validator {
 	 * expectedMaps from all nodes
 	 */
 	private void validateExpectedMaps() {
-		if (expectedMaps == null) {
-			addError("ExpectedMap doesn't exist on nodes for validation");
+		if (expectedMaps == null || expectedMaps.size() == 0) {
+			addError("ExpectedMap doesn't exist for validation");
 			isValid = false;
 			isValidated = true;
 			return;

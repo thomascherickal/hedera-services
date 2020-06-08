@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02063-D-GossipLogging-4N-0ZSN-InitialPanel",
+  "name": "Nathan-02094-D-AlterStateWriteNotification-4N-0ZSN-FinalPanel",
   "result": {
 	"uri": "results"
   },
@@ -34,20 +34,20 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	//	"configs/testSigningDemoCfg.json"
-	//	"configs/testSigningDemo4KCfg.json",
-	//	"configs/testFcmMultipleOperationsCfg.json",
-	//	"configs/testRestartCfg.json",
-	//	"configs/testRestartBlobCfg.json",
-	//	"configs/testFcmFreezeCfg.json",
-	//	"configs/testFcmFreezeBlobCfg.json"
-	//	"configs/testFcmMultisizeBlobCfg.json",
-	//	"configs/testFcmFreezeFCQCfg.json",
-	//	"configs/testFCM1KFCQCfg.json",
-	//	"configs/testReconnectFCMMultiReconnectCfg.json"
-	//	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectBlobCfg.json"
-	//	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json",
+	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testRestartCfg.json",
+	"configs/testRestartBlobCfg.json",
+	"configs/testFcmFreezeCfg.json",
+	"configs/testFcmFreezeBlobCfg.json",
+	"configs/testFcmMultisizeBlobCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectFCQMultiReconnectCfg.json",
+	"configs/testReconnectBlobCfg.json",
+	"configs/testFcm1kThrottlingCfg.json"
 
 	//	"configs/testFcmCfg.json",
 	//	"configs/testFcm10MBx10KBlobCfg.json",
