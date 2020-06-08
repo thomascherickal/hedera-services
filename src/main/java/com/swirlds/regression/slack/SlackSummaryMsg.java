@@ -100,12 +100,7 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
 				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
-				String experimentName = experiment.getName();
-				if(slackConfig.getWebServer().isUseWebServer()){
-					experimentName = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
-							":" + slackConfig.getWebServer().getWebServerPort() +"/" +
-							resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
-				}
+				String experimentName = GenerateSlackNameText(experiment.getName());
 				row.add(experimentName);
 				row.add(experiment.getUniqueId());
 				StringBuilder hist = new StringBuilder();
@@ -131,6 +126,16 @@ public class SlackSummaryMsg extends SlackMsg {
 			return attachment.build();
 		}
 		return null;
+	}
+
+	private String GenerateSlackNameText(String experimentName) {
+		String returnString = experimentName;
+		if(slackConfig.getWebServer().isUseWebServer()){
+			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
+					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
+		}
+		return returnString;
 	}
 
 	@Override
