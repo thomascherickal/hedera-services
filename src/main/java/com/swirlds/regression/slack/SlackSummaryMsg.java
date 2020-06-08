@@ -18,7 +18,6 @@
 package com.swirlds.regression.slack;
 
 import com.hubspot.slack.client.models.Attachment;
-import com.swirlds.regression.Experiment;
 import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -27,7 +26,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +98,8 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
 				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
+				String experimentName = generateSlackNameText(experiment.getName());
+				row.add(experimentName);
 				row.add(experiment.getUniqueId());
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
@@ -125,6 +124,16 @@ public class SlackSummaryMsg extends SlackMsg {
 			return attachment.build();
 		}
 		return null;
+	}
+
+	private String generateSlackNameText(String experimentName) {
+		String returnString = resultFolder + "/" + experimentName;
+		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
+					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
+		}
+		return returnString;
 	}
 
 	@Override
