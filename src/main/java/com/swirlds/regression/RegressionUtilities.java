@@ -469,7 +469,8 @@ public class RegressionUtilities {
 	 */
 	public static void zip(final File[] files, final File zipFile) {
 		if (files == null || files.length == 0) {
-			log.error(ERROR, "Files is empty. Fail to files as {}", zipFile.getName());
+			log.error(ERROR, "Files is empty. Fail to zip files as {}", zipFile.getName());
+			return;
 		}
 		try (ZipOutputStream zipOut = new ZipOutputStream(
 				new FileOutputStream(zipFile))) {
