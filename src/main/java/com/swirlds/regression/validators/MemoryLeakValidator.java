@@ -116,8 +116,8 @@ public class MemoryLeakValidator extends Validator {
 			addWarning("URL is null");
 			return;
 		}
-		// get gcLog.zip for this node
-		// add warn if gc*.log is missing;
+		// check gcLog.zip for this node
+		// add warn if GC log is missing;
 		gcFilesMap.forEach((id, file) -> {
 			if (file == null || !file.exists()) {
 				addWarning(String.format(GC_LOG_FILE_MISS, id));
@@ -139,29 +139,44 @@ public class MemoryLeakValidator extends Validator {
 	 * send zipLogFile to GCEasy API and parse response
 	 */
 	void checkGCFile(final File zipLogFile, final URL url, final int nodeId) {
-		try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Content-Type", "text");
-			con.setRequestProperty("Content-Encoding", "zip");
+		HttpURLConnection conn = null;
+		try {
+			conn = buildConn(url);
+			try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
+				IOUtils.copy(fileInputStream, conn.getOutputStream());
 
-			con.setDoOutput(true);
-			IOUtils.copy(fileInputStream, con.getOutputStream());
+				int responseCode = conn.getResponseCode();
+				showResponseCode(responseCode);
 
-			int responseCode = con.getResponseCode();
-			showResponseCode(responseCode);
+				String response = readFromStream(conn.getInputStream());
+				checkResponse(response, nodeId);
 
-			String response = readFromStream(con.getInputStream());
-			checkResponse(response, nodeId);
-
-			String errMsg = readFromStream(con.getErrorStream());
-			if (errMsg != null) {
-				addWarning(ERROR_STREAM + errMsg);
+				String errMsg = readFromStream(conn.getErrorStream());
+				if (errMsg != null) {
+					addWarning(ERROR_STREAM + errMsg);
+				}
 			}
-			con.disconnect();
 		} catch (IOException ex) {
 			addWarning(ERROR_CONN_API + ex.getMessage());
+		} finally {
+			if (conn == null) {
+				conn.disconnect();
+			}
 		}
+	}
+
+	/**
+	 * Build a connection to the given URL
+	 * @throws IOException
+	 */
+	HttpURLConnection buildConn(final URL url) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+		conn.setRequestMethod("POST");
+		conn.setRequestProperty("Content-Type", "text");
+		conn.setRequestProperty("Content-Encoding", "zip");
+
+		conn.setDoOutput(true);
+		return conn;
 	}
 
 	/**
@@ -242,7 +257,7 @@ public class MemoryLeakValidator extends Validator {
 	 * @param responseCode
 	 */
 	void showResponseCode(final int responseCode) {
-		if (responseCode / 100 <= 2) {
+		if (responseCode < 300) {
 			// 1xx: Informational
 			// 2xx: Success
 			addInfo(RESPONSE_CODE + responseCode);

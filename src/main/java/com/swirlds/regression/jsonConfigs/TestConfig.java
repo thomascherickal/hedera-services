@@ -42,19 +42,19 @@ public class TestConfig implements FileRequirement {
 	private AppConfig app;
 	private List<String> resultFiles;
 	private String log4j2File = "log4j2-regression.xml";
-	private SavedState startSavedState = null;
-	private List<SavedState> startSavedStates = null;
+	private SavedState startSavedState;
+	private List<SavedState> startSavedStates;
 
 	private boolean downloadDbLogFiles = false;
 
 	private int saveStateCheckWait = 180;
 
-	private ReconnectConfig reconnectConfig = null;
-	private RestartConfig restartConfig = null;
-	private FreezeConfig freezeConfig = null;
-	private RecoverConfig recoverConfig = null;
+	private ReconnectConfig reconnectConfig;
+	private RestartConfig restartConfig;
+	private FreezeConfig freezeConfig;
+	private RecoverConfig recoverConfig;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
-	private MemoryLeakCheckConfig memoryLeakCheckConfig = null;
+	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 
 	/**
 	 * Configuration to enable PTALifecycleValidator at the end of the test to validate ExpectedMap.
