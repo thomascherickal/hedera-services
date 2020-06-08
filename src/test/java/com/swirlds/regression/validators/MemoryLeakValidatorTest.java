@@ -32,6 +32,7 @@ import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.GCEASY_URL;
 import static com.swirlds.regression.validators.MemoryLeakValidator.PROBLEM_FIELD_MSG;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,7 +42,7 @@ public class MemoryLeakValidatorTest {
 	public void getGCLogsTest() {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest").getPath();
 		File[] files = RegressionUtilities.getGCLogs(folder);
-		assertTrue(files.length == 3);
+		assertEquals(3, files.length);
 	}
 
 	@Test
@@ -113,7 +114,7 @@ public class MemoryLeakValidatorTest {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		memoryLeakValidator.showResponseCode(HttpURLConnection.HTTP_OK);
 		assertTrue(memoryLeakValidator.getWarningMessages().isEmpty());
-		assertTrue(memoryLeakValidator.getInfoMessages().size() == 1);
+		assertEquals(1, memoryLeakValidator.getInfoMessages().size());
 	}
 
 	Map<Integer, File> buildGCLogMap(final List<String> filePaths) throws Exception {

@@ -341,7 +341,7 @@ public class RegressionUtilities {
 		//returnIterator.add("stream_*");
 		returnIterator.add("postgres_reports"); // badgerized web summaries
 		returnIterator.add("latest_postgres*"); // raw log files(s)
-		// download GC log
+		// for downloading GC log
 		returnIterator.add(GC_LOG_FILES);
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);

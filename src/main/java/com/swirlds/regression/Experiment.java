@@ -742,24 +742,23 @@ public class Experiment implements ExperimentSummary {
 	 */
 	private Map<Integer, File> getGCLogsForNodes() {
 		final Map<Integer, File> gcFilesMap = new HashMap<>();
-		if (testConfig != null) {
-			final MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
-			if (memoryLeakCheckConfig != null) {
-				final int totalNum = regConfig.getTotalNumberOfNodes();
-				final int lastStakedNode = getLastStakedNode();
-				for (int i = 0; i < totalNum; i++) {
-					// only check GC log for nodes specified in MemoryLeakCheckConfig
-					if (memoryLeakCheckConfig.shouldCheck(i, totalNum, lastStakedNode)) {
-						String folder = getExperimentResultsFolderForNode(i);
-						File[] files = RegressionUtilities.getGCLogs(folder);
-						File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
-						RegressionUtilities.zip(files, zipFile);
-						gcFilesMap.put(i, zipFile);
-					}
-				}
-			}
+		if (testConfig == null || testConfig.getMemoryLeakCheckConfig() == null) {
+			return gcFilesMap;
 		}
 
+		final MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
+		final int totalNum = regConfig.getTotalNumberOfNodes();
+		final int lastStakedNode = getLastStakedNode();
+		for (int nodeIndex = 0; nodeIndex < totalNum; nodeIndex++) {
+			// only check GC log for nodes specified in MemoryLeakCheckConfig
+			if (memoryLeakCheckConfig.shouldCheck(nodeIndex, totalNum, lastStakedNode)) {
+				String folder = getExperimentResultsFolderForNode(nodeIndex);
+				File[] files = RegressionUtilities.getGCLogs(folder);
+				File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
+				RegressionUtilities.zip(files, zipFile);
+				gcFilesMap.put(nodeIndex, zipFile);
+			}
+		}
 		return gcFilesMap;
 	}
 

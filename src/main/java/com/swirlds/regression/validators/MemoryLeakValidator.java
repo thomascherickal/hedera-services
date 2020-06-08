@@ -177,7 +177,7 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * read content from inputStreamE
+	 * read content from inputStream
 	 *
 	 * @param inputStream
 	 * @return
