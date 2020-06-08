@@ -29,6 +29,7 @@ public class SlackConfig {
 	private SlackTestMsg.NotifyOn notifyOn = SlackTestMsg.NotifyOn.ERROR;
 	private boolean notifyChannel = false;
 	private List<String> notifyUserIds = null;
+	private WebServerConfig webServer = null;
 
 	public String getToken() {
 		return token;
@@ -84,5 +85,13 @@ public class SlackConfig {
 
 	public void setNotifyUserIds(List<String> notifyUserIds) {
 		this.notifyUserIds = notifyUserIds;
+	}
+
+	public WebServerConfig getWebServer() {
+		return webServer;
+	}
+
+	public void setWebServer(WebServerConfig webServer) {
+		this.webServer = webServer;
 	}
 }

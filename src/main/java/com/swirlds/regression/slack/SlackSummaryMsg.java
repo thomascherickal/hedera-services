@@ -100,7 +100,13 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
 				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
+				String experimentName = experiment.getName();
+				if(slackConfig.getWebServer().isUseWebServer()){
+					experimentName = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
+							":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+							resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
+				}
+				row.add(experimentName);
 				row.add(experiment.getUniqueId());
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
