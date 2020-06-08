@@ -42,7 +42,7 @@
 	  "configs/testFcmLargeBlobCfg.json",
 	  "configs/testMigrationAppCfg2K.json",
 	  "configs/testMigrationAppCfg.json",
-	"configs/testFcm1K6NodeSavedStateCfg.json"
+      "configs/testFcm1K6NodeSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -59,9 +59,13 @@
 	// "notifyOn" options: ALL, WARNING, ERROR
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
-	"notifyUserIds": [
-	  "UA5K2LZ1D"
-	]
+	"notifyUserIds": [ "UA5K2LZ1D" ],
+	  "webServer":
+	  {
+		  "useWebServer": true,
+		  "webServerPort": "8075",
+		  "webServerAddress": "18.222.60.10"
+	  }
   },
   "uploadToSharePoint": true
 }
