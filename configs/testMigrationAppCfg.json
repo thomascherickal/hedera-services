@@ -8,6 +8,7 @@
     {"name":"csvAppend", "value":"true"},
     {"name": "checkSignedStateFromDisk", "value": "false"}
   ],
+  "useLifecycleModel" : false,
   "app": {
     "jar": "MigrationTestingApp.jar",
     "parameterList": [4685095852903873060, 5000,	4]
