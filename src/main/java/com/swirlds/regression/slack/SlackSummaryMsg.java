@@ -98,7 +98,8 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
 				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
-				row.add(experiment.getName());
+				String experimentName = generateSlackNameText(experiment.getName());
+				row.add(experimentName);
 				row.add(experiment.getUniqueId());
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
@@ -123,6 +124,16 @@ public class SlackSummaryMsg extends SlackMsg {
 			return attachment.build();
 		}
 		return null;
+	}
+
+	private String generateSlackNameText(String experimentName) {
+		String returnString = resultFolder + "/" + experimentName;
+		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
+					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
+		}
+		return returnString;
 	}
 
 	@Override
