@@ -150,7 +150,7 @@ public class SlackTestMsg extends SlackMsg {
 			s.append("*Configured Test Duration:* ").append(testConfig.getDuration()).append(NEWLINE);
 		}
 		if (resultsFolder != null) {
-			s.append("*Results Folder:* ").append(GenerateSlackNameText(testConfig.getName())).append(NEWLINE);
+			s.append("*Results Folder:* ").append(generateSlackNameText(testConfig.getName())).append(NEWLINE);
 		}
 		if (uniqueId != null) {
 			s.append("*Unique Identifier:* ").append(uniqueId).append(NEWLINE);
@@ -252,9 +252,9 @@ public class SlackTestMsg extends SlackMsg {
 		}
 	}
 
-	private String GenerateSlackNameText(String experimentName) {
+	private String generateSlackNameText(String experimentName) {
 		String returnString = experimentName;
-		if(slackConfig.getWebServer().isUseWebServer()){
+		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
 			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
 					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
 					resultsFolder + "/" + experimentName + "|" + resultsFolder + ">" ;
