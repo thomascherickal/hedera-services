@@ -715,7 +715,7 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
 			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
 			if (!new File(expectedMap).exists()) {
-				log.error("ExpectedMap doesn't exist for validation in Node {}", i);
+				log.error(MARKER,"ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
 			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
@@ -729,7 +729,7 @@ public class Experiment implements ExperimentSummary {
 				getUniqueId(),
 				regConfig,
 				testConfig,
-				getResultsFolder(experimentTime, testConfig.getName()),
+				getResultsFolder(experimentTime, regConfig.getName()),
 				git
 		);
 
