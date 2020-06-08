@@ -32,7 +32,6 @@
 	  "value": "data/eventStream"
 	}
   ],
-  "useLifecycleModel": true,
   "recoverConfig": {
 	"eventDir": "data/eventStreamRecover",
 	"sqlFile": "drop_database.psql"
