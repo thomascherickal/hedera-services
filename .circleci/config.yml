@@ -781,7 +781,7 @@ executors:
     working_directory: /repo
 
 workflows:
-  nightly-misc-regression:
+  nightly-simulate-network-outrage:
 #    triggers:
 #        - schedule:
 #            cron: "0 0,12 * * *"
@@ -811,7 +811,6 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - run-network-sim:
           requires:
-#            - start-singlejob-testnet
             - run-accessory-tests
           pre-steps:
             - attach_workspace:
@@ -820,18 +819,54 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-testnet
-      - run-umbrella-freeze-restart-test:
+      - rerun-accessory-tests:
           requires:
             - run-network-sim
           pre-steps:
             - attach_workspace:
                 at: /
+            - run: /repo/.circleci/scripts/echo-env.sh
+            - ensure-testnet-for-reruns
+          post-steps:
+            - cleanup-rerun-testnet-if-present
+      - cleanup-singlejob-testnet:
+          requires:
+            - rerun-accessory-tests 
+          pre-steps:
+            - attach_workspace:
+                at: /
+
+  feature-update-regression:
+#    triggers:
+#        - schedule:
+#            cron: "0 0,12 * * *"
+#            filters:
+#              branches:
+#                only:
+#                  - master
+#                  - 0257-E-add-update-test-to-workflow
+    jobs:
+      - fast-build-artifact:
+          filters:
+            branches:
+              only:
+                - 0257-E-add-update-test-to-workflow
+      - start-singlejob-testnet:
+          requires:
+            - fast-build-artifact
+      - run-accessory-tests:
+          requires:
+            - start-singlejob-testnet
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - run: /repo/.circleci/scripts/echo-env.sh
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
       - run-update-feature:
           requires:
-            - run-umbrella-freeze-restart-test
+            - run-accessory-tests  
           pre-steps:
             - attach_workspace:
                 at: /
@@ -865,6 +900,61 @@ workflows:
             - attach_workspace:
                 at: /
 
+  freeze-restart-regression:
+#    triggers:
+#        - schedule:
+#            cron: "0 0,12 * * *"
+#            filters:
+#              branches:
+#                only:
+#                  - master
+#                  - 0257-E-add-update-test-to-workflow
+    jobs:
+      - fast-build-artifact:
+          filters:
+            branches:
+              only:
+                - 0257-E-add-update-test-to-workflow
+      - start-singlejob-testnet:
+          requires:
+            - fast-build-artifact
+      - run-accessory-tests:
+          requires:
+            - start-singlejob-testnet
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - run: /repo/.circleci/scripts/echo-env.sh
+            - ensure-testnet-for-reruns
+          post-steps:
+            - cleanup-rerun-testnet-if-present
+      - run-umbrella-freeze-restart-test:
+          requires:
+            - run-accessory-tests
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - ensure-testnet-for-reruns
+          post-steps:
+            - cleanup-rerun-testnet-if-present
+      - rerun-accessory-tests:
+          requires:
+            - run-umbrella-freeze-restart-test
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - run: /repo/.circleci/scripts/echo-env.sh
+            - ensure-testnet-for-reruns
+          post-steps:
+            - cleanup-rerun-testnet-if-present
+      - cleanup-singlejob-testnet:
+          requires:
+            - rerun-accessory-tests
+          pre-steps:
+            - attach_workspace:
+                at: /
+
+                  
   nightly-regression:
 #    triggers:
 #        - schedule:
@@ -1057,8 +1147,8 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - run-file-scenarios:
           requires:
-#            - run-consensus-and-crypto-scenarios
-            - start-singlejob-testnet
+            - run-consensus-and-crypto-scenarios
+#            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1067,8 +1157,8 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - run-smart-contract-scenarios:
           requires:
-#            - run-file-scenarios
-            - start-singlejob-testnet
+            - run-file-scenarios
+#            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1077,10 +1167,9 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - cleanup-singlejob-testnet:
           requires:
-            - run-consensus-and-crypto-scenarios
-            - run-file-scenarios
+ #           - run-consensus-and-crypto-scenarios
+ #           - run-file-scenarios
             - run-smart-contract-scenarios
-
           pre-steps:
             - attach_workspace:
                 at: /
