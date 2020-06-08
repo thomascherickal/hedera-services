@@ -17,7 +17,6 @@
 
 package com.swirlds.regression.utils;
 
-import com.swirlds.regression.Experiment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -35,22 +34,20 @@ public class FileUtils {
 	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 	private static final int MAX_BUFFER_LENGTH = 1024;
 
-	public static final String GC_LOG_FILES_REGEX = "gc(.*).log";
-
-
 	/**
-	 * get GC log files in the given folder
+	 * get files whose name matches given regex in the given folder
 	 *
 	 * @param folderPath
+	 * @param regex
 	 * @return
 	 */
-	public static File[] getGCLogs(final String folderPath) {
+	public static File[] getFilesMatchRegex(final String folderPath, final String regex) {
 		File folder = new File(folderPath);
 		if (!folder.exists() || !folder.isDirectory()) {
 			return null;
 		}
 
-		return folder.listFiles((dir, name) -> name.toLowerCase().matches(GC_LOG_FILES_REGEX));
+		return folder.listFiles((dir, name) -> name.toLowerCase().matches(regex));
 	}
 
 	/**

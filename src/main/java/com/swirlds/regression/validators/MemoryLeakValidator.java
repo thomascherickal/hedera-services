@@ -20,23 +20,38 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
+import com.swirlds.regression.utils.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 
 /**
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
  */
 public class MemoryLeakValidator extends Validator {
+	/**
+	 * result folders of all nodes
+	 */
+	private String[] resultFolders;
+	/**
+	 * config which specifies which nodes we want to check GC logs
+	 */
+	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 	/**
 	 * key: nodeId, value: GC log zip file
 	 */
@@ -94,12 +109,24 @@ public class MemoryLeakValidator extends Validator {
 	public static final String RESPONSE_CODE = "ResponseCode: ";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
 
-	public static final String GC_LOG_FILE_MISS = "node%d's GC log zip file is missing";
+	public static final String GC_LOG_ZIP_FILE_MISS = "node%d's GC log zip file is missing";
+
+	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
 	public static final String CHECK_GC_LOG = "checking GC log file for node%d";
 
-	public MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
+	/**
+	 * `gc start` denotes an GC event in GC logs
+	 */
+	private static final String GC_START = "gc start";
+
+	public static final String GC_LOG_FILES_REGEX = "gc(.*).log";
+
+	public MemoryLeakValidator(final MemoryLeakCheckConfig memoryLeakCheckConfig,
+			final String[] resultFolders) {
+		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
+		this.resultFolders = resultFolders;
 		this.url = buildURL();
-		this.gcFilesMap = gcFilesMap;
+		this.gcFilesMap = getGCLogZipsForNodes();
 	}
 
 	/**
@@ -117,10 +144,10 @@ public class MemoryLeakValidator extends Validator {
 			return;
 		}
 		// check gcLog.zip for this node
-		// add warn if GC log is missing;
+		// add warn if GC log zip file is missing;
 		gcFilesMap.forEach((id, file) -> {
 			if (file == null || !file.exists()) {
-				addWarning(String.format(GC_LOG_FILE_MISS, id));
+				addWarning(String.format(GC_LOG_ZIP_FILE_MISS, id));
 			} else {
 				addInfo(String.format(CHECK_GC_LOG, id));
 				checkGCFile(file, url, id);
@@ -166,7 +193,55 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
+	 * zip GC log files for given node
+	 * if succeed, put the zip file into gcFilesMap
+	 */
+	void putZipGCToMap(final Map<Integer, File> gcFilesMap, final String folder, final File[] files,
+			final int nodeIndex) {
+		File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
+		try {
+			FileUtils.zip(files, zipFile);
+			gcFilesMap.put(nodeIndex, zipFile);
+		} catch (IOException e) {
+			log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
+			e.printStackTrace();
+			addWarning("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
+		}
+	}
+
+	/**
+	 * for nodes we want to check GC logs:
+	 * (1) if GC logs not exist, log a warning;
+	 * (2) check whether the nodes' GC logs contains any GC Events;
+	 * (3) if not, we don't need to submit it to GCeasy API;
+	 * (4) if yes, we generate a zip file and put it into a Map for submit to GCeasy API later
+	 *
+	 * @return
+	 */
+	private Map<Integer, File> getGCLogZipsForNodes() {
+		final Map<Integer, File> gcFilesMap = new HashMap<>();
+
+		final int totalNum = resultFolders.length;
+		final int lastStakedNode = getLastStakedNode();
+		for (int nodeIndex = 0; nodeIndex < totalNum; nodeIndex++) {
+			// only check GC log for nodes specified in MemoryLeakCheckConfig
+			if (memoryLeakCheckConfig.shouldCheck(nodeIndex, totalNum, lastStakedNode)) {
+				String folder = resultFolders[nodeIndex];
+				File[] files = FileUtils.getFilesMatchRegex(folder, GC_LOG_FILES_REGEX);
+				if (files.length == 0) {
+					addWarning(String.format(GC_LOG_FILE_MISS, nodeIndex));
+				} else if (hasGCEvents(files, nodeIndex)){
+					// zip GC log files and put into
+					putZipGCToMap(gcFilesMap, folder, files, nodeIndex);
+				}
+			}
+		}
+		return gcFilesMap;
+	}
+
+	/**
 	 * Build a connection to the given URL
+	 *
 	 * @throws IOException
 	 */
 	HttpURLConnection buildConn(final URL url) throws IOException {
@@ -219,7 +294,6 @@ public class MemoryLeakValidator extends Validator {
 	 * check response, log an error when `isProblem` in response is true
 	 */
 	void checkResponse(final String response, final int nodeId) {
-
 		if (response == null || response.isBlank()) {
 			addWarning(RESPONSE_EMPTY);
 			return;
@@ -267,5 +341,49 @@ public class MemoryLeakValidator extends Validator {
 			// 5xx: Server Error
 			addWarning(RESPONSE_CODE + responseCode);
 		}
+	}
+
+	/**
+	 * check for the given node, whether any GC log files contain GC Events
+	 * @param files
+	 * @param nodeIndex
+	 * @return
+	 */
+	boolean hasGCEvents(final File[] files, final int nodeIndex) {
+		for (File file : files) {
+			if (hasGCEvents(file)) {
+				return true;
+			}
+		}
+		addInfo(String.format("node%d's GC logs didn't report any GC Events, so we won't submit it for analysis. This indicates there is no Memory issue in this test.", nodeIndex));
+		return false;
+	}
+
+	/**
+	 * check GC log file, if there are any GC Events such as `gc start`.
+	 * If not, we would not sent it to GCeasy API.
+	 * Because GCeasy API would return fault message "GC Log format not recognized. Failed to parse GC Log" for GC logs
+	 * which don't contain any GC Events
+	 *
+	 * @param file
+	 * @return
+	 */
+	boolean hasGCEvents(final File file) {
+		if (file == null || file.exists()) {
+			return false;
+		}
+
+		String line;
+		try (Scanner scanner = new Scanner(file)) {
+			while (scanner.hasNextLine()) {
+				line = scanner.nextLine();
+				if (line.contains(GC_START)) {
+					return true;
+				}
+			}
+		} catch (FileNotFoundException ex) {
+			log.error(ERROR, "{} doesn't exist", file.getName());
+		}
+		return false;
 	}
 }

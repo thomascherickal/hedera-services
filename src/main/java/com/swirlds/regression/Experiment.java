@@ -24,7 +24,6 @@ import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
-import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SavedState;
 import com.swirlds.regression.jsonConfigs.TestConfig;
@@ -34,7 +33,6 @@ import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
-import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
@@ -93,7 +91,6 @@ import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
 import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
@@ -727,7 +724,7 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
 			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
 			if (!new File(expectedMap).exists()) {
-				log.error(MARKER,"ExpectedMap doesn't exist for validation in Node {}", i);
+				log.error(MARKER, "ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
 			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
@@ -737,36 +734,19 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * get GC Files for nodes we want to check GC logs
-	 *
-	 * @return
+	 * @return an array of result folder path strings
 	 */
-	private Map<Integer, File> getGCLogsForNodes() {
-		final Map<Integer, File> gcFilesMap = new HashMap<>();
-		if (testConfig == null || testConfig.getMemoryLeakCheckConfig() == null) {
-			return gcFilesMap;
-		}
-
-		final MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
-		final int totalNum = regConfig.getTotalNumberOfNodes();
-		final int lastStakedNode = getLastStakedNode();
-		for (int nodeIndex = 0; nodeIndex < totalNum; nodeIndex++) {
-			// only check GC log for nodes specified in MemoryLeakCheckConfig
-			if (memoryLeakCheckConfig.shouldCheck(nodeIndex, totalNum, lastStakedNode)) {
-				String folder = getExperimentResultsFolderForNode(nodeIndex);
-				File[] files = FileUtils.getGCLogs(folder);
-				File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
-				try {
-					FileUtils.zip(files, zipFile);
-					gcFilesMap.put(nodeIndex, zipFile);
-				} catch (IOException e) {
-					log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
-					e.printStackTrace();
-					gcFilesMap.put(nodeIndex, null);
-				}
+	private String[] getResultFolders() {
+		final String[] results = new String[regConfig.getTotalNumberOfNodes()];
+		for (int nodeIndex = 0; nodeIndex < results.length; nodeIndex++) {
+			final String resultFolder = getExperimentResultsFolderForNode(nodeIndex);
+			if (!new File(resultFolder).exists()) {
+				log.error(MARKER, "Result doesn't exist for validation in Node {}", nodeIndex);
+				return null;
 			}
+			results[nodeIndex] = resultFolder;
 		}
-		return gcFilesMap;
+		return results;
 	}
 
 	private void validateTest() {
@@ -851,7 +831,10 @@ public class Experiment implements ExperimentSummary {
 		}
 
 		if (testConfig.getMemoryLeakCheckConfig() != null) {
-			requiredValidator.add(new MemoryLeakValidator(getGCLogsForNodes()));
+			requiredValidator.add(
+					new MemoryLeakValidator(
+							testConfig.getMemoryLeakCheckConfig(),
+							getResultFolders()));
 		}
 
 		for (Validator item : requiredValidator) {
@@ -1389,6 +1372,7 @@ public class Experiment implements ExperimentSummary {
 			// from GC log report, FCM2.5M test got: "Our analysis tells that GCs are triggered because
 			// Metadata occupancy is reaching it's limits quite often. 4 GCs were triggered because of this reason.
 			// You can consider increasing the metaspace size so that this GC activity can be minimzed."
+			// when we set MetaspaceSize to be 100M, there would not such problem reported
 			javaOptions += " -XX:MetaspaceSize=100M ";
 			// generate gc logs if the testConfig contains MemoryLeakCheckConfig
 			if (testConfig.getMemoryLeakCheckConfig() != null) {
