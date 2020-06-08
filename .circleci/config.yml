@@ -799,7 +799,7 @@ workflows:
       - start-singlejob-testnet:
           requires:
             - fast-build-artifact
-      - run-network-sim:
+      - run-accessory-tests:
           requires:
             - start-singlejob-testnet
           pre-steps:
@@ -808,20 +808,30 @@ workflows:
             - run: /repo/.circleci/scripts/echo-env.sh
             - ensure-testnet-for-reruns
           post-steps:
-            - cleanup-testnet
-      - run-accessory-tests:
+            - cleanup-rerun-testnet-if-present
+      - run-network-sim:
           requires:
-            - run-network-sim
+#            - start-singlejob-testnet
+            - run-accessory-tests
           pre-steps:
             - attach_workspace:
                 at: /
             - run: /repo/.circleci/scripts/echo-env.sh
             - ensure-testnet-for-reruns
           post-steps:
+            - cleanup-testnet
+      - run-umbrella-freeze-restart-test:
+          requires:
+            - run-network-sim
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - ensure-testnet-for-reruns
+          post-steps:
             - cleanup-rerun-testnet-if-present
       - run-update-feature:
           requires:
-            - run-accessory-tests
+            - run-umbrella-freeze-restart-test
           pre-steps:
             - attach_workspace:
                 at: /
@@ -840,7 +850,7 @@ workflows:
           new-marker : "new marker string"
       - rerun-accessory-tests:
           requires:
-            - run-network-sim
+            - run-update-jar-files
           pre-steps:
             - attach_workspace:
                 at: /
@@ -868,7 +878,7 @@ workflows:
           filters:
             branches:
               only:
-                - 0257-E-add-update-test-to-workflow
+                - Disable-0257-E-add-update-test-to-workflow
           post-steps:
             - save-this-job-client-logs
       - regression-target-testnet:
@@ -1032,7 +1042,6 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
-      #                - 0241-E-Refactor-CircleCi-build-scripts
       - start-singlejob-testnet:
           requires:
             - build-artifact
@@ -1048,7 +1057,8 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - run-file-scenarios:
           requires:
-            - run-consensus-and-crypto-scenarios
+#            - run-consensus-and-crypto-scenarios
+            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1057,44 +1067,20 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - run-smart-contract-scenarios:
           requires:
-            - run-file-scenarios
+#            - run-file-scenarios
+            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-      - run-umbrella-freeze-restart-test:
-          requires:
-            - run-smart-contract-scenarios
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
-          post-steps:
-            - cleanup-rerun-testnet-if-present
-#      - run-update-feature:
-#          requires:
-#            - run-umbrella-freeze-restart-test
-#          pre-steps:
-#            - attach_workspace:
-#                at: /
-#            - ensure-testnet-for-reruns
-#          post-steps:
-#            - cleanup-rerun-testnet-if-present
-#      - run-update-jar-files:
-#          requires:
-#            - run-update-feature
-#          pre-steps:
-#            - attach_workspace:
-#                at: /
-#            - ensure-testnet-for-reruns
-#          post-steps:
-#            - cleanup-testnet
-#          new-marker : "new marker string"
       - cleanup-singlejob-testnet:
           requires:
-            - run-umbrella-freeze-restart-test
+            - run-consensus-and-crypto-scenarios
+            - run-file-scenarios
+            - run-smart-contract-scenarios
+
           pre-steps:
             - attach_workspace:
                 at: /
