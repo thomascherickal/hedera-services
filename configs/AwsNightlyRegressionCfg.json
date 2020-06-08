@@ -76,5 +76,5 @@
 		  "webServerAddress": "18.222.60.10"
 	  }
   },
-  "uploadToSharePoint": true
+  "uploadToSharePoint": false
 }
