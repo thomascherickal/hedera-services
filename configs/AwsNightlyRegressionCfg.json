@@ -67,9 +67,14 @@
 	"notifyOn": "ERROR",
 	"notifyChannel": false,
 	"notifyUserIds": [
-	  "UA4T7UJQJ",
 	  "UA5K2LZ1D"
-	]
+	],
+	  "webServer":
+	  {
+		  "useWebServer": true,
+		  "webServerPort": "8070",
+		  "webServerAddress": "18.222.60.10"
+	  }
   },
-  "uploadToSharePoint": true
+  "uploadToSharePoint": false
 }
