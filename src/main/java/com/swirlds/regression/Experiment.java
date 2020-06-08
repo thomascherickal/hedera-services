@@ -159,6 +159,7 @@ public class Experiment implements ExperimentSummary {
 	protected boolean warnings = false;
 	protected boolean errors = false;
 	protected boolean exceptions = false;
+	protected String slackLink = null;
 
 	@Override
 	public boolean hasWarnings() {
@@ -173,6 +174,15 @@ public class Experiment implements ExperimentSummary {
 	@Override
 	public boolean hasExceptions() {
 		return exceptions;
+	}
+
+	@Override
+	public String getSlackLink() {
+		return slackLink;
+	}
+
+	public void setSlackLink(String slackLink) {
+		this.slackLink = slackLink;
 	}
 
 	public void setUseThreadPool(boolean useThreadPool) {
