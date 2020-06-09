@@ -854,19 +854,20 @@ workflows:
       - start-singlejob-testnet:
           requires:
             - fast-build-artifact
-      - run-accessory-tests:
-          requires:
-            - start-singlejob-testnet
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - run: /repo/.circleci/scripts/echo-env.sh
-            - ensure-testnet-for-reruns
-          post-steps:
-            - cleanup-rerun-testnet-if-present
+#      - run-accessory-tests:
+#          requires:
+      #            - start-singlejob-testnet
+#          pre-steps:
+#            - attach_workspace:
+#                at: /
+#            - run: /repo/.circleci/scripts/echo-env.sh
+#            - ensure-testnet-for-reruns
+#          post-steps:
+#            - cleanup-rerun-testnet-if-present
       - run-update-feature:
           requires:
-            - run-accessory-tests  
+#            - run-accessory-tests
+            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
