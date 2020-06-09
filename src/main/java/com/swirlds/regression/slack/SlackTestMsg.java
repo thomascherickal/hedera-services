@@ -19,6 +19,7 @@ package com.swirlds.regression.slack;
 
 import com.hubspot.slack.client.models.Attachment;
 import com.swirlds.regression.GitInfo;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.validators.Validator;
@@ -150,7 +151,7 @@ public class SlackTestMsg extends SlackMsg {
 			s.append("*Configured Test Duration:* ").append(testConfig.getDuration()).append(NEWLINE);
 		}
 		if (resultsFolder != null) {
-			s.append("*Results Folder:* ").append(generateSlackNameText(testConfig.getName())).append(NEWLINE);
+			s.append("*Results Folder:* ").append(createLinkOrReturn(RegressionUtilities.buildResultsFolderURL(slackConfig,resultsFolder, testConfig.getName()),testConfig.getName())).append(NEWLINE);
 		}
 		if (uniqueId != null) {
 			s.append("*Unique Identifier:* ").append(uniqueId).append(NEWLINE);
@@ -250,16 +251,6 @@ public class SlackTestMsg extends SlackMsg {
 			sb.append(msg);
 			sb.append(NEWLINE);
 		}
-	}
-
-	private String generateSlackNameText(String experimentName) {
-		String returnString = experimentName;
-		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
-			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
-					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
-					resultsFolder + "/" + experimentName + "|" + resultsFolder + ">" ;
-		}
-		return returnString;
 	}
 }
 
