@@ -20,9 +20,14 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.utils.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,6 +49,10 @@ import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
  */
 public class MemoryLeakValidator extends Validator {
+	private static final Logger log = LogManager.getLogger(MemoryLeakValidator.class);
+	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
+	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
+
 	/**
 	 * result folders of all nodes
 	 */
@@ -158,6 +167,7 @@ public class MemoryLeakValidator extends Validator {
 				addWarning(String.format(GC_LOG_ZIP_FILE_MISS, id));
 			} else {
 				addInfo(String.format(CHECK_GC_LOG, id));
+				log.info(MARKER, String.format(CHECK_GC_LOG, id));
 				checkGCFile(file, url, id);
 			}
 		});
@@ -184,6 +194,7 @@ public class MemoryLeakValidator extends Validator {
 				showResponseCode(responseCode);
 
 				String response = readFromStream(conn.getInputStream());
+				log.info(MARKER, "GCLog analysis report of node{}: \n {}", nodeId, response);
 				checkResponse(response, nodeId);
 
 				String errMsg = readFromStream(conn.getErrorStream());
