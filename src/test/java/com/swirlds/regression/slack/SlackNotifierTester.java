@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.slack;
 
+import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 import com.swirlds.regression.ExecStreamReader;
 import com.swirlds.regression.GitInfo;
 import com.swirlds.regression.RegressionUtilities;
@@ -60,6 +61,11 @@ public class SlackNotifierTester {
 	}
 
 	private static void testSummaryMsg(SlackNotifier sn) {
+		SlackTestMsg msg = getTestMsg();
+		msg.addError("an error to link to");
+		ChatPostMessageResponse response = sn.messageChannel(msg, SLACK_CHANNEL);
+		String testLink = sn.getLinkTo(response);
+
 		RegressionConfig regConfig = getRegConfig();
 		GitInfo gi = new GitInfo();
 		gi.gitVersionInfo();
@@ -75,7 +81,8 @@ public class SlackNotifierTester {
 				true,
 				true,
 				"FCM-2.5MC-5MU-5MT-250KD-2.5KTPS",
-				"1916540190"
+				"1916540190",
+				testLink
 		);
 		ExperimentSummaryData bad2 = new ExperimentSummaryData(
 				false,
@@ -107,16 +114,20 @@ public class SlackNotifierTester {
 		sn.messageChannel(summaryMsg, SLACK_CHANNEL);
 	}
 
-	private static void testAllFeatures(SlackNotifier sn) {
+	private static SlackTestMsg getTestMsg(){
 		GitInfo gi = new GitInfo();
 		gi.gitVersionInfo();
-		SlackTestMsg msg = new SlackTestMsg(
+		return new SlackTestMsg(
 				null,
 				getRegConfig(),
 				getTestConfig(),
 				SLACK_TEST_FILE_LOCATION,
 				gi
 		);
+	}
+
+	private static void testAllFeatures(SlackNotifier sn) {
+		SlackTestMsg msg = getTestMsg();
 
 		msg.addWarning("A test warning");
 		msg.addError("A test error");

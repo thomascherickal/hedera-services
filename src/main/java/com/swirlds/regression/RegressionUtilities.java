@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
+import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -431,5 +432,15 @@ public class RegressionUtilities {
 		} else {
 			return buildParameterString(maxMemory, minMemory, maxDirectMemory);
 		}
+	}
+
+	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName){
+		String returnString = null;
+		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+			returnString = "http://" + slackConfig.getWebServer().getWebServerAddress() +
+					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					resultFolder + "/" + experimentName;
+		}
+		return returnString;
 	}
 }
