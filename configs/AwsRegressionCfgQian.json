@@ -40,7 +40,13 @@
 	"notifyChannel": false,
 	"notifyUserIds": [
 	  "UE4P47SMT"
-	]
+	],
+	"webServer":
+	{
+	  "useWebServer": true,
+	  "webServerPort": "8070",
+	  "webServerAddress": "18.222.60.10"
+	}
   },
   "uploadToSharePoint": false
 }

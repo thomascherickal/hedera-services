@@ -23,5 +23,11 @@
   "resultFiles": [
     "swirlds.log"
   ],
+  "memoryLeakCheckConfig": {
+    "nodeGroupIdentifier": "FIRST"
+  },
+  "memoryLeakCheckConfig": {
+    "nodeGroupIdentifier": "FIRST"
+  },
   "validator": ["STATS", "STANDARD", "MIGRATION" ]
 }

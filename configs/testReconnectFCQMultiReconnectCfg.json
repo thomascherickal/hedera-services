@@ -54,6 +54,9 @@
   "resultFiles": [
 	"swirlds.log"
   ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST_AND_LAST"
+  },
   "validator": [
 	"STATS",
 	"RECONNECT",
