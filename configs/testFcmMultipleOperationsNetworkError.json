@@ -10,11 +10,10 @@
 	"useLifecycleModel" : true,
 	"app": {
 	  "jar": "PlatformTestingApp.jar",
-	  "parameterList": ["FCMMultipleOperationsNetworkError.json"]
+	  "parameterList": ["FCMMultipleOperationsNetworkErr.json"]
 	},
 	"resultFiles": [
 	  "swirlds.log"
 	],
 	"validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
   }
-  

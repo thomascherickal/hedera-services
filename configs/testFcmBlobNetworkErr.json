@@ -1,7 +1,7 @@
 {
-  "name":"FCMFCQ1K-Network-Error",
-  "description" : "platform testing demo - FCMFCQ1K - FCM with Queue",
-  "duration": 1200,
+  "name":"FCM-Blob-Network-Error",
+  "description" : "platform testing demo - FCM Blob Network Error",
+  "duration": 3600,
   "settings": [
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
@@ -10,7 +10,7 @@
   "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMFCQ1KNetworkErr.json"]
+    "parameterList": ["FCMBlobNetworkErr.json"]
   },
   "resultFiles": [
     "swirlds.log"

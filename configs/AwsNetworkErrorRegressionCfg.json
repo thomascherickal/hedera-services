@@ -13,7 +13,7 @@
 	"regionList":[
 		{ "region":"us-east-1", "numberOfNodes":4}
 	  ]
-  
+
   },
   "eventFilesWriters": 4,
   "log": {
@@ -32,8 +32,8 @@
 	// }
   ],
   "experiments": [
-	// "configs/testFcmMultipleOperationsNetworkError.json",
-	"configs/testFCM1KFCQNetworkError.json"
+	"configs/testFCM1KFCQNetworkError.json",
+	 "configs/testFcmMultipleOperationsNetworkError.json"
   ],
   "db": {
 	"type": "postgresql",
