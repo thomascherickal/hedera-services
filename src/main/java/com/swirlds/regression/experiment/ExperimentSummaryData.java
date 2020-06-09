@@ -25,17 +25,24 @@ public class ExperimentSummaryData implements ExperimentSummary {
 	private boolean hasExceptions;
 	private String name;
 	private String uniqueId;
+	private String slackLink = null;
 
 	public ExperimentSummaryData() {
 	}
 
 	public ExperimentSummaryData(boolean hasWarnings, boolean hasErrors, boolean hasExceptions, String name,
 			String uniqueId) {
+		this(hasWarnings, hasErrors, hasExceptions, name, uniqueId, null);
+	}
+
+	public ExperimentSummaryData(boolean hasWarnings, boolean hasErrors, boolean hasExceptions, String name,
+			String uniqueId, String slackLink) {
 		this.hasWarnings = hasWarnings;
 		this.hasErrors = hasErrors;
 		this.hasExceptions = hasExceptions;
 		this.name = name;
 		this.uniqueId = uniqueId;
+		this.slackLink = slackLink;
 	}
 
 	public void setHasWarnings(boolean hasWarnings) {
@@ -81,6 +88,11 @@ public class ExperimentSummaryData implements ExperimentSummary {
 	@Override
 	public String getUniqueId() {
 		return uniqueId;
+	}
+
+	@Override
+	public String getSlackLink() {
+		return slackLink;
 	}
 
 	@Override

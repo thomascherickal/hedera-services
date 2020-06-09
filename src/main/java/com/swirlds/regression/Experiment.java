@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
 import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.fcmap.test.pta.MapKey;
@@ -158,6 +159,7 @@ public class Experiment implements ExperimentSummary {
 	protected boolean warnings = false;
 	protected boolean errors = false;
 	protected boolean exceptions = false;
+	protected String slackLink = null;
 
 	@Override
 	public boolean hasWarnings() {
@@ -172,6 +174,15 @@ public class Experiment implements ExperimentSummary {
 	@Override
 	public boolean hasExceptions() {
 		return exceptions;
+	}
+
+	@Override
+	public String getSlackLink() {
+		return slackLink;
+	}
+
+	public void setSlackLink(String slackLink) {
+		this.slackLink = slackLink;
 	}
 
 	public void setUseThreadPool(boolean useThreadPool) {
@@ -926,13 +937,14 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void sendSlackMessage(SlackTestMsg msg, String channel) {
-		slacker.messageChannel(msg, channel);
+		ChatPostMessageResponse response = slacker.messageChannel(msg, channel);
+		this.setSlackLink(slacker.getLinkTo(response));
 	}
 
 	public void sendSlackMessage(String error, String channel) {
 		SlackTestMsg msg = new SlackTestMsg(getUniqueId(), regConfig, testConfig);
 		msg.addError(error);
-		slacker.messageChannel(msg, channel);
+		sendSlackMessage(msg, channel);
 	}
 
 	public void sendSlackStatsFile(SlackTestMsg msg, String fileLocation) {
