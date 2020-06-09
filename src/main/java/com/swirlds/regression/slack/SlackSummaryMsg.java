@@ -100,16 +100,16 @@ public class SlackSummaryMsg extends SlackMsg {
 				List<String> row = new ArrayList<>();
 				String experimentName = generateSlackNameText(experiment.getName());
 				row.add(experimentName);
-				row.add(experiment.getUniqueId());
+				row.add(createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId()));
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
 					for (ExperimentSummary experimentSummary : pair.getRight()) {
 						if (experimentSummary.hasErrors() || experimentSummary.hasExceptions()) {
-							hist.append('E');
+							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "E"));
 						} else if (experimentSummary.hasWarnings()) {
-							hist.append('W');
+							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "W"));
 						} else {
-							hist.append('P');
+							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "P"));
 						}
 					}
 				}

@@ -37,4 +37,6 @@ public interface ExperimentSummary {
 	 * Generate a unique code that can be used to search for this test in slack.
 	 */
 	String getUniqueId();
+
+	String getSlackLink();
 }
