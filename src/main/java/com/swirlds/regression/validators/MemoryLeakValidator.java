@@ -117,7 +117,7 @@ public class MemoryLeakValidator extends Validator {
 	/**
 	 * `gc start` denotes an GC event in GC logs
 	 */
-	private static final String GC_START = "gc start";
+	private static final String GC_START = "gc,start";
 
 	public static final String GC_LOG_FILES_REGEX = "gc(.*).log";
 
@@ -127,6 +127,14 @@ public class MemoryLeakValidator extends Validator {
 		this.resultFolders = resultFolders;
 		this.url = buildURL();
 		this.gcFilesMap = getGCLogZipsForNodes();
+	}
+
+	/**
+	 * for unit test
+	 */
+	MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
+		this.gcFilesMap = gcFilesMap;
+		this.url = buildURL();
 	}
 
 	/**
@@ -368,8 +376,8 @@ public class MemoryLeakValidator extends Validator {
 	 * @param file
 	 * @return
 	 */
-	boolean hasGCEvents(final File file) {
-		if (file == null || file.exists()) {
+	static boolean hasGCEvents(final File file) {
+		if (file == null || !file.exists()) {
 			return false;
 		}
 
@@ -385,5 +393,14 @@ public class MemoryLeakValidator extends Validator {
 			log.error(ERROR, "{} doesn't exist", file.getName());
 		}
 		return false;
+	}
+
+	/**
+	 * get an array of GC Log files in the given folder
+	 * @param folder
+	 * @return
+	 */
+	static File[] getGCLogs(final String folder) {
+		return FileUtils.getFilesMatchRegex(folder, GC_LOG_FILES_REGEX);
 	}
 }

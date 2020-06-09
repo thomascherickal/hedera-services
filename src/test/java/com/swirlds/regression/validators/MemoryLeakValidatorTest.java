@@ -17,10 +17,11 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.RegressionUtilities;
+import com.swirlds.regression.utils.FileUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
@@ -41,22 +42,34 @@ public class MemoryLeakValidatorTest {
 	@Test
 	public void getGCLogsTest() {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest").getPath();
-		File[] files = RegressionUtilities.getGCLogs(folder);
+		File[] files = MemoryLeakValidator.getGCLogs(folder);;
 		assertEquals(3, files.length);
 	}
 
 	@Test
-	public void zipTest() {
+	public void zipTest() throws IOException {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest/").getPath();
-		File[] files = RegressionUtilities.getGCLogs(folder);
+		File[] files = MemoryLeakValidator.getGCLogs(folder);
 		String zipPath = folder + GC_LOG_ZIP_FILE;
 		File zipFile = new File(zipPath);
 		zipFile.deleteOnExit();
 		assertFalse(zipFile.exists());
-		RegressionUtilities.zip(files, zipFile);
+		FileUtils.zip(files, zipFile);
 		assertTrue(zipFile.exists());
 		assertTrue(zipFile.canRead());
 		zipFile.delete();
+	}
+
+	@Test
+	public void hasGCEvents_Negative_Test() {
+		String file = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-NoGCEvent.log").getPath();
+		assertFalse(MemoryLeakValidator.hasGCEvents(new File(file)));
+	}
+
+	@Test
+	public void hasGCEvents_Positive_Test() {
+		String file = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-GCEvent.log").getPath();
+		assertTrue(MemoryLeakValidator.hasGCEvents(new File(file)));
 	}
 
 	@Test
