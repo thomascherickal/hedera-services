@@ -85,7 +85,7 @@ abstract public class SlackMsg {
 
 		// Assert that each row has the same number of columns
 		int columns = rows.get(0).size();
-		for (List<String> row: rows) {
+		for (List<String> row : rows) {
 			if (row.size() != columns) {
 				s.append("ERROR: Invalid table: not all rows have the same number of columns");
 				return;
@@ -96,21 +96,24 @@ abstract public class SlackMsg {
 		List<Integer> columnWidths = new ArrayList<>();
 		for (int columnIndex = 0; columnIndex < columns; columnIndex++) {
 			columnWidths.add(0);
-			for(List<String> row: rows) {
-				if (row.get(columnIndex).length() > columnWidths.get(columnIndex)) {
-					columnWidths.set(columnIndex, row.get(columnIndex).length());
+			for (List<String> row : rows) {
+				int length = returnVisibleString(row.get(columnIndex)).length();
+				if (length > columnWidths.get(columnIndex)) {
+					columnWidths.set(columnIndex, length);
 				}
 			}
+
 		}
 
 		// Build the table
-		for (List<String> row: rows) {
+		for (List<String> row : rows) {
 			for (int columnIndex = 0; columnIndex < columns; columnIndex++) {
 				String column = row.get(columnIndex);
 				s.append(column);
 				if (columnIndex + 1 < columns) {
 					// Add padding if column is not the rightmost column
-					int padding = columnWidths.get(columnIndex) - column.length() + columnPadding;
+					int length = returnVisibleString(column).length();
+					int padding = columnWidths.get(columnIndex) - length + columnPadding;
 					for (int i = 0; i < padding; i++) {
 						s.append(" ");
 					}
@@ -138,7 +141,7 @@ abstract public class SlackMsg {
 
 		// Add attachments, if any
 		if (attachments != null) {
-			for (Attachment attachment: attachments) {
+			for (Attachment attachment : attachments) {
 				msg.addAttachments(attachment);
 			}
 		}
@@ -153,7 +156,9 @@ abstract public class SlackMsg {
 
 	/**
 	 * Generate a slack message using a string builder.
-	 * @param stringBuilder The contents of the message should be added to this string builder.
+	 *
+	 * @param stringBuilder
+	 * 		The contents of the message should be added to this string builder.
 	 * @return A list of attachments. If there are no attachments it is ok to return null.
 	 */
 	abstract public List<Attachment> generateSlackMessage(StringBuilder stringBuilder);
@@ -196,5 +201,30 @@ abstract public class SlackMsg {
 		for (String user : slackConfig.getNotifyUserIds()) {
 			s.insert(0, "<@" + user + "> ");
 		}
+	}
+
+	public static String createLinkOrReturn(String url, String text) {
+		if (url == null) {
+			return text;
+		}
+		if (text == null) {
+			return url;
+		}
+		return String.format("<%s|%s>", url, text);
+	}
+
+	public static String returnVisibleString(String string) {
+		if (string == null) {
+			return null;
+		}
+		int s = string.indexOf('|');
+		if (s == -1) {
+			return string;
+		}
+		int e = string.indexOf('>');
+		if (e == -1) {
+			return string;
+		}
+		return string.substring(s + 1, e);
 	}
 }
