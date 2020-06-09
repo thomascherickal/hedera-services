@@ -19,6 +19,7 @@ package com.swirlds.regression.slack;
 
 import com.hubspot.slack.client.models.Attachment;
 import com.swirlds.regression.GitInfo;
+import com.swirlds.regression.RegressionUtilities;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
@@ -98,8 +99,9 @@ public class SlackSummaryMsg extends SlackMsg {
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
 				ExperimentSummary experiment = pair.getLeft();
 				List<String> row = new ArrayList<>();
-				String experimentName = generateSlackNameText(experiment.getName());
-				row.add(experimentName);
+				String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, experiment.getName());
+				String experimentName = experiment.getName();
+				row.add(createLinkOrReturn(experimentURL, experimentName));
 				row.add(createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId()));
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
@@ -126,16 +128,6 @@ public class SlackSummaryMsg extends SlackMsg {
 		return null;
 	}
 
-	private String generateSlackNameText(String experimentName) {
-		String returnString = resultFolder + "/" + experimentName;
-		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
-			returnString = "<http://" + slackConfig.getWebServer().getWebServerAddress() +
-					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
-					resultFolder + "/" + experimentName + "|" + experimentName + ">" ;
-		}
-		return returnString;
-	}
-
 	@Override
 	public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
 
@@ -146,8 +138,9 @@ public class SlackSummaryMsg extends SlackMsg {
 		codeSnippet(stringBuilder, regressionConfig.getName());
 		newline(stringBuilder);
 
+		String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, "");
 		bold(stringBuilder, "Results Folder:");
-		stringBuilder.append(" " + resultFolder);
+		stringBuilder.append(" " + createLinkOrReturn(experimentURL,resultFolder));
 		newline(stringBuilder);
 
 		bold(stringBuilder, "Commit:");
