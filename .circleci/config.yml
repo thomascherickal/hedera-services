@@ -782,20 +782,15 @@ executors:
 
 workflows:
   nightly-simulate-network-outrage:
-#    triggers:
-#        - schedule:
-#            cron: "0 0,12 * * *"
-#            filters:
-#              branches:
-#                only:
-#                  - master
-#                  - 0257-E-add-update-test-to-workflow
+    triggers:
+        - schedule:
+            cron: "0 0,12 * * *"
+            filters:
+              branches:
+                only:
+                  - master
     jobs:
-      - fast-build-artifact:
-          filters:
-            branches:
-              only:
-                - 0257-E-add-update-test-to-workflow
+      - fast-build-artifact
       - start-singlejob-testnet:
           requires:
             - fast-build-artifact
@@ -818,7 +813,7 @@ workflows:
             - run: /repo/.circleci/scripts/echo-env.sh
             - ensure-testnet-for-reruns
           post-steps:
-            - cleanup-testnet
+            - cleanup-rerun-testnet-if-present
       - rerun-accessory-tests:
           requires:
             - run-network-sim
@@ -837,20 +832,15 @@ workflows:
                 at: /
 
   feature-update-regression:
-#    triggers:
-#        - schedule:
-#            cron: "0 0,12 * * *"
-#            filters:
-#              branches:
-#                only:
-#                  - master
-#                  - 0257-E-add-update-test-to-workflow
+    triggers:
+        - schedule:
+            cron: "0 8 * * *"
+            filters:
+              branches:
+                only:
+                  - master
     jobs:
-      - build-artifact:
-          filters:
-            branches:
-              only:
-                - 0257-E-add-update-test-to-workflow
+      - build-artifact
       - start-singlejob-testnet:
           requires:
             - build-artifact
@@ -867,7 +857,6 @@ workflows:
       - run-update-feature:
           requires:
             - run-accessory-tests
-#            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -882,7 +871,7 @@ workflows:
                 at: /
             - ensure-testnet-for-reruns
           post-steps:
-            - cleanup-testnet
+            - cleanup-rerun-testnet-if-present
           new-marker : "new marker string"
       - rerun-accessory-tests:
           requires:
@@ -902,20 +891,15 @@ workflows:
                 at: /
 
   freeze-restart-regression:
-#    triggers:
-#        - schedule:
-#            cron: "0 0,12 * * *"
-#            filters:
-#              branches:
-#                only:
-#                  - master
-#                  - 0257-E-add-update-test-to-workflow
+    triggers:
+        - schedule:
+            cron: "0 5 * * *"
+            filters:
+              branches:
+                only:
+                  - master
     jobs:
-      - fast-build-artifact:
-          filters:
-            branches:
-              only:
-                - 0257-E-add-update-test-to-workflow
+      - fast-build-artifact
       - start-singlejob-testnet:
           requires:
             - fast-build-artifact
@@ -957,19 +941,15 @@ workflows:
 
                   
   nightly-regression:
-#    triggers:
-#        - schedule:
-#            cron: "0 5,9,13 * * *"
-#            filters:
-#              branches:
-#                only:
-#                  - master
+    triggers:
+        - schedule:
+            cron: "0 5,9,13 * * *"
+            filters:
+              branches:
+                only:
+                  - master
     jobs:
       - fast-build-artifact:
-          filters:
-            branches:
-              only:
-                - Disable-0257-E-add-update-test-to-workflow
           post-steps:
             - save-this-job-client-logs
       - regression-target-testnet:
@@ -1149,7 +1129,6 @@ workflows:
       - run-file-scenarios:
           requires:
             - run-consensus-and-crypto-scenarios
-#            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1159,7 +1138,6 @@ workflows:
       - run-smart-contract-scenarios:
           requires:
             - run-file-scenarios
-#            - start-singlejob-testnet
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1168,8 +1146,6 @@ workflows:
             - cleanup-rerun-testnet-if-present
       - cleanup-singlejob-testnet:
           requires:
- #           - run-consensus-and-crypto-scenarios
- #           - run-file-scenarios
             - run-smart-contract-scenarios
           pre-steps:
             - attach_workspace:
@@ -1921,74 +1897,6 @@ jobs:
           name:  Reset client log
           command: |
             cat /dev/null > /repo/test-clients/output/hapi-client.log
-
-#      - run-eet-suites:
-#          dsl-args: "TopicCreateSpecs"
-#      - run-eet-suites:
-#          dsl-args: "TopicUpdateSpecs"
-#      - run-eet-suites:
-#          dsl-args: "TopicDeleteSpecs"
-#      - run-eet-suites:
-#          dsl-args: "SubmitMessageSpecs"
-#      - run-eet-suites:
-#          dsl-args: "TopicGetInfoSpecs"
-#      - run-eet-suites:
-#          dsl-args: "ConsensusThrottlesSpecs"
-#      - run-scenario-test:
-#          fqcn: com.hedera.services.legacy.CI.MultipleCryptoTransfers
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractBitcarbon
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractCallLocal
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractCreateContract
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractCRUD
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractDeletePayable
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractInlineAssembly
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractNegativeCalls
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractNegativeCreates
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractPay
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractPayReceivable
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractPayReceivableAmount
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorage
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorageWithEvents
-#          args: '1'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.smartcontract.OCTokenIT
-#      - run-scenario-test:
-#          fqcn: com.hedera.services.legacy.smartcontract.BigArray
-#          other-args: '1 32'
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.CI.SmartContractFailFirst
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.CI.SmartContractSelfDestruct
-#      - run-property-driven-scenario-test:
-#          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorageLinked
-#      - run:
-#          name: Set log level to INFO
-#          command: /repo/.circleci/scripts/config-log4j-4normal.sh
       - accessory-test-common-steps
       - validate-record-streams
       - save-this-job-client-logs
