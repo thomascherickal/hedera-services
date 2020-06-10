@@ -953,7 +953,7 @@ public class SSHService {
     }
 
 
-    void restoreDb(String tarGzPath) {
+    /*void restoreDb(String tarGzPath) {
         if (tarGzPath == null) {
             throw new IllegalArgumentException("tarGzPath should not be null");
         }
@@ -972,16 +972,12 @@ public class SSHService {
         );
         Session.Command cmd = execCommand(command, description, (int) MAXIMUM_TIMEOUT_ALLOWANCE);
         throwIfExitCodeBad(cmd, description);
-    }
+    }*/
 
     private void throwIfExitCodeBad(Session.Command cmd, String description) {
         if (cmd.getExitStatus() != 0) {
             String output = readCommandOutput(cmd).toString();
-            throw new RuntimeException(
-                    String.format("'%s' FAILED with error code '%d'. Output:\n%s",
-                            description, cmd.getExitStatus(), output
-                    )
-            );
+            log.error(ERROR,"'{}' FAILED with error code '{%d}. Output: {}",description,cmd.getExitStatus(),output);
         }
     }
 
