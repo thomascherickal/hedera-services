@@ -35,11 +35,7 @@ public class FileUtils {
 	private static final int MAX_BUFFER_LENGTH = 1024;
 
 	/**
-	 * get files whose name matches given regex in the given folder
-	 *
-	 * @param folderPath
-	 * @param regex
-	 * @return
+	 * return an array of files whose name matches given regex in the given folder
 	 */
 	public static File[] getFilesMatchRegex(final String folderPath, final String regex) {
 		File folder = new File(folderPath);
@@ -51,7 +47,7 @@ public class FileUtils {
 	}
 
 	/**
-	 * zip files
+	 * zip files into a file
 	 *
 	 * @param files
 	 * 		files to be zipped
