@@ -36,10 +36,10 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json",
-	"configs/testSigningDemo4KCfg.json",
-	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testStateRecover.json" ,
+	//"configs/testSigningDemoCfg.json",
+	//"configs/testSigningDemo4KCfg.json",
+	///"configs/testFcmMultipleOperationsCfg.json",
+	//"configs/testStateRecover.json" ,
 	"configs/testStateRecoverBlob.json" ,
 	"configs/testStateRecoverFCQ.json" ,
 	"configs/testRestartCfg.json",
