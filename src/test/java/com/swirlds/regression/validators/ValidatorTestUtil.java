@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,24 +43,23 @@ import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATC
 
 public abstract class ValidatorTestUtil {
 
-	public static ExpectedMapData loadExpectedMapData(String directory) {
-		ExpectedMapData data = new ExpectedMapData();
+	public static Map<Integer, String> loadExpectedMapPaths(String directory) {
+		Map<Integer, String> expectedMapPaths = new HashMap<>();
 
 		for (int i = 0; i < 4 ; i++) {
-			final String expectedMap = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP_ZIP,
+			final String expectedMapPath = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP_ZIP,
 					directory, i);
-			if(new File(expectedMap).exists()) {
-				Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
-				data.getExpectedMaps().put(i, map);
+			if(new File(expectedMapPath).exists()) {
+				expectedMapPaths.put(i, expectedMapPath);
 			}else{
 				throw new RuntimeException(" expectedMap in node "+ i + " doesn't exist");
 			}
 		}
 
-		if (data.getExpectedMaps().size() == 0) {
+		if (expectedMapPaths.size() == 0) {
 			throw new RuntimeException("Cannot find expectedMap files in: " + directory);
 		}
-		return data;
+		return expectedMapPaths;
 	}
 
 	public static List<NodeData> loadNodeData(String directory, String csvName, int logVersion) {

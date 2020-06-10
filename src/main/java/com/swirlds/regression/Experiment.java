@@ -18,9 +18,6 @@
 package com.swirlds.regression;
 
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
-import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
-import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
-import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
@@ -35,7 +32,6 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
-import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -74,7 +70,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -722,18 +717,21 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-	private ExpectedMapData loadExpectedMapData(String directory) {
-		final ExpectedMapData mapData = new ExpectedMapData();
+	/**
+	 * Load ExpectedMap file path for all nodes into a Map
+	 * @return
+	 */
+	private Map<Integer, String> loadExpectedMapPaths() {
+		final Map<Integer, String> expectedMapPaths = new HashMap<>();
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
-			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
-			if (!new File(expectedMap).exists()) {
+			final String expectedMapPath = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMapPath).exists()) {
 				log.error(MARKER,"ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
-			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
-			mapData.getExpectedMaps().put(i, map);
+			expectedMapPaths.put(i, expectedMapPath);
 		}
-		return mapData;
+		return expectedMapPaths;
 	}
 
 	private void validateTest() {
@@ -813,7 +811,7 @@ public class Experiment implements ExperimentSummary {
 		// this validation fails.
 		if (testConfig.isUseLifecycleModel()) {
 			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
-					(loadExpectedMapData(testConfig.getName()));
+					(loadExpectedMapPaths());
 			requiredValidator.add(lifecycleValidator);
 		}
 
