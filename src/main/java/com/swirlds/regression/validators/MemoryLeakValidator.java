@@ -20,7 +20,6 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.utils.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -186,7 +185,7 @@ public class MemoryLeakValidator extends Validator {
 	void checkGCFile(final File zipLogFile, final URL url, final int nodeId) {
 		HttpURLConnection conn = null;
 		try {
-			conn = buildConn(url);
+			conn = buildConnection(url);
 			try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
 				IOUtils.copy(fileInputStream, conn.getOutputStream());
 
@@ -262,7 +261,7 @@ public class MemoryLeakValidator extends Validator {
 	 *
 	 * @throws IOException
 	 */
-	HttpURLConnection buildConn(final URL url) throws IOException {
+	HttpURLConnection buildConnection(final URL url) throws IOException {
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("POST");
 		conn.setRequestProperty("Content-Type", "text");
