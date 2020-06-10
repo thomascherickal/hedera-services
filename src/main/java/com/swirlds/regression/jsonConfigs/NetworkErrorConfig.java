@@ -21,18 +21,15 @@ package com.swirlds.regression.jsonConfigs;
 public class NetworkErrorConfig {
 	/** whether block network interface on a node */
 	private boolean blockNetwork = false;
-	/** network down window period */
-	private int downTimeSecond;
-	/** network up window period */
-	private int upTimeSecond;
 
 	/** whether random drop some packet */
 	private boolean enablePktLoss = false;
-	/** percentage of packet loss  */
+	/** default percentage of packet loss  */
 	private float packetLossPercentage = 0.1f;
 
 	/** whether delay packet */
 	private boolean enablePktDelay = false;
+	/** default packet delay */
 	private int packetDelayMS = 50;
 
 	public boolean isBlockNetwork() {
@@ -41,22 +38,6 @@ public class NetworkErrorConfig {
 
 	public void setBlockNetwork(boolean blockNetwork) {
 		this.blockNetwork = blockNetwork;
-	}
-
-	public int getDownTimeSecond() {
-		return downTimeSecond;
-	}
-
-	public void setDownTimeSecond(int downTimeSecond) {
-		this.downTimeSecond = downTimeSecond;
-	}
-
-	public int getUpTimeSecond() {
-		return upTimeSecond;
-	}
-
-	public void setUpTimeSecond(int upTimeSecond) {
-		this.upTimeSecond = upTimeSecond;
 	}
 
 	public boolean isEnablePktLoss() {

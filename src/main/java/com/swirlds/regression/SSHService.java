@@ -1257,11 +1257,15 @@ public class SSHService {
         log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
     }
 
+    /**
+     * Setup network configuration used for simulating network error
+     */
 	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
+        Session.Command cmd;
 		if (config.isBlockNetwork()) {
 			// run background script
-			// to periodically block and restart sync port
-			Session.Command cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
+			// to periodically block and enable gossip tcp port
+			cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
 					"Change permission");
 			throwIfExitCodeBad(cmd, "Change permission");
 
@@ -1277,7 +1281,7 @@ public class SSHService {
 			String cmdString = String.format(
 					"sudo tc qdisc add dev ens3 root netem delay %dms",
 					config.getPacketDelayMS());
-			Session.Command cmd = execCommand(cmdString, "Enable packet delay");
+			cmd = execCommand(cmdString, "Enable packet delay");
 			throwIfExitCodeBad(cmd, "Enable packet delay");
 		}
 
@@ -1285,20 +1289,24 @@ public class SSHService {
 			String cmdString = String.format(
 					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
 					config.getPacketLossPercentage() / 100f);
-			Session.Command cmd = execCommand(cmdString, "Enable packet loss");
+			cmd = execCommand(cmdString, "Enable packet loss");
 			throwIfExitCodeBad(cmd, "Enable packet loss");
 		}
-		Session.Command cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
+		cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
 	}
 
+    /**
+     * Clear network configuration used for simulating network error
+     */
 	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
-		if (config.isEnablePktDelay()) {
-			Session.Command cmd = execCommand(
+        Session.Command cmd;
+        if (config.isEnablePktDelay()) {
+			cmd = execCommand(
 					"sudo tc qdisc del dev ens3 root",
 					"Clean network delay rules");
 			throwIfExitCodeBad(cmd, "Clean network delay rules");
 		}
-		Session.Command cmd = execCommand(
+		cmd = execCommand(
 				"sudo iptables --flush",
 				"Clean iptables");
 		throwIfExitCodeBad(cmd, "Clean iptables");

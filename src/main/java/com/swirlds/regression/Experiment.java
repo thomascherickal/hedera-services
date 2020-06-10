@@ -1146,16 +1146,21 @@ public class Experiment implements ExperimentSummary {
 		killJavaProcess(); //kill any data collecting java process
 	}
 
+	/**
+	 * Setup network configuration used for simulating network error
+	 */
 	void setupNetworkErrorCfg() {
 		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
-			int cfgAmount = Math.min(sshNodes.size(), regConfig.getNetErrorCfg().size());
-			for (int i = 0; i < cfgAmount; i++) {
+			for (int i = 0; i < regConfig.getNetErrorCfg().size(); i++) {
 				SSHService node = sshNodes.get(i);
 				node.setupNetworkErrorCfg(regConfig.getNetErrorCfg().get(i));
 			}
 		}
 	}
 
+	/**
+	 * Clear network configuration used for simulating network error
+	 */
 	void cleanNetworkErrorCfg() {
 		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
 			for (int i = 0; i < regConfig.getNetErrorCfg().size(); i++) {

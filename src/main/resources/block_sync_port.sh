@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 
-# repeatedly block and unblock TCP ports used by synchronization
-# used by node
+# repeatedly block and unblock TCP ports used by gossip
 
 set -eE
 
@@ -11,21 +10,23 @@ sleep 20
 
 trap ctrl_c INT
 
+#
+# Cleanup all firewall rules if this script is terminated
+#
 function ctrl_c() {
-    echo "** Trapped CTRL-C"
-    echo "recover firewall rules"
+    echo "recover default firewall rules"
     sudo iptables --flush
     exit
 }
 
 
 while true; do
-    echo "Block input and output sync port" >> exec.log
+    echo "Block input and output gossip port" >> exec.log
     sudo -n iptables -A INPUT -p tcp --dport 40124:40224 -j DROP
     sudo -n iptables -A OUTPUT -p tcp --sport 40124:40224 -j DROP
     sleep $(( ( RANDOM % 5 )  + 8 ))
 
-    echo "Enable input and output sync port" >> exec.log
+    echo "Enable input and output gossip port" >> exec.log
     sudo -n iptables -D INPUT -p tcp --dport 40124:40224 -j DROP
     sudo -n iptables -D OUTPUT -p tcp --sport 40124:40224 -j DROP
     sleep $(( ( RANDOM % 5 )  + 8 ))

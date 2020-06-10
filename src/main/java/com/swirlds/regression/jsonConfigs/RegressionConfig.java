@@ -29,6 +29,7 @@ public class RegressionConfig {
 	private CloudConfig cloud = null;
 	private LocalConfig local = null;
 	private List<String> experiments;
+	/** a list of network error config, first element for node 0, second element for node 1, etc */
 	private List<NetworkErrorConfig> netErrorCfg;
 
 	private SlackConfig slack;

@@ -1,6 +1,6 @@
 {
-	"name":"FCMMultipleOperations",
-	"description" : "platform testing demo - FCM Multiple Operations",
+	"name":"FCMMultipleOperationsWithNetworkError",
+	"description" : "FCMMultipleOperationsWithNetworkError",
 	"duration": 3600,
 	"settings": [
 	  {"name":"showInternalStats", "value": "1" },
