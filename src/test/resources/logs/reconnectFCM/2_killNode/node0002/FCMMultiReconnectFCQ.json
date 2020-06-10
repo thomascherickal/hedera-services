@@ -4,7 +4,7 @@
         "insertSeq"     : true,
         "variedSize"    : false,
 	    "enableCheck"   : false,
-        "_comment"      : "payload type TYPE_RANDOM_BYTES for random bytes, TYPE_FILE_TEST for file transaction bytes",
+        "_comment"      : "payload type TYPE_RANDOM_BYTES for random bytes",
         "type"          : "TYPE_RANDOM_BYTES",
 
         "payloadByteSize"   : 100,
