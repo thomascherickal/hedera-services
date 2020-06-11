@@ -187,7 +187,8 @@ public class ReconnectValidator extends NodeValidator {
 				// 30 seconds after platform status becomes ACTIVE. This can happen because the IP tables might be
 				// getting rebuilt on the reconnected node.
 				// This error should not be allowed on killNodeReconnect test.
-				if (testConfig != null && testConfig.getReconnectConfig().isKillNetworkReconnect() &&
+				if (testConfig != null && testConfig.getReconnectConfig()!= null &&
+						testConfig.getReconnectConfig().isKillNetworkReconnect() &&
 						active != null && Duration.between(active, end.getTime()).getSeconds() < 30) {
 					addInfo(String.format("Node %d error during receiving SignedState. It can be ignored, " +
 							"as it occurred within 30 seconds of platform becoming ACTIVE", reconnectNodeId));
