@@ -38,8 +38,7 @@
   "experiments": [
 	"configs/testRestartCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json",
-	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testFcmCfg.json"
+	"configs/testReconnectFCQMultiReconnectCfg.json"
   ],
   "db": {
 	"type": "postgresql",
