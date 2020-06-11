@@ -20,7 +20,6 @@ package com.swirlds.regression.validators;
 import com.swirlds.common.crypto.Hash;
 
 
-import com.swirlds.fcmap.test.lifecycle.EntityType;
 import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
 import com.swirlds.fcmap.test.lifecycle.LifecycleStatus;
 import com.swirlds.fcmap.test.lifecycle.TransactionState;
@@ -63,6 +62,7 @@ public class PTALifeCycleValidatorTest {
 	private static final String positiveTestDir = "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir = "src/test/resources/logs/LifecycleNeg";
 	private static final String missingMapsDir = "src/test/resources/logs/PTD-NodeKillReconnect";
+	private static final String generateMapsDir = "src/test/resources/logs/LifecycleMapTest";
 
 	/**
 	 * Positive test where ExpectedMaps of all 4 nodes are the same
@@ -71,7 +71,7 @@ public class PTALifeCycleValidatorTest {
 	@Test
 	void validateExpectedMapsPositiveTest() {
 		PTALifecycleValidator validator = new PTALifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
+				ValidatorTestUtil.loadExpectedMapPaths(positiveTestDir));
 		validator.validate();
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
@@ -89,7 +89,7 @@ public class PTALifeCycleValidatorTest {
 	@Test
 	void validateExpectedMapsErrors() {
 		PTALifecycleValidator validator = new PTALifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
+				ValidatorTestUtil.loadExpectedMapPaths(negativeTestDir));
 		validator.validate();
 
 		System.out.println("Error messages : \n" + String.join("\n", validator.getErrorMessages()));
@@ -345,7 +345,7 @@ public class PTALifeCycleValidatorTest {
 	public void checkMissingExpectedMapsTest() {
 		PTALifecycleValidator validator = null;
 		try {
-			validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
+			validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapPaths(missingMapsDir));
 		} catch (Exception e) {
 			assertEquals(" expectedMap in node 0 doesn't exist", e.getMessage());
 		}

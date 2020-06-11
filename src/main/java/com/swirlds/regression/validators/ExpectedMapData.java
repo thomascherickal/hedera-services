@@ -17,26 +17,23 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
-import com.swirlds.fcmap.test.pta.MapKey;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ExpectedMapData {
-	private Map<Integer, Map<MapKey,ExpectedValue>> expectedMaps;
+	private Map<Integer, String> expectedMapPaths;
 
 	public ExpectedMapData(){
-		expectedMaps = new ConcurrentHashMap<>();
+		expectedMapPaths = new ConcurrentHashMap<>();
 	}
 
-	public Map<Integer, Map<MapKey, ExpectedValue>> getExpectedMaps() {
-		return expectedMaps;
+	public Map<Integer, String> getExpectedMapPaths() {
+		return expectedMapPaths;
 	}
 
-	public void setExpectedMaps(
-			Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
-		this.expectedMaps = expectedMaps;
+	public void setExpectedMapPaths(
+			Map<Integer, String> expectedMapPaths) {
+		this.expectedMapPaths = expectedMapPaths;
 	}
 
 }
