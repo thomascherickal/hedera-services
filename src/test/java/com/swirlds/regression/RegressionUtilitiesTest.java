@@ -20,12 +20,15 @@ package com.swirlds.regression;
 import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.test.framework.ResourceLoader;
+import com.swirlds.test.framework.TestComponentTags;
+import com.swirlds.test.framework.TestTypeTags;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
 
@@ -57,7 +60,11 @@ public class RegressionUtilitiesTest {
 
 	@DisplayName("build options string with bad params")
 	@ParameterizedTest
-	@CsvSource({ "0,-2,-32", "32,4,-1", "32,-1,8", "-1,4,8" })
+	@CsvSource({
+			"0,-2,-32",
+			"32,4,-1",
+			"32,-1,8",
+			"-1,4,8" })
 	public void testBuildParameterStringWithBadParameters(int maxMemory, int minMemory, int maxDirectMemory) {
 		assertTrue(RegressionUtilities.JVM_OPTIONS_DEFAULT.equals(
 				RegressionUtilities.buildParameterString(maxMemory, minMemory, maxDirectMemory)));
@@ -90,7 +97,11 @@ public class RegressionUtilitiesTest {
 
 	@ParameterizedTest
 	@DisplayName("build options string with bad params")
-	@CsvSource({ "0,-2,-32", "32,4,-1", "32,-1,8", "-1,4,8" })
+	@CsvSource({
+			"0,-2,-32",
+			"32,4,-1",
+			"32,-1,8",
+			"-1,4,8" })
 	public void testBuildParameterStringWithBadJson(int maxMemory, int minMemory, int maxDirectMemory) {
 		JvmOptionParametersConfig config = new JvmOptionParametersConfig();
 		config.setMaxMemory(maxMemory);
@@ -101,10 +112,12 @@ public class RegressionUtilitiesTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Load a MemoryLeakCheckConfig which specifies nodesToCheck")
 	public void loadMemoryLeakCheckConfig_Array_Test() throws Exception {
 		// "nodesToCheck": [0, 3]
-		URL testCfgPath = getClass().getClassLoader().getResource("logs/MemoryLeak/testCfg-NodesToCheck.json");
-		TestConfig testConfig = RegressionUtilities.importExperimentConfig(testCfgPath.toURI());
+		TestConfig testConfig =  TestUtils.loadTestConfigFromTestResource("logs/MemoryLeak/testCfg-NodesToCheck.json");
 		MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
 		assertNotNull(memoryLeakCheckConfig);
 		assertNull(memoryLeakCheckConfig.getNodeGroupIdentifier());
@@ -113,9 +126,11 @@ public class RegressionUtilitiesTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Load a MemoryLeakCheckConfig which specifies nodeGroupIdentifier")
 	public void loadMemoryLeakCheckConfig_NodeGroup_Test() throws Exception {
-		URL testCfgPath = getClass().getClassLoader().getResource("logs/MemoryLeak/testCfg-NodeGroup.json");
-		TestConfig testConfig = RegressionUtilities.importExperimentConfig(testCfgPath.toURI());
+		TestConfig testConfig = TestUtils.loadTestConfigFromTestResource("logs/MemoryLeak/testCfg-NodeGroup.json");
 		MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
 		assertTrue(memoryLeakCheckConfig != null);
 		assertEquals(FIRST_AND_LAST, memoryLeakCheckConfig.getNodeGroupIdentifier());

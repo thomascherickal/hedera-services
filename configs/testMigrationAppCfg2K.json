@@ -26,8 +26,5 @@
   "memoryLeakCheckConfig": {
     "nodeGroupIdentifier": "FIRST"
   },
-  "memoryLeakCheckConfig": {
-    "nodeGroupIdentifier": "FIRST"
-  },
   "validator": ["STATS", "STANDARD", "MIGRATION" ]
 }

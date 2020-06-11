@@ -18,6 +18,11 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.utils.FileUtils;
+import com.swirlds.test.framework.TestComponentTags;
+import com.swirlds.test.framework.TestQualifierTags;
+import com.swirlds.test.framework.TestTypeTags;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -33,6 +38,7 @@ import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.GCEASY_URL;
 import static com.swirlds.regression.validators.MemoryLeakValidator.PROBLEM_FIELD_MSG;
+import static org.apache.logging.log4j.core.util.Loader.getClassLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +46,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MemoryLeakValidatorTest {
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Find GC logs in a given folder")
 	public void getGCLogsTest() {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest").getPath();
 		File[] files = MemoryLeakValidator.getGCLogs(folder);;
@@ -47,6 +56,9 @@ public class MemoryLeakValidatorTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Zip GC logs in a given folder into one file")
 	public void zipTest() throws IOException {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest/").getPath();
 		File[] files = MemoryLeakValidator.getGCLogs(folder);
@@ -61,18 +73,27 @@ public class MemoryLeakValidatorTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("NegativeTest: Check GC Events in a GC log file")
 	public void hasGCEvents_Negative_Test() {
-		String file = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-NoGCEvent.log").getPath();
+		String file = getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-NoGCEvent.log").getPath();
 		assertFalse(MemoryLeakValidator.hasGCEvents(new File(file)));
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("PositiveTest: Check GC Events in a GC log file")
 	public void hasGCEvents_Positive_Test() {
-		String file = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-GCEvent.log").getPath();
+		String file = getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-GCEvent.log").getPath();
 		assertTrue(MemoryLeakValidator.hasGCEvents(new File(file)));
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Validate a GC log file which has problem in the report")
 	public void checkGCFile_HasProblemTest() throws Exception {
 		String file = "logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip";
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)));
@@ -83,6 +104,9 @@ public class MemoryLeakValidatorTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Validate a GC log file which has not any problem in the report")
 	public void checkGCFile_SUCCESS_Test() throws Exception {
 		String file = "logs/MemoryLeak/singleFile/gcLog.zip";
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)));
@@ -92,10 +116,11 @@ public class MemoryLeakValidatorTest {
 
 	/**
 	 * if not provide GC_API_KEY, the response would contain: "fault":{"reason":"apiKey is missing"}
-	 *
-	 * @throws Exception
 	 */
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Validate a GC log file when not providing a GC_API_KEY")
 	public void checkGCFile_Fault_Test() throws Exception {
 		String file = "logs/MemoryLeak/singleFile/gc-MemoryLeak-95mins.log.zip";
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)),
@@ -106,12 +131,10 @@ public class MemoryLeakValidatorTest {
 		assertTrue(memoryLeakValidator.isValid());
 	}
 
-	/**
-	 * four GC logs which don't have `problem` in response
-	 *
-	 * @throws Exception
-	 */
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Validate 4 GC log files which don't have `problem` in response")
 	public void checkGCFileForNodesTest() throws Exception {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(
 				Arrays.asList("logs/MemoryLeak/nodes/gcLog0.zip",
@@ -123,6 +146,9 @@ public class MemoryLeakValidatorTest {
 	}
 
 	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Show Response Code")
 	public void showResponseTest() {
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(new HashMap<>());
 		memoryLeakValidator.showResponseCode(HttpURLConnection.HTTP_OK);
@@ -130,12 +156,17 @@ public class MemoryLeakValidatorTest {
 		assertEquals(1, memoryLeakValidator.getInfoMessages().size());
 	}
 
+	/**
+	 * Build a map whose keys are nodeIds, and values are GC log files for testing
+	 * @param filePaths
+	 * @return
+	 * @throws Exception
+	 */
 	Map<Integer, File> buildGCLogMap(final List<String> filePaths) throws Exception {
 		Map<Integer, File> map = new HashMap<>();
 		for (int i = 0; i < filePaths.size(); i++) {
-			map.put(i, new File(getClass().getClassLoader().getResource(filePaths.get(i)).toURI()));
+			map.put(i, new File(getClassLoader().getResource(filePaths.get(i)).toURI()));
 		}
-
 		return map;
 	}
 }

@@ -20,7 +20,6 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swirlds.regression.Experiment;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.utils.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -113,7 +112,7 @@ public class MemoryLeakValidator extends Validator {
 	public static final String ERROR_READ_STREAM = "got IOException when reading from " +
 			"inputStream: ";
 	public static final String ERROR_CONN_API = "got IOException when communicating with GCEasy API: ";
-	public static final String ERROR_PARSE_RESPONSE = "got Exception when parsing response to Json";
+	public static final String ERROR_PARSE_RESPONSE = "Fail to get GCLog analysis report, because got Exception when parsing response to Json";
 	public static final String ERROR_STREAM = "got error message from GCEasy API: ";
 	public static final String RESPONSE_CODE = "ResponseCode: ";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
@@ -186,7 +185,7 @@ public class MemoryLeakValidator extends Validator {
 	void checkGCFile(final File zipLogFile, final URL url, final int nodeId) {
 		HttpURLConnection conn = null;
 		try {
-			conn = buildConn(url);
+			conn = buildConnection(url);
 			try (FileInputStream fileInputStream = new FileInputStream(zipLogFile)) {
 				IOUtils.copy(fileInputStream, conn.getOutputStream());
 
@@ -222,8 +221,7 @@ public class MemoryLeakValidator extends Validator {
 			FileUtils.zip(files, zipFile);
 			gcFilesMap.put(nodeIndex, zipFile);
 		} catch (IOException e) {
-			log.error(ERROR, "Got exception while zipping files as {}", zipFile.getName());
-			e.printStackTrace();
+			log.error(ERROR, "Got exception while zipping files as {}:", zipFile.getName(), e);
 			addWarning("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
 		}
 	}
@@ -263,7 +261,7 @@ public class MemoryLeakValidator extends Validator {
 	 *
 	 * @throws IOException
 	 */
-	HttpURLConnection buildConn(final URL url) throws IOException {
+	HttpURLConnection buildConnection(final URL url) throws IOException {
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setRequestMethod("POST");
 		conn.setRequestProperty("Content-Type", "text");
