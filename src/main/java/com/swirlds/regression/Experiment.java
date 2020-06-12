@@ -186,6 +186,10 @@ public class Experiment implements ExperimentSummary {
 		this.slackLink = slackLink;
 	}
 
+	public SlackNotifier getSlacker() {
+		return slacker;
+	}
+
 	public void setUseThreadPool(boolean useThreadPool) {
 		log.info(MARKER, "Set useThreadPool as {}", useThreadPool);
 		this.useThreadPool = useThreadPool;
@@ -764,6 +768,12 @@ public class Experiment implements ExperimentSummary {
 						REG_SLACK_CHANNEL
 				));
 			}
+		}
+
+		for (SSHService node : sshNodes){
+			slackMsg.addWarnings(node.getWarnings());
+			slackMsg.addErrors(node.getErrors());
+			slackMsg.addExceptions(node.getExceptions());
 		}
 
 		// If the test contains reconnect, we don't use StreamingServerValidator, because during the reconnect the

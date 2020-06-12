@@ -29,9 +29,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class SlackTestMsg extends SlackMsg {
 
@@ -66,6 +66,11 @@ public class SlackTestMsg extends SlackMsg {
 		this(uniqueId, regConfig, null, null, null);
 	}
 
+	public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+		final Set<Object> seen = new HashSet<>();
+		return t -> seen.add(keyExtractor.apply(t));
+	}
+
 	public void addValidatorInfo(Validator v) {
 		validators.add(Pair.of(v, null));
 	}
@@ -79,7 +84,7 @@ public class SlackTestMsg extends SlackMsg {
 		Errors.add(error);
 	}
 
-	public void addExceptions(Throwable exception) {
+	public void addException(Throwable exception) {
 		exceptions = true;
 		Exceptions.add(exception);
 	}
@@ -87,6 +92,32 @@ public class SlackTestMsg extends SlackMsg {
 	public void addWarning(String warning) {
 		warnings = true;
 		Warnings.add(warning);
+	}
+
+	public void addErrors(List<String> errorsLst){
+		if(errorsLst.size() > 0) {
+			errors = true;
+			Errors.addAll(errorsLst);
+			// get rid of duplicate warnings
+			Errors.stream().filter(distinctByKey(w -> w.trim()));
+		}
+	}
+
+	public void addExceptions(List<Throwable> exceptionsLst){
+		if(exceptionsLst.size() > 0) {
+			errors = true;
+			Exceptions.addAll(exceptionsLst);
+	//		Exceptions.stream().filter(distinctByKey(e -> e.getMessage()));
+		}
+	}
+
+	public void addWarnings(List<String> warningsLst){
+		if(warningsLst.size() > 0) {
+			warnings = true;
+			Warnings.addAll(warningsLst);
+			// get rid of duplicate warnings
+			Warnings.stream().filter(distinctByKey(w -> w.trim()));
+		}
 	}
 
 	public String getUniqueId() {
@@ -177,9 +208,9 @@ public class SlackTestMsg extends SlackMsg {
 
 		for (Throwable testException: Exceptions){
 			s.append("*EXCEPTION*: ").append(testException.getMessage()).append(NEWLINE);
-			s.append("```").append(NEWLINE);
-			s.append(ExceptionUtils.getStackTrace(testException));
-			s.append("```").append(NEWLINE);
+//			s.append("```").append(NEWLINE);
+//			s.append(ExceptionUtils.getStackTrace(testException));
+//			s.append("```").append(NEWLINE);
 		}
 	}
 
