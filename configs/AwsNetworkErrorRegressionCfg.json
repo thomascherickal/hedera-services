@@ -22,12 +22,15 @@
 		"uri": "testing/logs/"
 	},
 	"netErrorCfg": [
+		// node 0 block network periodically
 		{
 			"blockNetwork": true
 		},
+		// node 1 insert packet loss randomly
 		{
 			"enablePktLoss": true
 		},
+		// node 2 insert packet delay randomly
 		{
 			"enablePktDelay": true
 		}
