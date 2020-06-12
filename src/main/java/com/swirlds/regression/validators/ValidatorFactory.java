@@ -54,7 +54,7 @@ public class ValidatorFactory {
 			case GOSSIP_COMPENSATION:
 				return new GossipCompensationValidator(nodeData);
 			case LIFECYCLE:
-				return new PTALifecycleValidator(mapData);
+				return new LifecycleValidator(mapData);
 			default:
 				return new StandardValidator(nodeData);
 		}
