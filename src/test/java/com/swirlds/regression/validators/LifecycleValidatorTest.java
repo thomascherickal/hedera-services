@@ -57,7 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * test class for PTA LifecycleValidator
  */
-public class LifeCycleValidatorTest {
+public class LifecycleValidatorTest {
 
 	private static final String positiveTestDir = "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir = "src/test/resources/logs/LifecycleNeg";
