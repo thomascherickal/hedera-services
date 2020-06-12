@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * test class for PTA LifecycleValidator
+ * test class for LifecycleValidator
  */
 public class LifecycleValidatorTest {
 
