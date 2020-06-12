@@ -23,20 +23,17 @@ import com.swirlds.fcmap.test.pta.MapKey;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * ExpectedMap's data that is used to validate in LifecycleValidator
+ */
 public class ExpectedMapData {
-	private Map<Integer, Map<MapKey,ExpectedValue>> expectedMaps;
+	private Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 
-	public ExpectedMapData(){
+	public ExpectedMapData() {
 		expectedMaps = new ConcurrentHashMap<>();
 	}
 
 	public Map<Integer, Map<MapKey, ExpectedValue>> getExpectedMaps() {
 		return expectedMaps;
 	}
-
-	public void setExpectedMaps(
-			Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
-		this.expectedMaps = expectedMaps;
-	}
-
 }
