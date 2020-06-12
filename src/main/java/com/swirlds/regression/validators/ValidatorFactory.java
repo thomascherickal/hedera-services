@@ -24,23 +24,13 @@ import java.util.List;
 public class ValidatorFactory {
 
 
-	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
+			ExpectedMapData mapData, TestConfig testConfig) {
 		if (vt == null) {
 			return null;
 		}
 
 		switch (vt) {
-/*			case FCFS_CSV:
-				return new FCFSValidator();
-				break;
-			case FCM_CSV:
-				return new FCMValidator();
-				break;
-			case RESTART:
-				return new RestartValidator();
-				break;
-			case PLATFORM_CSV:
-				break; */
 			case BLOB_STATE:
 				return new BlobStateValidator();
 			case RESTART:
@@ -63,6 +53,8 @@ public class ValidatorFactory {
 				return new StdoutValidator(nodeData);
 			case GOSSIP_COMPENSATION:
 				return new GossipCompensationValidator(nodeData);
+			case LIFECYCLE:
+				return new PTALifecycleValidator(mapData);
 			default:
 				return new StandardValidator(nodeData);
 		}

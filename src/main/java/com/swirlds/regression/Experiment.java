@@ -260,7 +260,7 @@ public class Experiment implements ExperimentSummary {
 	 * 		A list of runnable task
 	 */
 	private void threadPoolService(List<Runnable> tasks) {
-		if(useThreadPool) {
+		if (useThreadPool) {
 			if (tasks.size() > 0) {
 				if (es == null) {
 					/* this allows the same threadpool to be used for all experiments instead of creating and destroying
@@ -727,7 +727,7 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
 			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
 			if (!new File(expectedMap).exists()) {
-				log.error(MARKER,"ExpectedMap doesn't exist for validation in Node {}", i);
+				log.error(MARKER, "ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
 			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
@@ -772,6 +772,7 @@ public class Experiment implements ExperimentSummary {
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
+		ExpectedMapData mapData = loadExpectedMapData(testConfig.getName());
 		for (ValidatorType item : testConfig.validators) {
 			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
 				reconnect = true;
@@ -788,14 +789,14 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig);
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, mapData, testConfig);
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
 			}
 			requiredValidator.add(validatorToAdd);
 		}
 		List<NodeData> nodeData = loadNodeData(testConfig.getName());
-		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
+		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, mapData, testConfig));
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
@@ -806,15 +807,6 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
-		}
-
-		// Enable PTALifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
-		//SAVE_EXPECTED_MAP transaction by node0. If the expectedMaps are not saved on nodes,
-		// this validation fails.
-		if (testConfig.isUseLifecycleModel()) {
-			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
-					(loadExpectedMapData(testConfig.getName()));
-			requiredValidator.add(lifecycleValidator);
 		}
 
 		for (Validator item : requiredValidator) {
@@ -983,7 +975,8 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public SavedState getSavedStateForNode(int nodeIndex, int totalNodes) {
-		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()), testConfig.getStartSavedStates())
+		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()),
+				testConfig.getStartSavedStates())
 				.filter(Objects::nonNull)
 				.flatMap(Collection::stream)
 				.filter(Objects::nonNull)
@@ -1034,7 +1027,7 @@ public class Experiment implements ExperimentSummary {
 		//Step 3, copy saved state to nodes if necessary
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
-					log.info(MARKER,"COPY SAVED STATE THREAD FOR NODE: {}",i);
+					log.info(MARKER, "COPY SAVED STATE THREAD FOR NODE: {}", i);
 					SSHService currentNode = sshNodes.get(i);
 					// copy a saved state if set in config
 					SavedState savedState = getSavedStateForNode(i, nodeNumber);
