@@ -17,7 +17,6 @@
 
 package com.swirlds.regression;
 
-import com.amazonaws.services.costexplorer.model.EC2InstanceDetails;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;

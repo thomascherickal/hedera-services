@@ -39,7 +39,7 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
 /**
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
-public class PTALifecycleValidator extends Validator {
+public class LifecycleValidator extends Validator {
 	/**
 	 * key: nodeId; value: path of ExpectedMap
 	 */
@@ -65,7 +65,7 @@ public class PTALifecycleValidator extends Validator {
 			"null. " +
 			"Node 0 : %s , Node %d : %s ";
 
-	public PTALifecycleValidator(final Map<Integer, String> expectedMapPaths) {
+	public LifecycleValidator(final Map<Integer, String> expectedMapPaths) {
 		this.expectedMapPaths = expectedMapPaths;
 		isValid = false;
 		isValidated = false;

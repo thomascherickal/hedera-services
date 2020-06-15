@@ -20,6 +20,7 @@ package com.swirlds.regression.validators;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
 import java.util.List;
+import java.util.Map;
 
 public class ValidatorFactory {
 
@@ -29,7 +30,7 @@ public class ValidatorFactory {
 	}
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
-			TestConfig testConfig, ExpectedMapData mapData) {
+			TestConfig testConfig, Map<Integer, String> expectedMapPaths) {
 		if (vt == null) {
 			return null;
 		}
@@ -58,7 +59,7 @@ public class ValidatorFactory {
 			case GOSSIP_COMPENSATION:
 				return new GossipCompensationValidator(nodeData);
 			case LIFECYCLE:
-				return new LifecycleValidator(mapData);
+				return new LifecycleValidator(expectedMapPaths);
 			default:
 				return new StandardValidator(nodeData);
 		}
