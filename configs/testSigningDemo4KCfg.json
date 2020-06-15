@@ -2,7 +2,6 @@
   "name":"StatsSigningDemo4K",
   "description" : "StatsSigningDemo",
   "duration": 1200,
-  "useLifecycleModel" : false,
   "settings": [
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
