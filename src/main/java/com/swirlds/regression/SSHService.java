@@ -36,7 +36,13 @@ import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -77,10 +83,6 @@ public class SSHService {
     private SSHClient ssh;
     private Session session;
 
-    private List<String> Errors = new LinkedList<>();
-    private List<String> Warnings = new LinkedList<>();
-    private List<Throwable> Exceptions = new LinkedList<>();
-
     private Instant lastExec;
     private String streamDirectory;
 
@@ -96,28 +98,6 @@ public class SSHService {
         lastExec = Instant.now();
     }
 
-    public List<String> getErrors() {
-        return Errors;
-    }
-
-    private void logAndAddError(String msg){
-        log.error(ERROR,msg);
-        Errors.add(msg);
-    }
-
-    public List<String> getWarnings() {
-        return Warnings;
-    }
-
-    public List<Throwable> getExceptions() {
-        return Exceptions;
-    }
-
-    private void logAndAddExceptions(String msg, Throwable e ){
-        log.error(ERROR,msg,e);
-        Exceptions.add(e);
-    }
-
     private String readStream(InputStream is) {
         String returnString = "";
         byte[] tmp = new byte[1024];
@@ -131,7 +111,7 @@ public class SSHService {
                 log.info(MARKER, new String(tmp, 0, i));
             }
         } catch (IOException | NullPointerException e) {
-            logAndAddExceptions("SSH Command failed! Could not read returned streams", e);
+            log.error(ERROR, "SSH Command failed! Could not read returned streams", e);
         }
         return returnString;
     }
@@ -187,7 +167,7 @@ public class SSHService {
                 return true;
             }
         } catch (IOException | NullPointerException e) {
-            logAndAddExceptions("SSH command failed! Failed to check if stream is empty", e);
+            log.error(ERROR, "SSH command failed! Failed to check if stream is empty", e);
         }
         return false;
     }
@@ -224,7 +204,7 @@ public class SSHService {
 	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
 	                Thread.sleep(10000);
 	            } catch (InterruptedException ie) {
-	                logAndAddExceptions("Unable to sleep thread before retrying to execCommand " + commandStr, ie);
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", commandStr);
 	            }
 	        }
 			log.info(MARKER, "Extensions to look for on node {}: {}", ipAddress, extensions);
@@ -242,7 +222,7 @@ public class SSHService {
 	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
 	                Thread.sleep(10000);
 	            } catch (InterruptedException ie) {
-				    logAndAddExceptions("Unable to sleep thread before retrying to execCommand "+  dataCommandStr, ie);
+	                log.error(ERROR, "Unable to sleep thread before retrying to execCommand {}", dataCommandStr);
 	            }
 	        }
 			log.info(MARKER, "Files to look for on node {}: {}", ipAddress, dataExtensions);
@@ -270,7 +250,7 @@ public class SSHService {
                 }
             }
         } catch (IOException e) {
-            logAndAddExceptions("could not create tarball on node: " + ipAddress, e);
+            log.error(ERROR, "could not create tarball on node: {}", ipAddress, e);
         }
     }
 
@@ -282,7 +262,7 @@ public class SSHService {
 			scpFilesFromList(topLevelFolders, foundFiles);
 			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {
-            logAndAddExceptions("Could not download files", e);
+			log.error(ERROR, "Could not download files", e);
 			return false;
 		}
 	}
@@ -293,7 +273,7 @@ public class SSHService {
 			Collection<String> foundFiles = getListOfFiles(patternsToMatch);
 			scpFilesFromList(topLevelFolders, foundFiles);
 		} catch (IOException | StringIndexOutOfBoundsException e) {
-		    logAndAddExceptions("Could not download files", e);
+			log.error(ERROR, "Could not download files", e);
 		}
 	}
 
@@ -314,9 +294,10 @@ public class SSHService {
             if (cutOff >= 0 && !currentLine.isEmpty() && cutOff < currentLine.length()) {
                 currentLine = currentLine.substring(cutOff);
             } else {
-                logAndAddError(String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
-                                "'%s'.",
-                        cutOff, currentLine, cutOffString));
+                log.error(MARKER,
+                        String.format("Invalid cutOff of '%d' computed for the line '%s' with cutOffString of " +
+                                        "'%s'.",
+                                cutOff, currentLine, cutOffString));
             }
 
             currentLine = topLevelFolders + currentLine;
@@ -348,7 +329,7 @@ public class SSHService {
         try {
             ssh.newSCPFileTransfer().upload(uploadValues.get(1), uploadValues.get(0));
         } catch (IOException e) {
-            logAndAddExceptions("could not upload to " + ipAddress, e);
+            log.error(ERROR, "could not upload to {}", ipAddress, e);
         }
     }
 
@@ -395,7 +376,7 @@ public class SSHService {
         Session.Command result = executeCmd(addCmd);
         if (result.getExitStatus() != 0) {
             String cmdResultString = readCommandOutput(result).toString();
-            logAndAddError(String.format("RSYNC to %s failed, cmd result = \n\n %s\n\n", ipAddress, cmdResultString));
+            log.error(ERROR, "RSYNC to {} failed, cmd result = \n\n {}\n\n", ipAddress, cmdResultString);
             return false;
         }
         long endTime = System.nanoTime();
@@ -414,7 +395,7 @@ public class SSHService {
                 ssh.newSCPFileTransfer().upload(uploadValues.get(1), uploadValues.get(0));
 
             } catch (IOException e) {
-                logAndAddExceptions(String.format("could not upload %s to %s", uploadValues.get(0), ipAddress), e);
+                log.error(ERROR, "could not upload {} to {}", uploadValues.get(0), ipAddress, e);
             }
         }
         long endTime = System.nanoTime();
@@ -569,21 +550,21 @@ public class SSHService {
             lastExec = Instant.now();
             return cmd;
         } catch (ConnectionException e) {
-            logAndAddExceptions(String.format(" Join wait time out, joinSec=%d command=%s description=%s", joinSec, command,
-                    description),e);
+            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } catch (IOException | NullPointerException e) {
-            logAndAddExceptions(String.format("'%s' command failed!", description),e);
+            log.error(ERROR, "'{}' command failed!", description, e);
         } catch (Exception e) {
-            logAndAddExceptions(String.format("Unexpected error, joinSec=%d command=%s description=%s", joinSec, command,
-                    description),e);
+            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", joinSec, command,
+                    description, e);
         } finally {
             try {
                 if (session != null) {
                     session.close();
                 }
             } catch (IOException e) {
-                logAndAddExceptions(String.format("could not close node %s session when executing '%s'",
-                        ipAddress, description),e);
+                log.error(ERROR, "could not close node {} session when executing '{}'",
+                        ipAddress, description, e);
             }
         }
 
@@ -630,23 +611,17 @@ public class SSHService {
                     return client;
                 }
             } catch (IOException | IllegalThreadStateException e) {
-                /* This exception is expected while a node is still spinning up, we log it, but do not add it to the
-                list of exception
-                 */
-                log.error(ERROR,"attempt {} to connect to node {} failed, will retry {} more times.", count,
-                        this.ipAddress, 10 - count,e);
+                log.error(ERROR, "attempt {} to connect to node {} failed, will retry {} more times.", count,
+                        this.ipAddress, 10 - count, e);
             }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
-                /* This exception is expected while a node is still spinning up, we log it, but do not add it to the
-                list of exception
-                 */
-                log.error("Unable to sleep thread before retrying to connect to {}", this.ipAddress, e);
+                log.error(ERROR, "Unable to sleep thread before retrying to connect to {}", this.ipAddress, e);
             }
             count++;
         }
-        logAndAddError("Could not connect with the node over ssh");
+        log.error(ERROR, "Could not connect with the node over ssh");
         return null;
     }
 
@@ -728,7 +703,7 @@ public class SSHService {
         for (String out : output) {
             log.trace(MARKER, "is test finished output size({}): {}", output.size(), out);
             if (out.contains("No such file or directory")) {
-                logAndAddError("Something wrong, test is not running. No swirlds.log found");
+                log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
                 return true;
             }
         }
@@ -758,7 +733,7 @@ public class SSHService {
         ArrayList<String> output = readCommandOutput(cmd);
         for (String out : output) {
             if (out.contains("No such file or directory")) {
-                logAndAddError("Something wrong, test is not running. No swirlds.log found");
+                log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
                 return -1;
             }
         }
@@ -785,7 +760,7 @@ public class SSHService {
         Map<String, Integer> map = new HashMap<>();
         for (String out : output) {
             if (out.contains("No such file or directory")) {
-                logAndAddError(String.format("Something wrong, test is not running. No %s found", fileName));
+                log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
                 return null;
             }
 
@@ -821,7 +796,7 @@ public class SSHService {
             for (String out : output) {
 
                 if (out.contains("No such file or directory")) {
-                    logAndAddError("Something wrong, test is not running. No swirlds.log found");
+                    log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
                     return null;
                 }
 
@@ -863,7 +838,7 @@ public class SSHService {
                 }
             }
         } catch (NumberFormatException | SSHException e) {
-            logAndAddError("State message manager improperly formed");
+            log.error(ERROR,"State message manager improperly formed");
         }
         if (retMap.size() == 0) {
             log.info(MARKER,"No saved rounds found for node");
@@ -876,7 +851,7 @@ public class SSHService {
         try {
             ssh.close();
         } catch (Exception e) {
-            logAndAddError(String.format("Error while closing old connection to %s", this.ipAddress, e));
+            log.error(ERROR, "Error while closing old connection to {}", this.ipAddress, e);
         }
     }
 
@@ -896,7 +871,7 @@ public class SSHService {
         try {
             return inputBR.readLine();
         } catch (IOException e) {
-            logAndAddExceptions("can't read input from drop db extension command.", e);
+            log.error(ERROR, "can't read input from drop db extension command.", e);
             return null;
         }
     }
@@ -937,7 +912,7 @@ public class SSHService {
             log.info(MARKER, "Successfully dropped and recreated db");
             return true;
         }
-        logAndAddError("something went wrong with database drop/recreate");
+        log.error(ERROR, "something went wrong with database drop/recreate");
         return false;
     }
 
@@ -1002,9 +977,7 @@ public class SSHService {
     private void logIfExitCodeBad(Session.Command cmd, String description) {
         if (cmd.getExitStatus() != 0) {
             String output = readCommandOutput(cmd).toString();
-            logAndAddError(String.format("'%s' FAILED with error code '%d'. Output:\n%s",
-                    description, cmd.getExitStatus(), output
-            ));
+            log.error(ERROR,"'{}' FAILED with error code '{%d}. Output: {}",description,cmd.getExitStatus(),output);
         }
     }
 
@@ -1040,8 +1013,8 @@ public class SSHService {
             }
             log.info(MARKER, "Saved states are {}", dirList.toString());
         } else {
-            logAndAddError(String.format("Exception running getSavedStatesDirectories command %s cmd result %s",
-                    cmd, readCommandOutput(cmd).toString()));
+            log.error(ERROR, "Exception running getSavedStatesDirectories command {} cmd result {}",
+                    cmd, readCommandOutput(cmd).toString());
         }
         //sorting by round number
         dirList = dirList.stream().sorted(Comparator.comparingLong(SavedStatePathInfo::getRoundNumber)).collect(
@@ -1070,7 +1043,7 @@ public class SSHService {
 
             return result;
         } catch (NumberFormatException e) {
-            logAndAddExceptions(String.format("Parsing saved state path %s -> %s error ", path, Arrays.toString(segments)),e);
+            log.error(ERROR, "Parsing saved state path {} -> {} error ", path, Arrays.toString(segments), e);
             return null;
         }
 
@@ -1162,7 +1135,7 @@ public class SSHService {
         String rmStatesCmd = "rm -r " + path;
         Session.Command cmd = executeCmd(rmStatesCmd);
         if (cmd.getExitStatus() != 0) {
-            logAndAddError(String.format("Exception running rm command %s", rmStatesCmd));
+            log.error(ERROR, "Exception running rm command {}", rmStatesCmd);
             return false;
         } else {
             log.info(MARKER, "Delete {} is OK", path);
@@ -1216,7 +1189,7 @@ public class SSHService {
                 return false;
             }
         } catch (NumberFormatException e) {
-            logAndAddExceptions(e.getMessage(),e);
+            log.error(ERROR, "Exception ", e);
             return false;
         }
     }

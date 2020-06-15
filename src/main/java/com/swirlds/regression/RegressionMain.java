@@ -239,7 +239,7 @@ public class RegressionMain {
 			tc = test.getTestConfig();
 		}
 		SlackTestMsg msg = new SlackTestMsg(null, regConfig, tc, null, git);
-		msg.addException(t);
+		msg.addExceptions(t);
 		slacker.messageChannel(msg, regConfig.getSlack().getChannel());
 	}
 
