@@ -20,6 +20,9 @@ package com.swirlds.regression.validators;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * ExpectedMap's data that is used to validate in LifecycleValidator
+ */
 public class ExpectedMapData {
 	private Map<Integer, String> expectedMapPaths;
 

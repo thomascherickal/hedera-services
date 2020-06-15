@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -18,6 +18,9 @@
 package com.swirlds.regression;
 
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
+import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
+import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
@@ -32,8 +35,8 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.NodeData;
-import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -112,7 +115,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
-import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
+import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -255,7 +258,7 @@ public class Experiment implements ExperimentSummary {
 	 * 		A list of runnable task
 	 */
 	private void threadPoolService(List<Runnable> tasks) {
-		if(useThreadPool) {
+		if (useThreadPool) {
 			if (tasks.size() > 0) {
 				if (es == null) {
 					/* this allows the same threadpool to be used for all experiments instead of creating and destroying
@@ -770,6 +773,7 @@ public class Experiment implements ExperimentSummary {
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
+		ExpectedMapData mapData = loadExpectedMapData(testConfig.getName());
 		for (ValidatorType item : testConfig.validators) {
 			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
 				reconnect = true;
@@ -786,7 +790,7 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig);
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig, mapData);
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
 			}
@@ -804,15 +808,6 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
-		}
-
-		// Enable PTALifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
-		//SAVE_EXPECTED_MAP transaction by node0. If the expectedMaps are not saved on nodes,
-		// this validation fails.
-		if (testConfig.isUseLifecycleModel()) {
-			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
-					(loadExpectedMapPaths());
-			requiredValidator.add(lifecycleValidator);
 		}
 
 		for (Validator item : requiredValidator) {
@@ -981,7 +976,8 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public SavedState getSavedStateForNode(int nodeIndex, int totalNodes) {
-		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()), testConfig.getStartSavedStates())
+		List<SavedState> all = Stream.of(Collections.singletonList(testConfig.getStartSavedState()),
+				testConfig.getStartSavedStates())
 				.filter(Objects::nonNull)
 				.flatMap(Collection::stream)
 				.filter(Objects::nonNull)
@@ -1032,7 +1028,7 @@ public class Experiment implements ExperimentSummary {
 		//Step 3, copy saved state to nodes if necessary
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
-					log.info(MARKER,"COPY SAVED STATE THREAD FOR NODE: {}",i);
+					log.info(MARKER, "COPY SAVED STATE THREAD FOR NODE: {}", i);
 					SSHService currentNode = sshNodes.get(i);
 					// copy a saved state if set in config
 					SavedState savedState = getSavedStateForNode(i, nodeNumber);
@@ -1067,9 +1063,6 @@ public class Experiment implements ExperimentSummary {
 									log.error(ERROR, "Fail to scp saved state from local ", e);
 								}
 								break;
-						}
-						if (savedState.isRestoreDb()) {
-							currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
 						}
 					}
 

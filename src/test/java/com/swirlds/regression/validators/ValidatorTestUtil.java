@@ -47,7 +47,7 @@ public abstract class ValidatorTestUtil {
 		Map<Integer, String> expectedMapPaths = new HashMap<>();
 
 		for (int i = 0; i < 4 ; i++) {
-			final String expectedMapPath = String.format("%s/node%04d/" + PTALifecycleValidator.EXPECTED_MAP_ZIP,
+			final String expectedMapPath = String.format("%s/node%04d/" + LifecycleValidator.EXPECTED_MAP_ZIP,
 					directory, i);
 			if(new File(expectedMapPath).exists()) {
 				expectedMapPaths.put(i, expectedMapPath);
