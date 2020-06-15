@@ -320,28 +320,6 @@ public class LifecycleValidatorTest {
 		assertEquals(0, errors.size());
 	}
 
-//	@Test
-//	public void validateExpectedMapTests() {
-//		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
-//		Map<MapKey, ExpectedValue> map1 = new ConcurrentHashMap<>();
-//		expectedMaps.put(1, map1);
-//
-//		LifecycleValidator validator = new LifecycleValidator(expectedMaps);
-//		validator.validate();
-//
-//		List<String> errors = validator.getErrorMessages();
-//		assertEquals(2, errors.size());
-//		assertEquals("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
-//				"Missing keys in node 1 : [MapKey[0,2,3], MapKey[0,1,3], MapKey[0,1,2], MapKey[1,2,3]], " +
-//				"MissingKeys in node 0 : []", errors.get(0));
-//		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. " +
-//				"Missing keys in node 2 : [MapKey[0,1,2], MapKey[1,2,3]], MissingKeys in node 0 : " +
-//				"[MapKey[2,2,4], MapKey[2,2,3], MapKey[2,0,2]]", errors.get(1));
-//		for (String error : errors) {
-//			System.out.println(error);
-//		}
-//	}
-
 	@Test
 	public void checkMissingExpectedMapsTest() {
 		LifecycleValidator validator = null;
