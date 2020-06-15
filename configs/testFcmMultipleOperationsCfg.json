@@ -7,7 +7,6 @@
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"}
   ],
-  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMMultipleOperations.json"]
@@ -15,5 +14,5 @@
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "LIFECYCLE" ]
 }

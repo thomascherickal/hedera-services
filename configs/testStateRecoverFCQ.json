@@ -32,7 +32,6 @@
 	  "value": "data/eventStream"
 	}
   ],
-  "useLifecycleModel": true,
   "recoverConfig": {
 	"eventDir": "data/eventStreamRecover",
 	"sqlFile": "drop_database.psql"
@@ -50,6 +49,7 @@
 	"STATS",
 	"PLATFORM_TESTING_DEMO",
 	"RECOVER_STATE",
-	"GOSSIP_COMPENSATION"
+	"GOSSIP_COMPENSATION",
+	"LIFECYCLE"
   ]
 }

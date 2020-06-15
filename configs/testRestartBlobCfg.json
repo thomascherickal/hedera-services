@@ -37,7 +37,6 @@
     "experimentStartDelay": "2",
     "freezeWaitMillis": "30000"
   },
-  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": [
@@ -49,6 +48,7 @@
   ],
   "validator": [
     "STATS",
-    "RESTART"
+    "RESTART",
+    "LIFECYCLE"
   ]
 }

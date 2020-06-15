@@ -45,7 +45,6 @@
 	"experimentStartDelay": "2",
 	"freezeWaitMillis": "30000"
   },
-  "useLifecycleModel" : true,
   "app": {
 	"jar": "PlatformTestingApp.jar",
 	"parameterList": [
@@ -58,6 +57,7 @@
   "validator": [
 	"STATS",
 	"RECONNECT",
-	"GOSSIP_COMPENSATION"
+	"GOSSIP_COMPENSATION",
+	"LIFECYCLE"
   ]
 }
