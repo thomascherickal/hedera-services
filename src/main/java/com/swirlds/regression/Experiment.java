@@ -1061,9 +1061,6 @@ public class Experiment implements ExperimentSummary {
 								}
 								break;
 						}
-						if (savedState.isRestoreDb()) {
-							currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
-						}
 					}
 
 				}).collect(Collectors.toList()));

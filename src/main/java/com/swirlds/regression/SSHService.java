@@ -414,7 +414,7 @@ public class SSHService {
         String commandStr = "mkdir -p " + dirPath;
         String desc = "make new dir path:" + dirPath;
         Session.Command cmd = execCommand(commandStr, desc);
-        throwIfExitCodeBad(cmd, desc);
+        logIfExitCodeBad(cmd, desc);
     }
 
     void extractTar() {
@@ -929,7 +929,7 @@ public class SSHService {
                 command,
                 description
         );
-        throwIfExitCodeBad(cmd, description);
+        logIfExitCodeBad(cmd, description);
     }
 
     public void listDirFiles(String destination) {
@@ -949,7 +949,7 @@ public class SSHService {
         for (String outputStr : output) {
             log.info(MARKER, outputStr);
         }
-        throwIfExitCodeBad(cmd, description);
+        logIfExitCodeBad(cmd, description);
     }
 
 
@@ -971,17 +971,13 @@ public class SSHService {
                 tarGzPath
         );
         Session.Command cmd = execCommand(command, description, (int) MAXIMUM_TIMEOUT_ALLOWANCE);
-        throwIfExitCodeBad(cmd, description);
+        logIfExitCodeBad(cmd, description);
     }
 
-    private void throwIfExitCodeBad(Session.Command cmd, String description) {
+    private void logIfExitCodeBad(Session.Command cmd, String description) {
         if (cmd.getExitStatus() != 0) {
             String output = readCommandOutput(cmd).toString();
-            throw new RuntimeException(
-                    String.format("'%s' FAILED with error code '%d'. Output:\n%s",
-                            description, cmd.getExitStatus(), output
-                    )
-            );
+            log.error(ERROR,"'{}' FAILED with error code '{%d}. Output: {}",description,cmd.getExitStatus(),output);
         }
     }
 
@@ -1208,7 +1204,7 @@ public class SSHService {
         String description = "Badgerizing and taring database logs";
 
         Session.Command cmd = execCommand(command, description);
-        throwIfExitCodeBad(cmd, description);
+        logIfExitCodeBad(cmd, description);
     }
 
     public void adjustNodeMemoryAllocations(NodeMemory memoryNeeds) {
@@ -1230,13 +1226,13 @@ public class SSHService {
         , (int)postgresMemoryReqs.getPostgresAutovWorkMem().getAdjustedMemoryAmount(mb));
 
         Session.Command cmd = execCommand(STOP_POSTGRESQL_SERVICE, "stopping postgresql");
-        throwIfExitCodeBad(cmd, "stopping postgresql");
+        logIfExitCodeBad(cmd, "stopping postgresql");
 
         cmd = execCommand(adjustPostgresMemoryCommand, "Adjusting postgres memory");
-        throwIfExitCodeBad(cmd, "adjusting postgres memory");
+        logIfExitCodeBad(cmd, "adjusting postgres memory");
 
         cmd = execCommand(START_POSTGRESQL_SERVICE, "restarting postgresql");
-        throwIfExitCodeBad(cmd, "restarting postgresql");
+        logIfExitCodeBad(cmd, "restarting postgresql");
 
 	}
 
@@ -1245,7 +1241,7 @@ public class SSHService {
         String adjustHugepagesCommand = String.format(CHANGE_HUGEPAGE_NUMBER, hugePagesNumber);
 
         Session.Command cmd = execCommand(adjustHugepagesCommand, "Adjusting number of huge pages to " + hugePagesNumber);
-        throwIfExitCodeBad(cmd, "Adjusting number of huge pages to " + hugePagesNumber);
+        logIfExitCodeBad(cmd, "Adjusting number of huge pages to " + hugePagesNumber);
 	}
 
 	void printCurrentTime(final int nodeId) {
