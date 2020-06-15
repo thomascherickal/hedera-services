@@ -9,7 +9,6 @@
     {"name":"reconnectActive", "value": "1"},
     {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
-  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMFCQ1KSavedState.json"]
@@ -28,5 +27,5 @@
   "memoryLeakCheckConfig": {
     "nodeGroupIdentifier": "FIRST_AND_LAST"
   },
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT"]
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT", "LIFECYCLE"]
 }

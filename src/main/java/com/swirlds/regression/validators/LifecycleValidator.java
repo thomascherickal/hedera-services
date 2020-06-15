@@ -38,7 +38,7 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
 /**
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
-public class PTALifecycleValidator extends Validator {
+public class LifecycleValidator extends Validator {
 	private Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
 	private boolean isValid;
 	private boolean isValidated;
@@ -60,7 +60,7 @@ public class PTALifecycleValidator extends Validator {
 			"null. " +
 			"Node 0 : %s , Node %d : %s ";
 
-	public PTALifecycleValidator(ExpectedMapData mapData) {
+	public LifecycleValidator(ExpectedMapData mapData) {
 		if (mapData != null) {
 			expectedMaps = mapData.getExpectedMaps();
 		}
@@ -73,7 +73,7 @@ public class PTALifecycleValidator extends Validator {
 	 *
 	 * @param expectedMaps
 	 */
-	PTALifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
+	LifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
 		this.expectedMaps = expectedMaps;
 		isValid = false;
 		isValidated = false;
@@ -138,7 +138,7 @@ public class PTALifecycleValidator extends Validator {
 				}
 			}
 		}
-		addInfo("PTALifecycleValidator validated ExpectedMaps of " + expectedMaps.size() + " nodes");
+		addInfo("LifecycleValidator validated ExpectedMaps of " + expectedMaps.size() + " nodes");
 		if (errorMessages.size() == 0) {
 			isValid = true;
 			addInfo("Validator has no exceptions");

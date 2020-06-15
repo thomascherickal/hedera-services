@@ -29,7 +29,6 @@
       "value": "300"
     }
   ],
-  "useLifecycleModel" : true,
   "restartConfig": {
     "restartTiming": 2
   },
@@ -52,6 +51,7 @@
   },
   "validator": [
     "STATS",
-    "RESTART"
+    "RESTART",
+    "LIFECYCLE"
   ]
 }

@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -38,7 +38,6 @@ import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
-import com.swirlds.regression.validators.PTALifecycleValidator;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -72,14 +71,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +117,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
-import static com.swirlds.regression.validators.PTALifecycleValidator.EXPECTED_MAP_ZIP;
+import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
@@ -796,6 +788,7 @@ public class Experiment implements ExperimentSummary {
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
+		ExpectedMapData mapData = loadExpectedMapData(testConfig.getName());
 		for (ValidatorType item : testConfig.validators) {
 			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
 				reconnect = true;
@@ -812,7 +805,7 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig);
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig, mapData);
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
 			}
@@ -830,15 +823,6 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			requiredValidator.add(ssValidator);
-		}
-
-		// Enable PTALifecycleValidator to validate ExpectedMaps saved on nodes, that are saved by sending
-		//SAVE_EXPECTED_MAP transaction by node0. If the expectedMaps are not saved on nodes,
-		// this validation fails.
-		if (testConfig.isUseLifecycleModel()) {
-			PTALifecycleValidator lifecycleValidator = new PTALifecycleValidator
-					(loadExpectedMapData(testConfig.getName()));
-			requiredValidator.add(lifecycleValidator);
 		}
 
 		if (testConfig.getMemoryLeakCheckConfig() != null) {
@@ -1101,9 +1085,6 @@ public class Experiment implements ExperimentSummary {
 									log.error(ERROR, "Fail to scp saved state from local ", e);
 								}
 								break;
-						}
-						if (savedState.isRestoreDb()) {
-							currentNode.restoreDb(ssPath + RegressionUtilities.DB_BACKUP_FILENAME);
 						}
 					}
 
@@ -1371,7 +1352,7 @@ public class Experiment implements ExperimentSummary {
 	 *
 	 * @return string containing JVM options
 	 */
-	String getJVMOptionsString() {
+	private String getJVMOptionsString() {
 		String javaOptions;
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.

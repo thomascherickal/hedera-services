@@ -25,5 +25,5 @@
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "LIFECYCLE" ]
 }
