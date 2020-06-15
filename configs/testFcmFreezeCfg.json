@@ -37,6 +37,7 @@
   ],
   "validator": [
     "STATS",
-    "RESTART"
+    "RESTART",
+    "LIFECYCLE"
   ]
 }
