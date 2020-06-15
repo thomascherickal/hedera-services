@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -787,14 +787,14 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, mapData, testConfig);
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig, mapData);
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
 			}
 			requiredValidator.add(validatorToAdd);
 		}
 		List<NodeData> nodeData = loadNodeData(testConfig.getName());
-		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, mapData, testConfig));
+		requiredValidator.add(ValidatorFactory.getValidator(ValidatorType.STDOUT, nodeData, testConfig));
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {

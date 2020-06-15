@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -23,9 +23,13 @@ import java.util.List;
 
 public class ValidatorFactory {
 
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
+			TestConfig testConfig) {
+		return getValidator(vt, nodeData, testConfig, null);
+	}
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
-			ExpectedMapData mapData, TestConfig testConfig) {
+			TestConfig testConfig, ExpectedMapData mapData) {
 		if (vt == null) {
 			return null;
 		}
