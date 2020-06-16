@@ -71,17 +71,6 @@ public class LifecycleValidator extends Validator {
 		isValidated = false;
 	}
 
-//	/**
-//	 * only for unit test
-//	 *
-//	 * @param expectedMaps
-//	 */
-//	PTALifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
-//		this.expectedMaps = expectedMaps;
-//		isValid = false;
-//		isValidated = false;
-//	}
-
 	@Override
 	public List<String> getErrorMessages() {
 		return errorMessages;
