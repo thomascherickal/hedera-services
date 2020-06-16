@@ -82,18 +82,22 @@ public class SlackSummaryMsg extends SlackMsg {
 		exceptionList.add(e);
 	}
 
-	protected Attachment generateAttachment(String description,
+	protected List<Attachment> generateAttachment(String description,
 			List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
+		final int MAX_ATTACHMENT_CHAR_LENGTH = 2700;
+		List<Attachment> returnAttachmentList = new ArrayList<Attachment>();
+		int attachmentLegth = 0;
 		List<String> columnHeaders = new ArrayList<>();
-		columnHeaders.add("Test");
-		columnHeaders.add("UID");
-		columnHeaders.add("History");
+		String tempString;
+		tempString = "Test"; columnHeaders.add("Test"); attachmentLegth += tempString.length();
+		tempString = "UID"; columnHeaders.add("UID"); attachmentLegth += tempString.length();
+		tempString = "History"; columnHeaders.add("History"); attachmentLegth += tempString.length();
 
 		if (experiments.size() > 0) {
 			Attachment.Builder attachment = Attachment.builder();
 			StringBuilder sb = new StringBuilder();
-			bold(sb, description);
-			newline(sb);
+			bold(sb, description); attachmentLegth += description.length();
+			newline(sb); attachmentLegth += 1;
 			List<List<String>> rows = new ArrayList<>();
 			rows.add(columnHeaders);
 			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
@@ -101,8 +105,10 @@ public class SlackSummaryMsg extends SlackMsg {
 				List<String> row = new ArrayList<>();
 				String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, experiment.getName());
 				String experimentName = experiment.getName();
-				row.add(createLinkOrReturn(experimentURL, experimentName));
-				row.add(createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId()));
+				tempString = createLinkOrReturn(experimentURL, experimentName);
+				row.add(tempString); attachmentLegth += tempString.length();
+				tempString = createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId());
+				row.add(tempString); attachmentLegth += tempString.length();
 				StringBuilder hist = new StringBuilder();
 				if (pair.getRight() != null) {
 					for (ExperimentSummary experimentSummary : pair.getRight()) {
@@ -115,17 +121,25 @@ public class SlackSummaryMsg extends SlackMsg {
 						}
 					}
 				}
+				attachmentLegth += hist.length();
 				row.add(hist.toString());
 				rows.add(row);
+				if(attachmentLegth >= MAX_ATTACHMENT_CHAR_LENGTH){
+					returnAttachmentList.add(buildNewAttachment(color, attachment, sb, rows));
+				}
 			}
-			table(sb, rows);
-
-			attachment.setText(sb.toString());
-			attachment.setColor(color);
-
-			return attachment.build();
+			return returnAttachmentList;
 		}
 		return null;
+	}
+
+	private Attachment buildNewAttachment(String color, Attachment.Builder attachment, StringBuilder sb, List<List<String>> rows) {
+		table(sb, rows);
+
+		attachment.setText(sb.toString());
+		attachment.setColor(color);
+
+		return attachment.build();
 	}
 
 	@Override
@@ -171,21 +185,21 @@ public class SlackSummaryMsg extends SlackMsg {
 		List<Attachment> attachments = new ArrayList<>();
 
 		// Passing tests
-		Attachment attachment = generateAttachment("Tests that passed", successes, "#00FF00");
+		List<Attachment> attachment = generateAttachment("Tests that passed", successes, "#00FF00");
 		if (attachment != null) {
-			attachments.add(attachment);
+			attachments.addAll(attachment);
 		}
 
 		// Tests with warnings
 		attachment = generateAttachment("Tests with warnings", warnings, "#FFFF00");
 		if (attachment != null) {
-			attachments.add(attachment);
+			attachments.addAll(attachment);
 		}
 
 		// Failing tests
 		attachment = generateAttachment("Tests with errors", failures, "#FF0000");
 		if (attachment != null) {
-			attachments.add(attachment);
+			attachments.addAll(attachment);
 		}
 
 		// Exceptions
