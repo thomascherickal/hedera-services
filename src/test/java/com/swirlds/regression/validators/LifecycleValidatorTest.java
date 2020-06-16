@@ -62,6 +62,7 @@ public class LifecycleValidatorTest {
 	private static final String positiveTestDir = "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir = "src/test/resources/logs/LifecycleNeg";
 	private static final String missingMapsDir = "src/test/resources/logs/PTD-NodeKillReconnect";
+	private static final String generateMapsDir = "src/test/resources/logs/LifecycleMapTest";
 
 	/**
 	 * Positive test where ExpectedMaps of all 4 nodes are the same
@@ -70,7 +71,7 @@ public class LifecycleValidatorTest {
 	@Test
 	void validateExpectedMapsPositiveTest() {
 		LifecycleValidator validator = new LifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
+				ValidatorTestUtil.loadExpectedMapPaths(positiveTestDir));
 		validator.validate();
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
@@ -88,7 +89,8 @@ public class LifecycleValidatorTest {
 	@Test
 	void validateExpectedMapsErrors() {
 		LifecycleValidator validator = new LifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
+				ValidatorTestUtil.loadExpectedMapPaths
+(negativeTestDir));
 		validator.validate();
 
 		System.out.println("Error messages : \n" + String.join("\n", validator.getErrorMessages()));
@@ -129,10 +131,10 @@ public class LifecycleValidatorTest {
 	@Test
 	void checkMissingKeyTest() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
-		LifecycleValidator validator = new LifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
-		validator.checkMissingKeys(expectedMaps.get(0).keySet(),
-				expectedMaps.get(2).keySet(), 2);
+		validator.checkMissingKeys(expectedMaps.get(0),
+				expectedMaps.get(2), 2);
 		List<String> errors = validator.getErrorMessages();
 		assertEquals(1, errors.size());
 
@@ -163,7 +165,7 @@ public class LifecycleValidatorTest {
 		setValueStatus(map0, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
 		setValueStatus(map2, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
 
-		LifecycleValidator validator = new LifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
 		validator.checkHandleRejectedStatus(key, map0.get(key),
 				map2.get(key), 2);
@@ -218,7 +220,7 @@ public class LifecycleValidatorTest {
 		setValueStatus(map2, key3, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(HANDLE_FAILED, Create), null);
 		setValueStatus(map2, key4, buildLifeCycle(INITIALIZED, Create), null, null);
 
-		LifecycleValidator validator = new LifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
 		validator.checkErrorCause(key, map0.get(key), 0);
 		validator.checkErrorCause(key, map2.get(key), 2);
@@ -266,7 +268,7 @@ public class LifecycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		LifecycleValidator validator = new LifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();
@@ -308,7 +310,7 @@ public class LifecycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		LifecycleValidator validator = new LifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();
@@ -319,32 +321,11 @@ public class LifecycleValidatorTest {
 	}
 
 	@Test
-	public void validateExpectedMapTests() {
-		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
-		Map<MapKey, ExpectedValue> map1 = new ConcurrentHashMap<>();
-		expectedMaps.put(1, map1);
-
-		LifecycleValidator validator = new LifecycleValidator(expectedMaps);
-		validator.validate();
-
-		List<String> errors = validator.getErrorMessages();
-		assertEquals(2, errors.size());
-		assertEquals("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 1 : [MapKey[0,2,3], MapKey[0,1,3], MapKey[0,1,2], MapKey[1,2,3]], " +
-				"MissingKeys in node 0 : []", errors.get(0));
-		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 2 : [MapKey[0,1,2], MapKey[1,2,3]], MissingKeys in node 0 : " +
-				"[MapKey[2,2,4], MapKey[2,2,3], MapKey[2,0,2]]", errors.get(1));
-		for (String error : errors) {
-			System.out.println(error);
-		}
-	}
-
-	@Test
 	public void checkMissingExpectedMapsTest() {
 		LifecycleValidator validator = null;
 		try {
-			validator = new LifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
+			validator = new LifecycleValidator(ValidatorTestUtil.loadExpectedMapPaths
+(missingMapsDir));
 		} catch (Exception e) {
 			assertEquals(" expectedMap in node 0 doesn't exist", e.getMessage());
 		}
@@ -402,7 +383,7 @@ public class LifecycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		LifecycleValidator validator = new LifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();

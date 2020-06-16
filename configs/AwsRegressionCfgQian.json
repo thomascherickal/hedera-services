@@ -1,0 +1,83 @@
+{
+  "name": "staleEventPreventionThreshold-Disabled",
+  "result": {
+	"uri": "results"
+  },
+  "cloud": {
+	"service": "aws",
+	"securityGroup": "SwirldsSecGroup",
+	"instanceType": "M410xlarge",
+	"instanceKey": "qianqiu@swirlds.com",
+	"keyLocation": "./keys/my-key",
+	"login": "ubuntu",
+	"regionList": [
+	  {
+		"region": "us-east-2",
+		"instanceList": [
+		  "i-00b3271508d4f3221",
+		  "i-02ab5c46f98fff8ac",
+		  "i-038b9b66cfbd00d6c",
+		  "i-03cb116723e643593",
+		  "i-044cfc5907b9e3971",
+		  "i-07bc5cf41f635c617",
+		  "i-08313854fc3f92ed3",
+		  "i-0b65783a28f2cd73a",
+		  "i-0bcdbf04b7c1d9afe",
+		  "i-0c1f0dd8aed7f68d6",
+		  "i-0e30921e9f70c5a10",
+		  "i-0e43c18e71926144f",
+		  "i-0f73f96b524f41341"
+		]
+	  }
+	]
+  },
+  "eventFilesWriters": 13,
+  "log": {
+	"uri": "testing/logs/"
+  },
+  "experiments": [
+	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json",
+	"configs/testFcmMultipleOperationsCfg.json",
+	"configs/testStateRecover.json" ,
+	"configs/testStateRecoverBlob.json" ,
+	"configs/testStateRecoverFCQ.json" ,
+	"configs/testRestartCfg.json",
+	"configs/testRestartBlobCfg.json",
+	"configs/testFcmFreezeCfg.json",
+	"configs/testFcmFreezeBlobCfg.json",
+	"configs/testFcmMultisizeBlobCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testFcmCfg.json",
+	"configs/testFcmSmallBlobCfg.json",
+	"configs/testFcmLargeBlobCfg.json",
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testMigrationAppCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack": {
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	"channel": "regression-test",
+	"notifyOn": "ALL",
+	"notifyChannel": false,
+	"notifyUserIds": [
+	  "UE4P47SMT"
+	],
+	"webServer":
+	{
+	  "useWebServer": true,
+	  "webServerPort": "8070",
+	  "webServerAddress": "18.219.59.111"
+	}
+  },
+  "uploadToSharePoint": false
+}
