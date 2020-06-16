@@ -247,6 +247,14 @@ public class ReconnectValidator extends NodeValidator {
 		if (e.getMarker() == LogMarkerInfo.TESTING_EXCEPTIONS_ACCEPTABLE_RECONNECT_NODE) {
 			return nodeId == nodeData.size() - 1;    // lastNode
 		}
+
+		// Exceptions acceptable only for killNodeReconnect, as when node is killed delete/create
+		// transactions can be submitted for deleted/already existing entities if the previous
+		// transaction was not handled before node is killed
+		if(e.getMarker() == LogMarkerInfo.PERFORM_ON_CREATE_DELETE
+				&& !testConfig.getReconnectConfig().isKillNetworkReconnect()){
+			return true;
+		}
 		return false;
 	}
 
