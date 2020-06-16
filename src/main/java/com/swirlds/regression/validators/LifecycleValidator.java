@@ -129,7 +129,7 @@ public class LifecycleValidator extends Validator {
 				}
 			}
 		}
-		addInfo("PTALifecycleValidator validated ExpectedMaps of " + expectedMapPaths.size() + " nodes");
+		addInfo("LifecycleValidator validated ExpectedMaps of " + expectedMapPaths.size() + " nodes");
 		if (errorMessages.size() == 0) {
 			isValid = true;
 			addInfo("Validator has no exceptions");
