@@ -64,6 +64,7 @@
     <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_TRANSACTION_INFO"  onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EXPIRATION"             onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>
