@@ -126,7 +126,9 @@ public class SlackSummaryMsg extends SlackMsg {
                 }
             }
             /* close off last attachment */
-            returnAttachmentList.add(buildNewAttachment(color, attachmentDescription, rows));
+            if(attachmentLength > 0) {
+                returnAttachmentList.add(buildNewAttachment(color, attachmentDescription, rows));
+            }
 
             return returnAttachmentList;
         }
