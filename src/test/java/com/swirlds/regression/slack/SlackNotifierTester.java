@@ -122,9 +122,9 @@ public class SlackNotifierTester {
         ExperimentSummaryData good15 = new ExperimentSummaryData(false, false, false, "passing test 015", "1234567315", testLink);
 
 
-        summaryMsg.addExperiment(bad01, List.of(good01, good02, bad11, warn04, bad05, good06, bad07, warn08, good09, good10));
-        summaryMsg.addExperiment(bad02, List.of(good01, good02, bad11, bad04, bad05, bad06, bad07, bad08, bad09, bad10));
-        summaryMsg.addExperiment(warn01, List.of(warn01, warn02, warn03, warn04, warn05, warn06, warn07, warn08, warn09, warn10));
+        summaryMsg.addExperiment(bad01, List.of(good01, good02, bad11, warn04, bad05, good06, bad07, warn08, good09, bad01));
+        summaryMsg.addExperiment(bad02, List.of(good01, good02, bad11, bad04, bad05, bad06, bad07, bad08, bad09, bad02));
+        summaryMsg.addExperiment(warn01, List.of(warn01, warn02, warn03, warn04, warn05, warn06, warn07, warn08, warn09, warn01));
 
         summaryMsg.addExperiment(good01, List.of(good01, good02, good03, good04, good05, good06, good07, good08, good09, good10));
         summaryMsg.addExperiment(good02, List.of(good01, good02, good03, good04, good05, good06, good07, good08, good09, good10));

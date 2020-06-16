@@ -107,8 +107,6 @@ public class SlackSummaryMsg extends SlackMsg {
         attachmentLength += generateColumnHeaders(columnHeaders);
 
         if (experiments.size() > 0) {
-
-
             StringBuilder attachmentDescription = setAttachmentDescription(description);
             attachmentLength += attachmentDescription.length();
 
