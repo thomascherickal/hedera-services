@@ -23,9 +23,9 @@
   },
   "experiments": [
 	"configs/testFCQExpirationCfg.json",
-	"configs/testReconnectFCQRecordExpirationCfg.json",
-	"configs/testFCQExpirationCfg.json",
-	"configs/testFCQExpirationCfg.json"
+	"configs/testRestartFCQExpirationCfg.json",
+	"configs/testRestartFCQExpirationCfg.json.json",
+	"configs/testFCQMultiReconnectExpirationCfg.json"
   ],
   "db": {
 	"type": "postgresql",
