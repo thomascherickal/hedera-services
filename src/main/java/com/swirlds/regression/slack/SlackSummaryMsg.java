@@ -32,192 +32,199 @@ import java.util.List;
 
 public class SlackSummaryMsg extends SlackMsg {
 
-	private List<Pair<ExperimentSummary, List<ExperimentSummary>>> experimentsWithHistorical;
+    private List<Pair<ExperimentSummary, List<ExperimentSummary>>> experimentsWithHistorical;
 
-	private List<Throwable> exceptionList;
+    private List<Throwable> exceptionList;
 
-	private RegressionConfig regressionConfig;
+    private RegressionConfig regressionConfig;
 
-	private String resultFolder;
+    private String resultFolder;
 
-	private GitInfo gitInfo;
+    private GitInfo gitInfo;
 
-	public SlackSummaryMsg(SlackConfig slackConfig, RegressionConfig regressionConfig,
-			GitInfo gitInfo, String resultFolder) {
-		super(slackConfig);
-		experimentsWithHistorical = new ArrayList<>();
-		exceptionList = new ArrayList<>();
-		this.regressionConfig = regressionConfig;
-		this.gitInfo = gitInfo;
-		this.resultFolder = resultFolder;
-	}
+    public SlackSummaryMsg(SlackConfig slackConfig, RegressionConfig regressionConfig,
+                           GitInfo gitInfo, String resultFolder) {
+        super(slackConfig);
+        experimentsWithHistorical = new ArrayList<>();
+        exceptionList = new ArrayList<>();
+        this.regressionConfig = regressionConfig;
+        this.gitInfo = gitInfo;
+        this.resultFolder = resultFolder;
+    }
 
-	/**
-	 * Add an experiment to this summary.
-	 */
-	public void addExperiment(ExperimentSummary experiment) {
-		addExperiment(experiment, null);
-	}
+    /**
+     * Add an experiment to this summary.
+     */
+    public void addExperiment(ExperimentSummary experiment) {
+        addExperiment(experiment, null);
+    }
 
-	/**
-	 * Add an experiment to this summary with historical data.
-	 */
-	public void addExperiment(ExperimentSummary experiment, List<ExperimentSummary> historical) {
-		if (experiment.hasWarnings()) {
-			warnings = true;
-		}
-		if (experiment.hasErrors()) {
-			errors = true;
-		}
-		if (experiment.hasExceptions()) {
-			exceptions = true;
-		}
-		experimentsWithHistorical.add(Pair.of(experiment, historical));
-	}
+    /**
+     * Add an experiment to this summary with historical data.
+     */
+    public void addExperiment(ExperimentSummary experiment, List<ExperimentSummary> historical) {
+        if (experiment.hasWarnings()) {
+            warnings = true;
+        }
+        if (experiment.hasErrors()) {
+            errors = true;
+        }
+        if (experiment.hasExceptions()) {
+            exceptions = true;
+        }
+        experimentsWithHistorical.add(Pair.of(experiment, historical));
+    }
 
-	/**
-	 * Register an exception that prevents an experiment from being added to this summary.
-	 */
-	public void registerException(Throwable e) {
-		exceptionList.add(e);
-	}
+    private int addStringToList(List<String> listToAddTo, String stringToAdd) {
+        listToAddTo.add(stringToAdd);
+        return stringToAdd.length();
+    }
 
-	protected List<Attachment> generateAttachment(String description,
-			List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
-		final int MAX_ATTACHMENT_CHAR_LENGTH = 2700;
-		List<Attachment> returnAttachmentList = new ArrayList<Attachment>();
-		int attachmentLegth = 0;
-		List<String> columnHeaders = new ArrayList<>();
-		String tempString;
-		tempString = "Test"; columnHeaders.add("Test"); attachmentLegth += tempString.length();
-		tempString = "UID"; columnHeaders.add("UID"); attachmentLegth += tempString.length();
-		tempString = "History"; columnHeaders.add("History"); attachmentLegth += tempString.length();
+    /**
+     * Register an exception that prevents an experiment from being added to this summary.
+     */
+    public void registerException(Throwable e) {
+        exceptionList.add(e);
+    }
 
-		if (experiments.size() > 0) {
-			Attachment.Builder attachment = Attachment.builder();
-			StringBuilder sb = new StringBuilder();
-			bold(sb, description); attachmentLegth += description.length();
-			newline(sb); attachmentLegth += 1;
-			List<List<String>> rows = new ArrayList<>();
-			rows.add(columnHeaders);
-			for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
-				ExperimentSummary experiment = pair.getLeft();
-				List<String> row = new ArrayList<>();
-				String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, experiment.getName());
-				String experimentName = experiment.getName();
-				tempString = createLinkOrReturn(experimentURL, experimentName);
-				row.add(tempString); attachmentLegth += tempString.length();
-				tempString = createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId());
-				row.add(tempString); attachmentLegth += tempString.length();
-				StringBuilder hist = new StringBuilder();
-				if (pair.getRight() != null) {
-					for (ExperimentSummary experimentSummary : pair.getRight()) {
-						if (experimentSummary.hasErrors() || experimentSummary.hasExceptions()) {
-							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "E"));
-						} else if (experimentSummary.hasWarnings()) {
-							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "W"));
-						} else {
-							hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "P"));
-						}
-					}
-				}
-				attachmentLegth += hist.length();
-				row.add(hist.toString());
-				rows.add(row);
-				if(attachmentLegth >= MAX_ATTACHMENT_CHAR_LENGTH){
-					returnAttachmentList.add(buildNewAttachment(color, attachment, sb, rows));
-				}
-			}
-			return returnAttachmentList;
-		}
-		return null;
-	}
+    protected List<Attachment> generateAttachment(String description,
+                                                  List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
+        final int MAX_ATTACHMENT_CHAR_LENGTH = 2700;
+        List<Attachment> returnAttachmentList = new ArrayList<Attachment>();
+        int attachmentLength = 0;
+        List<String> columnHeaders = new ArrayList<>();
+        attachmentLength += addStringToList(columnHeaders, "Test");
+        attachmentLength += addStringToList(columnHeaders, "UID");
+        attachmentLength += addStringToList(columnHeaders, "History");
 
-	private Attachment buildNewAttachment(String color, Attachment.Builder attachment, StringBuilder sb, List<List<String>> rows) {
-		table(sb, rows);
+        if (experiments.size() > 0) {
+            Attachment.Builder attachment = Attachment.builder();
+            StringBuilder sb = new StringBuilder();
+            bold(sb, description);
+            newline(sb);
+            List<List<String>> rows = new ArrayList<>();
+            rows.add(columnHeaders);
+            for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
+                ExperimentSummary experiment = pair.getLeft();
+                List<String> row = new ArrayList<>();
+                String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, experiment.getName());
+                String experimentName = experiment.getName();
+                attachmentLength += addStringToList(row, createLinkOrReturn(experimentURL, experimentName));
+                attachmentLength += addStringToList(row, createLinkOrReturn(experiment.getSlackLink(), experiment.getUniqueId()));
+                StringBuilder hist = new StringBuilder();
+                if (pair.getRight() != null) {
+                    for (ExperimentSummary experimentSummary : pair.getRight()) {
+                        if (experimentSummary.hasErrors() || experimentSummary.hasExceptions()) {
+                            hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "E"));
+                        } else if (experimentSummary.hasWarnings()) {
+                            hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "W"));
+                        } else {
+                            hist.append(createLinkOrReturn(experimentSummary.getSlackLink(), "P"));
+                        }
+                    }
+                }
+                attachmentLength += hist.length();
+                row.add(hist.toString());
+                rows.add(row);
+                if (attachmentLength + sb.length() >= MAX_ATTACHMENT_CHAR_LENGTH) {
+                    returnAttachmentList.add(buildNewAttachment(color, attachment, sb, rows));
+                    rows.clear();
+                    sb = new StringBuilder();
+                    attachmentLength = 0;
 
-		attachment.setText(sb.toString());
-		attachment.setColor(color);
+                }
+            }
+            returnAttachmentList.add(buildNewAttachment(color, attachment, sb, rows));
+            return returnAttachmentList;
+        }
+        return null;
+    }
 
-		return attachment.build();
-	}
+    private Attachment buildNewAttachment(String color, Attachment.Builder attachment, StringBuilder sb, List<List<String>> rows) {
+        table(sb, rows);
 
-	@Override
-	public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
+        attachment.setText(sb.toString());
+        attachment.setColor(color);
 
-		bold(stringBuilder, "--- Regression Summary ---");
-		newline(stringBuilder);
+        return attachment.build();
+    }
 
-		bold(stringBuilder, "Name: ");
-		codeSnippet(stringBuilder, regressionConfig.getName());
-		newline(stringBuilder);
+    @Override
+    public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
 
-		String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, "");
-		bold(stringBuilder, "Results Folder:");
-		stringBuilder.append(" " + createLinkOrReturn(experimentURL,resultFolder));
-		newline(stringBuilder);
+        bold(stringBuilder, "--- Regression Summary ---");
+        newline(stringBuilder);
 
-		bold(stringBuilder, "Commit:");
-		stringBuilder.append(" " + gitInfo.getGitInfo(true));
-		newline(stringBuilder);
+        bold(stringBuilder, "Name: ");
+        codeSnippet(stringBuilder, regressionConfig.getName());
+        newline(stringBuilder);
 
-		stringBuilder.append("Note: historical test data is displayed from left to right (oldest->newest).");
-		newline(stringBuilder);
+        String experimentURL = RegressionUtilities.buildResultsFolderURL(slackConfig, resultFolder, "");
+        bold(stringBuilder, "Results Folder:");
+        stringBuilder.append(" " + createLinkOrReturn(experimentURL, resultFolder));
+        newline(stringBuilder);
 
-		List<Pair<ExperimentSummary, List<ExperimentSummary>>> successes = new ArrayList<>();
-		List<Pair<ExperimentSummary, List<ExperimentSummary>>> warnings = new ArrayList<>();
-		List<Pair<ExperimentSummary, List<ExperimentSummary>>> failures = new ArrayList<>();
+        bold(stringBuilder, "Commit:");
+        stringBuilder.append(" " + gitInfo.getGitInfo(true));
+        newline(stringBuilder);
 
-		// TODO maybe sort experiments alphabetically
+        stringBuilder.append("Note: historical test data is displayed from left to right (oldest->newest).");
+        newline(stringBuilder);
 
-		// Sort experiments
-		for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experimentsWithHistorical) {
-			ExperimentSummary experiment = pair.getLeft();
-			if (experiment.hasExceptions() || experiment.hasErrors()) {
-				failures.add(pair);
-			} else if (experiment.hasWarnings()) {
-				warnings.add(pair);
-			} else {
-				successes.add(pair);
-			}
-		}
+        List<Pair<ExperimentSummary, List<ExperimentSummary>>> successes = new ArrayList<>();
+        List<Pair<ExperimentSummary, List<ExperimentSummary>>> warnings = new ArrayList<>();
+        List<Pair<ExperimentSummary, List<ExperimentSummary>>> failures = new ArrayList<>();
 
-		List<Attachment> attachments = new ArrayList<>();
+        // TODO maybe sort experiments alphabetically
 
-		// Passing tests
-		List<Attachment> attachment = generateAttachment("Tests that passed", successes, "#00FF00");
-		if (attachment != null) {
-			attachments.addAll(attachment);
-		}
+        // Sort experiments
+        for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experimentsWithHistorical) {
+            ExperimentSummary experiment = pair.getLeft();
+            if (experiment.hasExceptions() || experiment.hasErrors()) {
+                failures.add(pair);
+            } else if (experiment.hasWarnings()) {
+                warnings.add(pair);
+            } else {
+                successes.add(pair);
+            }
+        }
 
-		// Tests with warnings
-		attachment = generateAttachment("Tests with warnings", warnings, "#FFFF00");
-		if (attachment != null) {
-			attachments.addAll(attachment);
-		}
+        List<Attachment> attachments = new ArrayList<>();
 
-		// Failing tests
-		attachment = generateAttachment("Tests with errors", failures, "#FF0000");
-		if (attachment != null) {
-			attachments.addAll(attachment);
-		}
+        // Passing tests
+        List<Attachment> attachment = generateAttachment("Tests that passed", successes, "#00FF00");
+        if (attachment != null) {
+            attachments.addAll(attachment);
+        }
 
-		// Exceptions
-		for (Throwable t : exceptionList) {
-			Attachment.Builder ab = Attachment.builder();
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			t.printStackTrace(pw);
-			ab.setText(sw.toString());
-			ab.setColor("#FF0000");
-			attachments.add(ab.build());
-		}
+        // Tests with warnings
+        attachment = generateAttachment("Tests with warnings", warnings, "#FFFF00");
+        if (attachment != null) {
+            attachments.addAll(attachment);
+        }
 
-		return attachments;
-	}
+        // Failing tests
+        attachment = generateAttachment("Tests with errors", failures, "#FF0000");
+        if (attachment != null) {
+            attachments.addAll(attachment);
+        }
 
-	@Override
-	public String getPlaintext() {
-		return null;
-	}
+        // Exceptions
+        for (Throwable t : exceptionList) {
+            Attachment.Builder ab = Attachment.builder();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            ab.setText(sw.toString());
+            ab.setColor("#FF0000");
+            attachments.add(ab.build());
+        }
+
+        return attachments;
+    }
+
+    @Override
+    public String getPlaintext() {
+        return null;
+    }
 }
