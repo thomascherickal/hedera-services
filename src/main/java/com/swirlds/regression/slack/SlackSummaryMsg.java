@@ -99,38 +99,39 @@ public class SlackSummaryMsg extends SlackMsg {
     protected List<Attachment> generateAttachment(String description,
                                                   List<Pair<ExperimentSummary, List<ExperimentSummary>>> experiments, String color) {
 
+        /* if there are no experiments there is nothing to do */
+        if(experiments.size() == 0) { return null; }
+
         List<Attachment> returnAttachmentList = new ArrayList<Attachment>();
-        /* It is far more cost efiecient to keep track of the potential size of the attachment than constantly calculating it */
+        /* It is far more cost efficient to keep track of the potential size of the attachment than constantly calculating it */
         int attachmentLength = 0;
         List<String> columnHeaders = new ArrayList<>();
-
         attachmentLength += generateColumnHeaders(columnHeaders);
 
-        if (experiments.size() > 0) {
-            StringBuilder attachmentDescription = setAttachmentDescription(description);
-            attachmentLength += attachmentDescription.length();
+        StringBuilder attachmentDescription = setAttachmentDescription(description);
+        attachmentLength += attachmentDescription.length();
 
-            List<List<String>> rows = new ArrayList<>();
-            rows.add(columnHeaders);
-            for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
-                attachmentLength += generateRowForExperiment(rows, pair);
+        List<List<String>> rows = new ArrayList<>();
+        rows.add(columnHeaders);
 
-                /* close off attachment and reset counters */
-                if (attachmentLength >= MAX_ATTACHMENT_CHAR_LENGTH) {
-                    returnAttachmentList.add(buildNewAttachment(color, attachmentDescription, rows));
-                    rows.clear();
-                    attachmentLength = 0;
-                    attachmentDescription = new StringBuilder();
-                }
-            }
-            /* close off last attachment */
-            if(attachmentLength > 0) {
+        /* add each experiment's name, unique ID, and history as a single line in the attachment */
+        for (Pair<ExperimentSummary, List<ExperimentSummary>> pair : experiments) {
+            attachmentLength += generateRowForExperiment(rows, pair);
+
+            /* close off attachment and reset counters if total length of attachment is getting too big for slack */
+            if (attachmentLength >= MAX_ATTACHMENT_CHAR_LENGTH) {
                 returnAttachmentList.add(buildNewAttachment(color, attachmentDescription, rows));
+                rows.clear();
+                attachmentLength = 0;
+                attachmentDescription = new StringBuilder();
             }
-
-            return returnAttachmentList;
         }
-        return null;
+        /* close off last attachment if it has any lines*/
+        if(attachmentLength > 0) {
+            returnAttachmentList.add(buildNewAttachment(color, attachmentDescription, rows));
+        }
+
+        return returnAttachmentList;
     }
 
     /**
