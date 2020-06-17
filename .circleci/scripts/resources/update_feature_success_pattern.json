@@ -1,5 +1,5 @@
 {
-  "accessory_tests_success_pattern" : [
+  "update_feature" : [
     "SuiteRunner - Effective args :: [54.234.2.207, 3, -CI, FreezeSuite]",
     "FreezeSuite - -------------- STARTING Freeze SUITE --------------",
     "FreezeSuite - Creating zip file from updateSettings",

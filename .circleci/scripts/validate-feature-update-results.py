@@ -42,13 +42,13 @@ def init():
 #        print("target_testnet_success_pattern: {}".format(target_testnet_success))
         REGRESSION_JOB_TYPE_SUCCESS_CRITERIA["regression-target-testnet"] = target_testnet_success
 
-    with open(os.path.join(os.environ.get("REPO"), ".circleci/scripts/resources/update_feature_success_patterns.json"), "r") as f:
+    with open(os.path.join(os.environ.get("REPO"), ".circleci/scripts/resources/update_feature_success_pattern.json"), "r") as f:
         data = json.load(f)
-        update_feature_success = data["update-feature"]
+        update_feature_success = data["update_feature"]
 
-        REGRESSION_JOB_TYPE_SUCCESS_CRITERIA["long-contract_txns6"] = update_feature_success
+        REGRESSION_JOB_TYPE_SUCCESS_CRITERIA["update-feature"] = update_feature_success
 
-    with open(os.path.join(os.environ.get("REPO"), ".circleci/scripts/resources/update_jar_files_success_patterns.json"), "r") as f:
+    with open(os.path.join(os.environ.get("REPO"), ".circleci/scripts/resources/update_jar_files_success_pattern.json"), "r") as f:
         data = json.load(f)
         update_jar_files_success = data["update_jar_files"]
 

@@ -1,5 +1,5 @@
 {
-  "accessory_tests_success_pattern" : [
+  "update_jar_files" : [
     "UpdateServerFiles - -------------- STARTING UpdateServerFiles SUITE --------------",
     "UpdateServerFiles - Creating zip file from updateFiles",
     "ZipUtil - Root = temp, current = temp",

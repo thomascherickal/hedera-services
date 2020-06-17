@@ -1265,6 +1265,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
+                - 0277-E-feature-update-detailed-validate
           workflow_name: "Continuous integration"
       - start-singlejob-testnet:
           requires:
