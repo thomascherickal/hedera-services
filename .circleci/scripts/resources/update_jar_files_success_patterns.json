@@ -1,0 +1,25 @@
+{
+  "accessory_tests_success_pattern" : [
+    "UpdateServerFiles - -------------- STARTING UpdateServerFiles SUITE --------------",
+    "UpdateServerFiles - Creating zip file from updateFiles",
+    "ZipUtil - Root = temp, current = temp",
+    "ZipUtil - Current directory temp",
+    "ZipUtil - Root = temp, current = temp/sdk",
+    "ZipUtil - Adding dir sdk/",
+    "ZipUtil - Current directory temp/sdk",
+    "ZipUtil - Root = temp, current = temp/sdk/data",
+    "ZipUtil - Adding dir sdk/data/",
+    "ZipUtil - Current directory temp/sdk/data",
+    "ZipUtil - Root = temp, current = temp/sdk/data/apps",
+    "ZipUtil - Adding dir sdk/data/apps/",
+    "ZipUtil - Current directory temp/sdk/data/apps",
+    "ZipUtil - Adding file:/sdk/data/apps/HederaNode.jar",
+    "ZipUtil - Adding file:/sdk/swirlds.jar",
+    "ZipUtil - Root = temp, current = temp/sdk/target",
+    "ZipUtil - Adding dir sdk/target/",
+    "ZipUtil - Current directory temp/sdk/target",
+    "ZipUtil - Adding file:/sdk/target/hedera-node-0.5.0.jar",
+    "ZipUtil - Adding file:/exec.sh",
+    "UpdateServerFiles - Uploading file Archive.zip"
+  ]
+}

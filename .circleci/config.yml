@@ -66,6 +66,33 @@ commands:
           dsl-args: "RecordStreamValidation"
           ci-properties-map: "recordStreamsDir=/repo/recordstreams"
 
+
+  validate-feature-update-test-report:
+    description: Validate feature update test result
+    parameters:
+      slack-channel:
+        description: slack channel to publish to
+        type: string
+        default: 'hedera-cicd'
+      status:
+        description: test finishing status
+        type: string
+        default: 'Passed'
+
+    steps:
+      - run:
+          name: Final summary of workflow
+          command: |
+            /repo/.circleci/scripts/final-validate-feature-update-test.sh
+      - run:
+          name: 'send feature update test result to slack'
+          command: |
+            /repo/.circleci/scripts/call-svcs-app-slack.sh \
+                -c << parameters.slack-channel >> \
+                -f /repo/client-logs/feature-update-test-summary.txt \
+                -s << parameters.status >>
+
+
   publish-platform-stats:
     description: Generate the insight.py PDF and publish it (e.g. to Slack)
     parameters:
@@ -102,8 +129,8 @@ commands:
             - run:
                 name: 'Upload the PDF to Slack #hedera-regression channel'
                 command: |
-                    /repo/.circleci/scripts/publish-stats-pdf-to-slack.sh \
-                       "<< parameters.source-desc >>"
+                  /repo/.circleci/scripts/publish-stats-pdf-to-slack.sh \
+                     "<< parameters.source-desc >>"
   svc-app-slack-msg:
     description: Send a message to Slack via the Services Regression app
     parameters:
@@ -171,12 +198,17 @@ commands:
 
   save-this-job-client-logs:
     description: Save this client side log files for this job
+    parameters:
+      s3-parent-dir:
+        description: The top level directory for the client logs storage
+        type: string
+        default: "regression-testclient-logs"
     steps:
       - run:
-          name: Save the client side log files for this job
+          name: Save the client side log files for this job to s3
           command: |
             /repo/.circleci/scripts/save-default-client-logs.sh \
-               "regression-testclient-logs"
+               << parameters.s3-parent-dir >>
 
   fetch-testnet-control-assets:
     description: Add SSH keys, HCL scripts, Ansible playbooks to start testnet
@@ -940,6 +972,8 @@ workflows:
                 at: /
             - ensure-testnet-for-reruns
           post-steps:
+            - save-this-job-client-logs:
+                s3-parent-dir: feature-update-logs
             - cleanup-rerun-testnet-if-present
           workflow_name: "Feature update"
       - run-update-jar-files:
@@ -950,6 +984,10 @@ workflows:
                 at: /
             - ensure-testnet-for-reruns
           post-steps:
+            - save-this-job-client-logs:
+                s3-parent-dir: feature-update-logs
+            - validate-feature-update-test-report:
+                status: "Passed"
             - cleanup-rerun-testnet-if-present
           new-marker : "new marker string"
           workflow_name: "Feature update"

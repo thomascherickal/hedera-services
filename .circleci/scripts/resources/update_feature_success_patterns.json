@@ -1,0 +1,16 @@
+{
+  "accessory_tests_success_pattern" : [
+    "SuiteRunner - Effective args :: [54.234.2.207, 3, -CI, FreezeSuite]",
+    "FreezeSuite - -------------- STARTING Freeze SUITE --------------",
+    "FreezeSuite - Creating zip file from updateSettings",
+    "ZipUtil - Root = src/main/resource/testfiles/updateFeature/updateSettings, current = src/main/resource/testfiles/updateFeature/updateSettings",
+    "ZipUtil - Current directory src/main/resource/testfiles/updateFeature/updateSettings",
+    "ZipUtil - Adding file:/exec.sh",
+    "ZipUtil - Root = src/main/resource/testfiles/updateFeature/updateSettings, current = src/main/resource/testfiles/updateFeature/updateSettings/sdk",
+    "ZipUtil - Adding dir sdk/",
+    "ZipUtil - Current directory src/main/resource/testfiles/updateFeature/updateSettings/sdk",
+    "ZipUtil - Adding file:/sdk/settings.txt",
+    "FreezeSuite - Uploading file Archive.zip",
+    "SuiteRunner - FreezeSuite                      :: 1/1 suites ran OK"
+  ]
+}

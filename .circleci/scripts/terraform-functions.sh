@@ -22,47 +22,57 @@ function tf_cleanup {
           ci_echo "=== $TGT_LOG ==="
           grep "StorageMap roothash on" $TGT_LOG
           ci_echo "================"
-          cat $TGT_LOG 
+          cat $TGT_LOG
           ci_echo "================"
         fi
       done
 
       . ${REPO}/.circleci/scripts/prepare-slack-message.sh
       python3 ${REPO}/.circleci/scripts/diagnose-logs.py \
-        ${REPO}/HapiApp2.0 ${REPO}/diagnostics ${REPO}/.circleci/scripts/resources
+              ${REPO}/HapiApp2.0 ${REPO}/diagnostics ${REPO}/.circleci/scripts/resources
 
       slack_channel='hedera-cicd'
       if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
           slack_channel='hedera-regression'
       fi
+
       ${REPO}/.circleci/scripts/call-svcs-app-slack.sh \
-        -c ${slack_channel} \
-        -t ${REPO}/diagnostics/slack_msg.txt \
-        -s Error
+             -c ${slack_channel} \
+             -t ${REPO}/diagnostics/slack_msg.txt \
+             -s Error
+
+      if [[ "${WORKFLOW_NAME}" == "Feature update" ]]; then
+          python3 ${REPO}/.circleci/scripts/final-validate-feature-update-test.sh
+          ${REPO}/.circleci/scripts/call-svcs-app-slack.sh \
+               -c $slack_channel \
+               -f ${REPO}/client-logs/feature-update-test-summary.txt \
+               -s Error
+      fi
+
 
       if [ -f ${REPO}/diagnostics/shouldUploadFilteredLogs ]; then
-        DIAGNOSTICS_DIR=${REPO}/diagnostics/filtered-logs
-        mkdir $DIAGNOSTICS_DIR
-        for HOST in ${TF_HOSTS[@]}; do
-          RAW_DIR="${REPO}/HapiApp2.0/$HOST/output"
-          FILTERED_DIR="$DIAGNOSTICS_DIR/$HOST"
-          mkdir $FILTERED_DIR
+          DIAGNOSTICS_DIR=${REPO}/diagnostics/filtered-logs
+          mkdir $DIAGNOSTICS_DIR
+          for HOST in ${TF_HOSTS[@]}; do
+              RAW_DIR="${REPO}/HapiApp2.0/$HOST/output"
+              FILTERED_DIR="$DIAGNOSTICS_DIR/$HOST"
+              mkdir $FILTERED_DIR
 
-          for NAME in swirlds hgcaa; do
-            TGT_LOG="$RAW_DIR/${NAME}.log"
-            ci_echo "Copying filtered version of ${TGT_LOG}..."
-            if [ -f "$TGT_LOG" ]; then
-              cp "$RAW_DIR/${NAME}-filtered.log" "$FILTERED_DIR"
-            fi
+              for NAME in swirlds hgcaa; do
+                  TGT_LOG="$RAW_DIR/${NAME}.log"
+                  ci_echo "Copying filtered version of ${TGT_LOG}..."
+                  if [ -f "$TGT_LOG" ]; then
+                      cp "$RAW_DIR/${NAME}-filtered.log" "$FILTERED_DIR"
+                  fi
+              done
+              ls -l $FILTERED_DIR
           done
-          ls -l $FILTERED_DIR
-        done
-        tar -zcvf ${REPO}/diagnostics/logs-${CIRCLE_BUILD_NUM}.tgz \
-          ${REPO}/diagnostics/filtered-logs
+          tar -zcvf ${REPO}/diagnostics/logs-${CIRCLE_BUILD_NUM}.tgz \
+              ${REPO}/diagnostics/filtered-logs
 
-        ${REPO}/.circleci/scripts/call-svcs-app-slack.sh \
-          -c hedera-cicd \
-          -f ${REPO}/diagnostics/logs-${CIRCLE_BUILD_NUM}.tgz
+          ${REPO}/.circleci/scripts/call-svcs-app-slack.sh \
+                 -c hedera-cicd \
+                 -f ${REPO}/diagnostics/logs-${CIRCLE_BUILD_NUM}.tgz
       fi
 
       summarize_postgresql_status
