@@ -20,7 +20,7 @@ function post_summary_to_slack() {
   echo $OVERALL_STATUS
   ${REPO}/.circleci/scripts/call-svcs-app-slack.sh \
       -c $CHANNEL \
-      -t $FN \
+      -f $FN \
       -s $OVERALL_STATUS
 }
 
