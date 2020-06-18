@@ -6,16 +6,18 @@
   "cloud": {
 	"service": "aws",
 	"securityGroup": "SwirldsSecGroup",
+	"instanceType": "M42xlarge",
 	"instanceKey": "regression-key-neeha",
 	"keyLocation": "./keys/my-key",
 	"login": "ubuntu",
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes" : 2
+		"numberOfNodes" : 1
 	  }
 	]
   },
+  "servicesConfig" : true,
   "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"

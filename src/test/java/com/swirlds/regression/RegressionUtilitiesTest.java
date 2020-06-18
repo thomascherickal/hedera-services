@@ -23,6 +23,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.io.File;
+import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -85,6 +89,14 @@ public class RegressionUtilitiesTest {
         config.setMinMemory(minMemory);
         config.setMaxDirectMemory(maxDirectMemory);
         assertTrue(RegressionUtilities.JVM_OPTIONS_DEFAULT.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
+    }
+
+    @Test
+    public void testgetServicesFilesToUpload(){
+        Collection<File> list = RegressionUtilities.getServicesFilesToUpload(new File("keys/my-key.pem"),
+                null, null);
+        assertTrue(list.toArray()[0].toString().contains("hedera-node-0.4.0.jar"));
+
     }
 
 
