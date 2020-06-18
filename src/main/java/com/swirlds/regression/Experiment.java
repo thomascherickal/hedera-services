@@ -113,6 +113,7 @@ import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
+import static com.swirlds.regression.RegressionUtilities.getServicesFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
 import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
@@ -620,8 +621,14 @@ public class Experiment implements ExperimentSummary {
 		String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
-		Collection<File> filesToSend = getSDKFilesToUpload(
-				new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
+		Collection<File> filesToSend;
+		if (regConfig.isServicesConfig()) {
+			filesToSend = getServicesFilesToUpload(
+					new File(pemFile), new File(testConfig.getServices_log4j2File()), addedFiles);
+		} else {
+			filesToSend = getSDKFilesToUpload(
+					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
+		}
 		File oldTarFile = new File(TAR_NAME);
 		if (oldTarFile.exists()) {
 			oldTarFile.delete();

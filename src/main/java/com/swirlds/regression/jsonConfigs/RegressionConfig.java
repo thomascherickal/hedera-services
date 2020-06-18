@@ -41,6 +41,8 @@ public class RegressionConfig {
 
 	private int numberOfZeroStakeNodes = 0;
 
+	private boolean servicesConfig = true;
+
 	/**
 	 * Gets the total number of nodes set in this config in all regions, or local nodes if its a local test
 	 *
@@ -201,5 +203,13 @@ public class RegressionConfig {
 
 	public void setUseThreadPool(boolean useThreadPool) {
 		this.useThreadPool = useThreadPool;
+	}
+
+	public boolean isServicesConfig() {
+		return servicesConfig;
+	}
+
+	public void setServicesConfig(boolean servicesConfig) {
+		this.servicesConfig = servicesConfig;
 	}
 }

@@ -56,6 +56,7 @@ public class RegressionUtilities {
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";
+	public static final String HEDERA_NODE_DIR = "../../services-hedera/hedera-node/target";
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
@@ -284,6 +285,22 @@ public class RegressionUtilities {
 			returnIterator.addAll(configSpecifiedFiles);
 		}
 
+		return returnIterator;
+	}
+
+	protected static Collection<File> getServicesFilesToUpload(File keyFile, File log4jFile,
+			ArrayList<File> configSpecifiedFiles) {
+		Collection<File> returnIterator = new ArrayList<>();
+		returnIterator.add(new File(HEDERA_NODE_DIR + "hedera-node-0.4.0.jar"));
+		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
+		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
+		returnIterator.add(keyFile);
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE));
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.SETTINGS_FILE));
+		returnIterator.add(log4jFile);
+		if (configSpecifiedFiles != null) {
+			returnIterator.addAll(configSpecifiedFiles);
+		}
 		return returnIterator;
 	}
 
