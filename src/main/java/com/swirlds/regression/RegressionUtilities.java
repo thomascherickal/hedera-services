@@ -297,7 +297,7 @@ public class RegressionUtilities {
 	public static Collection<File> getServicesFilesToUpload(File keyFile,
 			ArrayList<File> configSpecifiedFiles) {
 		Collection<File> returnIterator = new ArrayList<>();
-		String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent()+
+		String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
 				HEDERA_NODE_DIR;
 		returnIterator.add(new File(hederaNodeDir + "data/apps/"));
 		returnIterator.add(new File(hederaNodeDir + "data/backup/"));
@@ -305,10 +305,10 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
 		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
-		returnIterator.add(new File(hederaNodeDir +"target/"+ HEDERA_NODE_JAR));
+		returnIterator.add(new File(hederaNodeDir + "swirlds.jar"));
+		returnIterator.add(new File(hederaNodeDir + "target/" + HEDERA_NODE_JAR));
 		returnIterator.add(new File(hederaNodeDir + RegressionUtilities.CONFIG_FILE));
 		returnIterator.add(keyFile);
-		returnIterator.add(new File(SDK_DIR + "swirlds.jar"));
 		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);
@@ -318,14 +318,14 @@ public class RegressionUtilities {
 
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
-		if(testConfig.isServicesConfig()){
+		if (testConfig.isServicesConfig()) {
 			return getServicesRsyncFiles(keyFile, configSpecifiedFiles);
 		}
 		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
 	}
 
 	private static ArrayList<String> getServicesRsyncFiles(File keyFile,
-			ArrayList<File> configSpecifiedFiles){
+			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add("data/");
 		returnIterator.add("data/apps/");
@@ -355,7 +355,7 @@ public class RegressionUtilities {
 	}
 
 	private static ArrayList<String> getPlatformRsyncFiles(File keyFile, File log4jFile,
-			ArrayList<File> configSpecifiedFiles){
+			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add("data/");
 		returnIterator.add("data/apps/");
@@ -500,11 +500,11 @@ public class RegressionUtilities {
 		}
 	}
 
-	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName){
+	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName) {
 		String returnString = null;
-		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+		if (slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()) {
 			returnString = "http://" + slackConfig.getWebServer().getWebServerAddress() +
-					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					":" + slackConfig.getWebServer().getWebServerPort() + "/" +
 					resultFolder + "/" + experimentName;
 		}
 		return returnString;

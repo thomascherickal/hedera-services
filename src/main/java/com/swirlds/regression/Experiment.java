@@ -291,12 +291,12 @@ public class Experiment implements ExperimentSummary {
 		}).collect(Collectors.toList()));
 	}
 
-	public void startHGCApp() {
-		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			node.execHGCAppWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:{} hedera-node.jar started.", node.getIpAddress());
-		}).collect(Collectors.toList()));
-	}
+//	public void startHGCApp() {
+//		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
+//			node.execWithProcessID(getJVMOptionsString());
+//			log.info(MARKER, "node:{} hedera-node.jar started.", node.getIpAddress());
+//		}).collect(Collectors.toList()));
+//	}
 
 	public void stopAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(currentNode -> currentNode::killJavaProcess)
