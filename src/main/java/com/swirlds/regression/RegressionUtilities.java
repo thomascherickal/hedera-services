@@ -307,6 +307,7 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir +"target/"+ HEDERA_NODE_JAR));
 		returnIterator.add(new File(hederaNodeDir + RegressionUtilities.CONFIG_FILE));
 		returnIterator.add(keyFile);
+		returnIterator.add(new File(SDK_DIR + "swirlds.jar"));
 		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);
@@ -336,6 +337,7 @@ public class RegressionUtilities {
 		returnIterator.add("data/lib/**");
 		returnIterator.add("data/repos/");
 		returnIterator.add("data/repos/**");
+		returnIterator.add("swirlds.jar");
 		returnIterator.add(HEDERA_NODE_JAR);
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
