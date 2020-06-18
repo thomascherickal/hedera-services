@@ -1,6 +1,6 @@
 {
-  "name": "StatsSigningDemo",
-  "description": "StatsSigningDemo",
+  "name": "ServicesDemo",
+  "description": "ServicesDemo",
   "duration": 1200,
   "settings": [
 	{
@@ -20,18 +20,18 @@
 	  "value": "2"
 	}
   ],
-  "servicesConfig" : true,
-  "app": {
-	"jar": "StatsSigningDemo.jar",
-	"parameterList": [
-	  "1, 3000, 0, 100, -1, 50000"
-	]
-  },
-  "resultFiles": [
-	"swirlds.log"
-  ],
-  "validator": [
-	"STATS",
-	"STANDARD"
-  ]
+  "servicesConfig" : true
+//  "app": {
+//	"jar": "StatsSigningDemo.jar",
+//	"parameterList": [
+//	  "1, 3000, 0, 100, -1, 50000"
+//	]
+//  },
+//  "resultFiles": [
+//	"swirlds.log"
+//  ],
+//  "validator": [
+//	"STATS",
+//	"STANDARD"
+//  ]
 }
