@@ -42,8 +42,6 @@ public class TestConfig implements FileRequirement {
 	private AppConfig app;
 	private List<String> resultFiles;
 	private String log4j2File = "log4j2-regression.xml";
-
-	private String services_log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
 	private boolean servicesConfig = true;
@@ -208,14 +206,6 @@ public class TestConfig implements FileRequirement {
 
 	public void setExperimentConfig(ExperimentConfig experimentConfig) {
 		this.experimentConfig = experimentConfig;
-	}
-
-	public String getServices_log4j2File() {
-		return services_log4j2File;
-	}
-
-	public void setServices_log4j2File(String services_log4j2File) {
-		this.services_log4j2File = services_log4j2File;
 	}
 
 	public boolean isServicesConfig() {

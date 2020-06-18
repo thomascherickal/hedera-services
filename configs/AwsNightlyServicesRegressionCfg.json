@@ -13,17 +13,16 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes" : 1
+		"numberOfNodes" : 2
 	  }
 	]
   },
-  "servicesConfig" : true,
   "eventFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json"
+	"configs/testServicesDemoCfg.json"
   ],
   "db": {
 	"type": "postgresql",
