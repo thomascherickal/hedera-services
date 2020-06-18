@@ -56,8 +56,8 @@ public class RegressionUtilities {
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";
-	public static final String HEDERA_NODE_DIR = "/services-hedera/hedera-node/";
-	public static final String HEDERA_NODE_JAR = "hedera-node-0.4.0.jar";
+	public static final String HEDERA_NODE_DIR = "/hedera-services/hedera-node/";
+	public static final String HEDERA_NODE_JAR = "hedera-node-0.5.0.jar";
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
