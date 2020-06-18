@@ -286,14 +286,14 @@ public class Experiment implements ExperimentSummary {
 
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			node.execWithProcessID(getJVMOptionsString(), testConfig);
+			node.execWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} swirlds.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 
 	public void startHGCApp() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			node.execWithProcessID(getJVMOptionsString(), testConfig);
+			node.execHGCAppWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} hedera-node.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
@@ -317,7 +317,7 @@ public class Experiment implements ExperimentSummary {
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToReconnect.reviveNetwork();
 		} else {
-			nodeToReconnect.execWithProcessID(getJVMOptionsString(), testConfig);
+			nodeToReconnect.execWithProcessID(getJVMOptionsString());
 		}
 	}
 

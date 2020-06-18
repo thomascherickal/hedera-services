@@ -456,28 +456,35 @@ public class SSHService {
         return returnList;
     }
 
-    int execWithProcessID(String jvmOptions, TestConfig config) {
+    int execWithProcessID(String jvmOptions) {
+        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+        }
+        String command = String.format(
+                "cd %s; " +
+                        "java %s -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >>output.log 2>&1 & " +
+                        "disown -h",
+                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+                jvmOptions);
+        String description = "Start swirlds.jar";
+
+        return execCommand(command, description, 5).getExitStatus();
+    }
+
+
+    int execHGCAppWithProcessID(String jvmOptions) {
         if (jvmOptions == null || jvmOptions.trim().length() == 0) {
             jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
         }
 
-        String jarName = "swirlds.jar";
-        String log4j = "log4j2-regression.xml";
-
-        if(config.isServicesConfig()){
-            jarName = HEDERA_NODE_JAR;
-            log4j =  "log4j2-regression.xml";
-        }
-
         String command = String.format(
                 "cd %s; " +
-                        "java %s -Dlog4j.configurationFile=%s -jar %s >>output.log 2>&1 & " +
-                        "disown -h",
+                        "java %s -Dlog4j.configurationFile=log4j2.xml -cp data/lib/*:%s " +
+                        "com.hedera.services.ServicesMain",
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                jvmOptions,
-                log4j,
-                jarName);
-        String description = "Start "+jarName;
+                HEDERA_NODE_JAR,
+                jvmOptions);
+        String description = "Start "+ HEDERA_NODE_JAR;
 
         return execCommand(command, description, 5).getExitStatus();
     }
