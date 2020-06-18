@@ -10,6 +10,11 @@ cd ../..
 cd services-hedera
 mvn -DskipTests clean install
 
+cd ../swirlds-platform/
+git pull
+git submodule update --init --merge
+mvn -DskipTests clean deploy
+
 cd regression
 export aws_access_key_id=AKIAJJST62PF5EO3CMAQ
 export aws_secret_access_key=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
