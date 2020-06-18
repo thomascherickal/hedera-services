@@ -94,7 +94,7 @@ public class RegressionUtilitiesTest {
     @Test
     public void testgetServicesFilesToUpload(){
         Collection<File> list = RegressionUtilities.getServicesFilesToUpload(new File("keys/my-key.pem"),
-                null, null);
+                 null);
         assertTrue(list.toArray()[0].toString().contains("hedera-node-0.4.0.jar"));
 
     }
