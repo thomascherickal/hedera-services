@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02094-D-AlterStateWriteNotification-4N-0ZSN-FinalPanel",
+  "name": "Nathan-develop-4N-0ZSN-FCMMultiReconnect",
   "result": {
 	"uri": "results"
   },
@@ -12,8 +12,8 @@
 	"login": "ubuntu",
 	//	"regionList": [
 	//	  {
-	//		"region": "ca-central-1",
-	//		"numberOfNodes": 4
+	//		"region": "us-east-2",
+	//		"numberOfNodes": 6
 	//	  }
 	//	]
 	"regionList": [
@@ -27,6 +27,19 @@
 		]
 	  }
 	]
+	//	"regionList": [
+	//	  {
+	//		"region": "ca-central-1",
+	//		"instanceList": [
+	//		  "i-00073f766bab408b5",
+	//		  "i-064928acb5489057c",
+	//		  "i-08e20b65dcb0306e3",
+	//		  "i-0ba562187f151074e",
+	//		  "i-09fc2177009233629",
+	//		  "i-0e914aec0808dc273"
+	//		]
+	//	  }
+	//	]
   },
   "numberOfZeroStakeNodes": 0,
   "eventFilesWriters": 4,
@@ -34,20 +47,22 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemoCfg.json",
-	"configs/testSigningDemo4KCfg.json",
-	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testRestartCfg.json",
-	"configs/testRestartBlobCfg.json",
-	"configs/testFcmFreezeCfg.json",
-	"configs/testFcmFreezeBlobCfg.json",
-	"configs/testFcmMultisizeBlobCfg.json",
-	"configs/testFcmFreezeFCQCfg.json",
-	"configs/testFCM1KFCQCfg.json",
-	"configs/testReconnectFCMMultiReconnectCfg.json",
-	"configs/testReconnectFCQMultiReconnectCfg.json",
-	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json"
+	//	"configs/testSigningDemoCfg.json",
+	//	"configs/testSigningDemo4KCfg.json",
+	//	"configs/testFcmMultipleOperationsCfg.json",
+	//	"configs/testRestartCfg.json",
+	//	"configs/testRestartBlobCfg.json",
+	//	"configs/testFcmFreezeCfg.json",
+	//	"configs/testFcmFreezeBlobCfg.json",
+	//	"configs/testFcmMultisizeBlobCfg.json",
+	//	"configs/testFcmFreezeFCQCfg.json",
+	//	"configs/testFCM1KFCQCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json"
+	//	"configs/testReconnectFCQMultiReconnectCfg.json",
+	//	"configs/testReconnectBlobCfg.json",
+	//	"configs/testFcm1kThrottlingCfg.json",
+	//	"configs/testMigrationAppCfg2K.json",
+	//	"configs/testMigrationAppCfg.json"
 
 	//	"configs/testFcmCfg.json",
 	//	"configs/testFcm10MBx10KBlobCfg.json",
