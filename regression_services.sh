@@ -6,10 +6,10 @@ echo $configFile
 eval $(ssh-agent)
 ssh-add /home/ubuntu/.ssh/regression_rsa
 
-#cd ../..
-#cd services-hedera
-#mvn -DskipTests clean install
-#
+cd ../..
+cd hedera-services
+mvn -DskipTests clean install
+
 cd ../swirlds-platform/
 git pull
 git submodule update --init --merge
