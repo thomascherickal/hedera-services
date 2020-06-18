@@ -480,7 +480,8 @@ public class SSHService {
         String command = String.format(
                 "cd %s; " +
                         "java %s -Dlog4j.configurationFile=log4j2.xml -cp data/lib/*:%s " +
-                        "com.hedera.services.ServicesMain",
+                        "com.hedera.services.ServicesMain >>output.log 2>&1 &" +
+                        "disown -h",
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
                 HEDERA_NODE_JAR,
                 jvmOptions);
