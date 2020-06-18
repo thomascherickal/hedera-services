@@ -286,8 +286,15 @@ public class Experiment implements ExperimentSummary {
 
 	public void startAllSwirlds() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			node.execWithProcessID(getJVMOptionsString());
+			node.execWithProcessID(getJVMOptionsString(), testConfig);
 			log.info(MARKER, "node:{} swirlds.jar started.", node.getIpAddress());
+		}).collect(Collectors.toList()));
+	}
+
+	public void startHGCApp() {
+		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
+			node.execWithProcessID(getJVMOptionsString(), testConfig);
+			log.info(MARKER, "node:{} hedera-node.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 
@@ -310,7 +317,7 @@ public class Experiment implements ExperimentSummary {
 		if (testConfig.getReconnectConfig().isKillNetworkReconnect()) {
 			nodeToReconnect.reviveNetwork();
 		} else {
-			nodeToReconnect.execWithProcessID(getJVMOptionsString());
+			nodeToReconnect.execWithProcessID(getJVMOptionsString(), testConfig);
 		}
 	}
 
@@ -622,7 +629,7 @@ public class Experiment implements ExperimentSummary {
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
 		Collection<File> filesToSend;
-		if (regConfig.isServicesConfig()) {
+		if (testConfig.isServicesConfig()) {
 			filesToSend = getServicesFilesToUpload(
 					new File(pemFile), new File(testConfig.getServices_log4j2File()), addedFiles);
 		} else {
@@ -896,6 +903,10 @@ public class Experiment implements ExperimentSummary {
 		threadPoolService(
 				sshNodes.stream().<Runnable>map(currentNode -> () -> currentNode.scpToSpecificFiles(newUploads)).collect(
 						Collectors.toList()));
+	}
+
+	public RegressionConfig getRegConfig() {
+		return regConfig;
 	}
 
 	private void setIPsAndStakesInConfig() {
@@ -1421,6 +1432,7 @@ public class Experiment implements ExperimentSummary {
 	void setupTest(TestConfig experiment) {
 
 		this.testConfig = experiment;
+		RegressionUtilities.setTestConfig(testConfig);
 
 		setExperimentTime();
 		configFile = new ConfigBuilder(regConfig, testConfig);

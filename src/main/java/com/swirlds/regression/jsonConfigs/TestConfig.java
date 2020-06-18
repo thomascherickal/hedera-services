@@ -46,6 +46,7 @@ public class TestConfig implements FileRequirement {
 	private String services_log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
+	private boolean servicesConfig = true;
 
 	private boolean downloadDbLogFiles = false;
 
@@ -215,6 +216,14 @@ public class TestConfig implements FileRequirement {
 
 	public void setServices_log4j2File(String services_log4j2File) {
 		this.services_log4j2File = services_log4j2File;
+	}
+
+	public boolean isServicesConfig() {
+		return servicesConfig;
+	}
+
+	public void setServicesConfig(boolean servicesConfig) {
+		this.servicesConfig = servicesConfig;
 	}
 
 	@Override

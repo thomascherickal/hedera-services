@@ -57,6 +57,7 @@ public class RegressionUtilities {
 
 	public static final String SDK_DIR = "../sdk/";
 	public static final String HEDERA_NODE_DIR = "/services-hedera/hedera-node/target/";
+	public static final String HEDERA_NODE_JAR = "hedera-node-0.4.0.jar";
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
@@ -169,6 +170,7 @@ public class RegressionUtilities {
 	static final boolean CHECK_BRANCH_CHANNEL = true;
 	static final String REG_GIT_USER_EMAIL = "swirlds-test@swirlds.org";
 	static final boolean CHECK_USER_EMAIL_CHANNEL = true;
+	private static TestConfig testConfig = null;
 
 	static final String SWIRLDS_NAME = "123";
 	static final String SAVED_STATE_LOCATION = REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
@@ -192,6 +194,10 @@ public class RegressionUtilities {
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
+	}
+
+	public static void setTestConfig(TestConfig config) {
+		testConfig = config;
 	}
 
 	protected static TestConfig importExperimentConfig(String testConfigFileLocation) {
@@ -292,7 +298,7 @@ public class RegressionUtilities {
 			ArrayList<File> configSpecifiedFiles) {
 		Collection<File> returnIterator = new ArrayList<>();
 		String hederaNodeJar = Paths.get("").toAbsolutePath().getParent().getParent()+
-				HEDERA_NODE_DIR + "hedera-node-0.4.0.jar";
+				HEDERA_NODE_DIR + HEDERA_NODE_JAR;
 		returnIterator.add(new File(hederaNodeJar));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
@@ -308,8 +314,35 @@ public class RegressionUtilities {
 
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
-		ArrayList<String> returnIterator = new ArrayList<>();
+		if(testConfig.isServicesConfig()){
+			return getServicesRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+		}
+		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+	}
 
+	private static ArrayList<String> getServicesRsyncFiles(File keyFile, File log4jFile,
+			ArrayList<File> configSpecifiedFiles){
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add(HEDERA_NODE_JAR);
+		returnIterator.add("privateAddresses.txt");
+		returnIterator.add("publicAddresses.txt");
+		returnIterator.add("badgerize.sh");
+		returnIterator.add(keyFile.getName());
+		returnIterator.add(RegressionUtilities.CONFIG_FILE);
+		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
+		returnIterator.add(log4jFile.getName());
+
+		if (configSpecifiedFiles != null) {
+			for (File file : configSpecifiedFiles) {
+				returnIterator.add(file.getName());
+			}
+		}
+		return returnIterator;
+	}
+
+	private static ArrayList<String> getPlatformRsyncFiles(File keyFile, File log4jFile,
+			ArrayList<File> configSpecifiedFiles){
+		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add("data/");
 		returnIterator.add("data/apps/");
 		returnIterator.add("data/apps/**");

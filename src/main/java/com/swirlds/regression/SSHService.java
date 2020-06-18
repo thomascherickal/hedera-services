@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -53,6 +54,7 @@ import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EX
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
+import static com.swirlds.regression.RegressionUtilities.HEDERA_NODE_JAR;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
@@ -454,21 +456,31 @@ public class SSHService {
         return returnList;
     }
 
-    int execWithProcessID(String jvmOptions) {
+    int execWithProcessID(String jvmOptions, TestConfig config) {
         if (jvmOptions == null || jvmOptions.trim().length() == 0) {
             jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
         }
+
+        String jarName = "swirlds.jar";
+        String log4j = "log4j2-regression.xml";
+
+        if(config.isServicesConfig()){
+            jarName = HEDERA_NODE_JAR;
+            log4j =  "log4j2-regression.xml";
+        }
+
         String command = String.format(
                 "cd %s; " +
-                        "java %s -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >>output.log 2>&1 & " +
+                        "java %s -Dlog4j.configurationFile=%s -jar %s >>output.log 2>&1 & " +
                         "disown -h",
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                jvmOptions);
-        String description = "Start swirlds.jar";
+                jvmOptions,
+                log4j,
+                jarName);
+        String description = "Start "+jarName;
 
         return execCommand(command, description, 5).getExitStatus();
     }
-
 
     int makeSha1sumOfStreamedEvents(String testName, int streamingServerNode, int testDuration) {
         final String streamDir = findStreamDirectory();
@@ -1251,4 +1263,5 @@ public class SSHService {
         String cmdResult = readCommandOutput(cmd).toString();
         log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
     }
+
 }
