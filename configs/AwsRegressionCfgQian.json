@@ -27,8 +27,8 @@
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testFcmFreezeCfg.json",
-	"configs/testFcmFreezeFCQCfg.json"
+	"configs/testFcmFreezeCfg.json"
+	//"configs/testFcmFreezeFCQCfg.json"
   ],
   "db": {
 	"type": "postgresql",
