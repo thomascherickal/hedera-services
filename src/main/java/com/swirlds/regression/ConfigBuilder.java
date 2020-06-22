@@ -59,6 +59,7 @@ public class ConfigBuilder {
 	private List<String> publicIPList;
 	private List<String> privateIPList;
 	private int startingPort = 40124;
+	private  Long startingCryptoAccount = 0L;
 	private int eventFilesWriters = 0;
 	private boolean isLocal;
 	private int totalNodes = 0;
@@ -133,6 +134,10 @@ public class ConfigBuilder {
 			addressString.append(publicIPList.get(i));
 			addressString.append(SEPERATOR);
 			addressString.append(startingPort + i);
+			if(startingCryptoAccount != 0){
+				addressString.append(SEPERATOR);
+				addressString.append("0.0." + startingCryptoAccount++);
+			}
 			lines.add(addressString.toString());
 		}
 	}
@@ -247,6 +252,13 @@ public class ConfigBuilder {
 			throw new IllegalArgumentException("The list of stakes must be equal to the number of nodes!");
 		}
 		this.stakes = stakes;
+	}
+
+	public void setStartingCryptoAccount(Long account) {
+		if (account == null) {
+			throw new NullPointerException("Crypto account must not be null!");
+		}
+		this.startingCryptoAccount = account;
 	}
 
 	public ArrayList<String> getLines() {

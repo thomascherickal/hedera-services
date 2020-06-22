@@ -295,7 +295,7 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
-	public static Collection<File> getServicesFilesToUpload(File keyFile,File log4jFile,
+	public static Collection<File> getServicesFilesToUpload(File keyFile,
 			ArrayList<File> configSpecifiedFiles) {
 		Collection<File> returnIterator = new ArrayList<>();
 		String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
@@ -306,13 +306,11 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
 		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
-		//returnIterator.add(new File(hederaNodeDir + "swirlds.jar"));
-		//returnIterator.add(new File(hederaNodeDir + "target/" + HEDERA_NODE_JAR));
-		//returnIterator.add(new File(hederaNodeDir + RegressionUtilities.CONFIG_FILE));
+		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
+		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
-		returnIterator.add(log4jFile);
 		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE));
 		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.SETTINGS_FILE));
 		if (configSpecifiedFiles != null) {
@@ -324,12 +322,12 @@ public class RegressionUtilities {
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
 		if (testConfig.isServicesConfig()) {
-			return getServicesRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+			return getServicesRsyncFiles(keyFile, configSpecifiedFiles);
 		}
 		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
 	}
 
-	private static ArrayList<String> getServicesRsyncFiles(File keyFile,File log4jFile,
+	private static ArrayList<String> getServicesRsyncFiles(File keyFile,
 			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add("data/");
@@ -345,14 +343,14 @@ public class RegressionUtilities {
 		returnIterator.add("data/repos/**");
 		returnIterator.add("data/config/");
 		returnIterator.add("data/config/**");
-		//returnIterator.add("swirlds.jar");
+		returnIterator.add("data/onboard");
+		returnIterator.add("data/onboard/**");
 		returnIterator.add("privateAddresses.txt");
 		returnIterator.add("publicAddresses.txt");
-		//returnIterator.add(HEDERA_NODE_JAR);
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
-		returnIterator.add(log4jFile.getName());
+		returnIterator.add("log4j2.xml");
 
 		if (configSpecifiedFiles != null) {
 			for (File file : configSpecifiedFiles) {

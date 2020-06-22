@@ -631,7 +631,7 @@ public class Experiment implements ExperimentSummary {
 		Collection<File> filesToSend;
 		if (testConfig.isServicesConfig()) {
 			filesToSend = getServicesFilesToUpload(
-					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
+					new File(pemFile), addedFiles);
 		} else {
 			filesToSend = getSDKFilesToUpload(
 					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
@@ -696,6 +696,9 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < numberOfNodes; i++) {
 			for (String logFile : testConfig.getResultFiles()) {
 				String logFileName = getExperimentResultsFolderForNode(i) + logFile;
+				if (testConfig.isServicesConfig()) {
+					logFileName = getExperimentResultsFolderForNode(i) + "output/" + logFile;
+				}
 				InputStream logInput = getInputStream(logFileName);
 
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
@@ -937,6 +940,9 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			configFile.setStakes(stakes);
+		}
+		if(testConfig.isServicesConfig()){
+			configFile.setStartingCryptoAccount(3L);
 		}
 		configFile.exportConfigFile();
 	}
