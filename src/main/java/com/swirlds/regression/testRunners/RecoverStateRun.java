@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
-import static com.swirlds.regression.RegressionUtilities.PTD_LOG_SUCCESS_OR_FAIL_MESSAGES;
-import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 
 /**
  * Recover signed state from event stream file

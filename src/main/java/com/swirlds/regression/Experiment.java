@@ -18,9 +18,6 @@
 package com.swirlds.regression;
 
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
-import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
-import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
-import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
@@ -35,7 +32,6 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
-import com.swirlds.regression.validators.ExpectedMapData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -71,7 +67,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -722,18 +725,22 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-	private ExpectedMapData loadExpectedMapData(String directory) {
-		final ExpectedMapData mapData = new ExpectedMapData();
+	/**
+	 * Load ExpectedMap file path for all nodes into a Map
+	 *
+	 * @return
+	 */
+	private Map<Integer, String> loadExpectedMapPaths() {
+		final Map<Integer, String> expectedMapPaths = new HashMap<>();
 		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
-			final String expectedMap = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
-			if (!new File(expectedMap).exists()) {
+			final String expectedMapPath = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
+			if (!new File(expectedMapPath).exists()) {
 				log.error(MARKER, "ExpectedMap doesn't exist for validation in Node {}", i);
 				return null;
 			}
-			Map<MapKey, ExpectedValue> map = SaveExpectedMapHandler.deserialize(expectedMap);
-			mapData.getExpectedMaps().put(i, map);
+			expectedMapPaths.put(i, expectedMapPath);
 		}
-		return mapData;
+		return expectedMapPaths;
 	}
 
 	/**
@@ -788,7 +795,6 @@ public class Experiment implements ExperimentSummary {
 
 		// Build a lists of validator
 		List<Validator> requiredValidator = new ArrayList<>();
-		ExpectedMapData mapData = loadExpectedMapData(testConfig.getName());
 		for (ValidatorType item : testConfig.validators) {
 			if (!reconnect && item.equals(ValidatorType.RECONNECT)) {
 				reconnect = true;
@@ -805,7 +811,8 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig, mapData);
+			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig,
+					loadExpectedMapPaths());
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
 			}
