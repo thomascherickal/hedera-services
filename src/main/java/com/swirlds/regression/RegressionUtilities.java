@@ -305,9 +305,9 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
 		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
-		returnIterator.add(new File(hederaNodeDir + "swirlds.jar"));
-		returnIterator.add(new File(hederaNodeDir + "target/" + HEDERA_NODE_JAR));
-		returnIterator.add(new File(hederaNodeDir + RegressionUtilities.CONFIG_FILE));
+		//returnIterator.add(new File(hederaNodeDir + "swirlds.jar"));
+		//returnIterator.add(new File(hederaNodeDir + "target/" + HEDERA_NODE_JAR));
+		//returnIterator.add(new File(hederaNodeDir + RegressionUtilities.CONFIG_FILE));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
@@ -344,10 +344,10 @@ public class RegressionUtilities {
 		returnIterator.add("data/repos/**");
 		returnIterator.add("data/config/");
 		returnIterator.add("data/config/**");
-		returnIterator.add("swirlds.jar");
+		//returnIterator.add("swirlds.jar");
 		returnIterator.add("privateAddresses.txt");
 		returnIterator.add("publicAddresses.txt");
-		returnIterator.add(HEDERA_NODE_JAR);
+		//returnIterator.add(HEDERA_NODE_JAR);
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);

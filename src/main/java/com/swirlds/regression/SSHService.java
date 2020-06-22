@@ -472,23 +472,21 @@ public class SSHService {
     }
 
 
-//    int execHGCAppWithProcessID(String jvmOptions) {
-//        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
-//            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
-//        }
-//
-//        String command = String.format(
-//                "cd %s; " +
-//                        "java %s -Dlog4j.configurationFile=log4j2.xml -cp data/lib/*:%s " +
-//                        "com.hedera.services.ServicesMain >>output.log 2>&1 &" +
-//                        "disown -h",
-//                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-//                HEDERA_NODE_JAR,
-//                jvmOptions);
-//        String description = "Start "+ HEDERA_NODE_JAR;
-//
-//        return execCommand(command, description, 5).getExitStatus();
-//    }
+    int execHGCAppWithProcessID(String jvmOptions) {
+        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+        }
+
+        String command = String.format(
+                "cd %s; " +
+                        "java %s -cp 'data/lib/*' com.swirlds.platform.Browser >>output.log 2>&1 & " +
+                        "disown -h",
+                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+                jvmOptions);
+        String description = "Start Browser";
+
+        return execCommand(command, description, 5).getExitStatus();
+    }
 
     int makeSha1sumOfStreamedEvents(String testName, int streamingServerNode, int testDuration) {
         final String streamDir = findStreamDirectory();
