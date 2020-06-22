@@ -106,11 +106,13 @@ public class ConfigBuilder {
 		appString.append("app");
 		appString.append(SEPERATOR);
 		appString.append(app.getJar());
-		for (String param : app.getParameterList()) {
-			appString.append(SEPERATOR);
-			appString.append(param);
+		if (app.getParameterList() != null) {
+			for (String param : app.getParameterList()) {
+				appString.append(SEPERATOR);
+				appString.append(param);
+			}
+			lines.add(appString.toString());
 		}
-		lines.add(appString.toString());
 	}
 
 	void buildAddressStrings() {

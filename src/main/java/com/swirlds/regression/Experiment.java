@@ -631,7 +631,7 @@ public class Experiment implements ExperimentSummary {
 		Collection<File> filesToSend;
 		if (testConfig.isServicesConfig()) {
 			filesToSend = getServicesFilesToUpload(
-					new File(pemFile), addedFiles);
+					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
 		} else {
 			filesToSend = getSDKFilesToUpload(
 					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);

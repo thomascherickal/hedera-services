@@ -44,7 +44,7 @@ public class TestConfig implements FileRequirement {
 	private String log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
-	private boolean servicesConfig = true;
+	private boolean servicesConfig = false;
 
 	private boolean downloadDbLogFiles = false;
 
@@ -219,6 +219,9 @@ public class TestConfig implements FileRequirement {
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
+		if(servicesConfig){
+			return list;
+		}
 		add(list, freezeConfig, recoverConfig, app);
 		return list;
 	}
