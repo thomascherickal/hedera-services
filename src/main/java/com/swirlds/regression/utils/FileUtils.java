@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -77,5 +78,18 @@ public class FileUtils {
 				}
 			}
 		}
+	}
+
+	public static InputStream getInputStream(String filename) {
+		InputStream inputStream = null;
+		if (!new File(filename).exists()) {
+			return null;
+		}
+		try {
+			inputStream = new FileInputStream(filename);
+		} catch (IOException e) {
+			log.error(ERROR, "Could not open file {} for validation", filename, e);
+		}
+		return inputStream;
 	}
 }
