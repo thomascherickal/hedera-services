@@ -22,7 +22,7 @@
   ],
   "servicesConfig" : true,
   "app": {
-	"jar": "hedera-node-0.5.0.jar"
+	"jar": "HederaNode.jar"
   },
   "resultFiles": [
 	"swirlds.log"

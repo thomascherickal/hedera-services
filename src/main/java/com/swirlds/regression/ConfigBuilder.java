@@ -111,8 +111,8 @@ public class ConfigBuilder {
 				appString.append(SEPERATOR);
 				appString.append(param);
 			}
-			lines.add(appString.toString());
 		}
+		lines.add(appString.toString());
 	}
 
 	void buildAddressStrings() {
