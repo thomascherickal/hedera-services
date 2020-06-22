@@ -479,7 +479,7 @@ public class SSHService {
 
         String command = String.format(
                 "cd %s; " +
-                        "java %s -cp 'data/lib/*' com.swirlds.platform.Browser >>output.log 2>&1 & " +
+                        "java %s -Dlog4j.configurationFile=log4j2-regression.xml -cp 'data/lib/*' com.swirlds.platform.Browser >>output.log 2>&1 & " +
                         "disown -h",
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
                 jvmOptions);

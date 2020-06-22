@@ -294,7 +294,7 @@ public class Experiment implements ExperimentSummary {
 	public void startHGCApp() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execHGCAppWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:{} hedera-node.jar started.", node.getIpAddress());
+			log.info(MARKER, "node:{} Browser started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 

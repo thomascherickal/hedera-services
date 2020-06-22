@@ -61,6 +61,7 @@ public class RegressionUtilities {
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
+	public static final String DEFAULT_SERVICES_SETTINGS_DIR = "../../hedera-services/hedera-node/";
 	public static final String CONFIG_FILE = "config.txt";
 	public static final Charset STANDARD_CHARSET = Charset.forName("UTF-8");
 	public static final String RESULTS_FOLDER = "results";

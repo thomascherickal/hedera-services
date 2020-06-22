@@ -58,7 +58,11 @@ public class SettingsBuilder {
 
 	public SettingsBuilder(TestConfig expConf) {
 		this.testConfig = expConf;
-		readSettings(RegressionUtilities.DEFAULT_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);  // read default
+		if (testConfig.isServicesConfig()) {
+			readSettings(RegressionUtilities.DEFAULT_SERVICES_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);
+		} else {
+			readSettings(RegressionUtilities.DEFAULT_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);  // read default
+		}
 		// setting
 		readConfigSettings();
 		exportSettingsFile();
@@ -120,7 +124,7 @@ public class SettingsBuilder {
 		settingsMap.put("freezeSecondsAfterStartup", Integer.toString(EXPERIMENT_FREEZE_SECOND_AFTER_STARTUP));
 	}
 
-	public void disableFreeze(){
+	public void disableFreeze() {
 		settingsMap.put("freezeSettings.active", "false");
 	}
 
