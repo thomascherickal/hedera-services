@@ -308,6 +308,8 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
 		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
 		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
+		returnIterator.add(new File(hederaNodeDir + "hedera.crt"));
+		returnIterator.add(new File(hederaNodeDir + "hedera.key"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
@@ -347,6 +349,9 @@ public class RegressionUtilities {
 		returnIterator.add("data/onboard/**");
 		returnIterator.add("privateAddresses.txt");
 		returnIterator.add("publicAddresses.txt");
+		// TODO add functionality to generate these two files every-time test is run
+		returnIterator.add("hedera.crt");
+		returnIterator.add("hedera.key");
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
