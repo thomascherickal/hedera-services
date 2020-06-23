@@ -629,9 +629,8 @@ public class Experiment implements ExperimentSummary {
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
 		Collection<File> filesToSend;
-		if (testConfig.isServicesConfig()) {
-			filesToSend = getServicesFilesToUpload(
-					new File(pemFile), addedFiles);
+		if (testConfig.isServicesRegression()) {
+			filesToSend = getServicesFilesToUpload(new File(pemFile));
 		} else {
 			filesToSend = getSDKFilesToUpload(
 					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
@@ -696,7 +695,7 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < numberOfNodes; i++) {
 			for (String logFile : testConfig.getResultFiles()) {
 				String logFileName = getExperimentResultsFolderForNode(i) + logFile;
-				if (testConfig.isServicesConfig()) {
+				if (testConfig.isServicesRegression()) {
 					logFileName = getExperimentResultsFolderForNode(i) + "output/" + logFile;
 				}
 				InputStream logInput = getInputStream(logFileName);
@@ -941,7 +940,7 @@ public class Experiment implements ExperimentSummary {
 
 			configFile.setStakes(stakes);
 		}
-		if(testConfig.isServicesConfig()){
+		if (testConfig.isServicesRegression()) {
 			configFile.setStartingCryptoAccount(3L);
 		}
 		configFile.exportConfigFile();
