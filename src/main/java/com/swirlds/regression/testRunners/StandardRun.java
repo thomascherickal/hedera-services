@@ -25,7 +25,7 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 public class StandardRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		if(testConfig.isServicesConfig()){
+		if(testConfig.isServicesRegression()){
 			experiment.startHGCApp();
 		}else {
 			// start all processes

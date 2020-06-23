@@ -24,13 +24,8 @@ import com.swirlds.regression.jsonConfigs.runTypeConfigs.RecoverConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.RestartConfig;
 import com.swirlds.regression.validators.ValidatorType;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TestConfig implements FileRequirement {
 
@@ -44,7 +39,7 @@ public class TestConfig implements FileRequirement {
 	private String log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
-	private boolean servicesConfig = false;
+	private boolean servicesRegression = false;
 
 	private boolean downloadDbLogFiles = false;
 
@@ -208,18 +203,18 @@ public class TestConfig implements FileRequirement {
 		this.experimentConfig = experimentConfig;
 	}
 
-	public boolean isServicesConfig() {
-		return servicesConfig;
+	public boolean isServicesRegression() {
+		return servicesRegression;
 	}
 
-	public void setServicesConfig(boolean servicesConfig) {
-		this.servicesConfig = servicesConfig;
+	public void setServicesRegression(boolean servicesRegression) {
+		this.servicesRegression = servicesRegression;
 	}
 
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
-		if(servicesConfig){
+		if (servicesRegression) {
 			return list;
 		}
 		add(list, freezeConfig, recoverConfig, app);

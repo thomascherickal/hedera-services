@@ -86,7 +86,7 @@ public class StatsValidator extends NodeValidator {
 
 			maxDiskSpaceUsed = Math.max(maxDiskSpaceUsed, nodeCsv.getColumn(DISK_SPACE_USED).getMax());
 
-			if(!testConfig.isServicesConfig()){
+			if(!testConfig.isServicesRegression()){
 				signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
 				signedStateHashingMax = Math.max(
 						signedStateHashingMax,
@@ -94,7 +94,7 @@ public class StatsValidator extends NodeValidator {
 			}
 		}
 		transHandleAverage /= nodeNum;
-		if(!testConfig.isServicesConfig()) {
+		if(!testConfig.isServicesRegression()) {
 			signedStateHashingAvg /= nodeNum;
 		}
 
@@ -105,7 +105,7 @@ public class StatsValidator extends NodeValidator {
 
 		addInfo(String.format("Average number of transactions handled per second is: %.3f", transHandleAverage));
 		addInfo(String.format("Max creation to consensus is: %.3f seconds", maxC2C));
-		if(!testConfig.isServicesConfig()) {
+		if(!testConfig.isServicesRegression()) {
 			addInfo(String.format("Signed state hashing - avg:%.3fs max:%.3fs",
 					signedStateHashingAvg, signedStateHashingMax));
 		}
@@ -115,7 +115,7 @@ public class StatsValidator extends NodeValidator {
 
 		checkC2CVariation();
 		checkConsensusQueue();
-		if(!testConfig.isServicesConfig()){
+		if(!testConfig.isServicesRegression()){
 			checkStateHashingTime();
 		}
 		checkMemFree();

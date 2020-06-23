@@ -59,7 +59,7 @@ public class SettingsBuilder {
 
 	public SettingsBuilder(TestConfig expConf) {
 		this.testConfig = expConf;
-		if (testConfig.isServicesConfig()) {
+		if (testConfig.isServicesRegression()) {
 			String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
 					HEDERA_NODE_DIR;
 			readSettings(hederaNodeDir + RegressionUtilities.SETTINGS_FILE);

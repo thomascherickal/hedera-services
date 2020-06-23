@@ -17,7 +17,6 @@
 
 package com.swirlds.regression;
 
-import com.swirlds.regression.jsonConfigs.TestConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -54,7 +53,6 @@ import static com.swirlds.regression.RegressionUtilities.CREATE_DATABASE_FCFS_EX
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_EXPECTED_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.DROP_DATABASE_FCFS_KNOWN_RESPONCE;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
-import static com.swirlds.regression.RegressionUtilities.HEDERA_NODE_JAR;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;

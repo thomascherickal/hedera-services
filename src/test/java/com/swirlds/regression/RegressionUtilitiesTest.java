@@ -90,16 +90,4 @@ public class RegressionUtilitiesTest {
         config.setMaxDirectMemory(maxDirectMemory);
         assertTrue(RegressionUtilities.JVM_OPTIONS_DEFAULT.equals(RegressionUtilities.buildParameterString(maxMemory,minMemory,maxDirectMemory)));
     }
-
-    @Test
-    public void testgetServicesFilesToUpload(){
-        Collection<File> list = RegressionUtilities.getServicesFilesToUpload(new File("keys/my-key.pem"),
-                 null);
-        assertTrue(list.toArray()[0].toString().contains("hedera-node-0.4.0.jar"));
-
-    }
-
-
-
-
 }
