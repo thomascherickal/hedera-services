@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.swirlds.regression.Experiment.EXPERIMENT_FREEZE_SECOND_AFTER_STARTUP;
+import static com.swirlds.regression.RegressionUtilities.HEDERA_NODE_DIR;
 
 public class SettingsBuilder {
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -59,7 +60,9 @@ public class SettingsBuilder {
 	public SettingsBuilder(TestConfig expConf) {
 		this.testConfig = expConf;
 		if (testConfig.isServicesConfig()) {
-			readSettings(RegressionUtilities.DEFAULT_SERVICES_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);
+			String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
+					HEDERA_NODE_DIR;
+			readSettings(hederaNodeDir + RegressionUtilities.SETTINGS_FILE);
 		} else {
 			readSettings(RegressionUtilities.DEFAULT_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);  // read default
 		}
