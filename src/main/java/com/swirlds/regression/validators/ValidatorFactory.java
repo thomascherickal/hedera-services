@@ -45,7 +45,7 @@ public class ValidatorFactory {
 			case PLATFORM_TESTING_DEMO:
 				return new PtdValidator(nodeData);
 			case STATS:
-				return new StatsValidator(nodeData);
+				return new StatsValidator(nodeData, testConfig);
 			case RECOVER_STATE:
 				return new RecoverStateValidator(nodeData);
 			case THROTTLE:
