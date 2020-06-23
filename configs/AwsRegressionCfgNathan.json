@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-develop-4N-0ZSN-FCMMultiReconnect",
+  "name": "Nathan-02141-D-ExpectedMapPerf-4N-0ZSN-FCMMultiReconnect",
   "result": {
 	"uri": "results"
   },
@@ -20,10 +20,10 @@
 	  {
 		"region": "ca-central-1",
 		"instanceList": [
-		  "i-00073f766bab408b5",
-		  "i-064928acb5489057c",
-		  "i-08e20b65dcb0306e3",
-		  "i-0ba562187f151074e"
+		  "i-0ae73323b3b459e5c",
+		  "i-0ac4093201228715a",
+		  "i-03ad791fac84720f9",
+		  "i-08aad7697d80db88e"
 		]
 	  }
 	]
