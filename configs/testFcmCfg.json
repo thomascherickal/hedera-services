@@ -15,7 +15,7 @@
     "swirlds.log"
   ],
   "memoryLeakCheckConfig": {
-    "nodeGroupIdentifier": "FIRST_AND_LAST"
+    "nodeGroupIdentifier": "FIRST"
   },
   "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
 }

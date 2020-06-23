@@ -20,7 +20,6 @@ package com.swirlds.regression;
 import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.MemoryLeakCheckConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
-import com.swirlds.test.framework.ResourceLoader;
 import com.swirlds.test.framework.TestComponentTags;
 import com.swirlds.test.framework.TestTypeTags;
 import org.junit.jupiter.api.DisplayName;
@@ -29,10 +28,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.net.URL;
 import java.util.Set;
 
-import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.FIRST_AND_LAST;
+import static com.swirlds.regression.jsonConfigs.NodeGroupIdentifier.FIRST_AND_LAST_STAKED_NODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -133,7 +131,7 @@ public class RegressionUtilitiesTest {
 		TestConfig testConfig = TestUtils.loadTestConfigFromTestResource("logs/MemoryLeak/testCfg-NodeGroup.json");
 		MemoryLeakCheckConfig memoryLeakCheckConfig = testConfig.getMemoryLeakCheckConfig();
 		assertTrue(memoryLeakCheckConfig != null);
-		assertEquals(FIRST_AND_LAST, memoryLeakCheckConfig.getNodeGroupIdentifier());
+		assertEquals(FIRST_AND_LAST_STAKED_NODE, memoryLeakCheckConfig.getNodeGroupIdentifier());
 		assertNull(memoryLeakCheckConfig.getNodesToCheck());
 	}
 }
