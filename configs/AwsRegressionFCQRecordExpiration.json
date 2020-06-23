@@ -1,5 +1,5 @@
 {
-  "name": "regression-suite-FCq-Record-Expiration",
+  "name": "regression-suite-FCQ-Record-Expiration",
   "result": {
 	"uri": "results"
   },
@@ -24,7 +24,7 @@
   "experiments": [
 	"configs/testFCQExpirationCfg.json",
 	"configs/testRestartFCQExpirationCfg.json",
-	"configs/testRestartFCQExpirationCfg.json.json",
+	"configs/testReconnectFCQRecordExpirationCfg.json",
 	"configs/testFCQMultiReconnectExpirationCfg.json"
   ],
   "db": {
