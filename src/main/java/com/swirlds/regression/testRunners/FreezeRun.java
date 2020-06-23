@@ -131,6 +131,8 @@ public class FreezeRun implements TestRun {
 				return false;
 			}
 		}
+		// sleep for a while waiting for the nodes finished saving signed state;
+		experiment.sleepThroughExperiment(TestRun.FREEZE_WAIT_MILLIS);
 
 		// kill the process during the freeze
 		experiment.stopAllSwirlds();

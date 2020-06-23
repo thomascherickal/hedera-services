@@ -29,7 +29,7 @@ public class FreezeConfig implements FileRequirement {
 	// else would log an error and stop the test;
 	private int freezeTiming = 0;
 	// when a node is not frozen at checking, retry this many times
-	private int retries = 2;
+	private int retries = 5;
 	private int freezeIterations = 1;
 	private AppConfig postFreezeApp;
 
