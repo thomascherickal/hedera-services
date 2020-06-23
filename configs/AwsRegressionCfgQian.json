@@ -28,15 +28,10 @@
   },
   "experiments": [
 	"configs/testSigningDemo4KCfg.json",
-	"configs/testFcmMultipleOperationsCfg.json",
-	"configs/testStateRecover.json" ,
+	"configs/testReconnectBlobCfg.json",
+	"configs/testReconnectFCMMultiReconnectCfg.json" ,
 	"configs/testFcmFreezeCfg.json",
-	"configs/testFCM1KFCQCfg.json",
-	"configs/testFcm1kThrottlingCfg.json",
-	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json",
-	"configs/testMigrationAppCfg2K.json",
-	"configs/testMigrationAppCfg.json"
+	"configs/testFCM1KFCQCfg.json"
   ],
   "db": {
 	"type": "postgresql",
