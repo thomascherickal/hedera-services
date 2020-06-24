@@ -20,7 +20,7 @@ package com.swirlds.regression.jsonConfigs.runTypeConfigs;
 public class RestartConfig {
 	private int restartTiming = 0;
 	// when a node is not frozen at checking, retry this many times
-	private int retries = 2;
+	private int retries = 5;
 
 	public int getRestartTiming() {
 		return restartTiming;
