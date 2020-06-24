@@ -227,7 +227,7 @@ public class MemoryLeakValidator extends Validator {
 		if (FileUtils.generateTarGZFile(gzFile, Arrays.asList(files))) {
 			gcFilesMap.put(nodeIndex, gzFile);
 		} else {
-			addWarning("node " + nodeIndex + "got IOException while " +
+			addError("node " + nodeIndex + "got IOException while " +
 					"generating .gz file for GC log files, so could not get analysis");
 		}
 	}
