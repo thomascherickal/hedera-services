@@ -1,0 +1,85 @@
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='10  28800 40 500000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.ContractBigArrayLoadTest -Dexec.args='1 28800 1 500000000000' -Dexec.cleanupDaemonThreads=false > test3.log 2>&1
+
+
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.createTopicLoadTest -Dexec.args='10 28800 3 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.createTopicLoadTest -Dexec.args='10 28800 3 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.createTopicLoadTest -Dexec.args='10 28800 3 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.createTopicLoadTest -Dexec.args='10 28800 3 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+
+export MAVEN_OPTS="-Xmx20g "; cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='15 4 100 5000000000 0.0.1681 512' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+export MAVEN_OPTS="-Xmx20g "; cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='15 4 100 5000000000 0.0.1681 512' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+export MAVEN_OPTS="-Xmx20g "; cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='15 4 100 5000000000 0.0.1681 512' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+export MAVEN_OPTS="-Xmx20g "; cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='15 4 100 5000000000 0.0.1681 512' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+
+2000000000000000000
+ 200000000000000000
+  50000000000
+
+
+
+
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='5  28800 80 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='5  28800 80 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='5  28800 80 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='5  28800 80 ' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='5  28800 80 50000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='5  28800 80 50000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='5  28800 80 50000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest -Dexec.args='5  28800 80 50000000000' -Dexec.cleanupDaemonThreads=false > test2.log 2>&1
+
+
+
+
+
+
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
+cd hedera-services/test-clients; mvn exec:java -Dexec.mainClass=com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest -Dexec.args='10  28800 40 500000000000 0.0.1085 5950' -Dexec.cleanupDaemonThreads=false > test1.log 2>&1
