@@ -33,7 +33,7 @@
 	},
 	{
 	  "name": "roundsExpired",
-	  "value": "1000"
+	  "value": "500"
 	},
 	{
 	  "name": "roundsStale",
