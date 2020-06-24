@@ -1599,19 +1599,22 @@ public class Experiment implements ExperimentSummary {
 	public boolean checkAllNodesFreeze(final int iteration, final boolean isFreezeTest) {
 		//expected number of CHANGED_TO_MAINTENANCE contained in swirlds.log
 		final int expectedNum = iteration + 1;
+		// number of tries we can perform in each iteration on each node
+		final int tries = isFreezeTest ?
+				testConfig.getFreezeConfig().getRetries() :
+				testConfig.getRestartConfig().getRetries();
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			int tries = isFreezeTest ?
-					testConfig.getFreezeConfig().getRetries() :
-					testConfig.getRestartConfig().getRetries();
+			// there are this many tries left in this iteration on this node;
+			int triesLeft = tries;
 			boolean frozen = false;
-			while (tries > 0) {
+			while (triesLeft > 0) {
 				if (node.countSpecifiedMsg(List.of(CHANGED_TO_MAINTENANCE), REMOTE_SWIRLDS_LOG) == expectedNum) {
 					log.info(MARKER, "Node {} enters MAINTENANCE at iteration {}", i, iteration);
 					frozen = true;
 					break;
 				}
-				tries--;
+				triesLeft--;
 				node.printCurrentTime(i);
 				log.info(MARKER, "Node {} hasn't entered MAINTENANCE at iteration {}, will retry after {} s", i,
 						iteration, TestRun.FREEZE_WAIT_MILLIS);
