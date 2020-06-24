@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.utils;
 
+import com.swirlds.regression.TarGzFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -27,6 +28,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +49,31 @@ public class FileUtils {
 		}
 
 		return folder.listFiles((dir, name) -> name.toLowerCase().matches(regex));
+	}
+
+	/**
+	 * Generate a .tar.gz File for given files
+	 * @param tarGZFile
+	 * @param files an collection of files to be put into the tarFile
+	 */
+	public static boolean generateTarGZFile(final File tarGZFile,
+			final Collection<File> files) {
+		try (TarGzFile archive = new TarGzFile(Paths.get(tarGZFile.toURI()))) {
+			for (File file : files) {
+				if (!file.exists()) {
+					continue;
+				}
+				if (file.isFile()) {
+					archive.bundleFile(Paths.get(file.toURI()));
+				} else if (file.isDirectory()) {
+					archive.bundleDirectory(Paths.get(file.toURI()));
+				}
+			}
+		} catch (IOException e) {
+			log.info("could not create tarball {} for files {}", tarGZFile, files);
+			return false;
+		}
+		return true;
 	}
 
 	/**

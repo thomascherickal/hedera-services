@@ -71,7 +71,7 @@ public class RegressionUtilities {
 	public static final String GC_LOG_FILES = "gc*.log";
 
 	public static final String GC_LOG_ZIP_FILE = "gcLog.zip";
-	public static final String GC_LOG_TAR_FILE = "gcLog.tar.gz";
+	public static final String GC_LOG_GZ_FILE = "gcLog.tar.gz";
 
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
 			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g ";

@@ -38,11 +38,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_GZ_FILE;
 
 /**
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
@@ -61,7 +62,7 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 	/**
-	 * key: nodeId, value: GC log zip file
+	 * key: nodeId, value: GC log .gz file
 	 */
 	private Map<Integer, File> gcFilesMap;
 	/**
@@ -126,6 +127,7 @@ public class MemoryLeakValidator extends Validator {
 
 	public static final String GC_LOG_FILE_MISS = "node%d's GC log file is missing";
 	public static final String CHECK_GC_LOG = "checking GC log file for node%d";
+	public static final String GC_LOG_REPORT_NODE = "GCLog analysis report of node{}: \n {}";
 
 	/**
 	 * `gc start` denotes an GC event in GC logs
@@ -139,7 +141,7 @@ public class MemoryLeakValidator extends Validator {
 		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
 		this.resultFolders = resultFolders;
 		this.url = buildURL();
-		this.gcFilesMap = getGCLogZipsForNodes();
+		this.gcFilesMap = getGCLogGZsForNodes();
 	}
 
 	/**
@@ -198,7 +200,7 @@ public class MemoryLeakValidator extends Validator {
 				showResponseCode(responseCode);
 
 				String response = readFromStream(conn.getInputStream());
-				log.info(MARKER, "GCLog analysis report of node{}: \n {}", nodeId, response);
+				log.info(MARKER, GC_LOG_REPORT_NODE, nodeId, response);
 				checkResponse(response, nodeId);
 
 				String errMsg = readFromStream(conn.getErrorStream());
@@ -216,18 +218,17 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * zip GC log files for given node
-	 * if succeed, put the zip file into gcFilesMap
+	 * generate .gz GC log files for given node
+	 * if succeed, put the .gz file into gcFilesMap
 	 */
-	void putZipGCToMap(final Map<Integer, File> gcFilesMap, final String folder, final File[] files,
+	void putGZToGCFileMap(final Map<Integer, File> gcFilesMap, final String folder, final File[] files,
 			final int nodeIndex) {
-		File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
-		try {
-			FileUtils.zip(files, zipFile);
-			gcFilesMap.put(nodeIndex, zipFile);
-		} catch (IOException e) {
-			log.error(ERROR, "Got exception while zipping files as {}:", zipFile.getName(), e);
-			addWarning("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
+		File gzFile = new File(folder.concat(GC_LOG_GZ_FILE));
+		if (FileUtils.generateTarGZFile(gzFile, Arrays.asList(files))) {
+			gcFilesMap.put(nodeIndex, gzFile);
+		} else {
+			addWarning("node " + nodeIndex + "got IOException while " +
+					"generating .gz file for GC log files, so could not get analysis");
 		}
 	}
 
@@ -236,11 +237,11 @@ public class MemoryLeakValidator extends Validator {
 	 * (1) if GC logs not exist, log a warning;
 	 * (2) check whether the nodes' GC logs contains any GC Events;
 	 * (3) if not, we don't need to submit it to GCeasy API;
-	 * (4) if yes, we generate a zip file and put it into a Map for submit to GCeasy API later
+	 * (4) if yes, we generate a .gz file and put it into a Map for submit to GCeasy API later
 	 *
 	 * @return
 	 */
-	private Map<Integer, File> getGCLogZipsForNodes() {
+	private Map<Integer, File> getGCLogGZsForNodes() {
 		final Map<Integer, File> gcFilesMap = new HashMap<>();
 
 		final int totalNum = resultFolders.length;
@@ -253,8 +254,8 @@ public class MemoryLeakValidator extends Validator {
 				if (files.length == 0) {
 					addWarning(String.format(GC_LOG_FILE_MISS, nodeIndex));
 				} else if (hasGCEvents(files, nodeIndex)){
-					// zip GC log files and put into
-					putZipGCToMap(gcFilesMap, folder, files, nodeIndex);
+					// generate .tar.gz for GC log files and put into map
+					putGZToGCFileMap(gcFilesMap, folder, files, nodeIndex);
 				}
 			}
 		}

@@ -17,11 +17,8 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.RegressionUtilities;
-import com.swirlds.regression.TarGzFile;
 import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.test.framework.TestComponentTags;
-import com.swirlds.test.framework.TestQualifierTags;
 import com.swirlds.test.framework.TestTypeTags;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -31,14 +28,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_TAR_FILE;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_GZ_FILE;
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.GCEASY_URL;
@@ -84,23 +79,10 @@ public class MemoryLeakValidatorTest {
 	public void tarGZTest() throws IOException {
 		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest/").getPath();
 		File[] files = MemoryLeakValidator.getGCLogs(folder);
-		File tarFile = new File(folder + GC_LOG_TAR_FILE);
+		File tarFile = new File(folder + GC_LOG_GZ_FILE);
 		tarFile.deleteOnExit();
 		assertFalse(tarFile.exists());
-		try (TarGzFile archive = new TarGzFile(Paths.get(tarFile.toURI()))) {
-			for (File file : files) {
-				if (!file.exists()) {
-					continue;
-				}
-				if (file.isFile()) {
-					archive.bundleFile(Paths.get(file.toURI()));
-				} else if (file.isDirectory()) {
-					archive.bundleDirectory(Paths.get(file.toURI()));
-				}
-			}
-		} catch (IOException e) {
-			System.out.println("could not create tarball");
-		}
+		FileUtils.generateTarGZFile(tarFile, Arrays.asList(files));
 		assertTrue(tarFile.exists());
 		assertTrue(tarFile.canRead());
 		tarFile.delete();
