@@ -85,6 +85,11 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	static final String GCEASY_URL = "https://api.gceasy.io/analyzeGC";
 	/**
+	 * the String to parse as a URL for sending GC log to GCEasy API
+	 */
+	static final String URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
+
+	/**
 	 * `isProblem` field in response
 	 * if isProblem in response is true, log an error
 	 */
@@ -156,7 +161,7 @@ public class MemoryLeakValidator extends Validator {
 	@Override
 	public void validate() {
 		if (url == null) {
-			addWarning("URL is null");
+			addWarning("Cannot validate GCLogs because failed to build URL: " + URL_SPEC);
 			return;
 		}
 		// check gcLog.zip for this node
@@ -276,9 +281,9 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	URL buildURL() {
 		try {
-			return new URL(GCEASY_URL + "?apiKey=" + GC_API_KEY);
+			return new URL(URL_SPEC);
 		} catch (MalformedURLException ex) {
-			addWarning("Got MalformedURLException when building URL");
+			addWarning("Got MalformedURLException when building URL: " + URL_SPEC);
 		}
 		return null;
 	}

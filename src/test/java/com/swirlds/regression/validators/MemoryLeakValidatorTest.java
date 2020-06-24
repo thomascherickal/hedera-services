@@ -17,6 +17,8 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.regression.RegressionUtilities;
+import com.swirlds.regression.TarGzFile;
 import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.test.framework.TestComponentTags;
 import com.swirlds.test.framework.TestQualifierTags;
@@ -29,11 +31,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_TAR_FILE;
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static com.swirlds.regression.validators.MemoryLeakValidator.FAULT_FIELD_MSG;
 import static com.swirlds.regression.validators.MemoryLeakValidator.GCEASY_URL;
@@ -75,6 +80,35 @@ public class MemoryLeakValidatorTest {
 	@Test
 	@Tag(TestTypeTags.FUNCTIONAL)
 	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("compress GC logs in a given folder into one .tar.gz file")
+	public void tarGZTest() throws IOException {
+		String folder = getClass().getClassLoader().getResource("logs/MemoryLeak/singleFile/zipTest/").getPath();
+		File[] files = MemoryLeakValidator.getGCLogs(folder);
+		File tarFile = new File(folder + GC_LOG_TAR_FILE);
+		tarFile.deleteOnExit();
+		assertFalse(tarFile.exists());
+		try (TarGzFile archive = new TarGzFile(Paths.get(tarFile.toURI()))) {
+			for (File file : files) {
+				if (!file.exists()) {
+					continue;
+				}
+				if (file.isFile()) {
+					archive.bundleFile(Paths.get(file.toURI()));
+				} else if (file.isDirectory()) {
+					archive.bundleDirectory(Paths.get(file.toURI()));
+				}
+			}
+		} catch (IOException e) {
+			System.out.println("could not create tarball");
+		}
+		assertTrue(tarFile.exists());
+		assertTrue(tarFile.canRead());
+		tarFile.delete();
+	}
+
+	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
 	@DisplayName("NegativeTest: Check GC Events in a GC log file")
 	public void hasGCEvents_Negative_Test() {
 		String file = getClassLoader().getResource("logs/MemoryLeak/singleFile/gc-NoGCEvent.log").getPath();
@@ -106,12 +140,35 @@ public class MemoryLeakValidatorTest {
 	@Test
 	@Tag(TestTypeTags.FUNCTIONAL)
 	@Tag(TestComponentTags.VALIDATOR)
-	@DisplayName("Validate a GC log file which has not any problem in the report")
+	@DisplayName("Validate a GC log zip file which has not any problem in the report")
 	public void checkGCFile_SUCCESS_Test() throws Exception {
 		String file = "logs/MemoryLeak/singleFile/gcLog.zip";
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)));
 		memoryLeakValidator.validate();
 		assertTrue(memoryLeakValidator.isValid());
+	}
+
+	@Test
+	@Tag(TestTypeTags.FUNCTIONAL)
+	@Tag(TestComponentTags.VALIDATOR)
+	@DisplayName("Validate a GC log .gz file which has not any problem in the report")
+	public void checkGCFile_GZ_Test() throws Exception {
+		String file = "logs/MemoryLeak/singleFile/gc-GCEvent.tar.gz";
+		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)));
+		memoryLeakValidator.validate();
+		assertTrue(memoryLeakValidator.isValid());
+	}
+
+	public void testMethod(int n) {
+		int m = 6;
+		assert n < m;
+		System.out.println("n");
+	}
+
+	@Test
+	public void testAssert() {
+		testMethod(1);
+		testMethod(10);
 	}
 
 	/**
