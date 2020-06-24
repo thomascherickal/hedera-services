@@ -37,13 +37,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
 import static com.swirlds.regression.RegressionUtilities.GC_LOG_GZ_FILE;
+import static org.apache.logging.log4j.core.util.Loader.getClassLoader;
 
 /**
  * check GC log by sending zipped GC log to GCEASY API, report problem and show report link
@@ -80,7 +83,11 @@ public class MemoryLeakValidator extends Validator {
 	/**
 	 * API KEY
 	 */
-	private static final String GC_API_KEY = "cb052084-d873-4027-bb8c-5e60d2ef5a67";
+	private static String GC_API_KEY;
+	/**
+	 * path of the file from which we read GC API KEY
+	 */
+	static final String GC_API_KEY_PATH = "GC_API_KEY";
 	/**
 	 * GCEASY URL which we send GC logs for getting analyse report
 	 */
@@ -88,7 +95,7 @@ public class MemoryLeakValidator extends Validator {
 	/**
 	 * the String to parse as a URL for sending GC log to GCEasy API
 	 */
-	static final String URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
+	static String URL_SPEC;
 
 	/**
 	 * `isProblem` field in response
@@ -140,6 +147,8 @@ public class MemoryLeakValidator extends Validator {
 			final String[] resultFolders) {
 		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
 		this.resultFolders = resultFolders;
+		GC_API_KEY = readGcApiKey();
+		URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
 		this.url = buildURL();
 		this.gcFilesMap = getGCLogGZsForNodes();
 	}
@@ -149,6 +158,8 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	MemoryLeakValidator(final Map<Integer, File> gcFilesMap) {
 		this.gcFilesMap = gcFilesMap;
+		GC_API_KEY = readGcApiKey();
+		URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
 		this.url = buildURL();
 	}
 
@@ -317,6 +328,7 @@ public class MemoryLeakValidator extends Validator {
 	 * check response, log an error when `isProblem` in response is true
 	 */
 	void checkResponse(final String response, final int nodeId) {
+		System.out.println(response);
 		if (response == null || response.isBlank()) {
 			addWarning(RESPONSE_EMPTY);
 			return;
@@ -417,5 +429,19 @@ public class MemoryLeakValidator extends Validator {
 	 */
 	static File[] getGCLogs(final String folder) {
 		return FileUtils.getFilesMatchRegex(folder, GC_LOG_FILES_REGEX);
+	}
+
+	/**
+	 * read GC API KEY from file
+	 */
+	String readGcApiKey() {
+		try {
+			File file = new File(getClassLoader().getResource(GC_API_KEY_PATH).toURI());
+			System.out.println(file.getAbsolutePath());
+			return Files.readString(file.toPath());
+		} catch (URISyntaxException | IOException ex) {
+			log.error("Fail to read GC API Key from: {} ", GC_API_KEY_PATH);
+		}
+		return "";
 	}
 }
