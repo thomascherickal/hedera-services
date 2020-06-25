@@ -85,7 +85,8 @@ public class SSHService {
     private Session session;
 
     private Instant lastExec;
-    private String streamDirectory;
+    private String eventStreamDirectory;
+    private String recordStreamDirectory;
 
     public SSHService(String user, String ipAddress, File keyFile) throws SocketException {
         this.user = user;
@@ -472,7 +473,19 @@ public class SSHService {
 
 
     int makeSha1sumOfStreamedEvents(final int streamingServerNode, final StreamType streamType) {
-        final String streamDir = findStreamDirectory();
+        String streamDir;
+        switch(streamType) {
+            case EVENT:
+                streamDir = findEventStreamDirectory();
+                break;
+            case RECORD:
+                streamDir = findRecordStreamDirectory();
+                break;
+            default:
+                log.error("Unknown StreamType: {}", streamType);
+                return -1;
+        }
+        
         if (streamDir == null) {
             return -1;
         }
@@ -500,9 +513,9 @@ public class SSHService {
         }
     }
 
-    private String findStreamDirectory() {
-        if (this.streamDirectory != null && !"".equals(this.streamDirectory)) {
-            return this.streamDirectory;
+    private String findEventStreamDirectory() {
+        if (this.eventStreamDirectory != null && !"".equals(this.eventStreamDirectory)) {
+            return this.eventStreamDirectory;
         }
         String commandStr = "find remoteExperiment -name \"*.evts\" | xargs dirname | sort -u";
         final Session.Command cmd = execCommand(commandStr, "Find where event files are being stored", -1);
@@ -510,8 +523,25 @@ public class SSHService {
         Collection<String> returnCollection = readCommandOutput(cmd);
         if (returnCollection.size() > 0) {
             log.info(MARKER, "Events Directory: {}", ((ArrayList<String>) returnCollection).get(0));
-            this.streamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
-            return this.streamDirectory;
+            this.eventStreamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
+            return this.eventStreamDirectory;
+        }
+
+        return null;
+    }
+
+    private String findRecordStreamDirectory() {
+        if (this.recordStreamDirectory != null && !"".equals(this.recordStreamDirectory)) {
+            return this.recordStreamDirectory;
+        }
+        String commandStr = "find remoteExperiment -name \"*.rcd\" | xargs dirname | sort -u";
+        final Session.Command cmd = execCommand(commandStr, "Find where record files are being stored", -1);
+        log.trace(MARKER, "Find records directory {}: ", ipAddress, commandStr);
+        Collection<String> returnCollection = readCommandOutput(cmd);
+        if (returnCollection.size() > 0) {
+            log.info(MARKER, "Records Directory: {}", ((ArrayList<String>) returnCollection).get(0));
+            this.recordStreamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
+            return this.recordStreamDirectory;
         }
 
         return null;

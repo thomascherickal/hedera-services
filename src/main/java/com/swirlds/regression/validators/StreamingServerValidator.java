@@ -27,7 +27,7 @@ import static com.swirlds.regression.RegressionUtilities.EMPTY_HASH;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 
 /**
- * the files for validation are generate by {@link com.swirlds.regression.SSHService#makeSha1sumOfStreamedEvents(String, int, int)}
+ * the files for validation are generate by {@link com.swirlds.regression.SSHService#makeSha1sumOfStreamedEvents(int, StreamType)}
 */
 public class StreamingServerValidator extends Validator {
 
@@ -36,20 +36,37 @@ public class StreamingServerValidator extends Validator {
 	 */
 	public static final String EVENT_FINAL_FILE_HASH = "sha1sum_total_evts.log";
 	/**
-	 * 	a list of sha1sum of each stream file
+	 * 	a list of sha1sum of each event stream file
 	 */
 	public static final String EVENT_SHA_LIST = "sha1sum_evts.log";
 	/**
-	 * a list of stream file name and byte size in stream file directory
+	 * a list of file name and byte size in event stream file directory
 	 */
 	public static final String EVENT_FILE_LIST = "evts_list.log";
 	/**
-	 * a list of stream signature file name
+	 * a list of event stream signature file name
 	 */
 	public static final String EVENT_SIG_FILE_LIST = "evts_sig_list.log";
 
+	/**
+	 * sha1sum of {@link StreamingServerValidator#RECORD_SHA_LIST}
+	 */
+	public static final String RECORD_FINAL_FILE_HASH = "sha1sum_total_rcd.log";
+	/**
+	 * 	a list of sha1sum of each record stream file
+	 */
+	public static final String RECORD_SHA_LIST = "sha1sum_rcd.log";
+	/**
+	 * a list of file name and byte size in event stream file directory
+	 */
+	public static final String RECORD_FILE_LIST = "rcd_list.log";
+	/**
+	 * a list of record stream signature file name
+	 */
+	public static final String RECORD_SIG_FILE_LIST = "rcd_sig_list.log";
 
 	private final List<StreamingServerData> ssData;
+
 	private boolean valid = false;
 	private boolean stateRecoverMode = false;
 	// for reconnect test, we only validate the nodes that did not restart, i.e. all nodes except the last one
