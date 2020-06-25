@@ -37,15 +37,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import static com.swirlds.regression.RegressionUtilities.GC_LOG_GZ_FILE;
+import static com.swirlds.regression.RegressionUtilities.GC_LOG_ZIP_FILE;
 import static org.apache.logging.log4j.core.util.Loader.getClassLoader;
 
 /**
@@ -125,7 +122,8 @@ public class MemoryLeakValidator extends Validator {
 	public static final String ERROR_READ_STREAM = "got IOException when reading from " +
 			"inputStream: ";
 	public static final String ERROR_CONN_API = "got IOException when communicating with GCEasy API: ";
-	public static final String ERROR_PARSE_RESPONSE = "Fail to get GCLog analysis report, because got Exception when parsing response to Json";
+	public static final String ERROR_PARSE_RESPONSE = "Fail to get GCLog analysis report, because got Exception when " +
+			"parsing response to Json";
 	public static final String ERROR_STREAM = "got error message from GCEasy API: ";
 	public static final String RESPONSE_CODE = "ResponseCode: ";
 	public static final String RESPONSE_EMPTY = "MemoryLeakValidator received empty response";
@@ -150,7 +148,7 @@ public class MemoryLeakValidator extends Validator {
 		GC_API_KEY = readGcApiKey();
 		URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
 		this.url = buildURL();
-		this.gcFilesMap = getGCLogGZsForNodes();
+		this.gcFilesMap = getGCLogZipsForNodes();
 	}
 
 	/**
@@ -160,6 +158,7 @@ public class MemoryLeakValidator extends Validator {
 		this.gcFilesMap = gcFilesMap;
 		GC_API_KEY = readGcApiKey();
 		URL_SPEC = GCEASY_URL + "?apiKey=" + GC_API_KEY;
+		System.out.println(URL_SPEC);
 		this.url = buildURL();
 	}
 
@@ -229,17 +228,18 @@ public class MemoryLeakValidator extends Validator {
 	}
 
 	/**
-	 * generate .gz GC log files for given node
-	 * if succeed, put the .gz file into gcFilesMap
+	 * zip GC log files for given node
+	 * if succeed, put the zip file into gcFilesMap
 	 */
-	void putGZToGCFileMap(final Map<Integer, File> gcFilesMap, final String folder, final File[] files,
+	void putZipGCToMap(final Map<Integer, File> gcFilesMap, final String folder, final File[] files,
 			final int nodeIndex) {
-		File gzFile = new File(folder.concat(GC_LOG_GZ_FILE));
-		if (FileUtils.generateTarGZFile(gzFile, Arrays.asList(files))) {
-			gcFilesMap.put(nodeIndex, gzFile);
-		} else {
-			addError("node " + nodeIndex + "got IOException while " +
-					"generating .gz file for GC log files, so could not get analysis");
+		File zipFile = new File(folder.concat(GC_LOG_ZIP_FILE));
+		try {
+			FileUtils.zip(files, zipFile);
+			gcFilesMap.put(nodeIndex, zipFile);
+		} catch (IOException e) {
+			log.error(ERROR, "Got exception while zipping files as {}:", zipFile.getName(), e);
+			addWarning("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
 		}
 	}
 
@@ -252,7 +252,7 @@ public class MemoryLeakValidator extends Validator {
 	 *
 	 * @return
 	 */
-	private Map<Integer, File> getGCLogGZsForNodes() {
+	private Map<Integer, File> getGCLogZipsForNodes() {
 		final Map<Integer, File> gcFilesMap = new HashMap<>();
 
 		final int totalNum = resultFolders.length;
@@ -264,9 +264,9 @@ public class MemoryLeakValidator extends Validator {
 				File[] files = FileUtils.getFilesMatchRegex(folder, GC_LOG_FILES_REGEX);
 				if (files.length == 0) {
 					addWarning(String.format(GC_LOG_FILE_MISS, nodeIndex));
-				} else if (hasGCEvents(files, nodeIndex)){
-					// generate .tar.gz for GC log files and put into map
-					putGZToGCFileMap(gcFilesMap, folder, files, nodeIndex);
+				} else if (hasGCEvents(files, nodeIndex)) {
+					// zip GC log files and put into
+					putZipGCToMap(gcFilesMap, folder, files, nodeIndex);
 				}
 			}
 		}
@@ -328,7 +328,6 @@ public class MemoryLeakValidator extends Validator {
 	 * check response, log an error when `isProblem` in response is true
 	 */
 	void checkResponse(final String response, final int nodeId) {
-		System.out.println(response);
 		if (response == null || response.isBlank()) {
 			addWarning(RESPONSE_EMPTY);
 			return;
@@ -380,6 +379,7 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * check for the given node, whether any GC log files contain GC Events
+	 *
 	 * @param files
 	 * @param nodeIndex
 	 * @return
@@ -390,7 +390,11 @@ public class MemoryLeakValidator extends Validator {
 				return true;
 			}
 		}
-		addInfo(String.format("node%d's GC logs didn't report any GC Events, so we won't submit it for analysis. This indicates there is no Memory issue in this test.", nodeIndex));
+		addInfo(String.format(
+				"node%d's GC logs didn't report any GC Events, so we won't submit it for analysis. This indicates " +
+						"there" +
+						" is no Memory issue in this test.",
+				nodeIndex));
 		return false;
 	}
 
@@ -424,6 +428,7 @@ public class MemoryLeakValidator extends Validator {
 
 	/**
 	 * get an array of GC Log files in the given folder
+	 *
 	 * @param folder
 	 * @return
 	 */
@@ -435,11 +440,9 @@ public class MemoryLeakValidator extends Validator {
 	 * read GC API KEY from file
 	 */
 	String readGcApiKey() {
-		try {
-			File file = new File(getClassLoader().getResource(GC_API_KEY_PATH).toURI());
-			System.out.println(file.getAbsolutePath());
-			return Files.readString(file.toPath());
-		} catch (URISyntaxException | IOException ex) {
+		try (InputStream inputStream = getClassLoader().getResourceAsStream(GC_API_KEY_PATH)) {
+			return readFromStream(inputStream);
+		} catch (IOException ex) {
 			log.error("Fail to read GC API Key from: {} ", GC_API_KEY_PATH);
 		}
 		return "";

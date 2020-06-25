@@ -141,19 +141,8 @@ public class MemoryLeakValidatorTest {
 		String file = "logs/MemoryLeak/singleFile/gc-GCEvent.tar.gz";
 		MemoryLeakValidator memoryLeakValidator = new MemoryLeakValidator(buildGCLogMap(Arrays.asList(file)));
 		memoryLeakValidator.validate();
-		assertTrue(memoryLeakValidator.isValid());
-	}
-
-	public void testMethod(int n) {
-		int m = 6;
-		assert n < m;
-		System.out.println("n");
-	}
-
-	@Test
-	public void testAssert() {
-		testMethod(1);
-		testMethod(10);
+		assertTrue(memoryLeakValidator.getWarningMessages().stream()
+				.anyMatch((str) -> (str.contains("No content was present in the request"))));
 	}
 
 	/**
