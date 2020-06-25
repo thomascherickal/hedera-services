@@ -43,6 +43,7 @@
     <MarkerFilter marker="EVENT_SIG"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="CERTIFICATES"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_DIFF_COPY"          onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_FROM"          onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_TO"            onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_DEMO"               onMatch="DENY"     onMismatch="NEUTRAL"/>

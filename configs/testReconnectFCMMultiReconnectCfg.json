@@ -33,7 +33,11 @@
 	},
 	{
 	  "name": "roundsExpired",
-	  "value": "50"
+	  "value": "500"
+	},
+	{
+	  "name": "roundsStale",
+	  "value": "25"
 	}
   ],
   "reconnectConfig": {
