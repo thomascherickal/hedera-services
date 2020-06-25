@@ -46,19 +46,23 @@ public class AWSNode {
 	 */
 	private boolean isTestClientNode = false;
 
-	public AWSNode(RegionList rl){
+	public AWSNode(RegionList rl) {
 		new AWSNode(rl, false);
 	}
 
-	public AWSNode(RegionList rl,  boolean isTestClientNode) throws NullPointerException {
+	public AWSNode(RegionList rl, boolean isTestClientNode) throws NullPointerException {
 		if (rl == null) {
 			throw new NullPointerException("RegionList was null");
 		}
 		this.region = rl.getRegion();
 		this.ec2 = AmazonEC2ClientBuilder.standard().withRegion(this.region).build();
-		this.totalNodes = rl.getNumberOfNodes();
 		this.isTestClientNode = isTestClientNode;
 		instanceIDs = new ArrayList<>();
+		if (!isTestClientNode) {
+			this.totalNodes = rl.getNumberOfNodes();
+		} else {
+			this.totalNodes = rl.getNumberOfTestClientNodes();
+		}
 		if (rl.getInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
 			totalPreexistingInstances = rl.getInstanceList().length;
@@ -68,7 +72,7 @@ public class AWSNode {
 		if (this.isTestClientNode && rl.getTestClientInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getTestClientInstanceList()));
 			// TODO check if totalPreexistingInstances should be different
-			totalPreexistingInstances = rl.getInstanceList().length + rl.getTestClientInstanceList().length;
+			totalPreexistingInstances = rl.getTestClientInstanceList().length;
 			isExistingInstance = true;
 		}
 	}
@@ -125,10 +129,10 @@ public class AWSNode {
 	}
 
 	public boolean hasInstances() {
-		return (instances != null && instances.size() > 0 && hasInstanceIDs() );
+		return (instances != null && instances.size() > 0 && hasInstanceIDs());
 	}
 
-	public boolean hasInstanceIDs(){
+	public boolean hasInstanceIDs() {
 		return (instanceIDs != null && instanceIDs.size() > 0);
 	}
 
@@ -147,7 +151,7 @@ public class AWSNode {
 	/* returns all non-preexisting nodes that need to be shutdown at the end of the regression run. */
 	public ArrayList<String> getInstanceIDsToDelete() {
 		ArrayList<String> returnList = new ArrayList<String>();
-		returnList.addAll(instanceIDs.subList(totalPreexistingInstances,instanceIDs.size()));
+		returnList.addAll(instanceIDs.subList(totalPreexistingInstances, instanceIDs.size()));
 		return returnList;
 	}
 

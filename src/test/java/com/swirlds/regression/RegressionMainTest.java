@@ -80,6 +80,14 @@ public class RegressionMainTest {
 		assertFalse(rm.isRunningFromNightlyKickOffServer());
 	}
 
+	@Test
+	@DisplayName("Run complete test. To run this add -Daws.accessKeyId=XXX -Daws.secretKey=XXX in VMOptions")
+	public void isRunningServer() {
+		init();
+		final CloudService cloud = rm.setUpCloudService();
+		rm.runExperiments(cloud);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"configs/RegressionMainTest/IsRequestingUseOfNightlyServerTest/returnFalse//BaseCloud.json",
