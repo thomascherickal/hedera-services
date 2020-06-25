@@ -413,9 +413,6 @@ class CloudService {
         return images.get(0).getImageId();
     }
 
-
-
-
     /**
      * @return return list of public IPs of all nodes set up by this service
      */
@@ -425,6 +422,16 @@ class CloudService {
 			if (!(node.isTestClientNode())) {
 				publicIPList.addAll(node.getPublicIPList());
 			}
+        }
+        return publicIPList;
+    }
+
+    public ArrayList<String> getPublicIPListOfTestClients() {
+        ArrayList<String> publicIPList = new ArrayList<>();
+        for (AWSNode node : ec2List) {
+            if (node.isTestClientNode()) {
+                publicIPList.addAll(node.getPublicIPList());
+            }
         }
         return publicIPList;
     }
@@ -468,5 +475,4 @@ class CloudService {
 
         return instResult.getReservations();
     }
-
 }

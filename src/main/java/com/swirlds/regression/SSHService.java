@@ -347,9 +347,15 @@ public class SSHService {
             ssh.newSCPFileTransfer().upload(file, remoteDir);
         }
     }
-
     // Use rsync to copy selected files to a list of IP addresses
     public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses) {
+        return rsyncTo(additionalFiles, log4j2Xml, toIPAddresses, false);
+    }
+
+
+        // Use rsync to copy selected files to a list of IP addresses
+    public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses,
+            boolean isTestClient) {
         long startTime = System.nanoTime();
         makeRemoteDirectory(
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION); // make sure remoteExperiments directory exist before
@@ -357,7 +363,7 @@ public class SSHService {
         String rsyncCmd =
                 "rsync -a -r -z -e \"ssh -o StrictHostKeyChecking=no -i ~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + this.keyFile.getName() + "\" ";
         for (String fileToUpload : RegressionUtilities.getRsyncListToUpload(keyFile, log4j2Xml,
-                additionalFiles)) {
+                additionalFiles, isTestClient)) {
             rsyncCmd += "--include=\"" + fileToUpload + "\" ";
         }
 
@@ -1267,5 +1273,4 @@ public class SSHService {
         String cmdResult = readCommandOutput(cmd).toString();
         log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
     }
-
 }

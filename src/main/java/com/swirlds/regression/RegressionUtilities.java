@@ -299,7 +299,7 @@ public class RegressionUtilities {
 		Collection<File> returnIterator = new ArrayList<>();
 		String hederaTestClientDir = Paths.get("").toAbsolutePath().
 				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
-		returnIterator.add(new File(hederaTestClientDir + "target/"+ SUITE_RUNNER_JAR));
+		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
 		return returnIterator;
 	}
 
@@ -326,11 +326,20 @@ public class RegressionUtilities {
 	}
 
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
-			ArrayList<File> configSpecifiedFiles) {
+			ArrayList<File> configSpecifiedFiles, boolean isTestClient) {
+		if (isTestClient) {
+			return getRsyncTestClientFiles(keyFile);
+		}
 		if (testConfig.isServicesRegression()) {
 			return getServicesRsyncFiles(keyFile);
 		}
 		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+	}
+
+	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add(SUITE_RUNNER_JAR);
+		return returnIterator;
 	}
 
 	private static ArrayList<String> getServicesRsyncFiles(File keyFile) {
