@@ -20,9 +20,6 @@ package com.swirlds.regression.validators;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
-import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
-import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
@@ -94,9 +91,9 @@ public abstract class ValidatorTestUtil {
 	public static List<StreamingServerData> loadStreamingServerData(String directory) throws RuntimeException {
 		List<StreamingServerData> data = new ArrayList<>();
 		for (int i = 0; ; i++) {
-			final String shaFileName = String.format("%s/node%04d/" + StreamingServerValidator.FINAL_EVENT_FILE_HASH,
+			final String shaFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_FINAL_FILE_HASH,
 					directory, i);
-			final String shaEventFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_LIST_FILE,
+			final String shaEventFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SHA_LIST,
 					directory, i);
 			final String eventsSigFileName =
 					String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SIG_FILE_LIST,

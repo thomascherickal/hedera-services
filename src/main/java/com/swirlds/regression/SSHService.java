@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.validators.StreamType;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -60,9 +61,9 @@ import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVIC
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SHA_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FINAL_FILE_HASH;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -470,15 +471,15 @@ public class SSHService {
     }
 
 
-    int makeSha1sumOfStreamedEvents(String testName, int streamingServerNode, int testDuration) {
+    int makeSha1sumOfStreamedEvents(final int streamingServerNode, final StreamType streamType) {
         final String streamDir = findStreamDirectory();
         if (streamDir == null) {
             return -1;
         }
         final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
         final String evts_list = baseDir + EVENT_FILE_LIST;
-        final String sha1Sum_log = baseDir + EVENT_LIST_FILE;
-        final String finalHashLog = baseDir + FINAL_EVENT_FILE_HASH;
+        final String sha1Sum_log = baseDir + EVENT_SHA_LIST;
+        final String finalHashLog = baseDir + EVENT_FINAL_FILE_HASH;
         final String evtsSigList = baseDir + EVENT_SIG_FILE_LIST;
         final String commandStr = String.format(
                 "cd %s; " +

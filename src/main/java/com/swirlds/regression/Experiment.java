@@ -34,6 +34,7 @@ import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
+import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
 import com.swirlds.regression.validators.Validator;
@@ -120,9 +121,9 @@ import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERRO
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
 import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SHA_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FINAL_FILE_HASH;
 import static org.apache.commons.io.FileUtils.listFiles;
 
 public class Experiment implements ExperimentSummary {
@@ -711,8 +712,8 @@ public class Experiment implements ExperimentSummary {
 	private List<StreamingServerData> loadStreamingServerData(String directory) {
 		final List<StreamingServerData> nodeData = new ArrayList<>();
 		for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
-			final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
-			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
+			final String shaFileName = getExperimentResultsFolderForNode(i) + EVENT_FINAL_FILE_HASH;
+			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_SHA_LIST;
 			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
 			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
 
@@ -806,7 +807,7 @@ public class Experiment implements ExperimentSummary {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()), reconnect);
+					loadStreamingServerData(testConfig.getName()), reconnect, StreamType.EVENT);
 			if (testConfig.getRunType() == RunType.RECOVER) {
 				ssValidator.setStateRecoverMode(true);
 			}
@@ -1112,7 +1113,7 @@ public class Experiment implements ExperimentSummary {
 		threadPoolService(IntStream.range(0, eventFileWriters)
 				.<Runnable>mapToObj(i -> () -> {
 					SSHService node = sshNodes.get(i);
-					node.makeSha1sumOfStreamedEvents(testConfig.getName(), i, testConfig.getDuration());
+					node.makeSha1sumOfStreamedEvents(i, StreamType.EVENT);
 					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
 				}).collect(Collectors.toList()));
 
