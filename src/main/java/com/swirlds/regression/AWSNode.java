@@ -35,21 +35,29 @@ public class AWSNode {
 	private RunInstancesRequest runInstanceRequest;
 	private ArrayList<Instance> instances;
 	private ArrayList<String> instanceIDs;
-	private ArrayList<AmazonEC2> ec2List;
 
 	private ArrayList<String> publicIPList;
 	private ArrayList<String> privateIPList;
-	private String amiid;
+	private ArrayList<String> publicIPTestClientList;
+	private ArrayList<String> privateIPTestClientList;
 	private boolean isExistingInstance = false;
-	private NodeMemory nodeMemory;
+	/**
+	 * Boolean to set to true if the node is a test client node, which is by default false
+	 */
+	private boolean isTestClientNode = false;
 
-	public AWSNode(RegionList rl) throws NullPointerException {
+	public AWSNode(RegionList rl){
+		new AWSNode(rl, false);
+	}
+
+	public AWSNode(RegionList rl,  boolean isTestClientNode) throws NullPointerException {
 		if (rl == null) {
 			throw new NullPointerException("RegionList was null");
 		}
 		this.region = rl.getRegion();
 		this.ec2 = AmazonEC2ClientBuilder.standard().withRegion(this.region).build();
 		this.totalNodes = rl.getNumberOfNodes();
+		this.isTestClientNode = isTestClientNode;
 		instanceIDs = new ArrayList<>();
 		if (rl.getInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
@@ -57,6 +65,12 @@ public class AWSNode {
 			isExistingInstance = true;
 		}
 
+		if (this.isTestClientNode && rl.getTestClientInstanceList() != null) {
+			instanceIDs.addAll(Arrays.asList(rl.getTestClientInstanceList()));
+			// TODO check if totalPreexistingInstances should be different
+			totalPreexistingInstances = rl.getInstanceList().length + rl.getTestClientInstanceList().length;
+			isExistingInstance = true;
+		}
 	}
 
 /*	public AWSNode(String region, int totalNodes, AmazonEC2 ec2) {
@@ -141,14 +155,6 @@ public class AWSNode {
 		this.instanceIDs.addAll(instanceIDs);
 	}
 
-	public ArrayList<AmazonEC2> getEc2List() {
-		return ec2List;
-	}
-
-	public void setEc2List(ArrayList<AmazonEC2> ec2List) {
-		this.ec2List = ec2List;
-	}
-
 	public ArrayList<String> getPublicIPList() {
 		return publicIPList;
 	}
@@ -165,15 +171,32 @@ public class AWSNode {
 		this.privateIPList = privateIPList;
 	}
 
-	public String getAmiid() {
-		return amiid;
-	}
-
-	public void setAmiid(String amiid) {
-		this.amiid = amiid;
-	}
-
 	public boolean isExistingInstance() {
 		return isExistingInstance;
 	}
+
+	public boolean isTestClientNode() {
+		return isTestClientNode;
+	}
+
+	public void setTestClientNode(boolean testClientNode) {
+		isTestClientNode = testClientNode;
+	}
+
+	public ArrayList<String> getPublicIPTestClientList() {
+		return publicIPTestClientList;
+	}
+
+	public void setPublicIPTestClientList(ArrayList<String> publicIPTestClientList) {
+		this.publicIPTestClientList = publicIPTestClientList;
+	}
+
+	public ArrayList<String> getPrivateIPTestClientList() {
+		return privateIPTestClientList;
+	}
+
+	public void setPrivateIPTestClientList(ArrayList<String> privateIPTestClientList) {
+		this.privateIPTestClientList = privateIPTestClientList;
+	}
+
 }

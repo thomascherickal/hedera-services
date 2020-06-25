@@ -147,6 +147,7 @@ public class Experiment implements ExperimentSummary {
 	private boolean isFirstTestFinished = false;
 	private CloudService cloud = null;
 	private ArrayList<SSHService> sshNodes = new ArrayList<>();
+	private ArrayList<SSHService> testClientNodes = new ArrayList<>();
 	private NodeMemory nodeMemoryProfile;
 	//Executor of thread pool to run ssh session
 	private ExecutorService es;
@@ -1041,6 +1042,8 @@ public class Experiment implements ExperimentSummary {
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
 		sendTarToNode(firstNode, addedFiles);
+		// Send suite runner jar to test client nodes if there are any
+		final SSHService firstTestClientNode = sshNodes.get(0);
 
 		//Step 2, node 0 use a rsync to send files to other nodes in parallel mode
 		//ATF server launch a single SSH session on node0, and node0 uses N-1 rsync sessions

@@ -57,6 +57,8 @@ public class RegressionUtilities {
 
 	public static final String SDK_DIR = "../sdk/";
 	public static final String HEDERA_NODE_DIR = "/hedera-services/hedera-node/";
+	public static final String HEDERA_TEST_CLIENT_DIR = "/hedera-services/test-clients/";
+	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
@@ -290,6 +292,14 @@ public class RegressionUtilities {
 			returnIterator.addAll(configSpecifiedFiles);
 		}
 
+		return returnIterator;
+	}
+
+	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
+		Collection<File> returnIterator = new ArrayList<>();
+		String hederaTestClientDir = Paths.get("").toAbsolutePath().
+				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
+		returnIterator.add(new File(hederaTestClientDir + "target/"+ SUITE_RUNNER_JAR));
 		return returnIterator;
 	}
 

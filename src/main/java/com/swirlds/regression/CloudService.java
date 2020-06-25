@@ -59,10 +59,15 @@ class CloudService {
         for (RegionList reg : cloudConfig.getRegionList()) {
             if (reg.getInstanceList() != null || reg.getNumberOfNodes() >= 0) {
                 log.info(MARKER, "Getting existing nodes {}", reg.getNumberOfNodes());
-                ec2List.add(new AWSNode(reg));
+                ec2List.add(new AWSNode(reg, false));
             } else {
                 log.error(ERROR, "Cloud config must have either number of nodes or an array of instances");
                 System.exit(0);
+            }
+
+            if (reg.getTestClientInstanceList() != null || reg.getNumberOfTestClientNodes() > 0) {
+                log.info(MARKER, "Getting existing test client nodes {}", reg.getNumberOfTestClientNodes());
+                ec2List.add(new AWSNode(reg, true));
             }
         }
     }
@@ -417,7 +422,9 @@ class CloudService {
     public ArrayList<String> getPublicIPList() {
         ArrayList<String> publicIPList = new ArrayList<>();
         for (AWSNode node : ec2List) {
-            publicIPList.addAll(node.getPublicIPList());
+			if (!(node.isTestClientNode())) {
+				publicIPList.addAll(node.getPublicIPList());
+			}
         }
         return publicIPList;
     }
@@ -428,7 +435,9 @@ class CloudService {
     public ArrayList<String> getPrivateIPList() {
         ArrayList<String> privateIPList = new ArrayList<>();
         for (AWSNode node : ec2List) {
-            privateIPList.addAll(node.getPrivateIPList());
+			if (!(node.isTestClientNode())) {
+				privateIPList.addAll(node.getPrivateIPList());
+			}
         }
         return privateIPList;
     }
