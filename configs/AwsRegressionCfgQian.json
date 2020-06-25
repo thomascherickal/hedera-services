@@ -1,5 +1,5 @@
 {
-  "name": "FreezeTest-New-Consensus",
+  "name": "GCLog-Validator",
   "result": {
 	"uri": "results"
   },
@@ -13,12 +13,7 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"instanceList": [
-		  "i-00b3271508d4f3221",
-		  "i-02ab5c46f98fff8ac",
-		  "i-038b9b66cfbd00d6c",
-		  "i-03cb116723e643593"
-		]
+		"numberOfNodes":4
 	  }
 	]
   },
@@ -28,8 +23,11 @@
   },
   "experiments": [
 	"configs/testSigningDemo4KCfg.json",
+	"configs/testMigrationAppCfg.json",
 	"configs/testReconnectBlobCfg.json",
 	"configs/testReconnectFCMMultiReconnectCfg.json" ,
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testFcmCfg.json",
 	"configs/testFcmFreezeCfg.json",
 	"configs/testFCM1KFCQCfg.json"
   ],
@@ -53,7 +51,7 @@
 	{
 	  "useWebServer": true,
 	  "webServerPort": "8070",
-	  "webServerAddress": "18.219.59.111"
+	  "webServerAddress": "3.22.117.157"
 	}
   },
   "uploadToSharePoint": false
