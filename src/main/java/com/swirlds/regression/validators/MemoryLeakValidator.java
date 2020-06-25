@@ -239,7 +239,7 @@ public class MemoryLeakValidator extends Validator {
 			gcFilesMap.put(nodeIndex, zipFile);
 		} catch (IOException e) {
 			log.error(ERROR, "Got exception while zipping files as {}:", zipFile.getName(), e);
-			addWarning("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
+			addError("node " + nodeIndex + "got IOException while zipping GC log files, so could not get analysis");
 		}
 	}
 
