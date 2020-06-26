@@ -206,13 +206,13 @@ public class StreamingServerValidator extends Validator {
 
 	private void validateEvtSigFiles(final int validateNodesNum) {
 		boolean evtsValid = true;
-		final List<EventSigEvent> sigEvents = this.ssData.stream()
+		final List<StreamSigsInANode> sigEvents = this.ssData.stream()
 				.map(StreamingServerData::getSigFileNames)
 				.collect(Collectors.toList());
 
-		final EventSigEvent reference = sigEvents.get(0);
+		final StreamSigsInANode reference = sigEvents.get(0);
 		for (int index = 1; index < validateNodesNum; index++) {
-			final EventSigEvent event = sigEvents.get(index);
+			final StreamSigsInANode event = sigEvents.get(index);
 			if (!reference.equals(event)) {
 				String description = "The contents of two nodes don't match:\n\n" +
 						"Reference Node 0: \n" +

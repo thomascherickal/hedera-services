@@ -29,7 +29,7 @@ public class StreamSigFileTest {
 				"2020-01-07T17_30_00.351916Z.evts_sig",
 				"2020-01-07T17_28_01.472948Z.evts_sig",
 				"2020-01-07T17_26_00.926656Z.evts_sig");
-		EventSigEvent eventSigEvent1 = new EventSigEvent(evtsSigFiles1);
+		StreamSigsInANode streamSigsInANode1 = new StreamSigsInANode(evtsSigFiles1);
 
 		List<String> evtsSigFiles2 = List.of(
 				"2020-01-07T17_23_00.006393Z.evts_sig",
@@ -42,8 +42,8 @@ public class StreamSigFileTest {
 				"2020-01-07T17_30_00.351916Z.evts_sig",
 				"2020-01-07T17_28_01.472948Z.evts_sig",
 				"2020-01-07T17_26_00.926656Z.evts_sig");
-		EventSigEvent eventSigEvent2 = new EventSigEvent(evtsSigFiles2);
-		assertTrue(eventSigEvent1.equals(eventSigEvent2));
+		StreamSigsInANode streamSigsInANode2 = new StreamSigsInANode(evtsSigFiles2);
+		assertTrue(streamSigsInANode1.equals(streamSigsInANode2));
 
 //		System.out.println(eventSigEvent1);
 //		System.out.println("______");

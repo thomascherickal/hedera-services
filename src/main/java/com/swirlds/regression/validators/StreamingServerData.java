@@ -141,16 +141,8 @@ public class StreamingServerData {
 		return sha1List.size();
 	}
 
-
-	public String getLastEvent() {
-		if (checkShaListAvailable()) {
-			return null;
-		}
-		return sha1List.get(sha1List.size() - 1);
-	}
-
-	public EventSigEvent getSigFileNames() {
-		return new EventSigEvent(this.sigFileNames);
+	public StreamSigsInANode getSigFileNames() {
+		return new StreamSigsInANode(this.sigFileNames);
 	}
 
 	public InputStream getRecoverEventMatchLog() {
