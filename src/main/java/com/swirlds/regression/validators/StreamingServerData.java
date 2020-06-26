@@ -18,90 +18,83 @@
 package com.swirlds.regression.validators;
 
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
 public class StreamingServerData {
-	private InputStream sha1sumStream;
+	// the hash value of the list of hash values of stream files
 	private String sha1sum = null;
+	// InputSteam from which we read sha1sum
+	private InputStream sha1sumStream;
+
 	private boolean sha1sumRead = false;
+
 	private ArrayList<String> sha1Events = null;
 	private boolean sha1EventsRead = false;
 	private final List<String> evtsSigEvents;
 	private InputStream recoverEventMatchLog = null;
 
-	public StreamingServerData(InputStream sha1sumStream) {
-		this(null, sha1sumStream, null);
-	}
-
-	public StreamingServerData(InputStream sha1sumStream, InputStream sha1EventStream) {
-		this(null, sha1sumStream, sha1EventStream);
-	}
-
 	/**
 	 *
-	 * @param evtsSigStream
-	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sigFileNameStream
+	 * 		The input stream contains the list of file names for signatures of stream file
 	 * @param sha1sumStream
-	 * 		The input stream contains the hash value of the list of hash values of event stream files
-	 * @param sha1EventStream
-	 * 		The input stream contains the list of hash values of event stream files
-	 * 	stream files a with previous generated event stream files
+	 * 		The input stream contains the hash value of the list of hash values of stream files
+	 * @param sha1ListStream
+	 * 		The input stream contains the list of hash values of stream files
 	 */
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
-			final InputStream sha1EventStream) {
-		evtsSigEvents = readEventsFile(evtsSigStream);
+	public StreamingServerData(final InputStream sigFileNameStream,
+			final InputStream sha1sumStream,
+			final InputStream sha1ListStream) {
+		evtsSigEvents = readStreamFileNames(sigFileNameStream);
 		this.sha1sumStream = sha1sumStream;
-		getSha1Events(sha1EventStream);
+		getSha1Events(sha1ListStream);
 	}
 
 	/**
 	 *
-	 * @param evtsSigStream
-	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sigFileNameStream
+	 * 		The input stream contains the list of file names for signatures of stream file
 	 * @param sha1sumStream
-	 * 		The input stream contains the hash value of the list of hash values of event stream files
-	 * @param sha1EventStream
-	 * 		The input stream contains the list of hash values of event stream files
+	 * 		The input stream contains the hash value of the list of hash values of stream files
+	 * @param sha1ListStream
+	 * 		The input stream contains the list of hash values of stream files
 	 * @param recoverEventMatchLog
 	 * 		The input stream contains the comparison result of comparing hashes of recovered event
 	 * 	stream files a with previous generated event stream files
 	 */
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
-			final InputStream sha1EventStream, InputStream recoverEventMatchLog) {
-		evtsSigEvents = readEventsFile(evtsSigStream);
+	public StreamingServerData(final InputStream sigFileNameStream,
+			final InputStream sha1sumStream,
+			final InputStream sha1ListStream,
+			final InputStream recoverEventMatchLog) {
+		evtsSigEvents = readStreamFileNames(sigFileNameStream);
 		this.sha1sumStream = sha1sumStream;
-		getSha1Events(sha1EventStream);
+		getSha1Events(sha1ListStream);
 		this.recoverEventMatchLog = recoverEventMatchLog;
 	}
 
 	private void getSha1Events(InputStream sha1EventStream) {
 		sha1Events = new ArrayList<>();
 		if (!sha1EventsRead) {
-			sha1Events.addAll(readEventsFile(sha1EventStream));
+			sha1Events.addAll(readStreamFileNames(sha1EventStream));
 			sha1EventsRead = true;
 		}
 	}
 
-	private List<String> readEventsFile(final InputStream eventStream) {
-		final List<String> events = new ArrayList<>();
-		if (eventStream == null) {
-			return events;
+	private List<String> readStreamFileNames(final InputStream fileNameStream) {
+		final List<String> files = new ArrayList<>();
+		if (fileNameStream == null) {
+			return files;
 		}
 
-		try (final Scanner eventScanner = new Scanner(eventStream)){
-			while (eventScanner.hasNextLine()) {
-				events.add(eventScanner.nextLine());
+		try (final Scanner scanner = new Scanner(fileNameStream)){
+			while (scanner.hasNextLine()) {
+				files.add(scanner.nextLine());
 			}
 		}
 
-		return events;
+		return files;
 	}
 
 	public String getSha1SumData() {

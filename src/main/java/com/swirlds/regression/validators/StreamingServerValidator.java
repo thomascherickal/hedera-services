@@ -27,8 +27,9 @@ import static com.swirlds.regression.RegressionUtilities.EMPTY_HASH;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 
 /**
- * the files for validation are generate by {@link com.swirlds.regression.SSHService#makeSha1sumOfStreamedEvents(int, StreamType)}
-*/
+ * the files for validation are generate by {@link com.swirlds.regression.SSHService#makeSha1sumOfStreamedEvents(int,
+ * StreamType)}
+ */
 public class StreamingServerValidator extends Validator {
 
 	public static final String EVENT_FILE_EXTENSION = "evts";
@@ -39,7 +40,7 @@ public class StreamingServerValidator extends Validator {
 	 */
 	public static final String EVENT_FINAL_FILE_HASH = "sha1sum_total_evts.log";
 	/**
-	 * 	a list of sha1sum of each event stream file
+	 * a list of sha1sum of each event stream file
 	 */
 	public static final String EVENT_SHA_LIST = "sha1sum_evts.log";
 	/**
@@ -56,7 +57,7 @@ public class StreamingServerValidator extends Validator {
 	 */
 	public static final String RECORD_FINAL_FILE_HASH = "sha1sum_total_rcd.log";
 	/**
-	 * 	a list of sha1sum of each record stream file
+	 * a list of sha1sum of each record stream file
 	 */
 	public static final String RECORD_SHA_LIST = "sha1sum_rcd.log";
 	/**
@@ -120,14 +121,20 @@ public class StreamingServerValidator extends Validator {
 		}
 	}
 
+	/**
+	 * check if there is any sha1sum missing for any nodes
+	 * @param sha1sumList sha1sum readed from
+	 * @return
+	 */
 	private boolean isAnySha1SumMissing(final List<String> sha1sumList) {
 		boolean someEmpty = false;
 		for (int i = 0; i < sha1sumList.size(); i++) {
 			final String sha1sum = sha1sumList.get(i);
 			if (sha1sum == null || sha1sum.length() == 0) {
 				/* did were there events, but the sumsha1 failed to execute for some reason? */
-				if(ssData.get(i).getNumberOfEvents() > 0){
-					addError(String.format("No sha1sum found for server %d, but there were %d events recorded!",i,ssData.get(i).getNumberOfEvents()));
+				if (ssData.get(i).getNumberOfEvents() > 0) {
+					addError(String.format("No sha1sum found for server %d, but there were %d events recorded!", i,
+							ssData.get(i).getNumberOfEvents()));
 				} else {
 					addError("No sha1sum found for server " + i + ", and no events were recorded!");
 				}
@@ -170,7 +177,8 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		if (!mismatch && !someEmpty) {
-			addInfo(String.format("The events saved by the first %d servers have the same hashes.", sha1sumList.size()));
+			addInfo(String.format("The events saved by the first %d servers have the same hashes.",
+					sha1sumList.size()));
 			valid = true;
 		}
 	}
@@ -241,7 +249,6 @@ public class StreamingServerValidator extends Validator {
 		addInfo(String.format("Are evts_sig files valid: %s for %d files", evtsValid, reference.size()));
 	}
 
-
 	private boolean checkRecoverEventMatchLog(InputStream input) {
 		if (input != null) {
 			Scanner eventScanner = new Scanner(input);
@@ -252,7 +259,7 @@ public class StreamingServerValidator extends Validator {
 					return true;
 				}
 			}
-		}else{
+		} else {
 			log.error(ERROR, "Input stream of event match log after state recover is null");
 			return false;
 		}
