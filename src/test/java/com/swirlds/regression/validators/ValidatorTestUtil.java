@@ -86,40 +86,41 @@ public abstract class ValidatorTestUtil {
 		return nodeData;
 	}
 
-
 	public static List<StreamingServerData> loadStreamingServerData(final String directory,
 			final StreamType streamType) throws RuntimeException {
 		List<StreamingServerData> data = new ArrayList<>();
 		for (int i = 0; ; i++) {
-			final String shaFileName = String.format(
+			final String finalShaFileName = String.format(
 					"%s/node%04d/" + StreamingServerValidator.buildFinalHashFileName(streamType.getExtension()),
 					directory, i);
-			final String shaEventFileName = String.format(
+			final String shaListFileName = String.format(
 					"%s/node%04d/" + StreamingServerValidator.buildShaListFileName(streamType.getExtension()),
 					directory, i);
-			final String eventsSigFileName =
+			final String sigListFileName =
 					String.format(
 							"%s/node%04d/" + StreamingServerValidator.buildSigListFileName(streamType.getExtension()),
 							directory, i);
 
-			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(shaFileName);
+			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(finalShaFileName);
 			if (shaInput == null) {
 				break;
 			}
 
-			final InputStream shaEventInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					shaEventFileName);
-			final InputStream eventsSigInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					eventsSigFileName);
+			final InputStream shaListInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+					shaListFileName);
+			final InputStream sigListInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+					sigListFileName);
 
-			InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
-			if (recoverEventLogStream != null) {
-				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput,
-						ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-								String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
-			} else {
-				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput));
+			if (streamType == StreamType.EVENT) {
+				InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+						String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
+				if (recoverEventLogStream != null) {
+					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput,
+							ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+									String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
+				} else {
+					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput));
+				}
 			}
 		}
 		if (data.size() == 0) {
