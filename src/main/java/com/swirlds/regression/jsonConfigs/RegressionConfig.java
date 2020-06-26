@@ -34,6 +34,7 @@ public class RegressionConfig {
 
 	private String name;
 	private int eventFilesWriters = 0;
+	private int recordFilesWriters = 0;
 	private boolean uploadToSharePoint = false;
 	private boolean useThreadPool = false;
 	private String jvmOptions = "";
@@ -137,6 +138,14 @@ public class RegressionConfig {
 
 	public void setEventFilesWriters(int eventFilesWriters) {
 		this.eventFilesWriters = eventFilesWriters;
+	}
+
+	public int getRecordFilesWriters() {
+		return recordFilesWriters;
+	}
+
+	public void setRecordFilesWriters(int recordFilesWriters) {
+		this.recordFilesWriters = recordFilesWriters;
 	}
 
 	public CloudConfig getCloud() {

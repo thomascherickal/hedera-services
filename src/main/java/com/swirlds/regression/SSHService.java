@@ -61,8 +61,6 @@ import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_EXTENSION;
-import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_FILE_EXTENSION;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -461,7 +459,7 @@ public class SSHService {
 		String command = String.format(
 				"cd %s; " +
 						"java %s -Dlog4j.configurationFile=log4j2-regression.xml -jar swirlds.jar >>output.log 2>&1 &" +
-                        " " +
+						" " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				jvmOptions);
@@ -1160,8 +1158,9 @@ public class SSHService {
 	 */
 	void backupSavedExpectedMap() {
 		String mvCmd =
-                "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data" +
-                        "/platformtestingBackup";
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION +
+						"data" +
+						"/platformtestingBackup";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
 
@@ -1170,7 +1169,8 @@ public class SSHService {
 	 */
 	void restoreSavedExpectedMap() {
 		String mvCmd =
-                "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting";
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION +
+						"data/platformtesting";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
 

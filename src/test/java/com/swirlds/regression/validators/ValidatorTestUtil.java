@@ -19,14 +19,13 @@ package com.swirlds.regression.validators;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogParser;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,13 +42,13 @@ public abstract class ValidatorTestUtil {
 	public static Map<Integer, String> loadExpectedMapPaths(String directory) {
 		Map<Integer, String> expectedMapPaths = new HashMap<>();
 
-		for (int i = 0; i < 4 ; i++) {
+		for (int i = 0; i < 4; i++) {
 			final String expectedMapPath = String.format("%s/node%04d/" + LifecycleValidator.EXPECTED_MAP_ZIP,
 					directory, i);
-			if(new File(expectedMapPath).exists()) {
+			if (new File(expectedMapPath).exists()) {
 				expectedMapPaths.put(i, expectedMapPath);
-			}else{
-				throw new RuntimeException(" expectedMap in node "+ i + " doesn't exist");
+			} else {
+				throw new RuntimeException(" expectedMap in node " + i + " doesn't exist");
 			}
 		}
 
@@ -88,16 +87,20 @@ public abstract class ValidatorTestUtil {
 	}
 
 
-	public static List<StreamingServerData> loadStreamingServerData(String directory) throws RuntimeException {
+	public static List<StreamingServerData> loadStreamingServerData(final String directory,
+			final StreamType streamType) throws RuntimeException {
 		List<StreamingServerData> data = new ArrayList<>();
 		for (int i = 0; ; i++) {
-			final String shaFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_FINAL_FILE_HASH,
+			final String shaFileName = String.format(
+					"%s/node%04d/" + StreamingServerValidator.buildFinalHashFileName(streamType.getExtension()),
 					directory, i);
-			final String shaEventFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SHA_LIST,
+			final String shaEventFileName = String.format(
+					"%s/node%04d/" + StreamingServerValidator.buildShaListFileName(streamType.getExtension()),
 					directory, i);
 			final String eventsSigFileName =
-					String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SIG_FILE_LIST,
-					directory, i);
+					String.format(
+							"%s/node%04d/" + StreamingServerValidator.buildSigListFileName(streamType.getExtension()),
+							directory, i);
 
 			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(shaFileName);
 			if (shaInput == null) {
@@ -127,6 +130,7 @@ public abstract class ValidatorTestUtil {
 
 	/**
 	 * load TestConfig from .json file
+	 *
 	 * @param jsonPath
 	 * @return
 	 * @throws IOException

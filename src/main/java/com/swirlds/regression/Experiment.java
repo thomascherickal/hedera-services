@@ -121,9 +121,9 @@ import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERRO
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
 import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SHA_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FINAL_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildFinalHashFileName;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildShaListFileName;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildSigListFileName;
 import static org.apache.commons.io.FileUtils.listFiles;
 
 public class Experiment implements ExperimentSummary {
@@ -709,13 +709,17 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
-	private List<StreamingServerData> loadStreamingServerData(String directory) {
+	private List<StreamingServerData> loadStreamingServerData(final StreamType streamType) {
 		final List<StreamingServerData> nodeData = new ArrayList<>();
 		for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
-			final String shaFileName = getExperimentResultsFolderForNode(i) + EVENT_FINAL_FILE_HASH;
-			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_SHA_LIST;
-			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
-			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
+			final String experimentResultsFolder = getExperimentResultsFolderForNode(i);
+			final String extension = streamType.getExtension();
+
+			final String shaFileName = experimentResultsFolder +
+					buildFinalHashFileName(extension);
+			final String shaEventFileName = experimentResultsFolder + buildShaListFileName(extension);
+			final String eventSigFileName = experimentResultsFolder + buildSigListFileName(extension);
+			final String recoverEventMatchFileName = experimentResultsFolder + EVENT_MATCH_LOG_NAME;
 
 			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
 			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
@@ -807,10 +811,18 @@ public class Experiment implements ExperimentSummary {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()), reconnect, StreamType.EVENT);
+					loadStreamingServerData(StreamType.EVENT), reconnect, StreamType.EVENT);
 			if (testConfig.getRunType() == RunType.RECOVER) {
 				ssValidator.setStateRecoverMode(true);
 			}
+
+			requiredValidator.add(ssValidator);
+		}
+
+		// Add record server validator if record streaming is configured
+		if (regConfig.getRecordFilesWriters() > 0) {
+			StreamingServerValidator ssValidator = new StreamingServerValidator(
+					loadStreamingServerData(StreamType.RECORD), reconnect, StreamType.RECORD);
 
 			requiredValidator.add(ssValidator);
 		}
@@ -1638,7 +1650,6 @@ public class Experiment implements ExperimentSummary {
 		}
 		return true;
 	}
-
 
 	/**
 	 * set app in ConfigBuilder

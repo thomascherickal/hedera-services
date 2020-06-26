@@ -37,7 +37,7 @@ class StreamingServerValidatorTest {
 			"logs/sha1test/evtssig-success-missing-last-one"
 	})
 	void validateSuccess(final String testDir) {
-		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
 		final StreamingServerValidator validator = new StreamingServerValidator(data, false, StreamType.EVENT);
 		validator.validate();
 
@@ -54,7 +54,7 @@ class StreamingServerValidatorTest {
 			"logs/sha1test/sha1sum-fail-empty-total-file"
 	})
 	void validateFailure(final String testDir) {
-		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
 		final StreamingServerValidator validator = new StreamingServerValidator(data, false, StreamType.EVENT);
 		validator.validate();
 
@@ -68,14 +68,15 @@ class StreamingServerValidatorTest {
 			"logs/sha1test/sha1sum-fail-nototal"
 	})
 	void validateException(final String testDir) {
-		Throwable rte = assertThrows(RuntimeException.class, () -> ValidatorTestUtil.loadStreamingServerData(testDir));
+		Throwable rte = assertThrows(RuntimeException.class,
+				() -> ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT));
 		assertEquals("Cannot find log files in: " + testDir, rte.getMessage());
 	}
 
 	@ParameterizedTest
-	@ValueSource( strings = { "logs/sha1test/evtssig-fail-notmatching"})
+	@ValueSource(strings = { "logs/sha1test/evtssig-fail-notmatching" })
 	void checksForInvalidEvgsSigInNode0003(final String testDir) {
-		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
 		final StreamingServerValidator validator = new StreamingServerValidator(data, false, StreamType.EVENT);
 		validator.validate();
 
@@ -102,9 +103,9 @@ class StreamingServerValidatorTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource( strings = { "logs/sha1test/evtssig-success-missing-two"})
+	@ValueSource(strings = { "logs/sha1test/evtssig-success-missing-two" })
 	void checksForInvalidEvgsSigInNode0003MisssingTwoFiles(final String testDir) {
-		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir);
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
 		final StreamingServerValidator validator = new StreamingServerValidator(data, false, StreamType.EVENT);
 		validator.validate();
 
