@@ -1,7 +1,7 @@
 {
-  "name":"FCM-Multisize-Blob",
-  "description" : "platform testing demo - FCM Multisize Blob",
-  "duration": 3600,
+  "name":"FCM-2.5MC-5MU-5MT-250KD-2.5KTPS",
+  "description" : "platform testing demo - FCM-1MC-5MU-5MT-250KD-2.5KTPS",
+  "duration": 6600,
   "settings": [
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
@@ -9,13 +9,13 @@
   ],
   "app": {
     "jar": "PlatformTestingApp.jar",
-    "parameterList": ["FCMMultisizeBlob1K.json"]
+    "parameterList": ["FCM1M.json"]
   },
   "resultFiles": [
     "swirlds.log"
   ],
   "memoryLeakCheckConfig": {
-    "nodeGroupIdentifier": "FIRST"
+    "nodesToCheck": [0, 3]
   },
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "LIFECYCLE" ]
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
 }
