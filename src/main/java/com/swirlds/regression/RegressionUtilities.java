@@ -310,7 +310,8 @@ public class RegressionUtilities {
 		String hederaTestClientDir = Paths.get("").toAbsolutePath().
 				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
-		returnIterator.add(new File(hederaTestClientDir + "src/main/resource/"));
+		// TODO add only needed files in resource folder
+		returnIterator.add(new File(hederaTestClientDir + "src/"));
 		returnIterator.add(keyFile);
 		return returnIterator;
 	}
