@@ -473,7 +473,6 @@ public class SSHService {
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
                 jvmOptions);
         String description = "Start swirlds.jar";
-
         return execCommand(command, description, 5).getExitStatus();
     }
 
@@ -483,13 +482,20 @@ public class SSHService {
         }
 
         // TODO These arguments should be constructed run time from a JSON config
+//        String command = String.format(
+//                "cd %s; " +
+//                        "NODES=18.216.231.47:0.0.3 DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=on " +
+//                        "-NODE=random\" java -jar SuiteRunner.jar 13.59.42.186 3 >>output.log 2>&1 & " +
+//                        "disown -h",
+//                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+//                jvmOptions);
         String command = String.format(
                 "cd %s; " +
-                        "NODES=18.216.231.47:0.0.3 DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=on " +
+                        "NODES=%s DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=on " +
                         "-NODE=random\" java -jar SuiteRunner.jar 13.59.42.186 3 >>output.log 2>&1 & " +
                         "disown -h",
                 RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                jvmOptions);
+                RegressionUtilities.getPublicIPStringForServices());
         String description = "Start SuiteRunner.jar";
 
         return execCommand(command, description, 5).getExitStatus();

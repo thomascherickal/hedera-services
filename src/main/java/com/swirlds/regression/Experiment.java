@@ -702,7 +702,8 @@ public class Experiment implements ExperimentSummary {
 				if (csvInput != null) {
 					csvReader = CsvReader.createReader(1, csvInput);
 				}
-				String outputLogFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
+				String outputLogFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(
+						i) + OUTPUT_LOG_FILENAME;
 				InputStream outputLogInput = getInputStream(outputLogFileName);
 				LogReader outputLogReader = null;
 				if (outputLogInput != null) {
@@ -910,6 +911,10 @@ public class Experiment implements ExperimentSummary {
 			configFile.setStartingCryptoAccount(3L);
 		}
 		configFile.exportConfigFile();
+
+		if (testConfig.isServicesRegression()) {
+			RegressionUtilities.setPublicIPStringForServices(configFile.getIpAddressForServices());
+		}
 	}
 
 	public void sendConfigToNodes() {

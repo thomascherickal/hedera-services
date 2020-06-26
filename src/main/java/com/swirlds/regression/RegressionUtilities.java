@@ -31,8 +31,6 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -46,8 +44,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
@@ -200,6 +196,7 @@ public class RegressionUtilities {
 			"i-0611e2febc6a73d5a",
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
+	private static String publicIPStringForServices = null;
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
 
@@ -209,6 +206,14 @@ public class RegressionUtilities {
 
 	public static void setTestConfig(TestConfig config) {
 		testConfig = config;
+	}
+
+	public static String getPublicIPStringForServices() {
+		return publicIPStringForServices;
+	}
+
+	public static void setPublicIPStringForServices(String ipAddress) {
+		publicIPStringForServices = ipAddress;
 	}
 
 	protected static TestConfig importExperimentConfig(String testConfigFileLocation) {

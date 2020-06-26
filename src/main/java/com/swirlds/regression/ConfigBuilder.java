@@ -56,10 +56,11 @@ public class ConfigBuilder {
 
 	private Path outFile = Paths.get(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE);
 	private ArrayList<String> lines = new ArrayList<>();
+	private String ipAddressForServices = "";
 	private List<String> publicIPList;
 	private List<String> privateIPList;
 	private int startingPort = 40124;
-	private  Long startingCryptoAccount = 0L;
+	private Long startingCryptoAccount = 0L;
 	private int eventFilesWriters = 0;
 	private boolean isLocal;
 	private int totalNodes = 0;
@@ -119,6 +120,7 @@ public class ConfigBuilder {
 	void buildAddressStrings() {
 		for (int i = 0; i < totalNodes; i++) {
 			StringBuilder addressString = new StringBuilder();
+			StringBuilder ipAddressStringForServices = new StringBuilder();
 			addressString.append("address");
 			addressString.append(SEPERATOR);
 			addressString.append(nodeNames + Integer.toString(i));
@@ -134,9 +136,12 @@ public class ConfigBuilder {
 			addressString.append(publicIPList.get(i));
 			addressString.append(SEPERATOR);
 			addressString.append(startingPort + i);
-			if(startingCryptoAccount != 0){
+			if (startingCryptoAccount != 0) {
 				addressString.append(SEPERATOR);
-				addressString.append("0.0." + startingCryptoAccount++);
+				String cryptoAccount = "0.0." + startingCryptoAccount++;
+				addressString.append(cryptoAccount);
+				ipAddressStringForServices.append(SEPERATOR);
+				ipAddressForServices.concat(publicIPList.get(i) + ":" + cryptoAccount);
 			}
 			lines.add(addressString.toString());
 		}
@@ -272,5 +277,9 @@ public class ConfigBuilder {
 
 	public void returnOriginalConfig() {
 		moveTempConfigBackToOldConfig();
+	}
+
+	public String getIpAddressForServices() {
+		return ipAddressForServices;
 	}
 }
