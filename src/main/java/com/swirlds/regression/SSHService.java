@@ -60,10 +60,16 @@ import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_EXTENSION;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SHA_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
 import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FINAL_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_FILE_EXTENSION;
+import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_FILE_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_FINAL_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_SHA_LIST;
+import static com.swirlds.regression.validators.StreamingServerValidator.RECORD_SIG_FILE_LIST;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -471,38 +477,70 @@ public class SSHService {
         return execCommand(command, description, 5).getExitStatus();
     }
 
-
-    int makeSha1sumOfStreamedEvents(final int streamingServerNode, final StreamType streamType) {
+    /**
+     * Find the directory for given streamType;
+     * for stream files and signature files in the directory, generate 4 files
+     * which would be validated by {@link com.swirlds.regression.validators.StreamingServerValidator}
+     *
+     * @param streamingServerNodeId id of the streaming server
+     * @param streamType
+     * @return
+     */
+    int makeSha1sumOfStreamedEvents(final int streamingServerNodeId, final StreamType streamType) {
+        final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+        // name of the directory for given streamType
         String streamDir;
+        // name of a file to be generated, which contains a list of stream file names and byte size
+        String streamFileList;
+        // name of a file to be generated, which contains a list of sha1Sum of stream files
+        String sha1SumLog;
+        // name of a file to be generated, which contains sha1sum of sha1SumLog
+        String finalHashLog;
+        // name of a file to be generated, which contains a list of stream signature file names;
+        String streamSigList;
+        // evts for Event; or rcd for Record
+        String fileExtension;
+
         switch(streamType) {
             case EVENT:
                 streamDir = findEventStreamDirectory();
+                streamFileList = baseDir + EVENT_FILE_LIST;
+                sha1SumLog = baseDir + EVENT_SHA_LIST;
+                finalHashLog = baseDir + EVENT_FINAL_FILE_HASH;
+                streamSigList = baseDir + EVENT_SIG_FILE_LIST;
+                fileExtension = EVENT_FILE_EXTENSION;
                 break;
             case RECORD:
                 streamDir = findRecordStreamDirectory();
+                streamFileList = baseDir + RECORD_FILE_LIST;
+                sha1SumLog = baseDir + RECORD_SHA_LIST;
+                finalHashLog = baseDir + RECORD_FINAL_FILE_HASH;
+                streamSigList = baseDir + RECORD_SIG_FILE_LIST;
+                fileExtension = RECORD_FILE_EXTENSION;
                 break;
             default:
                 log.error("Unknown StreamType: {}", streamType);
                 return -1;
         }
-        
+
         if (streamDir == null) {
             return -1;
         }
-        final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-        final String evts_list = baseDir + EVENT_FILE_LIST;
-        final String sha1Sum_log = baseDir + EVENT_SHA_LIST;
-        final String finalHashLog = baseDir + EVENT_FINAL_FILE_HASH;
-        final String evtsSigList = baseDir + EVENT_SIG_FILE_LIST;
+
         final String commandStr = String.format(
                 "cd %s; " +
-                        "wc -c *.evts > %s ; " +    //create a list of file name and byte size
-                        "sha1sum *.evts > %s; " +  //create a list of hash of individual evts file
-                        "ls *.evts_sig > %s;" +
+                        "wc -c *.%s > %s ; " +    //create a list of file name and byte size
+                        "sha1sum *.%s > %s; " +  //create a list of hash of individual stream file
+                        "ls *.%s_sig > %s;" +
                         "sha1sum %s > %s;",
-                streamDir, evts_list, sha1Sum_log, evtsSigList, sha1Sum_log, finalHashLog);
+                streamDir,
+                fileExtension, streamFileList,
+                fileExtension, sha1SumLog,
+                fileExtension, streamSigList,
+                sha1SumLog, finalHashLog);
         final String description =
-                "Create sha1sum of .evts files on node: " + streamingServerNode + " dir: " + streamDir;
+                "Create sha1sum of ." + fileExtension + " files on node: " + streamingServerNodeId
+                        + " dir: " + streamDir;
         log.trace(MARKER, "Hash creation commandStr = {}", commandStr);
 
         Session.Command result = execCommand(commandStr, description);

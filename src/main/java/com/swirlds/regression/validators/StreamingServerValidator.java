@@ -31,6 +31,9 @@ import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 */
 public class StreamingServerValidator extends Validator {
 
+	public static final String EVENT_FILE_EXTENSION = "evts";
+	public static final String RECORD_FILE_EXTENSION = "rcd";
+
 	/**
 	 * sha1sum of {@link StreamingServerValidator#EVENT_SHA_LIST}
 	 */
