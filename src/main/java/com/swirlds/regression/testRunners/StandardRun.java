@@ -27,6 +27,12 @@ public class StandardRun implements TestRun {
 	public void runTest(TestConfig testConfig, Experiment experiment) {
 		if(testConfig.isServicesRegression()){
 			experiment.startHGCApp();
+			try {
+				Thread.sleep(1000);
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+			experiment.startSuiteRunner();
 		}else {
 			// start all processes
 			experiment.startAllSwirlds();
