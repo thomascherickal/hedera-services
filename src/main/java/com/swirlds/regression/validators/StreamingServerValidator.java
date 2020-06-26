@@ -27,47 +27,26 @@ import static com.swirlds.regression.RegressionUtilities.EMPTY_HASH;
 import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 
 /**
- * the files for validation are generate by {@link com.swirlds.regression.SSHService#makeSha1sumOfStreamedEvents(int,
- * StreamType)}
+ * the files for validation are generate by SSHService.makeSha1sumOfStreamedEvents(int, StreamType)}
  */
 public class StreamingServerValidator extends Validator {
-
-	public static final String EVENT_FILE_EXTENSION = "evts";
-	public static final String RECORD_FILE_EXTENSION = "rcd";
-
 	/**
-	 * sha1sum of {@link StreamingServerValidator#EVENT_SHA_LIST}
+	 * name of the file which contains sha1sum of the file whose name is
+	 * {@link StreamingServerValidator#SHA_LIST_FILE_NAME}
 	 */
-	public static final String EVENT_FINAL_FILE_HASH = "sha1sum_total_evts.log";
+	public static final String FINAL_HASH_FILE_NAME = "sha1sum_total_%s.log";
 	/**
-	 * a list of sha1sum of each event stream file
+	 * name of the file which contains a list of sha1sum of each stream file
 	 */
-	public static final String EVENT_SHA_LIST = "sha1sum_evts.log";
+	public static final String SHA_LIST_FILE_NAME = "sha1sum_%s.log";
 	/**
-	 * a list of file name and byte size in event stream file directory
+	 * name of the file which contains a list of file name and byte size in stream file directory
 	 */
-	public static final String EVENT_FILE_LIST = "evts_list.log";
+	public static final String FILE_LIST_FILE_NAME = "%s_list.log";
 	/**
-	 * a list of event stream signature file name
+	 * name of the file which contains a list of stream signature file name
 	 */
-	public static final String EVENT_SIG_FILE_LIST = "evts_sig_list.log";
-
-	/**
-	 * sha1sum of {@link StreamingServerValidator#RECORD_SHA_LIST}
-	 */
-	public static final String RECORD_FINAL_FILE_HASH = "sha1sum_total_rcd.log";
-	/**
-	 * a list of sha1sum of each record stream file
-	 */
-	public static final String RECORD_SHA_LIST = "sha1sum_rcd.log";
-	/**
-	 * a list of file name and byte size in event stream file directory
-	 */
-	public static final String RECORD_FILE_LIST = "rcd_list.log";
-	/**
-	 * a list of record stream signature file name
-	 */
-	public static final String RECORD_SIG_FILE_LIST = "rcd_sig_list.log";
+	public static final String SIG_LIST_FILE_NAME = "%s_sig_list.log";
 
 	private final List<StreamingServerData> ssData;
 
@@ -123,8 +102,9 @@ public class StreamingServerValidator extends Validator {
 
 	/**
 	 * check if there is any sha1sum missing for any nodes
-	 * @param sha1sumList sha1sum readed from
-	 * @return
+	 *
+	 * @param sha1sumList
+	 * 		one sha1sum for one node
 	 */
 	private boolean isAnySha1SumMissing(final List<String> sha1sumList) {
 		boolean someEmpty = false;
@@ -132,11 +112,14 @@ public class StreamingServerValidator extends Validator {
 			final String sha1sum = sha1sumList.get(i);
 			if (sha1sum == null || sha1sum.length() == 0) {
 				/* did were there events, but the sumsha1 failed to execute for some reason? */
-				if (ssData.get(i).getNumberOfEvents() > 0) {
-					addError(String.format("No sha1sum found for server %d, but there were %d events recorded!", i,
-							ssData.get(i).getNumberOfEvents()));
+				if (ssData.get(i).getNumberOfStreamFiles() > 0) {
+					addError(String.format("No sha1sum found for server %d, " +
+									"but there were %d %s recorded!",
+							i, ssData.get(i).getNumberOfStreamFiles(), streamType.getDescription()));
 				} else {
-					addError("No sha1sum found for server " + i + ", and no events were recorded!");
+					addError(String.format("No sha1sum found for server %d, " +
+									"and no %s were recorded!",
+							i, streamType.getDescription()));
 				}
 				someEmpty = true;
 			}
@@ -169,7 +152,7 @@ public class StreamingServerValidator extends Validator {
 									"in apps that do not have a set ending.", i - 1, i));
 				} else {
 					addInfo(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
-							EVENT_FINAL_FILE_HASH));
+							buildFinalHashFileName(streamType.getExtension())));
 					mismatch = true;
 				}
 			}
@@ -196,18 +179,18 @@ public class StreamingServerValidator extends Validator {
 		final StreamingServerData currNode = ssData.get(node);
 		final StreamingServerData prevNode = ssData.get(node - 1);
 		if (currNode == null || prevNode == null
-				|| currNode.getNumberOfEvents() == 0 || prevNode.getNumberOfEvents() == 0
+				|| currNode.getNumberOfStreamFiles() == 0 || prevNode.getNumberOfStreamFiles() == 0
 		) {
 			return false;
 		}
 		/* lastCommonEvent should be an index, but the getNumberOfEvents returns a size */
-		final int lastCommonEvent = Math.min(currNode.getNumberOfEvents(), prevNode.getNumberOfEvents()) - 1;
+		final int lastCommonEvent = Math.min(currNode.getNumberOfStreamFiles(), prevNode.getNumberOfStreamFiles()) - 1;
 		/* Grab all the events, and start checking from the event BEFORE the lastCommonEvent, if there are any
 		   differences return false. If the only difference was the lastCommonEvent return true. this function assumes
 		   lastCommonEvent is mismatched because this function should only be called if the sha for the totals is
 		   wrong. */
-		final List<String> currEventList = currNode.getSha1EventData();
-		final List<String> prevEventList = prevNode.getSha1EventData();
+		final List<String> currEventList = currNode.getSha1ListData();
+		final List<String> prevEventList = prevNode.getSha1ListData();
 		for (int i = lastCommonEvent - 1; i >= 0; i--) {
 			if (!currEventList.get(i).equals(prevEventList.get(i))) {
 				return false;
@@ -224,7 +207,7 @@ public class StreamingServerValidator extends Validator {
 	private void validateEvtSigFiles(final int validateNodesNum) {
 		boolean evtsValid = true;
 		final List<EventSigEvent> sigEvents = this.ssData.stream()
-				.map(StreamingServerData::getEvtsSigEvents)
+				.map(StreamingServerData::getSigFileNames)
 				.collect(Collectors.toList());
 
 		final EventSigEvent reference = sigEvents.get(0);
@@ -272,5 +255,37 @@ public class StreamingServerValidator extends Validator {
 
 	public void setStateRecoverMode(boolean stateRecoverMode) {
 		this.stateRecoverMode = stateRecoverMode;
+	}
+
+	/**
+	 * build name of the file which contains sha1sum of the file whose name is {@link
+	 * StreamingServerValidator#buildShaListFileName}
+	 *
+	 * @param extension
+	 * @return
+	 */
+	public static String buildFinalHashFileName(final String extension) {
+		return String.format(FINAL_HASH_FILE_NAME, extension);
+	}
+
+	/**
+	 * build name of the file which contains a list of sha1sum of each stream file
+	 */
+	public static String buildShaListFileName(final String extension) {
+		return String.format(SHA_LIST_FILE_NAME, extension);
+	}
+
+	/**
+	 * build name of the file which contains a list of file name and byte size in stream file directory
+	 */
+	public static String buildFileListFileName(final String extension) {
+		return String.format(FILE_LIST_FILE_NAME, extension);
+	}
+
+	/**
+	 * build name of the file which contains a list of stream signature file name
+	 */
+	public static String buildSigListFileName(final String extension) {
+		return String.format(SIG_LIST_FILE_NAME, extension);
 	}
 }

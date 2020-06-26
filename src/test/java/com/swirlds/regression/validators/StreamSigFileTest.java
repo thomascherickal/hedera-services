@@ -6,13 +6,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EventSigFileTest {
+public class StreamSigFileTest {
 
 	@Test
 	public void comparatorTest() {
-		EventSigFile eventSigFile1 = new EventSigFile("2020-01-07T17_27_00.001157Z.evts_sig");
-		EventSigFile eventSigFile2 = new EventSigFile("2020-01-07T17_25_06.273650Z.evts_sig");
-		assertTrue(eventSigFile1.compareTo(eventSigFile2) > 0);
+		StreamSigFile streamSigFile1 = new StreamSigFile("2020-01-07T17_27_00.001157Z.evts_sig");
+		StreamSigFile streamSigFile2 = new StreamSigFile("2020-01-07T17_25_06.273650Z.evts_sig");
+		assertTrue(streamSigFile1.compareTo(streamSigFile2) > 0);
 	}
 
 	@Test

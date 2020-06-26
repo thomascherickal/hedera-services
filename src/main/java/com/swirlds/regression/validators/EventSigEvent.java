@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class EventSigEvent implements Iterable<EventSigFile> {
+public class EventSigEvent implements Iterable<StreamSigFile> {
 
-	private final List<EventSigFile> evtsSigEvents;
+	private final List<StreamSigFile> evtsSigEvents;
 
 	public EventSigEvent(final List<String> evtsSigEvents) {
 		this.evtsSigEvents = new ArrayList<>();
@@ -33,7 +33,7 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 				continue;
 			}
 
-			this.evtsSigEvents.add(new EventSigFile((eventSigFileName)));
+			this.evtsSigEvents.add(new StreamSigFile((eventSigFileName)));
 		}
 
 		Collections.sort(this.evtsSigEvents);
@@ -46,7 +46,7 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 	@Override
 	public String toString() {
 		final StringBuilder description = new StringBuilder();
-		for (final EventSigFile sigFile : this) {
+		for (final StreamSigFile sigFile : this) {
 			description.append(sigFile.getFilename());
 			description.append('\n');
 		}
@@ -81,10 +81,10 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 			return false;
 		}
 
-		return equalsWithAllButTheLastEvent(other);
+		return equalsWithAllButTheLastTwo(other);
 	}
 
-	private boolean equalsWithAllButTheLastEvent(final EventSigEvent other) {
+	private boolean equalsWithAllButTheLastTwo(final EventSigEvent other) {
 		final int minSize = this.evtsSigEvents.size() > other.evtsSigEvents.size() ? other.evtsSigEvents.size() : this.evtsSigEvents.size();
 		for (int index = 0; index < minSize - 1; index++) {
 			if (!this.evtsSigEvents.get(index).equals(other.evtsSigEvents.get(index))) {
@@ -96,7 +96,7 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 	}
 
 	@Override
-	public Iterator<EventSigFile> iterator() {
+	public Iterator<StreamSigFile> iterator() {
 		return this.evtsSigEvents.iterator();
 	}
 }

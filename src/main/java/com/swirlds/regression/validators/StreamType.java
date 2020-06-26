@@ -18,6 +18,28 @@
 package com.swirlds.regression.validators;
 
 public enum StreamType {
-	RECORD,
-	EVENT
+	RECORD("records", "rcd"),
+	EVENT("events", "evts");
+
+	/**
+	 * description of the streamType, used for logging
+	 */
+	private String description;
+	/**
+	 * file name extension
+	 */
+	private String extension;
+
+	StreamType(final String description, final String extension) {
+		this.description = description;
+		this.extension = extension;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getExtension() {
+		return extension;
+	}
 }
