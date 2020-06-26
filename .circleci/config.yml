@@ -943,19 +943,19 @@ workflows:
                 at: /
 
   feature-update-regression:
-    # triggers:
-    #     - schedule:
-    #         cron: "0 8 * * *"
-    #         filters:
-    #           branches:
-    #             only:
-    #               - master
-    jobs:
-      - fast-build-artifact:
-          filters:
+    triggers:
+        - schedule:
+            cron: "0 8 * * *"
+            filters:
               branches:
                 only:
-                  - 00291-D-freeze-restart
+                  - master
+    jobs:
+      - fast-build-artifact:
+          # filters:
+          #     branches:
+          #       only:
+          #         - 00291-D-freeze-restart
           post-steps:
             - save-this-job-client-logs:
                 workflow-name: "feature-update-regression"
