@@ -121,6 +121,8 @@ import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERRO
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
 import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+import static com.swirlds.regression.validators.StreamType.EVENT;
+import static com.swirlds.regression.validators.StreamType.RECORD;
 import static com.swirlds.regression.validators.StreamingServerValidator.buildFinalHashFileName;
 import static com.swirlds.regression.validators.StreamingServerValidator.buildShaListFileName;
 import static com.swirlds.regression.validators.StreamingServerValidator.buildSigListFileName;
@@ -811,7 +813,7 @@ public class Experiment implements ExperimentSummary {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(StreamType.EVENT), reconnect, StreamType.EVENT);
+					loadStreamingServerData(EVENT), reconnect, EVENT);
 			if (testConfig.getRunType() == RunType.RECOVER) {
 				ssValidator.setStateRecoverMode(true);
 			}
@@ -822,7 +824,7 @@ public class Experiment implements ExperimentSummary {
 		// Add record server validator if record streaming is configured
 		if (regConfig.getRecordFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(StreamType.RECORD), reconnect, StreamType.RECORD);
+					loadStreamingServerData(RECORD), reconnect, RECORD);
 
 			requiredValidator.add(ssValidator);
 		}
@@ -1120,13 +1122,26 @@ public class Experiment implements ExperimentSummary {
 			}
 		}
 
-		/* make sure that more streaming client than nodes were not requested */
+		// generate files for validating event stream files
+		// make sure that more streaming client than nodes were not requested
 		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
 		threadPoolService(IntStream.range(0, eventFileWriters)
 				.<Runnable>mapToObj(i -> () -> {
 					SSHService node = sshNodes.get(i);
-					node.makeSha1sumOfStreamedEvents(i, StreamType.EVENT);
-					log.info(MARKER, "node:" + node.getIpAddress() + " created sha1sum of .evts");
+					node.makeSha1sumOfStreamedEvents(i, EVENT);
+					log.info(MARKER, "node:" + node.getIpAddress() +
+							" created sha1sum of ." + EVENT.getExtension());
+				}).collect(Collectors.toList()));
+
+		// generate files for validating record stream files
+		// make sure that more streaming client than nodes were not requested
+		int recordFileWriters = Math.min(regConfig.getRecordFilesWriters(), sshNodes.size());
+		threadPoolService(IntStream.range(0, recordFileWriters)
+				.<Runnable>mapToObj(i -> () -> {
+							SSHService node = sshNodes.get(i);
+							node.makeSha1sumOfStreamedEvents(i, RECORD);
+							log.info(MARKER, "node:" + node.getIpAddress() +
+									" created sha1sum of ." + RECORD.getExtension());
 				}).collect(Collectors.toList()));
 
 		threadPoolService(IntStream.range(0, sshNodes.size())
