@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.utils.FileUtils;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -238,6 +239,7 @@ public class SSHService {
             return;
         }
 
+        FileUtils.generateTarGZFile(new File(RegressionUtilities.TAR_NAME), fileList);
         try (TarGzFile archive = new TarGzFile(Paths.get(new File(RegressionUtilities.TAR_NAME).toURI()))) {
             for (File file : fileList) {
                 if (!file.exists()) {

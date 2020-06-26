@@ -32,9 +32,9 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
-import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
@@ -55,7 +55,6 @@ import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -88,6 +87,7 @@ import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
 import static com.swirlds.regression.RegressionUtilities.JAVA_PROC_CHECK_INTERVAL;
+import static com.swirlds.regression.RegressionUtilities.JVM_OPTIONS_GC_LOG;
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
 import static com.swirlds.regression.RegressionUtilities.MS_TO_NS;
 import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
@@ -101,7 +101,6 @@ import static com.swirlds.regression.RegressionUtilities.REG_SLACK_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
-import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
 import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
@@ -120,11 +119,7 @@ import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_SUCCESS;
-import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
-import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
+import static com.swirlds.regression.utils.FileUtils.getInputStream;
 import static org.apache.commons.io.FileUtils.listFiles;
 
 public class Experiment implements ExperimentSummary {
@@ -166,6 +161,8 @@ public class Experiment implements ExperimentSummary {
 	protected boolean exceptions = false;
 	protected String slackLink = null;
 
+	private ExperimentLocalFileHelper experimentLocalFileHelper;
+
 	@Override
 	public boolean hasWarnings() {
 		return warnings;
@@ -197,6 +194,7 @@ public class Experiment implements ExperimentSummary {
 
 	void setExperimentTime() {
 		this.experimentTime = ZonedDateTime.now(ZoneOffset.ofHours(0));
+		this.experimentLocalFileHelper.setExperimentTime(experimentTime);
 	}
 
 	public ZonedDateTime getExperimentTime() {
@@ -205,6 +203,7 @@ public class Experiment implements ExperimentSummary {
 
 	public void setExperimentTime(ZonedDateTime regressionStart) {
 		this.experimentTime = regressionStart;
+		this.experimentLocalFileHelper.setExperimentTime(experimentTime);
 	}
 
 // The below method was used for testing, and might be useful in the future
@@ -228,6 +227,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public Experiment(RegressionConfig regressionConfig, TestConfig experiment) {
+		experimentLocalFileHelper = new ExperimentLocalFileHelper(regressionConfig, experiment);
 		this.regConfig = regressionConfig;
 		setupTest(experiment);
 
@@ -662,16 +662,6 @@ public class Experiment implements ExperimentSummary {
 		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
 	}
 
-	private String getExperimentResultsFolderForNode(int nodeNumber) {
-		return getExperimentFolder() + "node000" + nodeNumber + "/";
-	}
-
-	private String getExperimentFolder() {
-		String folderName = regConfig.getName() + "/" + testConfig.getName();
-		return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
-				folderName) + "/";
-	}
-
 	@Override
 	public String getUniqueId() {
 		Integer hash = (RegressionUtilities.getExperimentTimeFormattedString(getExperimentTime()) + "-" +
@@ -682,18 +672,6 @@ public class Experiment implements ExperimentSummary {
 		return hash.toString();
 	}
 
-	private InputStream getInputStream(String filename) {
-		InputStream inputStream = null;
-		if (!new File(filename).exists()) {
-			return null;
-		}
-		try {
-			inputStream = new FileInputStream(filename);
-		} catch (IOException e) {
-			log.error(ERROR, "Could not open file {} for validation", filename, e);
-		}
-		return inputStream;
-	}
 
 	private List<NodeData> loadNodeData(String directory) {
 		int numberOfNodes;
@@ -707,14 +685,14 @@ public class Experiment implements ExperimentSummary {
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0; i < numberOfNodes; i++) {
 			for (String logFile : testConfig.getResultFiles()) {
-				String logFileName = getExperimentResultsFolderForNode(i) + logFile;
+				String logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + logFile;
 				if (testConfig.isServicesRegression()) {
-					logFileName = getExperimentResultsFolderForNode(i) + "output/" + logFile;
+					logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + "output/" + logFile;
 				}
 				InputStream logInput = getInputStream(logFileName);
 
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
-				String csvFilePath = getExperimentResultsFolderForNode(i) + csvFileName;
+				String csvFilePath = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + csvFileName;
 				InputStream csvInput = getInputStream(csvFilePath);
 				LogReader logReader = null;
 				if (logInput != null) {
@@ -724,7 +702,7 @@ public class Experiment implements ExperimentSummary {
 				if (csvInput != null) {
 					csvReader = CsvReader.createReader(1, csvInput);
 				}
-				String outputLogFileName = getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
+				String outputLogFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + OUTPUT_LOG_FILENAME;
 				InputStream outputLogInput = getInputStream(outputLogFileName);
 				LogReader outputLogReader = null;
 				if (outputLogInput != null) {
@@ -735,39 +713,6 @@ public class Experiment implements ExperimentSummary {
 			}
 		}
 		return nodeData;
-	}
-
-	private List<StreamingServerData> loadStreamingServerData(String directory) {
-		final List<StreamingServerData> nodeData = new ArrayList<>();
-		for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
-			final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
-			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
-			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
-			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
-
-			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
-			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-					getInputStream(shaEventFileName), recoverEventLogStream));
-		}
-		return nodeData;
-	}
-
-	/**
-	 * Load ExpectedMap file path for all nodes into a Map
-	 *
-	 * @return
-	 */
-	private Map<Integer, String> loadExpectedMapPaths() {
-		final Map<Integer, String> expectedMapPaths = new HashMap<>();
-		for (int i = 0; i < regConfig.getTotalNumberOfNodes(); i++) {
-			final String expectedMapPath = getExperimentResultsFolderForNode(i) + EXPECTED_MAP_ZIP;
-			if (!new File(expectedMapPath).exists()) {
-				log.error(MARKER, "ExpectedMap doesn't exist for validation in Node {}", i);
-				return null;
-			}
-			expectedMapPaths.put(i, expectedMapPath);
-		}
-		return expectedMapPaths;
 	}
 
 	private void validateTest() {
@@ -823,9 +768,10 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig,
-					loadExpectedMapPaths());
+					experimentLocalFileHelper.loadExpectedMapPaths());
 			if (item == ValidatorType.BLOB_STATE) {
-				((BlobStateValidator) validatorToAdd).setExperimentFolder(getExperimentFolder());
+				((BlobStateValidator) validatorToAdd).setExperimentFolder(
+						experimentLocalFileHelper.getExperimentFolder());
 			}
 			requiredValidator.add(validatorToAdd);
 		}
@@ -835,12 +781,19 @@ public class Experiment implements ExperimentSummary {
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
 			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					loadStreamingServerData(testConfig.getName()), reconnect);
+					experimentLocalFileHelper.loadStreamingServerData(), reconnect);
 			if (testConfig.getRunType() == RunType.RECOVER) {
 				ssValidator.setStateRecoverMode(true);
 			}
 
 			requiredValidator.add(ssValidator);
+		}
+
+		if (testConfig.getMemoryLeakCheckConfig() != null) {
+			requiredValidator.add(
+					new MemoryLeakValidator(
+							testConfig.getMemoryLeakCheckConfig(),
+							experimentLocalFileHelper.getResultFolders()));
 		}
 
 		for (Validator item : requiredValidator) {
@@ -858,7 +811,7 @@ public class Experiment implements ExperimentSummary {
 		}
 		sendSlackMessage(slackMsg, regConfig.getSlack().getChannel());
 		log.info(MARKER, slackMsg.getPlaintext());
-		createStatsFile(getExperimentFolder());
+		createStatsFile(experimentLocalFileHelper.getExperimentFolder());
 		sendSlackStatsFile(new SlackTestMsg(getUniqueId(), regConfig, testConfig), "./multipage_pdf.pdf");
 
 		// TODO Experiments only communicate failures over the slack message
@@ -1197,7 +1150,8 @@ public class Experiment implements ExperimentSummary {
 					SSHService node = sshNodes.get(i);
 					boolean success = false;
 					while (!success)
-						success = node.scpFrom(getExperimentResultsFolderForNode(i),
+						success = node.scpFrom(
+								experimentLocalFileHelper.getExperimentResultsFolderForNode(i),
 								(ArrayList<String>) testConfig.getResultFiles());
 				}).collect(Collectors.toList()));
 		log.info(MARKER, "Downloaded experiment data");
@@ -1230,7 +1184,8 @@ public class Experiment implements ExperimentSummary {
 		//BLOB_STATE validator needs the data/saved folder add it to the list of files to retrieve
 		for (int i = 0; i < sshNodes.size(); i++) {
 			SSHService node = sshNodes.get(i);
-			node.scpFromListOnly(getExperimentResultsFolderForNode(i), blobStateScpList);
+			node.scpFromListOnly(
+					experimentLocalFileHelper.getExperimentResultsFolderForNode(i), blobStateScpList);
 		}
 	}
 
@@ -1261,7 +1216,8 @@ public class Experiment implements ExperimentSummary {
 		}
 		SharePointManager spm = new SharePointManager();
 		spm.login();
-		try (Stream<Path> walkerPath = Files.walk(Paths.get(getExperimentFolder()))) {
+		try (Stream<Path> walkerPath = Files.walk(
+				Paths.get(experimentLocalFileHelper.getExperimentFolder()))) {
 			final List<String> foundFiles = walkerPath.filter(Files::isRegularFile).map(x -> x.toString()).collect(
 					Collectors.toList());
 			for (final String file : foundFiles) {
@@ -1307,12 +1263,14 @@ public class Experiment implements ExperimentSummary {
 
 		final Path logFileSource = Paths.get(logFile);
 		/*TODO: change regession.log into static const in RegressionUtilities */
-		final Path logFileDestination = Paths.get(getExperimentFolder() + "regression.log");
+		final Path logFileDestination = Paths.get(
+				experimentLocalFileHelper.getExperimentFolder() + "regression.log");
 		if (git != null) {
 			if (!new File(git.getGitLog()).exists())
 				new File(git.getGitLog()).mkdirs();
 			final Path gitLogSource = Paths.get(git.getGitLog());
-			final Path gitLogDestination = Paths.get(getExperimentFolder() + git.getGitLog());
+			final Path gitLogDestination = Paths.get(
+					experimentLocalFileHelper.getExperimentFolder() + git.getGitLog());
 			try {
 				if (gitLogSource != null)
 					Files.copy(gitLogSource, gitLogDestination);
@@ -1419,15 +1377,26 @@ public class Experiment implements ExperimentSummary {
 			javaOptions = RegressionUtilities.buildParameterString(regConfig.getJvmOptionParametersConfig());
 		} else {
 			javaOptions = new JVMConfig(nodeMemoryProfile.getJvmMemory()).getJVMOptionsString();
+			// when we don't set MetaspaceSize, it was allocated 50M
+			// from GC log report, FCM2.5M test got: "Our analysis tells that GCs are triggered because
+			// Metadata occupancy is reaching it's limits quite often. 4 GCs were triggered because of this reason.
+			// You can consider increasing the metaspace size so that this GC activity can be minimzed."
+			// when we set MetaspaceSize to be 100M, there would not such problem reported
+			javaOptions += " -XX:MetaspaceSize=100M ";
+			// generate gc logs if the testConfig contains MemoryLeakCheckConfig
+			if (testConfig.getMemoryLeakCheckConfig() != null) {
+				javaOptions += JVM_OPTIONS_GC_LOG;
+			}
 		}
 		if (!regConfig.getJvmOptions().isEmpty()) {
 			javaOptions = regConfig.getJvmOptions();
 		}
+
 		return javaOptions;
 	}
 
 	void scpFrom(int node, ArrayList<String> downloadExtensions) {
-		String topLevelFolders = getExperimentResultsFolderForNode(node);
+		String topLevelFolders = experimentLocalFileHelper.getExperimentResultsFolderForNode(node);
 		try {
 			CopyOption[] options = new CopyOption[] {
 					StandardCopyOption.REPLACE_EXISTING,
