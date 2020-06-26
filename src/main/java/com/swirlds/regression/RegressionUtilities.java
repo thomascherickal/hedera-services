@@ -25,6 +25,7 @@ import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -199,6 +200,7 @@ public class RegressionUtilities {
 	private static String publicIPStringForServices = null;
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
+	private static String testSuites;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -550,5 +552,22 @@ public class RegressionUtilities {
 					resultFolder + "/" + experimentName;
 		}
 		return returnString;
+	}
+
+	/**
+	 * Read all the test suites that are mentioned in testConfig
+	 * @param testConfig
+	 * @return
+	 */
+	public static void setTestSuites(TestConfig testConfig) {
+		testSuites = StringUtils.join(testConfig.getTestSuites(), " ");
+	}
+
+	/**
+	 * Returns testSuites that should be run for Services Regression
+	 * @return
+	 */
+	public static String getTestSuites(){
+		return testSuites;
 	}
 }

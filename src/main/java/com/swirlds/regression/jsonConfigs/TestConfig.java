@@ -36,6 +36,7 @@ public class TestConfig implements FileRequirement {
 	private List<SettingsConfig> settings;
 	private AppConfig app;
 	private List<String> resultFiles;
+	private List<String> testSuites;
 	private String log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
@@ -218,6 +219,14 @@ public class TestConfig implements FileRequirement {
 
 	public void setServicesRegression(boolean servicesRegression) {
 		this.servicesRegression = servicesRegression;
+	}
+
+	public List<String> getTestSuites() {
+		return testSuites;
+	}
+
+	public void setTestSuites(List<String> testSuites) {
+		this.testSuites = testSuites;
 	}
 
 	@Override

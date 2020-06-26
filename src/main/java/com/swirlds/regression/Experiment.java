@@ -295,7 +295,7 @@ public class Experiment implements ExperimentSummary {
 
 	public void startSuiteRunner() {
 		threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
-			node.execClientWithProcessID(getJVMOptionsString());
+			node.execTestClientWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
@@ -1469,6 +1469,9 @@ public class Experiment implements ExperimentSummary {
 		setExperimentTime();
 		configFile = new ConfigBuilder(regConfig, testConfig);
 		settingsFile = new SettingsBuilder(testConfig);
+		if(testConfig.isServicesRegression()){
+			RegressionUtilities.setTestSuites(testConfig);
+		}
 	}
 
 	public TestConfig getTestConfig() {

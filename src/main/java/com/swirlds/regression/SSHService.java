@@ -476,30 +476,27 @@ public class SSHService {
         return execCommand(command, description, 5).getExitStatus();
     }
 
-    int execClientWithProcessID(String jvmOptions) {
-        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
-            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
-        }
+	int execTestClientWithProcessID(String jvmOptions) {
+		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+		}
 
-        // TODO These arguments should be constructed run time from a JSON config
-//        String command = String.format(
-//                "cd %s; " +
-//                        "NODES=18.216.231.47:0.0.3 DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=on " +
-//                        "-NODE=random\" java -jar SuiteRunner.jar 13.59.42.186 3 >>output.log 2>&1 & " +
-//                        "disown -h",
-//                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-//                jvmOptions);
-        String command = String.format(
-                "cd %s; " +
-                        "NODES=%s DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=on " +
-                        "-NODE=random\" java -jar SuiteRunner.jar 13.59.42.186 3 >>output.log 2>&1 & " +
-                        "disown -h",
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                RegressionUtilities.getPublicIPStringForServices());
-        String description = "Start SuiteRunner.jar";
+		// TODO These arguments should be constructed run time from a JSON config
+		String publicIpList = RegressionUtilities.getPublicIPStringForServices();
+		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
+		String command = String.format(
+				"cd %s; " +
+						"NODES=%s DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=off " +
+						"-NODE=random\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"disown -h",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				publicIpList,
+				jvmOptions,
+				firstIP);
+		String description = "Start SuiteRunner.jar";
 
-        return execCommand(command, description, 5).getExitStatus();
-    }
+		return execCommand(command, description, 5).getExitStatus();
+	}
 
 
     int execHGCAppWithProcessID(String jvmOptions) {

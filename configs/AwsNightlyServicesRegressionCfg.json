@@ -13,12 +13,11 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"instanceList": [
-		  "i-01341cfb4ea0255b3", "i-0c5ad3ecbc9dfd8b6", "i-0f5a7a23cbaeef519"
-		],
-		"testClientInstanceList": [
-		  "i-0ca8140d2b7133049"
-		]
+		"numberOfNodes" : 2,
+		"numberOfTestClientNodes": 1
+		//		"testClientInstanceList": [
+		//		  "i-0ca8140d2b7133049"
+		//		]
 	  }
 	]
   },
