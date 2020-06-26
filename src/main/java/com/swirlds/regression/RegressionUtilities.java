@@ -300,6 +300,8 @@ public class RegressionUtilities {
 		String hederaTestClientDir = Paths.get("").toAbsolutePath().
 				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
+		returnIterator.add(new File(hederaTestClientDir + "src/main/resource/"));
+		returnIterator.add(keyFile);
 		return returnIterator;
 	}
 
@@ -339,6 +341,11 @@ public class RegressionUtilities {
 	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add(SUITE_RUNNER_JAR);
+		returnIterator.add("src/");
+		returnIterator.add("src/main/");
+		returnIterator.add("src/main/resource/");
+		returnIterator.add("src/main/resource/**");
+		returnIterator.add(keyFile.getName());
 		return returnIterator;
 	}
 
