@@ -21,7 +21,7 @@
 	}
   ],
   "servicesRegression" : true,
-  "TestSuites": [
+  "testSuites": [
 	"TopicCreateSpecs",
 	"SubmitMessageSpecs"
   ],
