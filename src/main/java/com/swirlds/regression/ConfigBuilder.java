@@ -21,6 +21,7 @@ import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.RegionList;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -56,7 +57,7 @@ public class ConfigBuilder {
 
 	private Path outFile = Paths.get(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE);
 	private ArrayList<String> lines = new ArrayList<>();
-	private String ipAddressForServices = "";
+	private ArrayList<String> ipAddressForServices =  new ArrayList<>();
 	private List<String> publicIPList;
 	private List<String> privateIPList;
 	private int startingPort = 40124;
@@ -120,7 +121,7 @@ public class ConfigBuilder {
 	void buildAddressStrings() {
 		for (int i = 0; i < totalNodes; i++) {
 			StringBuilder addressString = new StringBuilder();
-			StringBuilder ipAddressStringForServices = new StringBuilder();
+			StringBuilder addressStringForServices = new StringBuilder();
 			addressString.append("address");
 			addressString.append(SEPERATOR);
 			addressString.append(nodeNames + Integer.toString(i));
@@ -140,10 +141,10 @@ public class ConfigBuilder {
 				addressString.append(SEPERATOR);
 				String cryptoAccount = "0.0." + startingCryptoAccount++;
 				addressString.append(cryptoAccount);
-				ipAddressStringForServices.append(SEPERATOR);
-				ipAddressForServices.concat(publicIPList.get(i) + ":" + cryptoAccount);
+				addressStringForServices.append(publicIPList.get(i) + ":" + cryptoAccount);
 			}
 			lines.add(addressString.toString());
+			ipAddressForServices.add(addressStringForServices.toString());
 		}
 	}
 
@@ -162,6 +163,7 @@ public class ConfigBuilder {
 		}
 
 		lines.clear();
+		ipAddressForServices.clear();
 		buildFileContent();
 
 		try {
@@ -280,6 +282,6 @@ public class ConfigBuilder {
 	}
 
 	public String getIpAddressForServices() {
-		return ipAddressForServices;
+		return StringUtils.join(ipAddressForServices, " ");
 	}
 }

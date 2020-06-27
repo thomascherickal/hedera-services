@@ -294,6 +294,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public void startSuiteRunner() {
+		log.info(MARKER, "testClientNodes {}.", testClientNodes);
 		threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
 			node.execTestClientWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
@@ -1201,7 +1202,14 @@ public class Experiment implements ExperimentSummary {
 					node.close();
 				})
 				.collect(Collectors.toList()));
+		threadPoolService(testClientNodes.stream()
+				.<Runnable>map(node -> () -> {
+					node.reset();
+					node.close();
+				})
+				.collect(Collectors.toList()));
 		sshNodes.clear();
+		testClientNodes.clear();
 	}
 
 	void killJavaProcess() {
