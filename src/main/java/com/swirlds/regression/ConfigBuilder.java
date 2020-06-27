@@ -282,6 +282,6 @@ public class ConfigBuilder {
 	}
 
 	public String getIpAddressForServices() {
-		return StringUtils.join(ipAddressForServices, " ");
+		return StringUtils.join(ipAddressForServices, ",");
 	}
 }
