@@ -452,6 +452,13 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
+	protected static ArrayList<String> getServicesFilesToDownload() {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add("output/*");
+		returnIterator.add("*.log");
+		return returnIterator;
+	}
+
 	protected static String getExperimentTimeFormattedString(ZonedDateTime timeToFormat) {
 		return timeToFormat.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"));
 	}

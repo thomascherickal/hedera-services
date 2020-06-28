@@ -1160,6 +1160,11 @@ public class Experiment implements ExperimentSummary {
 								experimentLocalFileHelper.getExperimentResultsFolderForNode(i),
 								(ArrayList<String>) testConfig.getResultFiles());
 				}).collect(Collectors.toList()));
+
+		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+			scpfromTestClientNode();
+		}
+
 		log.info(MARKER, "Downloaded experiment data");
 
 		validateTest();
@@ -1169,6 +1174,18 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
+	}
+
+	private void scpfromTestClientNode() {
+		threadPoolService(IntStream.range(0, testClientNodes.size())
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = testClientNodes.get(i);
+					boolean success = false;
+					while (!success)
+						success =
+								node.scpFromTestClient(experimentLocalFileHelper
+										.getExperimentResultsFolderForTestClientNode(i));
+				}).collect(Collectors.toList()));
 	}
 
 	/**
@@ -1477,7 +1494,7 @@ public class Experiment implements ExperimentSummary {
 		setExperimentTime();
 		configFile = new ConfigBuilder(regConfig, testConfig);
 		settingsFile = new SettingsBuilder(testConfig);
-		if(testConfig.isServicesRegression()){
+		if (testConfig.isServicesRegression()) {
 			RegressionUtilities.setTestSuites(testConfig);
 		}
 	}
