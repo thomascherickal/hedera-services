@@ -36,11 +36,9 @@ public class TestConfig implements FileRequirement {
 	private List<SettingsConfig> settings;
 	private AppConfig app;
 	private List<String> resultFiles;
-	private List<String> testSuites;
 	private String log4j2File = "log4j2-regression.xml";
 	private SavedState startSavedState = null;
 	private List<SavedState> startSavedStates = null;
-	private boolean servicesRegression = false;
 
 	private boolean downloadDbLogFiles = false;
 
@@ -52,6 +50,9 @@ public class TestConfig implements FileRequirement {
 	private RecoverConfig recoverConfig;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
+
+	private boolean servicesRegression = false;
+	private List<String> testSuites;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {

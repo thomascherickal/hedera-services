@@ -38,8 +38,6 @@ public class AWSNode {
 
 	private ArrayList<String> publicIPList;
 	private ArrayList<String> privateIPList;
-	private ArrayList<String> publicIPTestClientList;
-	private ArrayList<String> privateIPTestClientList;
 	private boolean isExistingInstance = false;
 	/**
 	 * Boolean to set to true if the node is a test client node, which is by default false
@@ -56,13 +54,16 @@ public class AWSNode {
 		}
 		this.region = rl.getRegion();
 		this.ec2 = AmazonEC2ClientBuilder.standard().withRegion(this.region).build();
+
 		this.isTestClientNode = isTestClientNode;
 		instanceIDs = new ArrayList<>();
+		// If it is a test client node used for services-regression , read numberOfTestClientNodes
 		if (!isTestClientNode) {
 			this.totalNodes = rl.getNumberOfNodes();
 		} else {
 			this.totalNodes = rl.getNumberOfTestClientNodes();
 		}
+
 		if (rl.getInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
 			totalPreexistingInstances = rl.getInstanceList().length;
@@ -71,7 +72,6 @@ public class AWSNode {
 
 		if (this.isTestClientNode && rl.getTestClientInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getTestClientInstanceList()));
-			// TODO check if totalPreexistingInstances should be different
 			totalPreexistingInstances = rl.getTestClientInstanceList().length;
 			isExistingInstance = true;
 		}
@@ -186,21 +186,4 @@ public class AWSNode {
 	public void setTestClientNode(boolean testClientNode) {
 		isTestClientNode = testClientNode;
 	}
-
-	public ArrayList<String> getPublicIPTestClientList() {
-		return publicIPTestClientList;
-	}
-
-	public void setPublicIPTestClientList(ArrayList<String> publicIPTestClientList) {
-		this.publicIPTestClientList = publicIPTestClientList;
-	}
-
-	public ArrayList<String> getPrivateIPTestClientList() {
-		return privateIPTestClientList;
-	}
-
-	public void setPrivateIPTestClientList(ArrayList<String> privateIPTestClientList) {
-		this.privateIPTestClientList = privateIPTestClientList;
-	}
-
 }

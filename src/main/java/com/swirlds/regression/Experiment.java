@@ -293,14 +293,34 @@ public class Experiment implements ExperimentSummary {
 		}).collect(Collectors.toList()));
 	}
 
+	/**
+	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
+	 */
+	public void startServicesRegression() {
+		// start Browser and HGCApp
+		startHGCApp();
+		try {
+			Thread.sleep(20000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// Once the HGCApp jar starts running , run test clients
+		startSuiteRunner();
+	}
+
+	/**
+	 * Start SuiteRunner JAR to run services-regression
+	 */
 	public void startSuiteRunner() {
-		log.info(MARKER, "testClientNodes {}.", testClientNodes);
 		threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
 			node.execTestClientWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
 
+	/**
+	 * Start Browser and corresponding HederaNode.jar, if services regression is enabled
+	 */
 	public void startHGCApp() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
 			node.execHGCAppWithProcessID(getJVMOptionsString());
@@ -639,16 +659,20 @@ public class Experiment implements ExperimentSummary {
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
 		Collection<File> filesToSend;
-		if (isTestClientNode) {
-			filesToSend = getServicesClientFilesToUpload(new File(pemFile));
-		} else {
-			if (testConfig.isServicesRegression()) {
-				filesToSend = getServicesFilesToUpload(new File(pemFile));
+
+		if (testConfig.isServicesRegression()) {
+			//If its is services-regression based on the type of node (test-client node or server node)
+			// upload necessary files
+			if (isTestClientNode) {
+				filesToSend = getServicesClientFilesToUpload(new File(pemFile));
 			} else {
-				filesToSend = getSDKFilesToUpload(
-						new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
+				filesToSend = getServicesFilesToUpload(new File(pemFile));
 			}
+		} else {
+			filesToSend = getSDKFilesToUpload(
+					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
 		}
+
 		File oldTarFile = new File(TAR_NAME);
 		if (oldTarFile.exists()) {
 			oldTarFile.delete();
@@ -687,9 +711,12 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < numberOfNodes; i++) {
 			for (String logFile : testConfig.getResultFiles()) {
 				String logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + logFile;
+
+				//TODO re-evaluate if this is needed
 				if (testConfig.isServicesRegression()) {
 					logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + "output/" + logFile;
 				}
+
 				InputStream logInput = getInputStream(logFileName);
 
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
@@ -875,10 +902,6 @@ public class Experiment implements ExperimentSummary {
 						Collectors.toList()));
 	}
 
-	public RegressionConfig getRegConfig() {
-		return regConfig;
-	}
-
 	private void setIPsAndStakesInConfig() {
 		configFile.setPublicIPList(cloud.getPublicIPList());
 		configFile.setPrivateIPList(cloud.getPrivateIPList());
@@ -908,13 +931,17 @@ public class Experiment implements ExperimentSummary {
 
 			configFile.setStakes(stakes);
 		}
+
+		// If it is services-regression set starting crypto account as 3
 		if (testConfig.isServicesRegression()) {
 			configFile.setStartingCryptoAccount(3L);
 		}
+
 		configFile.exportConfigFile();
 
+		//set the built public Ip string with crypto accounts
 		if (testConfig.isServicesRegression()) {
-			RegressionUtilities.setPublicIPStringForServices(configFile.getIpAddressForServices());
+			RegressionUtilities.setPublicIPStringForServices(configFile.getPublicIPsWithCryptoAccounts());
 		}
 	}
 
@@ -954,34 +981,25 @@ public class Experiment implements ExperimentSummary {
 		String login = regConfig.getCloud().getLogin();
 		File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
 		setUpSSHServicesForInstances(login, keyfile);
-		if (testConfig.isServicesRegression()) {
-			setUpSHHServicesForTestClients(login, keyfile);
-		}
-	}
 
-	private void setUpSHHServicesForTestClients(String login, File keyfile) throws SocketException {
-		ArrayList<String> publicIPList = cloud.getPublicIPListOfTestClients();
-		int nodeNumber = publicIPList.size();
-		for (int i = 0; i < nodeNumber; i++) {
-			String pubIP = publicIPList.get(i);
-			SSHService currentNode = new SSHService(login, pubIP, keyfile);
-			//TODO Unit test for this must change the files name of the pem file to prevent connections
-			if (currentNode == null) {
-				cloud.destroyInstances();
-				log.error(ERROR, "Could not start/ or connect to node, exiting regression test.");
-				uploadFilesToSharepoint();
-				throw new SocketException("Node: " + pubIP + " returned as null on initialization.");
-			}
-			currentNode.reset();
-			cloud.memoryNeedsForAllNodes = new NodeMemory(currentNode.checkTotalMemoryOnNode());
-			currentNode.adjustNodeMemoryAllocations(cloud.memoryNeedsForAllNodes);
-			testClientNodes.add(currentNode);
+		if (testConfig.isServicesRegression()) {
+			setUpSSHServicesForInstances(login, keyfile, true);
 		}
 	}
 
 	private void setUpSSHServicesForInstances(String login, File keyfile) throws IOException {
+		setUpSSHServicesForInstances(login, keyfile, false);
+	}
+
+	private void setUpSSHServicesForInstances(String login, File keyfile, boolean isTestClient) throws IOException {
 		//TODO multi-thread this perhaps?
-		ArrayList<String> publicIPList = cloud.getPublicIPList();
+		ArrayList<String> publicIPList;
+		if (isTestClient) {
+			publicIPList = cloud.getPublicIPListOfTestClients();
+		} else {
+			publicIPList = cloud.getPublicIPList();
+		}
+
 		int nodeNumber = publicIPList.size();
 		for (int i = 0; i < nodeNumber; i++) {
 			String pubIP = publicIPList.get(i);
@@ -997,7 +1015,11 @@ public class Experiment implements ExperimentSummary {
 			cloud.memoryNeedsForAllNodes = new NodeMemory(currentNode.checkTotalMemoryOnNode());
 			currentNode.adjustNodeMemoryAllocations(cloud.memoryNeedsForAllNodes);
 
-			sshNodes.add(currentNode);
+			if (isTestClient) {
+				testClientNodes.add(currentNode);
+			} else {
+				sshNodes.add(currentNode);
+			}
 		}
 	}
 
@@ -1052,17 +1074,9 @@ public class Experiment implements ExperimentSummary {
 		log.info(MARKER, "upload to nodes has finished");
 
 		// Send suite runner jar to test client nodes if there are any
-		final SSHService firstTestClientNode = testClientNodes.get(0);
-		log.info(MARKER, "TestClientNode {}, {}", testClientNodes.size(), firstTestClientNode.toString());
-		calculateNodeMemoryProfile(firstTestClientNode);
-		sendTarToNode(firstTestClientNode, addedFiles, true);
-
-		// Get list of address of other N-1 nodes
-		List<String> testClientIpAddresses = IntStream.range(1, testClientNodes.size()).mapToObj(
-				i -> testClientNodes.get(i).getIpAddress()).collect(Collectors.toList());
-		firstTestClientNode.rsyncTo(addedFiles,
-				new File(testConfig.getLog4j2File()), testClientIpAddresses, true);
-		log.info(MARKER, "upload to test client nodes has finished");
+		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+			sendTarToTestClientNodes(addedFiles);
+		}
 
 		//Step 3, copy saved state to nodes if necessary
 		threadPoolService(IntStream.range(0, sshNodes.size())
@@ -1162,7 +1176,7 @@ public class Experiment implements ExperimentSummary {
 				}).collect(Collectors.toList()));
 
 		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
-			scpfromTestClientNode();
+			scpFromTestClientNode();
 		}
 
 		log.info(MARKER, "Downloaded experiment data");
@@ -1176,7 +1190,30 @@ public class Experiment implements ExperimentSummary {
 		killJavaProcess(); //kill any data collecting java process
 	}
 
-	private void scpfromTestClientNode() {
+	/**
+	 * Send suite runner jar and other needed files to test client nodes
+	 *
+	 * @param addedFiles
+	 */
+	private void sendTarToTestClientNodes(ArrayList<File> addedFiles) {
+		final SSHService firstTestClientNode = testClientNodes.get(0);
+		log.info(MARKER, "TestClientNode {}, {}", testClientNodes.size(), firstTestClientNode.toString());
+		calculateNodeMemoryProfile(firstTestClientNode);
+		sendTarToNode(firstTestClientNode, addedFiles, true);
+
+		// Get list of address of other N-1 nodes test client nodes
+		List<String> testClientIpAddresses = IntStream.range(1, testClientNodes.size()).mapToObj(
+				i -> testClientNodes.get(i).getIpAddress()).collect(Collectors.toList());
+		firstTestClientNode.rsyncTo(addedFiles,
+				new File(testConfig.getLog4j2File()), testClientIpAddresses, true);
+		log.info(MARKER, "upload to test client nodes has finished");
+	}
+
+	/**
+	 * Download necessary files that need to be validated from test client nodes
+	 * Downloaded files will be placed in folder appended with "TestClient"
+	 */
+	private void scpFromTestClientNode() {
 		threadPoolService(IntStream.range(0, testClientNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
 					SSHService node = testClientNodes.get(i);
@@ -1219,14 +1256,17 @@ public class Experiment implements ExperimentSummary {
 					node.close();
 				})
 				.collect(Collectors.toList()));
+		sshNodes.clear();
+
+		// Reset any test client nodes if they exist
 		threadPoolService(testClientNodes.stream()
 				.<Runnable>map(node -> () -> {
 					node.reset();
 					node.close();
 				})
 				.collect(Collectors.toList()));
-		sshNodes.clear();
 		testClientNodes.clear();
+
 	}
 
 	void killJavaProcess() {
@@ -1494,6 +1534,8 @@ public class Experiment implements ExperimentSummary {
 		setExperimentTime();
 		configFile = new ConfigBuilder(regConfig, testConfig);
 		settingsFile = new SettingsBuilder(testConfig);
+
+		// set up the suites from SuiteRunner that should be run on test clients in services-regression
 		if (testConfig.isServicesRegression()) {
 			RegressionUtilities.setTestSuites(testConfig);
 		}

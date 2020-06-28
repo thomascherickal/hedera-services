@@ -57,9 +57,6 @@ public class RegressionUtilities {
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";
-	public static final String HEDERA_NODE_DIR = "/hedera-services/hedera-node/";
-	public static final String HEDERA_TEST_CLIENT_DIR = "/hedera-services/test-clients/";
-	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
 	public static final String PTD_CONFIG_DIR = "../platform-apps/tests/PlatformTestingApp/src/main/resources/";
 	public static final String SETTINGS_FILE = "settings.txt";
 	public static final String DEFAULT_SETTINGS_DIR = "../sdk/";
@@ -178,7 +175,6 @@ public class RegressionUtilities {
 	static final boolean CHECK_BRANCH_CHANNEL = true;
 	static final String REG_GIT_USER_EMAIL = "swirlds-test@swirlds.org";
 	static final boolean CHECK_USER_EMAIL_CHANNEL = true;
-	private static TestConfig testConfig = null;
 
 	static final String SWIRLDS_NAME = "123";
 	static final String SAVED_STATE_LOCATION = REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
@@ -197,25 +193,21 @@ public class RegressionUtilities {
 			"i-0611e2febc6a73d5a",
 			"i-0cc227bff247a8a09" };
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
-	private static String publicIPStringForServices = null;
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
+
+	/**
+	 * Services regression related constants
+	 */
+	public static final String HEDERA_NODE_DIR = "/hedera-services/hedera-node/";
+	public static final String HEDERA_TEST_CLIENT_DIR = "/hedera-services/test-clients/";
+	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
+	private static String publicIPStringForServices = null;
+	private static TestConfig testConfig = null;
 	private static String testSuites;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
-	}
-
-	public static void setTestConfig(TestConfig config) {
-		testConfig = config;
-	}
-
-	public static String getPublicIPStringForServices() {
-		return publicIPStringForServices;
-	}
-
-	public static void setPublicIPStringForServices(String ipAddress) {
-		publicIPStringForServices = ipAddress;
 	}
 
 	protected static TestConfig importExperimentConfig(String testConfigFileLocation) {
@@ -312,39 +304,6 @@ public class RegressionUtilities {
 		return returnIterator;
 	}
 
-	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
-		Collection<File> returnIterator = new ArrayList<>();
-		String hederaTestClientDir = Paths.get("").toAbsolutePath().
-				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
-		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
-		// TODO add only needed files in resource folder
-		returnIterator.add(new File(hederaTestClientDir + "src/"));
-		returnIterator.add(keyFile);
-		return returnIterator;
-	}
-
-	public static Collection<File> getServicesFilesToUpload(File keyFile) {
-		Collection<File> returnIterator = new ArrayList<>();
-		String hederaNodeDir = Paths.get("").toAbsolutePath().
-				getParent().getParent() + HEDERA_NODE_DIR;
-		returnIterator.add(new File(hederaNodeDir + "data/apps/"));
-		returnIterator.add(new File(hederaNodeDir + "data/backup/"));
-		returnIterator.add(new File(hederaNodeDir + "data/keys/"));
-		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
-		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
-		returnIterator.add(new File(hederaNodeDir + "data/config/"));
-		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
-		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
-		returnIterator.add(new File(hederaNodeDir + "hedera.crt"));
-		returnIterator.add(new File(hederaNodeDir + "hedera.key"));
-		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
-		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
-		returnIterator.add(keyFile);
-		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE));
-		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.SETTINGS_FILE));
-		return returnIterator;
-	}
-
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles, boolean isTestClient) {
 		if (isTestClient) {
@@ -356,50 +315,10 @@ public class RegressionUtilities {
 		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
 	}
 
-	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
-		ArrayList<String> returnIterator = new ArrayList<>();
-		returnIterator.add(SUITE_RUNNER_JAR);
-		returnIterator.add("src/");
-		returnIterator.add("src/main/");
-		returnIterator.add("src/main/resource/");
-		returnIterator.add("src/main/resource/**");
-		returnIterator.add(keyFile.getName());
-		return returnIterator;
-	}
-
-	private static ArrayList<String> getServicesRsyncFiles(File keyFile) {
-		ArrayList<String> returnIterator = new ArrayList<>();
-		returnIterator.add("data/");
-		returnIterator.add("data/apps/");
-		returnIterator.add("data/apps/**");
-		returnIterator.add("data/backup/");
-		returnIterator.add("data/backup/**");
-		returnIterator.add("data/keys/");
-		returnIterator.add("data/keys/**");
-		returnIterator.add("data/lib/");
-		returnIterator.add("data/lib/**");
-		returnIterator.add("data/repos/");
-		returnIterator.add("data/repos/**");
-		returnIterator.add("data/config/");
-		returnIterator.add("data/config/**");
-		returnIterator.add("data/onboard");
-		returnIterator.add("data/onboard/**");
-		returnIterator.add("privateAddresses.txt");
-		returnIterator.add("publicAddresses.txt");
-		// TODO add functionality to generate these two files every-time test is run
-		//  For now they are in the base directory of regression
-		returnIterator.add("hedera.crt");
-		returnIterator.add("hedera.key");
-		returnIterator.add(keyFile.getName());
-		returnIterator.add(RegressionUtilities.CONFIG_FILE);
-		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
-		returnIterator.add("log4j2.xml");
-		return returnIterator;
-	}
-
 	private static ArrayList<String> getPlatformRsyncFiles(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
+
 		returnIterator.add("data/");
 		returnIterator.add("data/apps/");
 		returnIterator.add("data/apps/**");
@@ -449,13 +368,6 @@ public class RegressionUtilities {
 			returnIterator.addAll(configSpecifiedFiles);
 		}
 
-		return returnIterator;
-	}
-
-	protected static ArrayList<String> getServicesFilesToDownload() {
-		ArrayList<String> returnIterator = new ArrayList<>();
-		returnIterator.add("output/*");
-		returnIterator.add("*.log");
 		return returnIterator;
 	}
 
@@ -563,6 +475,7 @@ public class RegressionUtilities {
 
 	/**
 	 * Read all the test suites that are mentioned in testConfig
+	 *
 	 * @param testConfig
 	 * @return
 	 */
@@ -572,9 +485,135 @@ public class RegressionUtilities {
 
 	/**
 	 * Returns testSuites that should be run for Services Regression
+	 *
 	 * @return
 	 */
-	public static String getTestSuites(){
+	public static String getTestSuites() {
 		return testSuites;
+	}
+
+	public static void setTestConfig(TestConfig config) {
+		testConfig = config;
+	}
+
+	public static String getPublicIPStringForServices() {
+		return publicIPStringForServices;
+	}
+
+	public static void setPublicIPStringForServices(String ipAddress) {
+		publicIPStringForServices = ipAddress;
+	}
+
+	/**
+	 * When running services regression, get list of files that should be uploaded on test client
+	 * nodes to run necessary test suites
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
+		Collection<File> returnIterator = new ArrayList<>();
+		String hederaTestClientDir = Paths.get("").toAbsolutePath().
+				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
+		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
+		// TODO add only needed files in resource folder
+		returnIterator.add(new File(hederaTestClientDir + "src/"));
+		returnIterator.add(keyFile);
+		return returnIterator;
+	}
+
+	/**
+	 * To run services regression , get list of files that should be uploaded to one of the server nodes
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static Collection<File> getServicesFilesToUpload(File keyFile) {
+		Collection<File> returnIterator = new ArrayList<>();
+		String hederaNodeDir = Paths.get("").toAbsolutePath().
+				getParent().getParent() + HEDERA_NODE_DIR;
+		returnIterator.add(new File(hederaNodeDir + "data/apps/"));
+		returnIterator.add(new File(hederaNodeDir + "data/backup/"));
+		returnIterator.add(new File(hederaNodeDir + "data/keys/"));
+		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
+		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
+		returnIterator.add(new File(hederaNodeDir + "data/config/"));
+		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
+		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
+		returnIterator.add(new File(hederaNodeDir + "hedera.crt"));
+		returnIterator.add(new File(hederaNodeDir + "hedera.key"));
+		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
+		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
+		returnIterator.add(keyFile);
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE));
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.SETTINGS_FILE));
+		return returnIterator;
+	}
+
+	/**
+	 * when running services regression, get list of files from the Tar placed on one of the server nodes,
+	 * that should be rsynced to other server nodes
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	private static ArrayList<String> getServicesRsyncFiles(File keyFile) {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add("data/");
+		returnIterator.add("data/apps/");
+		returnIterator.add("data/apps/**");
+		returnIterator.add("data/backup/");
+		returnIterator.add("data/backup/**");
+		returnIterator.add("data/keys/");
+		returnIterator.add("data/keys/**");
+		returnIterator.add("data/lib/");
+		returnIterator.add("data/lib/**");
+		returnIterator.add("data/repos/");
+		returnIterator.add("data/repos/**");
+		returnIterator.add("data/config/");
+		returnIterator.add("data/config/**");
+		returnIterator.add("data/onboard");
+		returnIterator.add("data/onboard/**");
+		returnIterator.add("privateAddresses.txt");
+		returnIterator.add("publicAddresses.txt");
+		// TODO add functionality to generate these two files every-time test is run
+		//  For now they are in the base directory of regression
+		returnIterator.add("hedera.crt");
+		returnIterator.add("hedera.key");
+		returnIterator.add(keyFile.getName());
+		returnIterator.add(RegressionUtilities.CONFIG_FILE);
+		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
+		returnIterator.add("log4j2.xml");
+		return returnIterator;
+	}
+
+	/**
+	 * When running services regression, get list of files in the Tar that should be rsynced between test client
+	 * nodes to run test, after Tar is placed on one test client node
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add(SUITE_RUNNER_JAR);
+		returnIterator.add("src/");
+		returnIterator.add("src/main/");
+		returnIterator.add("src/main/resource/");
+		returnIterator.add("src/main/resource/**");
+		returnIterator.add(keyFile.getName());
+		return returnIterator;
+	}
+
+	/**
+	 * Get list of files that should be downloaded from test client nodes when running services regression
+	 *
+	 * @return
+	 */
+	protected static ArrayList<String> getServicesFilesToDownload() {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add("output/*");
+		returnIterator.add("*.log");
+		return returnIterator;
 	}
 }

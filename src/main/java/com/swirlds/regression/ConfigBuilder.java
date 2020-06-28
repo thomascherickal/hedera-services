@@ -57,17 +57,20 @@ public class ConfigBuilder {
 
 	private Path outFile = Paths.get(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE);
 	private ArrayList<String> lines = new ArrayList<>();
-	private ArrayList<String> ipAddressForServices =  new ArrayList<>();
 	private List<String> publicIPList;
 	private List<String> privateIPList;
 	private int startingPort = 40124;
-	private Long startingCryptoAccount = 0L;
 	private int eventFilesWriters = 0;
 	private boolean isLocal;
 	private int totalNodes = 0;
 	private AppConfig app;
 	private String nodeNames = "aaaa";
 	private List<Long> stakes;
+
+	// get list of public IPs of sshNodes and corresponding crypto accounts used for services regression
+	private ArrayList<String> publicIPsWithCryptoAccounts = new ArrayList<>();
+	// Crypto account needed for building config.txt of services-regression
+	private Long startingCryptoAccount = 0L;
 
 	public ConfigBuilder(RegressionConfig regConfig, TestConfig expConf) {
 		isLocal = (regConfig.getLocal() != null);
@@ -121,7 +124,7 @@ public class ConfigBuilder {
 	void buildAddressStrings() {
 		for (int i = 0; i < totalNodes; i++) {
 			StringBuilder addressString = new StringBuilder();
-			StringBuilder addressStringForServices = new StringBuilder();
+			StringBuilder ipAddressWithCryptoAccount = new StringBuilder();
 			addressString.append("address");
 			addressString.append(SEPERATOR);
 			addressString.append(nodeNames + Integer.toString(i));
@@ -137,14 +140,16 @@ public class ConfigBuilder {
 			addressString.append(publicIPList.get(i));
 			addressString.append(SEPERATOR);
 			addressString.append(startingPort + i);
+
+			// startingCryptoAccount is set to 3 only if services regression is enabled in testConfig
 			if (startingCryptoAccount != 0) {
 				addressString.append(SEPERATOR);
 				String cryptoAccount = "0.0." + startingCryptoAccount++;
 				addressString.append(cryptoAccount);
-				addressStringForServices.append(publicIPList.get(i) + ":" + cryptoAccount);
+				ipAddressWithCryptoAccount.append(publicIPList.get(i) + ":" + cryptoAccount);
 			}
 			lines.add(addressString.toString());
-			ipAddressForServices.add(addressStringForServices.toString());
+			publicIPsWithCryptoAccounts.add(ipAddressWithCryptoAccount.toString());
 		}
 	}
 
@@ -163,7 +168,7 @@ public class ConfigBuilder {
 		}
 
 		lines.clear();
-		ipAddressForServices.clear();
+		publicIPsWithCryptoAccounts.clear();
 		buildFileContent();
 
 		try {
@@ -261,6 +266,11 @@ public class ConfigBuilder {
 		this.stakes = stakes;
 	}
 
+	/**
+	 * Starting crypto account is set to 3 if it services regression is enabled in testConfig , else it is 0
+	 *
+	 * @param account
+	 */
 	public void setStartingCryptoAccount(Long account) {
 		if (account == null) {
 			throw new NullPointerException("Crypto account must not be null!");
@@ -281,7 +291,12 @@ public class ConfigBuilder {
 		moveTempConfigBackToOldConfig();
 	}
 
-	public String getIpAddressForServices() {
-		return StringUtils.join(ipAddressForServices, ",");
+	/**
+	 * Concatenate all publicIps with corresponding crypto accounts with comma separator
+	 *
+	 * @return
+	 */
+	public String getPublicIPsWithCryptoAccounts() {
+		return StringUtils.join(publicIPsWithCryptoAccounts, ",");
 	}
 }

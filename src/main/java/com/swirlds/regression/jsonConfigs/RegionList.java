@@ -56,17 +56,6 @@ public class RegionList {
 		return instanceList;
 	}
 
-	public String[] getTestClientInstanceList() {
-		return testClientInstanceList;
-	}
-
-	public void setTestClientInstanceList(String[] testClientInstanceList) {
-		this.testClientInstanceList = testClientInstanceList;
-		if (this.numberOfTestClientNodes < testClientInstanceList.length) {
-			this.numberOfTestClientNodes = testClientInstanceList.length;
-		}
-	}
-
 	public void setInstanceList(String[] instanceList) {
 		this.instanceList = instanceList;
 		if (this.numberOfNodes < instanceList.length) {
@@ -80,5 +69,16 @@ public class RegionList {
 
 	public void setNumberOfTestClientNodes(int numberOfTestClientNodes) {
 		this.numberOfTestClientNodes = numberOfTestClientNodes;
+	}
+
+	public String[] getTestClientInstanceList() {
+		return testClientInstanceList;
+	}
+
+	public void setTestClientInstanceList(String[] testClientInstanceList) {
+		this.testClientInstanceList = testClientInstanceList;
+		if (this.numberOfTestClientNodes < testClientInstanceList.length) {
+			this.numberOfTestClientNodes = testClientInstanceList.length;
+		}
 	}
 }

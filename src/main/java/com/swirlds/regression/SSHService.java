@@ -268,18 +268,6 @@ public class SSHService {
 		}
 	}
 
-	boolean scpFromTestClient(String topLevelFolders) {
-		try {
-			Collection<String> foundFiles = getListOfFiles(
-					RegressionUtilities.getServicesFilesToDownload());
-			scpFilesFromList(topLevelFolders, foundFiles);
-			return true;
-		} catch (IOException | StringIndexOutOfBoundsException e) {
-			log.error(ERROR, "Could not download files from testClient", e);
-			return false;
-		}
-	}
-
 	void scpFromListOnly(String topLevelFolders, ArrayList<String> patternsToMatch) {
 		try {
 			log.info(MARKER, "top level folder: {}", topLevelFolders);
@@ -507,24 +495,6 @@ public class SSHService {
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
-
-		return execCommand(command, description, 5).getExitStatus();
-	}
-
-
-	int execHGCAppWithProcessID(String jvmOptions) {
-		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
-			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
-		}
-
-		String command = String.format(
-				"cd %s; " +
-						"java %s -Dlog4j.configurationFile=log4j2.xml -cp 'data/lib/*' com.swirlds.platform.Browser " +
-						">>output.log 2>&1 & " +
-						"disown -h",
-				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-				jvmOptions);
-		String description = "Start Browser";
 
 		return execCommand(command, description, 5).getExitStatus();
 	}
@@ -1328,5 +1298,46 @@ public class SSHService {
 		Session.Command cmd = executeCmd(dateCmd);
 		String cmdResult = readCommandOutput(cmd).toString();
 		log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+	}
+
+	/**
+	 * When running services regression, download needed files to be validated from test client nodes at the end of the
+	 * test
+	 *
+	 * @param topLevelFolders
+	 * @return
+	 */
+	boolean scpFromTestClient(String topLevelFolders) {
+		try {
+			Collection<String> foundFiles = getListOfFiles(
+					RegressionUtilities.getServicesFilesToDownload());
+			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files from testClient", e);
+			return false;
+		}
+	}
+
+	/**
+	 * When running services-regression , execute command to run Browser and HederaNode.jar
+	 * @param jvmOptions
+	 * @return
+	 */
+	int execHGCAppWithProcessID(String jvmOptions) {
+		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+		}
+
+		String command = String.format(
+				"cd %s; " +
+						"java %s -Dlog4j.configurationFile=log4j2.xml -cp 'data/lib/*' com.swirlds.platform.Browser " +
+						">>output.log 2>&1 & " +
+						"disown -h",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				jvmOptions);
+		String description = "Start Browser";
+
+		return execCommand(command, description, 5).getExitStatus();
 	}
 }

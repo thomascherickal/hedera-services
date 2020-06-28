@@ -25,15 +25,9 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 public class StandardRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		if(testConfig.isServicesRegression()){
-			experiment.startHGCApp();
-			try {
-				Thread.sleep(15000);
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-			experiment.startSuiteRunner();
-		}else {
+		if (testConfig.isServicesRegression()) {
+			experiment.startServicesRegression();
+		} else {
 			// start all processes
 			experiment.startAllSwirlds();
 		}
@@ -42,4 +36,5 @@ public class StandardRun implements TestRun {
 		long testDuration = testConfig.getDuration() * MILLIS;
 		experiment.sleepThroughExperiment(testDuration);
 	}
+
 }

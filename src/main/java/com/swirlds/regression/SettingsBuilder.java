@@ -59,6 +59,8 @@ public class SettingsBuilder {
 
 	public SettingsBuilder(TestConfig expConf) {
 		this.testConfig = expConf;
+
+		// If it is services-regression read settings.txt file from hedera-services repo
 		if (testConfig.isServicesRegression()) {
 			String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
 					HEDERA_NODE_DIR;
