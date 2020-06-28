@@ -28,7 +28,7 @@ public class StandardRun implements TestRun {
 		if(testConfig.isServicesRegression()){
 			experiment.startHGCApp();
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(15000);
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
