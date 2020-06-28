@@ -45,6 +45,9 @@
   "resultFiles": [
 	"swirlds.log"
   ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST"
+  },
   "validator": [
 	"STATS",
 	"PLATFORM_TESTING_DEMO",
