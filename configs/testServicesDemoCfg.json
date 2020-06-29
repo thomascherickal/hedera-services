@@ -22,8 +22,7 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	"TopicCreateSpecs",
-	"SubmitMessageSpecs"
+	"ALL_SUITES" //	"TopicCreateSpecs","SubmitMessageSpecs"
   ],
   "app": {
 	"jar": "HederaNode.jar"
