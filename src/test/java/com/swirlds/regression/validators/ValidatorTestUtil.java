@@ -37,6 +37,7 @@ import java.util.Map;
 
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamType.EVENT;
+import static com.swirlds.regression.validators.StreamType.RECORD;
 
 public abstract class ValidatorTestUtil {
 
@@ -122,6 +123,8 @@ public abstract class ValidatorTestUtil {
 				} else {
 					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput, EVENT));
 				}
+			} else if (streamType == RECORD) {
+				data.add(new StreamingServerData(sigListInput, shaInput, shaListInput, RECORD));
 			}
 		}
 		if (data.size() == 0) {
