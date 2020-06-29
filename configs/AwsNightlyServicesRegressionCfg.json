@@ -13,18 +13,19 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
+		//"numberOfNodes" : 2,
 		"instanceList": [
 		  "i-0fb1680b9e839e8d4",
 		  "i-0802c914db617525e"
 		],
 		"numberOfTestClientNodes": 1
-		//		"testClientInstanceList": [
-		//		  "i-0ca8140d2b7133049"
-		//		]
+//		"testClientInstanceList": [
+//		  "i-088a86a25ab59c3ee"
+//		]
 	  }
 	]
   },
-  "eventFilesWriters": 4,
+  "eventFilesWriters": 2,
   "log": {
 	"uri":"testing/logs/"
   },
