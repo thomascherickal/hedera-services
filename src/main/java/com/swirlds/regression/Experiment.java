@@ -712,11 +712,6 @@ public class Experiment implements ExperimentSummary {
 			for (String logFile : testConfig.getResultFiles()) {
 				String logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + logFile;
 
-				//TODO re-evaluate if this is needed
-				if (testConfig.isServicesRegression()) {
-					logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + "output/" + logFile;
-				}
-
 				InputStream logInput = getInputStream(logFileName);
 
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
