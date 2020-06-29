@@ -1,5 +1,5 @@
 {
-  "name": "regression-services-test-Neeha",
+  "name": "regression-services-test-RecordStreamValidator",
   "result": {
 	"uri": "results"
   },
@@ -7,13 +7,18 @@
 	"service": "aws",
 	"securityGroup": "SwirldsSecGroup",
 	"instanceType": "M42xlarge",
-	"instanceKey": "regression-key-neeha",
+	"instanceKey": "qianqiu@swirlds.com",
 	"keyLocation": "./keys/my-key",
 	"login": "ubuntu",
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes" : 2,
+		"instanceList": [
+		  "i-08e4609e2c31975ce",
+		  "i-0b8645785bf85c039",
+		  "i-0e293032d97a8ddd7",
+		  "i-0e4897fffc6a80689"
+		],
 		"numberOfTestClientNodes": 1
 		//		"testClientInstanceList": [
 		//		  "i-0ca8140d2b7133049"
@@ -21,7 +26,8 @@
 	  }
 	]
   },
-  "eventFilesWriters": 2,
+  "eventFilesWriters": 4,
+  "recordFilesWriters": 4,
   "log": {
 	"uri":"testing/logs/"
   },
