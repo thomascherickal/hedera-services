@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 cd "`dirname "$0"`"
 configFile="./configs/$1"
+pathToServiceRepo="$2"
+platformDir=`pwd`
 echo $configFile
+echo $pathToServiceRepo
+echo $platformDir
 
 eval $(ssh-agent)
 ssh-add /home/ubuntu/.ssh/regression_rsa
 
-cd ../..
-cd hedera-services
+cd $pathToServiceRepo
 mvn -DskipTests clean install
 
-cd ../swirlds-platform/
+cd $platformDir
+cd ..
 git pull
 git submodule update --init --merge
 mvn -DskipTests clean deploy
