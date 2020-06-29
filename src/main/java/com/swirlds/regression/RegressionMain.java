@@ -97,19 +97,19 @@ public class RegressionMain {
 
 	private void RunCloudExperiment() {
 		final CloudService cloud = setUpCloudService();
-			if (cloud == null) {
-				reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
-				return;
-			}
-			//TODO Unit test for system.exit after cloud service set up
-			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-				@Override
-				public void run() {
-					log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
+		if (cloud == null) {
+			reportErrorToSlack(new Throwable("Cloud instances failed to start."), null);
+			return;
+		}
+		//TODO Unit test for system.exit after cloud service set up
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				log.error(ERROR, "Shutdown hook invoked. Destroying cloud instances");
 				cloud.destroyInstances();
-					log.info(MARKER, "cloud instances destroyed");
-				}
-			}));
+				log.info(MARKER, "cloud instances destroyed");
+			}
+		}));
 
 		try {
 			runExperiments(cloud);
@@ -187,7 +187,7 @@ public class RegressionMain {
 	void runExperiments(CloudService cloud) {
 		ZonedDateTime regressionTestStart = ZonedDateTime.now(ZoneOffset.ofHours(0));
 		SlackSummaryMsg summary = new SlackSummaryMsg(regConfig.getSlack(), regConfig, git,
-				RegressionUtilities.getResultsFolder(regressionTestStart,regConfig.getName()));
+				RegressionUtilities.getResultsFolder(regressionTestStart, regConfig.getName()));
 		Experiment currentTest = null;
 		SlackNotifier slacker = SlackNotifier.createSlackNotifier(regConfig.getSlack().getToken());
 		for (int i = 0; i < regConfig.getExperiments().size(); i++) {
@@ -310,7 +310,8 @@ public class RegressionMain {
 		//TODO: made retry constant in RegressionUtlities and use that
 		int counter = 0;
 		int wait_retry_times = WAIT_NODES_READY_TIMES + regConfig.getTotalNumberOfRegions();
-		while (!service.isInstanceReady() && counter < wait_retry_times) { // old value 10 is too short for multiregion network
+		while (!service.isInstanceReady() && counter < wait_retry_times) { // old value 10 is too short for multiregion
+			// network
 			log.info(MARKER, "instances still not ready...");
 			try {
 				sleep(10000);
@@ -360,9 +361,14 @@ public class RegressionMain {
 
 	public static void main(String[] args) {
 		String regressionFile;
+		String hederaServicesPath;
 		RegressionMain rm;
 		if (args.length > 0) {
 			regressionFile = args[0];
+			if (args.length == 2) {
+				hederaServicesPath = args[1];
+				RegressionUtilities.setHederaServicesRepoPath(hederaServicesPath);
+			}
 		} else {
 			log.info(MARKER, "regression file not found, using default regression file: {}",
 					RegressionUtilities.REGRESSION_CONFIG);

@@ -62,8 +62,7 @@ public class SettingsBuilder {
 
 		// If it is services-regression read settings.txt file from hedera-services repo
 		if (testConfig.isServicesRegression()) {
-			String hederaNodeDir = Paths.get("").toAbsolutePath().getParent().getParent() +
-					HEDERA_NODE_DIR;
+			String hederaNodeDir = RegressionUtilities.getHederaServicesRepoPath() + HEDERA_NODE_DIR;
 			readSettings(hederaNodeDir + RegressionUtilities.SETTINGS_FILE);
 		} else {
 			readSettings(RegressionUtilities.DEFAULT_SETTINGS_DIR + RegressionUtilities.SETTINGS_FILE);  // read default

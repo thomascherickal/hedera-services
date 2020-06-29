@@ -64,7 +64,7 @@ public class AWSNode {
 			this.totalNodes = rl.getNumberOfTestClientNodes();
 		}
 
-		if (rl.getInstanceList() != null) {
+		if (!isTestClientNode && rl.getInstanceList() != null) {
 			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
 			totalPreexistingInstances = rl.getInstanceList().length;
 			isExistingInstance = true;
