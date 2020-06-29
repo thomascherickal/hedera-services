@@ -22,17 +22,7 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	"TopicCreateSpecs",
-	"TopicUpdateSpecs",
-	"TopicDeleteSpecs",
-	"SubmitMessageSpecs",
-	"CryptoCreateSuite",
-	"HCSTopicFragmentationSuite",
-	"TopicGetInfoSpecs",
-	"ThresholdRecordCreationSpecs",
-	"FileRecordSanityChecks",
-	"ContractCallSuite",
-	"ProtectedFilesUpdateSuite"
+	"ALL_SUITES"
   ],
   "app": {
 	"jar": "HederaNode.jar"
