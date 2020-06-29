@@ -19,14 +19,14 @@ package com.swirlds.regression.validators;
 
 import java.time.Instant;
 
-public class EventSigFile implements Comparable<EventSigFile> {
+public class StreamSigFile implements Comparable<StreamSigFile> {
 
 	private static final String EXTENSION = ".evts_sig";
 
 	private final String filename;
 	private Instant creationTime;
 
-	public EventSigFile(final String filename) {
+	public StreamSigFile(final String filename) {
 		this.filename = filename;
 		try {
 			String dateInfo = this.filename.substring(0, this.filename.length() - EXTENSION.length());
@@ -47,16 +47,16 @@ public class EventSigFile implements Comparable<EventSigFile> {
 			return true;
 		}
 
-		if (!(o instanceof EventSigFile)) {
+		if (!(o instanceof StreamSigFile)) {
 			return false;
 		}
 
-		final EventSigFile other = (EventSigFile) o;
+		final StreamSigFile other = (StreamSigFile) o;
 		return this.filename.equals(other.filename);
 	}
 
 	@Override
-	public int compareTo(final EventSigFile o) {
+	public int compareTo(final StreamSigFile o) {
 		return this.creationTime.compareTo(o.creationTime);
 	}
 }

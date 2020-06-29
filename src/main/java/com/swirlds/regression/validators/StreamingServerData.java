@@ -18,90 +18,99 @@
 package com.swirlds.regression.validators;
 
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
 public class StreamingServerData {
-	private InputStream sha1sumStream;
+	/**
+	 * the hash value of the list of hash values of stream files
+	 */
 	private String sha1sum = null;
+	/**
+	 * an InputSteam from which we read sha1sum
+	 */
+	private InputStream sha1sumStream;
+	/**
+	 * have we already read sha1sum
+ 	 */
 	private boolean sha1sumRead = false;
-	private ArrayList<String> sha1Events = null;
-	private boolean sha1EventsRead = false;
-	private final List<String> evtsSigEvents;
+	/**
+	 * a list of sha1sum of each stream file
+ 	 */
+	private ArrayList<String> sha1List = null;
+	/**
+	 * have we already read sha1List
+ 	 */
+	private boolean sha1ListRead = false;
+	/**
+	 * a list of stream signature file names
+	 */
+	private final List<String> sigFileNames;
+	/**
+	 * an InputStream from which we read the result of comparing hashes of recovered event
+	 * stream files with previous generated event stream files
+	 */
 	private InputStream recoverEventMatchLog = null;
 
-	public StreamingServerData(InputStream sha1sumStream) {
-		this(null, sha1sumStream, null);
-	}
-
-	public StreamingServerData(InputStream sha1sumStream, InputStream sha1EventStream) {
-		this(null, sha1sumStream, sha1EventStream);
-	}
-
 	/**
 	 *
-	 * @param evtsSigStream
-	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sigFileNameStream
+	 * 		The input stream contains the list of file names for signatures of stream file
 	 * @param sha1sumStream
-	 * 		The input stream contains the hash value of the list of hash values of event stream files
-	 * @param sha1EventStream
-	 * 		The input stream contains the list of hash values of event stream files
-	 * 	stream files a with previous generated event stream files
+	 * 		The input stream contains the hash value of the list of hash values of stream files
+	 * @param sha1ListStream
+	 * 		The input stream contains the list of hash values of stream files
 	 */
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
-			final InputStream sha1EventStream) {
-		evtsSigEvents = readEventsFile(evtsSigStream);
+	public StreamingServerData(final InputStream sigFileNameStream,
+			final InputStream sha1sumStream,
+			final InputStream sha1ListStream) {
+		sigFileNames = readStreamFileNames(sigFileNameStream);
 		this.sha1sumStream = sha1sumStream;
-		getSha1Events(sha1EventStream);
+		getSha1Lists(sha1ListStream);
 	}
 
 	/**
 	 *
-	 * @param evtsSigStream
-	 * 		The input stream contains the list of file names for signatures of event stream file
+	 * @param sigFileNameStream
+	 * 		The input stream contains the list of file names for signatures of stream file
 	 * @param sha1sumStream
-	 * 		The input stream contains the hash value of the list of hash values of event stream files
-	 * @param sha1EventStream
-	 * 		The input stream contains the list of hash values of event stream files
+	 * 		The input stream contains the hash value of the list of hash values of stream files
+	 * @param sha1ListStream
+	 * 		The input stream contains the list of hash values of stream files
 	 * @param recoverEventMatchLog
-	 * 		The input stream contains the comparison result of comparing hashes of recovered event
-	 * 	stream files a with previous generated event stream files
+	 * 		The input stream contains the result of comparing hashes of recovered event
+	 * 	stream files with previous generated event stream files
 	 */
-	public StreamingServerData(final InputStream evtsSigStream, final InputStream sha1sumStream,
-			final InputStream sha1EventStream, InputStream recoverEventMatchLog) {
-		evtsSigEvents = readEventsFile(evtsSigStream);
-		this.sha1sumStream = sha1sumStream;
-		getSha1Events(sha1EventStream);
+	public StreamingServerData(final InputStream sigFileNameStream,
+			final InputStream sha1sumStream,
+			final InputStream sha1ListStream,
+			final InputStream recoverEventMatchLog) {
+		this(sigFileNameStream, sha1sumStream, sha1ListStream);
 		this.recoverEventMatchLog = recoverEventMatchLog;
 	}
 
-	private void getSha1Events(InputStream sha1EventStream) {
-		sha1Events = new ArrayList<>();
-		if (!sha1EventsRead) {
-			sha1Events.addAll(readEventsFile(sha1EventStream));
-			sha1EventsRead = true;
+	private void getSha1Lists(InputStream sha1ListStream) {
+		sha1List = new ArrayList<>();
+		if (!sha1ListRead) {
+			sha1List.addAll(readStreamFileNames(sha1ListStream));
+			sha1ListRead = true;
 		}
 	}
 
-	private List<String> readEventsFile(final InputStream eventStream) {
-		final List<String> events = new ArrayList<>();
-		if (eventStream == null) {
-			return events;
+	private List<String> readStreamFileNames(final InputStream fileNameStream) {
+		final List<String> files = new ArrayList<>();
+		if (fileNameStream == null) {
+			return files;
 		}
 
-		try (final Scanner eventScanner = new Scanner(eventStream)){
-			while (eventScanner.hasNextLine()) {
-				events.add(eventScanner.nextLine());
+		try (final Scanner scanner = new Scanner(fileNameStream)){
+			while (scanner.hasNextLine()) {
+				files.add(scanner.nextLine());
 			}
 		}
 
-		return events;
+		return files;
 	}
 
 	public String getSha1SumData() {
@@ -117,31 +126,23 @@ public class StreamingServerData {
 		return sha1sum;
 	}
 
-	private boolean checkShaEventAvailable() {
-		return sha1EventsRead && sha1Events != null;
+	private boolean checkShaListAvailable() {
+		return sha1ListRead && sha1List != null;
 	}
 
-	public List<String> getSha1EventData() {
-		if (!checkShaEventAvailable()) {
+	public List<String> getSha1ListData() {
+		if (!checkShaListAvailable()) {
 			return null;
 		}
-		return sha1Events;
+		return sha1List;
 	}
 
-	public int getNumberOfEvents() {
-		return sha1Events.size();
+	public int getNumberOfStreamFiles() {
+		return sha1List.size();
 	}
 
-
-	public String getLastEvent() {
-		if (checkShaEventAvailable()) {
-			return null;
-		}
-		return sha1Events.get(sha1Events.size() - 1);
-	}
-
-	public EventSigEvent getEvtsSigEvents() {
-		return new EventSigEvent(this.evtsSigEvents);
+	public StreamSigsInANode getSigFileNames() {
+		return new StreamSigsInANode(this.sigFileNames);
 	}
 
 	public InputStream getRecoverEventMatchLog() {

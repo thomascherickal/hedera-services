@@ -19,17 +19,13 @@ package com.swirlds.regression.validators;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
-import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
-import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogParser;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,13 +42,13 @@ public abstract class ValidatorTestUtil {
 	public static Map<Integer, String> loadExpectedMapPaths(String directory) {
 		Map<Integer, String> expectedMapPaths = new HashMap<>();
 
-		for (int i = 0; i < 4 ; i++) {
+		for (int i = 0; i < 4; i++) {
 			final String expectedMapPath = String.format("%s/node%04d/" + LifecycleValidator.EXPECTED_MAP_ZIP,
 					directory, i);
-			if(new File(expectedMapPath).exists()) {
+			if (new File(expectedMapPath).exists()) {
 				expectedMapPaths.put(i, expectedMapPath);
-			}else{
-				throw new RuntimeException(" expectedMap in node "+ i + " doesn't exist");
+			} else {
+				throw new RuntimeException(" expectedMap in node " + i + " doesn't exist");
 			}
 		}
 
@@ -90,36 +86,41 @@ public abstract class ValidatorTestUtil {
 		return nodeData;
 	}
 
-
-	public static List<StreamingServerData> loadStreamingServerData(String directory) throws RuntimeException {
+	public static List<StreamingServerData> loadStreamingServerData(final String directory,
+			final StreamType streamType) throws RuntimeException {
 		List<StreamingServerData> data = new ArrayList<>();
 		for (int i = 0; ; i++) {
-			final String shaFileName = String.format("%s/node%04d/" + StreamingServerValidator.FINAL_EVENT_FILE_HASH,
+			final String finalShaFileName = String.format(
+					"%s/node%04d/" + StreamingServerValidator.buildFinalHashFileName(streamType.getExtension()),
 					directory, i);
-			final String shaEventFileName = String.format("%s/node%04d/" + StreamingServerValidator.EVENT_LIST_FILE,
+			final String shaListFileName = String.format(
+					"%s/node%04d/" + StreamingServerValidator.buildShaListFileName(streamType.getExtension()),
 					directory, i);
-			final String eventsSigFileName =
-					String.format("%s/node%04d/" + StreamingServerValidator.EVENT_SIG_FILE_LIST,
-					directory, i);
+			final String sigListFileName =
+					String.format(
+							"%s/node%04d/" + StreamingServerValidator.buildSigListFileName(streamType.getExtension()),
+							directory, i);
 
-			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(shaFileName);
+			final InputStream shaInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(finalShaFileName);
 			if (shaInput == null) {
 				break;
 			}
 
-			final InputStream shaEventInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					shaEventFileName);
-			final InputStream eventsSigInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					eventsSigFileName);
+			final InputStream shaListInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+					shaListFileName);
+			final InputStream sigListInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+					sigListFileName);
 
-			InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-					String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
-			if (recoverEventLogStream != null) {
-				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput,
-						ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-								String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
-			} else {
-				data.add(new StreamingServerData(eventsSigInput, shaInput, shaEventInput));
+			if (streamType == StreamType.EVENT) {
+				InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+						String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
+				if (recoverEventLogStream != null) {
+					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput,
+							ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
+									String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
+				} else {
+					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput));
+				}
 			}
 		}
 		if (data.size() == 0) {
@@ -130,6 +131,7 @@ public abstract class ValidatorTestUtil {
 
 	/**
 	 * load TestConfig from .json file
+	 *
 	 * @param jsonPath
 	 * @return
 	 * @throws IOException
