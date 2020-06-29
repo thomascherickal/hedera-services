@@ -1322,6 +1322,7 @@ public class SSHService {
 
 	/**
 	 * When running services-regression , execute command to run Browser and HederaNode.jar
+	 *
 	 * @param jvmOptions
 	 * @return
 	 */
@@ -1332,7 +1333,8 @@ public class SSHService {
 
 		String command = String.format(
 				"cd %s; " +
-						"java %s -Dlog4j.configurationFile=log4j2.xml -cp 'data/lib/*' com.swirlds.platform.Browser " +
+						"java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
+						"-cp 'data/lib/*' com.swirlds.platform.Browser " +
 						">>output.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
