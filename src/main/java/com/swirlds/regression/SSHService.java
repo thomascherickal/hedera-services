@@ -487,11 +487,12 @@ public class SSHService {
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 		String command = String.format(
 				"cd %s; " +
-						"NODES=\"%s\" DSL_SUITE_RUNNER_ARGS=\"TopicCreateSpecs SubmitMessageSpecs -TLS=off " +
+						"NODES=\"%s\" DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
 						"-NODE=random\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
+				RegressionUtilities.getTestSuites(),
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
