@@ -26,14 +26,14 @@ public class StreamSigsInANode implements Iterable<StreamSigFile> {
 
 	private final List<StreamSigFile> streamSigFiles;
 
-	public StreamSigsInANode(final List<String> streamSigFiles) {
+	public StreamSigsInANode(final List<String> streamSigFiles, final StreamType streamType) {
 		this.streamSigFiles = new ArrayList<>();
 		for (final String sigFileName : streamSigFiles) {
 			if (sigFileName.trim().isEmpty()) {
 				continue;
 			}
 
-			this.streamSigFiles.add(new StreamSigFile((sigFileName)));
+			this.streamSigFiles.add(new StreamSigFile(sigFileName, streamType));
 		}
 
 		Collections.sort(this.streamSigFiles);

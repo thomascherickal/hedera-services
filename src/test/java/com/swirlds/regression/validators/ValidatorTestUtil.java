@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+import static com.swirlds.regression.validators.StreamType.EVENT;
 
 public abstract class ValidatorTestUtil {
 
@@ -111,15 +112,15 @@ public abstract class ValidatorTestUtil {
 			final InputStream sigListInput = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
 					sigListFileName);
 
-			if (streamType == StreamType.EVENT) {
+			if (streamType == EVENT) {
 				InputStream recoverEventLogStream = ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
 						String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME);
 				if (recoverEventLogStream != null) {
 					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput,
 							ValidatorTestUtil.class.getClassLoader().getResourceAsStream(
-									String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME)));
+									String.format("%s/node%04d/", directory, i) + EVENT_MATCH_LOG_NAME), EVENT));
 				} else {
-					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput));
+					data.add(new StreamingServerData(sigListInput, shaInput, shaListInput, EVENT));
 				}
 			}
 		}

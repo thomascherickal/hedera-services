@@ -20,16 +20,14 @@ package com.swirlds.regression.validators;
 import java.time.Instant;
 
 public class StreamSigFile implements Comparable<StreamSigFile> {
-
-	private static final String EXTENSION = ".evts_sig";
-
 	private final String filename;
 	private Instant creationTime;
 
-	public StreamSigFile(final String filename) {
+	public StreamSigFile(final String filename, final StreamType streamType) {
 		this.filename = filename;
 		try {
-			String dateInfo = this.filename.substring(0, this.filename.length() - EXTENSION.length());
+			String dateInfo = this.filename.substring(0,
+					this.filename.length() - streamType.getSigExtension().length());
 			dateInfo = dateInfo.replace("_", ":");
 			this.creationTime = Instant.parse(dateInfo);
 		} catch (final Exception ex) {

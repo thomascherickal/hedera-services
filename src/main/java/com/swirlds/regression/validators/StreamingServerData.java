@@ -53,6 +53,8 @@ public class StreamingServerData {
 	 */
 	private InputStream recoverEventMatchLog = null;
 
+	private StreamType streamType;
+
 	/**
 	 *
 	 * @param sigFileNameStream
@@ -61,13 +63,17 @@ public class StreamingServerData {
 	 * 		The input stream contains the hash value of the list of hash values of stream files
 	 * @param sha1ListStream
 	 * 		The input stream contains the list of hash values of stream files
+	 * @param streamType
+	 * 		type of stream files
 	 */
 	public StreamingServerData(final InputStream sigFileNameStream,
 			final InputStream sha1sumStream,
-			final InputStream sha1ListStream) {
+			final InputStream sha1ListStream,
+			final StreamType streamType) {
 		sigFileNames = readStreamFileNames(sigFileNameStream);
 		this.sha1sumStream = sha1sumStream;
 		getSha1Lists(sha1ListStream);
+		this.streamType = streamType;
 	}
 
 	/**
@@ -81,12 +87,15 @@ public class StreamingServerData {
 	 * @param recoverEventMatchLog
 	 * 		The input stream contains the result of comparing hashes of recovered event
 	 * 	stream files with previous generated event stream files
+	 * @param streamType
+	 * 		type of stream files
 	 */
 	public StreamingServerData(final InputStream sigFileNameStream,
 			final InputStream sha1sumStream,
 			final InputStream sha1ListStream,
-			final InputStream recoverEventMatchLog) {
-		this(sigFileNameStream, sha1sumStream, sha1ListStream);
+			final InputStream recoverEventMatchLog,
+			final StreamType streamType) {
+		this(sigFileNameStream, sha1sumStream, sha1ListStream, streamType);
 		this.recoverEventMatchLog = recoverEventMatchLog;
 	}
 
@@ -142,7 +151,7 @@ public class StreamingServerData {
 	}
 
 	public StreamSigsInANode getSigFileNames() {
-		return new StreamSigsInANode(this.sigFileNames);
+		return new StreamSigsInANode(this.sigFileNames, this.streamType);
 	}
 
 	public InputStream getRecoverEventMatchLog() {

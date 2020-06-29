@@ -42,4 +42,8 @@ public enum StreamType {
 	public String getExtension() {
 		return extension;
 	}
+
+	public String getSigExtension() {
+		return "." + getExtension() + "_sig";
+	}
 }

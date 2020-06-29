@@ -116,7 +116,7 @@ public class ExperimentLocalFileHelper {
 
 			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
 			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-					getInputStream(shaEventFileName), recoverEventLogStream));
+					getInputStream(shaEventFileName), recoverEventLogStream, streamType));
 		}
 		return nodeData;
 	}
