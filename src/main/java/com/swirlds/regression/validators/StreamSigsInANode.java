@@ -72,9 +72,8 @@ public class StreamSigsInANode implements Iterable<StreamSigFile> {
 
 		final int diffInSize = Math.abs(this.streamSigFiles.size() - other.streamSigFiles.size());
 		/*
-		Because some nodes may be killed while events are still being written, the last event file or two may
-		mismatch. It is assumed that in this case if all other events are equal the last two events
-		would be equal as well. The difference is not allowed to be greater than 2.
+		Because some nodes may be killed while streams are still being written, the last stream file or two may
+		mismatch. The difference is not allowed to be greater than 2.
 		*/
 
 		if (diffInSize > 2) {

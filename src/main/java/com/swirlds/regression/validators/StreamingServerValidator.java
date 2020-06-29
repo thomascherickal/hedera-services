@@ -29,7 +29,7 @@ import static com.swirlds.regression.RegressionUtilities.EVENT_MATCH_MSG;
 /**
  * the files for validation are generate by SSHService.makeSha1sumOfStreamedEvents(int, StreamType)}
  */
-public class StreamingServerValidator extends Validator {
+public abstract class StreamingServerValidator extends Validator {
 	/**
 	 * name of the file which contains sha1sum of the file whose name is
 	 * {@link StreamingServerValidator#SHA_LIST_FILE_NAME}
@@ -60,7 +60,7 @@ public class StreamingServerValidator extends Validator {
 	 */
 	private StreamType streamType;
 
-	public StreamingServerValidator(final List<StreamingServerData> ssData,
+	StreamingServerValidator(final List<StreamingServerData> ssData,
 			final boolean reconnect, final StreamType streamType) {
 		this.ssData = ssData;
 		this.reconnect = reconnect;
@@ -86,7 +86,7 @@ public class StreamingServerValidator extends Validator {
 			isChecksumListValid(sha1sumList);
 		}
 
-		validateEvtSigFiles(validateNodesNum);
+		validateSigFiles(validateNodesNum);
 
 		if (stateRecoverMode) {
 			for (int i = 0; i < ssData.size(); i++) {
@@ -130,7 +130,9 @@ public class StreamingServerValidator extends Validator {
 
 	private void isChecksumListValid(final List<String> sha1sumList) {
 		if (sha1sumList.size() < 1) {
-			addInfo(String.format("No problems found with the events recorded by the first %d servers", ssData.size()));
+			addInfo(String.format("No problems found with the %s recorded by the first %d servers",
+					streamType.getExtension(),
+					ssData.size()));
 			this.valid = true;
 			return;
 		}
@@ -141,15 +143,17 @@ public class StreamingServerValidator extends Validator {
 		for (int i = 0; i < sha1sumList.size(); i++) {
 			final String curr = sha1sumList.get(i);
 			if (curr.startsWith(EMPTY_HASH)) {
-				addError(String.format("Server %d had no evt files.", i));
+				addError(String.format("Server %d had no %s files.", i, streamType.getExtension()));
 				someEmpty = true;
 			}
 
 			if (prev != null && !prev.equals(curr)) {
-				if (isMismatchOnlyLastEvent(i)) {
+				if (isMismatchOnlyLastTwoEvent(i)) {
 					addInfo(String.format(
-							"Server %d and %d do servers have the same hashes, except the last evt. This is common " +
-									"in apps that do not have a set ending.", i - 1, i));
+							"Server %d and %d do servers have the same hashes, except the last %s." +
+									" This is common " +
+									"in apps that do not have a set ending.",
+							i - 1, i, streamType.getExtension()));
 				} else {
 					addInfo(String.format("Server %d and %d do not have the same sha1sum file %s", i - 1, i,
 							buildFinalHashFileName(streamType.getExtension())));
@@ -160,21 +164,21 @@ public class StreamingServerValidator extends Validator {
 		}
 
 		if (!mismatch && !someEmpty) {
-			addInfo(String.format("The events saved by the first %d servers have the same hashes.",
-					sha1sumList.size()));
+			addInfo(String.format("The %s saved by the first %d servers have the same hashes.",
+					streamType.getDescription(), sha1sumList.size()));
 			valid = true;
 		}
 	}
 
 	/*
-		Because some nodes may be killed while events are still being written, the last event file (or two) may
-		mismatch. For that reason we check from the second to last common last event back. If a difference is found
-		then an error existing in the streaming data. There is a small statistical chance the lastCommonEvent is not
-		mismatched, but that a new evt file was started after the last line of the leastCommonEvt was written. This is
-		a small likelihood and it is assumed that in this case if all other events are equal the lastCommonEvent
+		Because some nodes may be killed while stream files are still being written, the last stream file (or two) may
+		mismatch. For that reason we check from the second to last common last stream file back. If a difference is found
+		then an error existing in the streaming data. There is a small statistical chance the lastCommonStream is not
+		mismatched, but that a new stream file was started after the last line of the leastCommonEvt was written. This is
+		a small likelihood and it is assumed that in this case if all other stream files are equal the lastCommonStream
 		would be equal as well.
 	 */
-	private boolean isMismatchOnlyLastEvent(final int node) {
+	private boolean isMismatchOnlyLastTwoEvent(final int node) {
 		/* grab streaming server data and make sure it's not null */
 		final StreamingServerData currNode = ssData.get(node);
 		final StreamingServerData prevNode = ssData.get(node - 1);
@@ -183,15 +187,15 @@ public class StreamingServerValidator extends Validator {
 		) {
 			return false;
 		}
-		/* lastCommonEvent should be an index, but the getNumberOfEvents returns a size */
-		final int lastCommonEvent = Math.min(currNode.getNumberOfStreamFiles(), prevNode.getNumberOfStreamFiles()) - 1;
-		/* Grab all the events, and start checking from the event BEFORE the lastCommonEvent, if there are any
-		   differences return false. If the only difference was the lastCommonEvent return true. this function assumes
-		   lastCommonEvent is mismatched because this function should only be called if the sha for the totals is
+		/* lastCommonStream should be an index, but the getNumberOfStreamFiles returns a size */
+		final int lastCommonStream = Math.min(currNode.getNumberOfStreamFiles(), prevNode.getNumberOfStreamFiles()) - 1;
+		/* Grab all the stream files, and start checking from the stream fle BEFORE the lastCommonStream, if there are any
+		   differences return false. If the only difference was the lastCommonStream return true. this function assumes
+		   lastCommonStream is mismatched because this function should only be called if the sha for the totals is
 		   wrong. */
 		final List<String> currEventList = currNode.getSha1ListData();
 		final List<String> prevEventList = prevNode.getSha1ListData();
-		for (int i = lastCommonEvent - 1; i >= 0; i--) {
+		for (int i = lastCommonStream - 1; i >= 0; i--) {
 			if (!currEventList.get(i).equals(prevEventList.get(i))) {
 				return false;
 			}
@@ -204,8 +208,8 @@ public class StreamingServerValidator extends Validator {
 		return valid;
 	}
 
-	private void validateEvtSigFiles(final int validateNodesNum) {
-		boolean evtsValid = true;
+	private void validateSigFiles(final int validateNodesNum) {
+		boolean sigsValid = true;
 		final List<StreamSigsInANode> sigEvents = this.ssData.stream()
 				.map(StreamingServerData::getSigFileNames)
 				.collect(Collectors.toList());
@@ -224,12 +228,13 @@ public class StreamingServerValidator extends Validator {
 						"--- End of diff\n" +
 						'\n';
 				addError(description);
-				evtsValid = false;
+				sigsValid = false;
 			}
 		}
 
-		this.valid &= evtsValid;
-		addInfo(String.format("Are evts_sig files valid: %s for %d files", evtsValid, reference.size()));
+		this.valid &= sigsValid;
+		addInfo(String.format("Are %s_sig files valid: %s for %d files",
+				streamType.getExtension(), sigsValid, reference.size()));
 	}
 
 	private boolean checkRecoverEventMatchLog(InputStream input) {

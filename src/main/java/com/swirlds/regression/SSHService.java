@@ -237,7 +237,7 @@ public class SSHService {
 			return;
 		}
 
-		if (!FileUtils.generateTarGZFile(new File(RegressionUtilities.TAR_NAME), fileList)) {
+		if (!FileUtils.generateTarGZFile(tarball, fileList)) {
 			log.error(ERROR, "could not create tarball on node: {}", ipAddress);
 		}
 	}

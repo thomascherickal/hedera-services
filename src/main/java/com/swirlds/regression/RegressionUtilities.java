@@ -513,8 +513,7 @@ public class RegressionUtilities {
 	 */
 	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
 		Collection<File> returnIterator = new ArrayList<>();
-		String hederaTestClientDir = Paths.get("").toAbsolutePath().
-				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
+		String hederaTestClientDir = Paths.get("").toAbsolutePath().getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
 		// TODO add only needed files in resource folder
 		returnIterator.add(new File(hederaTestClientDir + "src/"));

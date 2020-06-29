@@ -32,9 +32,11 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.EventStreamValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
+import com.swirlds.regression.validators.RecordStreamValidator;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerData;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -818,19 +820,19 @@ public class Experiment implements ExperimentSummary {
 
 		// Add stream server validator if event streaming is configured
 		if (regConfig.getEventFilesWriters() > 0) {
-			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					experimentLocalFileHelper.loadStreamingServerData(EVENT), reconnect, EVENT);
+			EventStreamValidator eventStreamValidator = new EventStreamValidator(
+					experimentLocalFileHelper.loadStreamingServerData(EVENT), reconnect);
 			if (testConfig.getRunType() == RunType.RECOVER) {
-				ssValidator.setStateRecoverMode(true);
+				eventStreamValidator.setStateRecoverMode(true);
 			}
 
-			requiredValidator.add(ssValidator);
+			requiredValidator.add(eventStreamValidator);
 		}
 
 		// Add record server validator if record streaming is configured
 		if (regConfig.getRecordFilesWriters() > 0) {
-			StreamingServerValidator ssValidator = new StreamingServerValidator(
-					experimentLocalFileHelper.loadStreamingServerData(RECORD), reconnect, RECORD);
+			RecordStreamValidator ssValidator = new RecordStreamValidator(
+					experimentLocalFileHelper.loadStreamingServerData(RECORD));
 
 			requiredValidator.add(ssValidator);
 		}
