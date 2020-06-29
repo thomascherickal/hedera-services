@@ -199,12 +199,13 @@ public class RegressionUtilities {
 	/**
 	 * Services regression related constants
 	 */
-	public static final String HEDERA_NODE_DIR = "/hedera-services/hedera-node/";
-	public static final String HEDERA_TEST_CLIENT_DIR = "/hedera-services/test-clients/";
+	public static final String HEDERA_NODE_DIR = "/hedera-node/";
+	public static final String HEDERA_TEST_CLIENT_DIR = "/test-clients/";
 	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
 	private static String publicIPStringForServices = null;
 	private static TestConfig testConfig = null;
 	private static String testSuites;
+	private static String hederaServicesRepoPath;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -513,8 +514,7 @@ public class RegressionUtilities {
 	 */
 	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
 		Collection<File> returnIterator = new ArrayList<>();
-		String hederaTestClientDir = Paths.get("").toAbsolutePath().
-				getParent().getParent() + HEDERA_TEST_CLIENT_DIR;
+		String hederaTestClientDir = RegressionUtilities.getHederaServicesRepoPath() + HEDERA_TEST_CLIENT_DIR;
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
 		// TODO add only needed files in resource folder
 		returnIterator.add(new File(hederaTestClientDir + "src/"));
@@ -530,8 +530,7 @@ public class RegressionUtilities {
 	 */
 	public static Collection<File> getServicesFilesToUpload(File keyFile) {
 		Collection<File> returnIterator = new ArrayList<>();
-		String hederaNodeDir = Paths.get("").toAbsolutePath().
-				getParent().getParent() + HEDERA_NODE_DIR;
+		String hederaNodeDir = hederaServicesRepoPath + HEDERA_NODE_DIR;
 		returnIterator.add(new File(hederaNodeDir + "data/apps/"));
 		returnIterator.add(new File(hederaNodeDir + "data/backup/"));
 		returnIterator.add(new File(hederaNodeDir + "data/keys/"));
@@ -616,4 +615,13 @@ public class RegressionUtilities {
 		returnIterator.add("*.log");
 		return returnIterator;
 	}
+
+	public static String getHederaServicesRepoPath() {
+		return hederaServicesRepoPath;
+	}
+
+	public static void setHederaServicesRepoPath(String hederaServicesRepoPath) {
+		RegressionUtilities.hederaServicesRepoPath = hederaServicesRepoPath;
+	}
+
 }

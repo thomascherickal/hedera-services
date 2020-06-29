@@ -27,4 +27,4 @@ java \
 -Daws.secretKey=y3EsXA3inhICpBPeNVlx7CHhv+5iUDqbTtHU6SaG \
 -Dlog4j.configurationFile=log4j2-jrs.xml \
 -Dspring.output.ansi.enabled=ALWAYS \
--jar regression.jar "$configFile"
+-jar regression.jar "$configFile" "$pathToServiceRepo"
