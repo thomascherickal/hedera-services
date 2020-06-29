@@ -537,10 +537,11 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
 		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
-		returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
+		//returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
 		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
-		returnIterator.add(new File(hederaNodeDir + "hedera.crt"));
-		returnIterator.add(new File(hederaNodeDir + "hedera.key"));
+		returnIterator.add(new File( "hedera.crt"));
+		returnIterator.add(new File( "hedera.key"));
+		returnIterator.add(new File("log4j2-services-regression.xml"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
 		returnIterator.add(keyFile);
@@ -582,7 +583,7 @@ public class RegressionUtilities {
 		returnIterator.add(keyFile.getName());
 		returnIterator.add(RegressionUtilities.CONFIG_FILE);
 		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
-		returnIterator.add("log4j2.xml");
+		returnIterator.add("log4j2-services-regression.xml");
 		return returnIterator;
 	}
 

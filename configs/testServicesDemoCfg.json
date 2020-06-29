@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 10000,
+  "duration": 1000,
   "settings": [
 	{
 	  "name": "showInternalStats",
