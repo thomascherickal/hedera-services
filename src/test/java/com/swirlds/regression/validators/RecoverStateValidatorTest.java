@@ -55,7 +55,7 @@ class RecoverStateValidatorTest {
 	})
 	void validateSuccess(final String testDir) {
 		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
-		final StreamingServerValidator validator = new StreamingServerValidator(data, false, StreamType.EVENT);
+		final EventStreamValidator validator = new EventStreamValidator(data, false);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());
