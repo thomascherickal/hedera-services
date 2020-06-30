@@ -1,0 +1,52 @@
+# Java Maven CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+
+  build_development_branch:
+    docker:
+      - image: swirlds/cci-openjdk:12.0.2
+      - image: postgres:10.9
+        environment:
+          POSTGRES_USER: swirlds
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fcfs
+        resource_class: large
+    working_directory: ~/repo
+    resource_class: large
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx5200m
+    steps:
+      - checkout
+      - run: git submodule update --init --recursive --checkout
+        - run: cd regression; git checkout origin/P2161-automatePointerUpdate
+      - run:
+          command: mvn -s .circleci.settings.xml clean deploy -DskipTests
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build_development_branch:
+          filters:
+            branches:
+              only:
+                - P2161-automatePointerUpdate
