@@ -22,7 +22,7 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init --recursive --checkout
-        - run: cd regression; git checkout origin/P2161-automatePointerUpdate
+      - run: cd regression; git checkout origin/P2161-automatePointerUpdate
       - run:
           command: mvn -s .circleci.settings.xml clean deploy -DskipTests
       - save_cache:
