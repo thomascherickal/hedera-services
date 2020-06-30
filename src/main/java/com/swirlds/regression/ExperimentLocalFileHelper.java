@@ -19,6 +19,10 @@ package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.logs.services.HAPIClientLogParser;
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.StdoutLogParser;
+import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.StreamingServerData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.swirlds.regression.RegressionUtilities.HAPI_CLIENT_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.utils.FileUtils.getInputStream;
@@ -71,6 +77,7 @@ public class ExperimentLocalFileHelper {
 
 	/**
 	 * Experiment folder name for the logs downloaded from test client nodes
+	 *
 	 * @param nodeNumber
 	 * @return
 	 */
@@ -129,5 +136,39 @@ public class ExperimentLocalFileHelper {
 			results[nodeIndex] = resultFolder;
 		}
 		return results;
+	}
+
+	List<NodeData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
+		int numberOfTestClientNodes;
+		if (regConfig.getLocal() != null) {
+			numberOfTestClientNodes = regConfig.getLocal().getNumberOfNodes();
+		} else if (testClientNodes == null || testClientNodes.isEmpty()) {
+			return null;
+		} else {
+			numberOfTestClientNodes = testClientNodes.size();
+		}
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; i < numberOfTestClientNodes; i++) {
+			String hapiClientLogFileName = getExperimentResultsFolderForTestClientNode(i)
+					+ OUTPUT_LOG_FILENAME;
+
+			InputStream logInput = getInputStream(hapiClientLogFileName);
+
+			LogReader logReader = null;
+			if (logInput != null) {
+				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
+			}
+
+//			String outputLogFileName = getExperimentResultsFolderForTestClientNode(
+//					i) + OUTPUT_LOG_FILENAME;
+//			InputStream outputLogInput = getInputStream(outputLogFileName);
+//			LogReader outputLogReader = null;
+//			if (outputLogInput != null) {
+//				outputLogReader = LogReader.createReader(new StdoutLogParser(), outputLogInput);
+//			}
+
+			nodeData.add(new NodeData(logReader/*, outputLogReader*/));
+		}
+		return nodeData;
 	}
 }

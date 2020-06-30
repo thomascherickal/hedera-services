@@ -739,6 +739,7 @@ public class Experiment implements ExperimentSummary {
 		return nodeData;
 	}
 
+
 	private void validateTest() {
 		SlackTestMsg slackMsg = new SlackTestMsg(
 				getUniqueId(),
@@ -791,8 +792,17 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
-			Validator validatorToAdd = ValidatorFactory.getValidator(item, nodeData, testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths());
+			List<NodeData> testClientNodeData = new ArrayList<>();
+			if(testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT){
+				testClientNodeData = experimentLocalFileHelper.
+						loadTestClientNodeData(testClientNodes);
+			}
+
+			Validator validatorToAdd = ValidatorFactory.getValidator(item,
+					nodeData,
+					testConfig,
+					experimentLocalFileHelper.loadExpectedMapPaths(),
+					testClientNodeData);
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(
 						experimentLocalFileHelper.getExperimentFolder());

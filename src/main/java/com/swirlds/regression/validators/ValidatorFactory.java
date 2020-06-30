@@ -26,11 +26,12 @@ public class ValidatorFactory {
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
 			TestConfig testConfig) {
-		return getValidator(vt, nodeData, testConfig, null);
+		return getValidator(vt, nodeData, testConfig, null, null);
 	}
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
-			TestConfig testConfig, Map<Integer, String> expectedMapPaths) {
+			TestConfig testConfig, Map<Integer, String> expectedMapPaths,
+			List<NodeData> testClientNodeData) {
 		if (vt == null) {
 			return null;
 		}
@@ -60,6 +61,8 @@ public class ValidatorFactory {
 				return new GossipCompensationValidator(nodeData);
 			case LIFECYCLE:
 				return new LifecycleValidator(expectedMapPaths);
+			case HAPI_CLIENT:
+				return new HAPIClientValidator(testClientNodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}

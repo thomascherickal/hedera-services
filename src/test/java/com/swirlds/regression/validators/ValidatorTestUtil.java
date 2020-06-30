@@ -23,10 +23,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
 import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.fcmap.test.pta.MapKey;
+import com.swirlds.regression.SSHService;
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.services.HAPIClientLogParser;
 
 import java.io.IOException;
 import java.io.File;
@@ -39,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
+import static com.swirlds.regression.utils.FileUtils.getInputStream;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 
 public abstract class ValidatorTestUtil {
@@ -139,5 +143,24 @@ public abstract class ValidatorTestUtil {
 		byte[] jsonData = Files.readAllBytes(testConfigFileLocation);
 		ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 		return objectMapper.readValue(jsonData, TestConfig.class);
+	}
+
+	public static List<NodeData> loadTestClientNodeData(String directory, int numberOfTestClients) {
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; i< numberOfTestClients ; i++) {
+			String hapiClientLogFileName = String.format("%s/node%04d-TestClient/"+
+					OUTPUT_LOG_FILENAME, directory, i);
+			InputStream logInput = getInputStream(hapiClientLogFileName);
+
+			LogReader logReader = null;
+			if (logInput != null) {
+				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
+			}
+			nodeData.add(new NodeData(logReader));
+		}
+		if (nodeData.size() == 0) {
+			throw new RuntimeException("Cannot find log files in: " + directory);
+		}
+		return nodeData;
 	}
 }
