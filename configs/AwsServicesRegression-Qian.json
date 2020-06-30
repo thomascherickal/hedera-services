@@ -1,0 +1,55 @@
+{
+  "name": "regression-services-test-RecordStreamValidator",
+  "result": {
+	"uri": "results"
+  },
+  "cloud": {
+	"service": "aws",
+	"securityGroup": "SwirldsSecGroup",
+	"instanceType": "M42xlarge",
+	"instanceKey": "qianqiu@swirlds.com",
+	"keyLocation": "./keys/my-key",
+	"login": "ubuntu",
+	"regionList": [
+	  {
+		"region": "us-east-2",
+		"instanceList": [
+		  "i-08e4609e2c31975ce",
+		  "i-0b8645785bf85c039",
+		  "i-0e293032d97a8ddd7",
+		  "i-0e4897fffc6a80689"
+		],
+		"numberOfTestClientNodes": 1
+		//		"testClientInstanceList": [
+		//		  "i-0ca8140d2b7133049"
+		//		]
+	  }
+	]
+  },
+  "eventFilesWriters": 4,
+  "recordFilesWriters": 4,
+  "log": {
+	"uri":"testing/logs/"
+  },
+  "experiments": [
+	"configs/testServicesDemoCfg.json"
+  ],
+  "db": {
+	"type": "postgresql",
+	"login": "dbregression",
+	"address": "localhost",
+	"port": "5432",
+	"database": "stats"
+  },
+  "slack": {
+	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	"channel": "regression-test",
+	"notifyOn": "ALL",
+	"notifyChannel": false,
+	"notifyUserIds": [
+	  "UE4P47SMT"
+	]
+  },
+  "uploadToSharePoint": false
+}

@@ -18,6 +18,8 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.utils.FileUtils;
+import com.swirlds.regression.validators.StreamType;
+import com.swirlds.regression.validators.StreamingServerValidator;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -35,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +61,8 @@ import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
+import static com.swirlds.regression.validators.StreamType.EVENT;
+import static com.swirlds.regression.validators.StreamType.RECORD;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -85,7 +84,8 @@ public class SSHService {
 	private Session session;
 
 	private Instant lastExec;
-	private String streamDirectory;
+	private String eventStreamDirectory;
+	private String recordStreamDirectory;
 
 	public SSHService(String user, String ipAddress, File keyFile) throws SocketException {
 		this.user = user;
@@ -238,20 +238,8 @@ public class SSHService {
 			return;
 		}
 
-		FileUtils.generateTarGZFile(new File(RegressionUtilities.TAR_NAME), fileList);
-		try (TarGzFile archive = new TarGzFile(Paths.get(new File(RegressionUtilities.TAR_NAME).toURI()))) {
-			for (File file : fileList) {
-				if (!file.exists()) {
-					continue;
-				}
-				if (file.isFile()) {
-					archive.bundleFile(Paths.get(file.toURI()));
-				} else if (file.isDirectory()) {
-					archive.bundleDirectory(Paths.get(file.toURI()));
-				}
-			}
-		} catch (IOException e) {
-			log.error(ERROR, "could not create tarball on node: {}", ipAddress, e);
+		if (!FileUtils.generateTarGZFile(tarball, fileList)) {
+			log.error(ERROR, "could not create tarball on node: {}", ipAddress);
 		}
 	}
 
@@ -500,25 +488,62 @@ public class SSHService {
 		return execCommand(command, description, 5).getExitStatus();
 	}
 
-	int makeSha1sumOfStreamedEvents(String testName, int streamingServerNode, int testDuration) {
-		final String streamDir = findStreamDirectory();
+	/**
+	 * Find the directory for given streamType;
+	 * for stream files and signature files in the directory, generate 4 files
+	 * which would be validated by {@link com.swirlds.regression.validators.StreamingServerValidator}
+	 *
+	 * @param streamingServerNodeId
+	 * 		id of the streaming server
+	 * @param streamType
+	 * @return
+	 */
+	int makeSha1sumOfStreamedEvents(final int streamingServerNodeId, final StreamType streamType) {
+		final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
+		// name of the directory for given streamType
+		String streamDir;
+		switch (streamType) {
+			case EVENT:
+				streamDir = findStreamDirectory(EVENT);
+				break;
+			case RECORD:
+				streamDir = findStreamDirectory(RECORD);
+				break;
+			default:
+				log.error("Unknown StreamType: {}", streamType);
+				return -1;
+		}
+
 		if (streamDir == null) {
 			return -1;
 		}
-		final String baseDir = "~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
-		final String evts_list = baseDir + EVENT_FILE_LIST;
-		final String sha1Sum_log = baseDir + EVENT_LIST_FILE;
-		final String finalHashLog = baseDir + FINAL_EVENT_FILE_HASH;
-		final String evtsSigList = baseDir + EVENT_SIG_FILE_LIST;
+
+		// evts for Event; or rcd for Record
+		String fileExtension = streamType.getExtension();
+
+		// name of a file to be generated, which contains a list of stream file names and byte size
+		final String streamFileList = baseDir + StreamingServerValidator.buildFileListFileName(fileExtension);
+		// name of a file to be generated, which contains a list of sha1Sum of stream files
+		final String sha1SumLog = baseDir + StreamingServerValidator.buildShaListFileName(fileExtension);
+		// name of a file to be generated, which contains sha1sum of sha1SumLog
+		final String finalHashLog = baseDir + StreamingServerValidator.buildFinalHashFileName(fileExtension);
+		// name of a file to be generated, which contains a list of stream signature file names;
+		final String streamSigList = baseDir + StreamingServerValidator.buildSigListFileName(fileExtension);
+
 		final String commandStr = String.format(
 				"cd %s; " +
-						"wc -c *.evts > %s ; " +    //create a list of file name and byte size
-						"sha1sum *.evts > %s; " +  //create a list of hash of individual evts file
-						"ls *.evts_sig > %s;" +
+						"wc -c *.%s > %s ; " +    //create a list of file name and byte size
+						"sha1sum *.%s > %s; " +  //create a list of hash of individual stream file
+						"ls *.%s_sig > %s;" +
 						"sha1sum %s > %s;",
-				streamDir, evts_list, sha1Sum_log, evtsSigList, sha1Sum_log, finalHashLog);
+				streamDir,
+				fileExtension, streamFileList,
+				fileExtension, sha1SumLog,
+				fileExtension, streamSigList,
+				sha1SumLog, finalHashLog);
 		final String description =
-				"Create sha1sum of .evts files on node: " + streamingServerNode + " dir: " + streamDir;
+				"Create sha1sum of ." + fileExtension + " files on node: " + streamingServerNodeId
+						+ " dir: " + streamDir;
 		log.trace(MARKER, "Hash creation commandStr = {}", commandStr);
 
 		Session.Command result = execCommand(commandStr, description);
@@ -529,20 +554,33 @@ public class SSHService {
 		}
 	}
 
-	private String findStreamDirectory() {
-		if (this.streamDirectory != null && !"".equals(this.streamDirectory)) {
-			return this.streamDirectory;
+	private String findStreamDirectory(final StreamType streamType) {
+		if (streamType == EVENT && this.eventStreamDirectory != null && !"".equals(this.eventStreamDirectory)) {
+			return this.eventStreamDirectory;
 		}
-		String commandStr = "find remoteExperiment -name \"*.evts\" | xargs dirname | sort -u";
-		final Session.Command cmd = execCommand(commandStr, "Find where event files are being stored", -1);
-		log.trace(MARKER, "Find events directory {}: ", ipAddress, commandStr);
+		if (streamType == RECORD && this.recordStreamDirectory != null && !"".equals(this.recordStreamDirectory)) {
+			return this.recordStreamDirectory;
+		}
+		String commandStr = String.format("find remoteExperiment -name \"*.%s\" | xargs dirname | sort -u",
+				streamType.getExtension());
+		final Session.Command cmd = execCommand(commandStr,
+				String.format("Find where %s files are being stored", streamType.getDescription()), -1);
+		log.trace(MARKER, "Find {} directory {}: {}", streamType.getDescription(), ipAddress, commandStr);
 		Collection<String> returnCollection = readCommandOutput(cmd);
 		if (returnCollection.size() > 0) {
-			log.info(MARKER, "Events Directory: {}", ((ArrayList<String>) returnCollection).get(0));
-			this.streamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
-			return this.streamDirectory;
-		}
+			String directory = ((ArrayList<String>) returnCollection).get(0) + "/";
+			log.info(MARKER, "{} Directory: {}", streamType.getDescription(), directory);
 
+			if (streamType == EVENT) {
+				this.eventStreamDirectory = directory;
+				return this.eventStreamDirectory;
+			}
+
+			if (streamType == RECORD) {
+				this.recordStreamDirectory = directory;
+				return this.recordStreamDirectory;
+			}
+		}
 		return null;
 	}
 
