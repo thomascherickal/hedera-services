@@ -17,22 +17,12 @@
 
 package com.swirlds.regression.validators;
 
-import com.swirlds.regression.logs.PlatformLogEntry;
-import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.swirlds.common.logging.PlatformLogMessages.CHANGED_TO_ACTIVE;
-import static com.swirlds.common.logging.PlatformLogMessages.FINISHED_RECONNECT;
-import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_ERROR;
-import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_HASH_MISMATCH;
-import static com.swirlds.common.logging.PlatformLogMessages.RECV_STATE_IO_EXCEPTION;
-import static com.swirlds.common.logging.PlatformLogMessages.START_RECONNECT;
 
 
 public class HAPIClientValidator extends Validator {
@@ -40,9 +30,17 @@ public class HAPIClientValidator extends Validator {
 	private boolean isValid;
 	private boolean isValidated;
 
+	private int resultErrorsOfSuite = 0;
+	private int resultPassedOfSuite = 0;
+	private int wrongStatus = 0;
+	private int numProblems = 0;
+	private String suiteName = "";
+
 	private static final String WRONG_STATUS = "wrong status";
 	private static final String STARTING_OF_SUITE = "-------------- STARTING ";
 	private static final String RESULTS_OF_SUITE = "-------------- RESULTS OF ";
+	private static final String EXCEPTION = "Exception";
+	private static final String ERROR = "ERROR";
 
 	public HAPIClientValidator(final List<NodeData> testClientNodeData) {
 		this.testClientNodeData = testClientNodeData;
@@ -59,19 +57,6 @@ public class HAPIClientValidator extends Validator {
 	@Override
 	public void validate() throws IOException {
 		int nodeNum = testClientNodeData.size();
-		int numProblems = 0;
-		int wrongStatus = 0;
-//		for (int i = 0; i < nodeNum; i++) {
-//			LogReader<HAPIClientLogEntry> clientLogReader = testClientNodeData.get(i).
-//					getHapiClientLogReader();
-//			clientLogReader.readFully();
-//			if (clientLogReader.getExceptionCount() > 0) {
-//				isValid = false;
-//				for (HAPIClientLogEntry le : clientLogReader.getExceptions()) {
-//					numProblems++;
-//				}
-//			}
-//		}
 
 		for (int i = 0; i < nodeNum; i++) {
 			LogReader<HAPIClientLogEntry> clientLogReader = testClientNodeData.get(i).
@@ -79,9 +64,8 @@ public class HAPIClientValidator extends Validator {
 			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
 					Arrays.asList(STARTING_OF_SUITE));
 			while (true) {
-				int resultErrorsOfSuite = 0;
-				int resultPassedOfSuite = 0;
-				String suiteName;
+				initializeVariables();
+
 				if (start == null) {
 					break;
 				} else {
@@ -90,54 +74,65 @@ public class HAPIClientValidator extends Validator {
 				}
 
 				HAPIClientLogEntry end = clientLogReader.nextEntryContaining(
-						Arrays.asList(RESULTS_OF_SUITE, WRONG_STATUS));
+						Arrays.asList(RESULTS_OF_SUITE, WRONG_STATUS, EXCEPTION, ERROR));
+
 				if (end == null) {
 					addError(String.format("Node %s started a test, but did not finish!", suiteName));
 					isValid = false;
 					break;
 				} else if (end.getLogEntry().contains(WRONG_STATUS)) {
 					wrongStatus++;
+				} else if (end.isException()) {
+					numProblems++;
 				} else {
 					while (true) {
 						start = clientLogReader.nextEntry();
-						if (!start.getLogEntry().contains(suiteName)) {
+						boolean isCurrentSuiteResults = checkResultsOfSuite(start);
+						if (!isCurrentSuiteResults) {
 							break;
-						} else if (start.getLogEntry().contains("status=ERROR")) {
-							resultErrorsOfSuite++;
-						} else if (start.getLogEntry().contains("status=PASSED")) {
-							resultPassedOfSuite++;
 						}
 					}
-
 				}
-				if (wrongStatus > 0 || resultErrorsOfSuite > 0) {
-					addError(String.format("Suite %s has %d wrong status and %d errors in results",
-							suiteName, wrongStatus, resultErrorsOfSuite));
-				}
-				if (wrongStatus == 0 && resultErrorsOfSuite == 0 && resultPassedOfSuite > 0) {
-					addInfo(String.format("Suite %s has %d passed results", suiteName, resultPassedOfSuite));
-				}
-
+				validateProblems();
 			}
-
 		}
-
-		if (numProblems == 0) {
-			isValid = true;
-		}
-
-		if (numProblems > 0) {
-			addError("Test had " + numProblems + " exceptions!");
-		}
-
-		if (wrongStatus > 0)
-			addWarning("Test had " + wrongStatus + " unexpected status");
-
 		isValidated = true;
+	}
+
+	private boolean checkResultsOfSuite(HAPIClientLogEntry start) {
+		if (!start.getLogEntry().contains(suiteName)) {
+			return false;
+		} else if (start.getLogEntry().contains("status=ERROR")) {
+			resultErrorsOfSuite++;
+		} else if (start.getLogEntry().contains("status=PASSED")) {
+			resultPassedOfSuite++;
+		}
+		return true;
 	}
 
 	@Override
 	public boolean isValid() {
 		return isValid && isValidated;
+	}
+
+	private void validateProblems() {
+		if (wrongStatus > 0 || resultErrorsOfSuite > 0 || numProblems > 0) {
+			addError(String.format("Suite %s has %d wrong status, %d exceptions and " +
+							" %d failed tests",
+					suiteName, wrongStatus, numProblems, resultErrorsOfSuite));
+			isValid &= false;
+		}
+		if (wrongStatus == 0 && resultErrorsOfSuite == 0 && numProblems == 0 && resultPassedOfSuite > 0) {
+			isValid &= true;
+			addInfo(String.format("Suite %s has %d passed results", suiteName, resultPassedOfSuite));
+		}
+	}
+
+	private void initializeVariables() {
+		resultErrorsOfSuite = 0;
+		resultPassedOfSuite = 0;
+		wrongStatus = 0;
+		numProblems = 0;
+		suiteName = "";
 	}
 }
