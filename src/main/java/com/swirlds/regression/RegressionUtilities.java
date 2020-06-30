@@ -31,6 +31,8 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -44,6 +46,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
@@ -64,11 +68,17 @@ public class RegressionUtilities {
 	public static final String RESULTS_FOLDER = "results";
 	public static final String TAR_NAME = "remoteExperiment.tar.gz";
 	public static final ArrayList<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(Arrays.asList("data"));
+	public static final String GC_LOG_FILES = "gc*.log";
+
+	public static final String GC_LOG_ZIP_FILE = "gcLog.zip";
+	public static final String GC_LOG_GZ_FILE = "gcLog.tar.gz";
+
 	public static final String JVM_OPTIONS_DEFAULT = "-Xmx100g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC " +
-			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g";
+			"-XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages -XX:MaxDirectMemorySize=32g ";
 	public static final String JVM_OPTIONS_PARAMETER_STRING = "-Xmx%dg -Xms%dg -XX:+UnlockExperimentalVMOptions " +
 			"-XX:+UseZGC -XX:ConcGCThreads=14 -XX:ZMarkStackSpaceLimit=16g -XX:+UseLargePages " +
-			"-XX:MaxDirectMemorySize=%dg";
+			"-XX:MaxDirectMemorySize=%dg ";
+	public static final String JVM_OPTIONS_GC_LOG = " -Xlog:gc*:gc.log ";
 	public static final String GET_TOTAL_MB_MEMORY_ON_NODE = "vmstat -s -SM | head -n1 | awk '{ printf  \"%10s\\n\", " +
 			"$1 }' | sed 's/^[[:space:]]*//g'";
 	/* this section is for dynamic allocation of huge pages and memory of instances */
@@ -334,7 +344,8 @@ public class RegressionUtilities {
 		//returnIterator.add("stream_*");
 		returnIterator.add("postgres_reports"); // badgerized web summaries
 		returnIterator.add("latest_postgres*"); // raw log files(s)
-
+		// add GC logs into the list to be downloaded
+		returnIterator.add(GC_LOG_FILES);
 		if (configSpecifiedFiles != null) {
 			returnIterator.addAll(configSpecifiedFiles);
 		}

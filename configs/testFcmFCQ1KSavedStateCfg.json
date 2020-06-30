@@ -9,21 +9,23 @@
     {"name":"reconnectActive", "value": "1"},
     {"name": "checkSignedStateFromDisk", "value": "true"}
   ],
-  "useLifecycleModel" : true,
   "app": {
     "jar": "PlatformTestingApp.jar",
     "parameterList": ["FCMFCQ1KSavedState.json"]
   },
   "startSavedState": {
-    "location": "s3://swirlds-regression/saved-states/PlatformTestingApp/FCMFCQ1k-May21-2020/4125/",
+    "location": "s3://swirlds-regression/saved-states/PlatformTestingApp/FCM1K-6Node-June-26-2020-1839/",
     "mainClass": "com.swirlds.demo.platform.PlatformTestingDemoMain",
     "swirldName": "123",
-    "round": 4125,
+    "round": 1839,
     "restoreDb": true,
-    "nodeIdentifier": "ALL_BUT_LAST"
+    "nodeIdentifier": "ALL_BUT_LAST_STAKED_NODE"
   },
   "resultFiles": [
     "swirlds.log"
   ],
-  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT"]
+  "memoryLeakCheckConfig": {
+    "nodeGroupIdentifier": "FIRST_AND_LAST_STAKED_NODE"
+  },
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO", "RECONNECT", "LIFECYCLE"]
 }

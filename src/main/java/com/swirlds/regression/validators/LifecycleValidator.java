@@ -19,6 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
 import com.swirlds.fcmap.test.lifecycle.LifecycleStatus;
+import com.swirlds.fcmap.test.lifecycle.SaveExpectedMapHandler;
 import com.swirlds.fcmap.test.lifecycle.TransactionState;
 import com.swirlds.fcmap.test.lifecycle.TransactionType;
 import com.swirlds.fcmap.test.pta.MapKey;
@@ -38,8 +39,12 @@ import static com.swirlds.fcmap.test.lifecycle.TransactionType.Expire;
 /**
  * Validator to validate lifecycle of all entities in ExpectedMap
  */
-public class PTALifecycleValidator extends Validator {
-	private Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps;
+public class LifecycleValidator extends Validator {
+	/**
+	 * key: nodeId; value: path of ExpectedMap
+	 */
+	private Map<Integer, String> expectedMapPaths;
+
 	private boolean isValid;
 	private boolean isValidated;
 	public static final String EXPECTED_MAP_ZIP = "ExpectedMap.json.gz";
@@ -60,21 +65,8 @@ public class PTALifecycleValidator extends Validator {
 			"null. " +
 			"Node 0 : %s , Node %d : %s ";
 
-	public PTALifecycleValidator(ExpectedMapData mapData) {
-		if (mapData != null) {
-			expectedMaps = mapData.getExpectedMaps();
-		}
-		isValid = false;
-		isValidated = false;
-	}
-
-	/**
-	 * only for unit test
-	 *
-	 * @param expectedMaps
-	 */
-	PTALifecycleValidator(Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps) {
-		this.expectedMaps = expectedMaps;
+	public LifecycleValidator(final Map<Integer, String> expectedMapPaths) {
+		this.expectedMapPaths = expectedMapPaths;
 		isValid = false;
 		isValidated = false;
 	}
@@ -107,19 +99,18 @@ public class PTALifecycleValidator extends Validator {
 	 * expectedMaps from all nodes
 	 */
 	private void validateExpectedMaps() {
-		if (expectedMaps == null || expectedMaps.size() == 0) {
+		if (expectedMapPaths == null || expectedMapPaths.size() == 0) {
 			addError("ExpectedMap doesn't exist for validation");
 			isValid = false;
 			isValidated = true;
 			return;
 		}
-		Map<MapKey, ExpectedValue> baselineMap = expectedMaps.get(0);
-
-		for (int i = 1; i < expectedMaps.size(); i++) {
-			Map<MapKey, ExpectedValue> mapToCompare = expectedMaps.get(i);
+		Map<MapKey, ExpectedValue> baselineMap = SaveExpectedMapHandler.deserialize(expectedMapPaths.get(0));
+		for (int nodeId = 1; nodeId < expectedMapPaths.size(); nodeId++) {
+			Map<MapKey, ExpectedValue> mapToCompare = SaveExpectedMapHandler.deserialize(expectedMapPaths.get(nodeId));
 
 			if (!baselineMap.keySet().equals(mapToCompare.keySet())) {
-				checkMissingKeys(baselineMap.keySet(), mapToCompare.keySet(), i);
+				checkMissingKeys(baselineMap, mapToCompare, nodeId);
 			}
 
 			for (MapKey key : baselineMap.keySet()) {
@@ -127,18 +118,18 @@ public class PTALifecycleValidator extends Validator {
 					ExpectedValue baseValue = baselineMap.get(key);
 					ExpectedValue compareValue = mapToCompare.get(key);
 					if (!baseValue.equals(compareValue)) {
-						compareValues(key, baseValue, compareValue, i);
+						compareValues(key, baseValue, compareValue, nodeId);
 					} else {
-						checkHandleRejectedStatus(key, baseValue, compareValue, i);
+						checkHandleRejectedStatus(key, baseValue, compareValue, nodeId);
 					}
 					if (baseValue.isErrored() && compareValue.isErrored()) {
 						checkErrorCause(key, baseValue, 0);
-						checkErrorCause(key, compareValue, i);
+						checkErrorCause(key, compareValue, nodeId);
 					}
 				}
 			}
 		}
-		addInfo("PTALifecycleValidator validated ExpectedMaps of " + expectedMaps.size() + " nodes");
+		addInfo("LifecycleValidator validated ExpectedMaps of " + expectedMapPaths.size() + " nodes");
 		if (errorMessages.size() == 0) {
 			isValid = true;
 			addInfo("Validator has no exceptions");
@@ -212,14 +203,17 @@ public class PTALifecycleValidator extends Validator {
 	/**
 	 * If the KeySet size of maps differ logs error with the missing keys
 	 *
-	 * @param baseKeySet
-	 * 		KeySet of expectedMap of firstNode
-	 * @param compareKeySet
-	 * 		KeySet of expectedMap on the node that is being compared
+	 * @param baselineMap
+	 * 		expectedMap of firstNode
+	 * @param mapToCompare
+	 * 		expectedMap on the node that is being compared
 	 * @param nodeNum
 	 * 		Node number of the node on which entities are being compared
 	 */
-	public void checkMissingKeys(Set<MapKey> baseKeySet, Set<MapKey> compareKeySet, int nodeNum) {
+	public void checkMissingKeys(Map<MapKey, ExpectedValue> baselineMap, Map<MapKey, ExpectedValue> mapToCompare, int nodeNum) {
+		Set<MapKey> baseKeySet = baselineMap.keySet();
+		Set<MapKey> compareKeySet = mapToCompare.keySet();
+
 		Set<MapKey> missingKeysInCompare = new HashSet<>();
 		Set<MapKey> missingKeysInBase = new HashSet<>();
 
@@ -229,8 +223,8 @@ public class PTALifecycleValidator extends Validator {
 		missingKeysInBase.removeAll(baseKeySet);
 		missingKeysInCompare.removeAll(compareKeySet);
 
-		missingKeysInBase = checkRemoved(nodeNum, missingKeysInBase);
-		missingKeysInCompare = checkRemoved(0, missingKeysInCompare);
+		missingKeysInBase = checkRemoved(mapToCompare, missingKeysInBase);
+		missingKeysInCompare = checkRemoved(baselineMap, missingKeysInCompare);
 
 		if (missingKeysInBase.size() > 0 || missingKeysInCompare.size() > 0) {
 			addError(String.format(MISSING_KEYS_ERROR, nodeNum, 0, nodeNum, missingKeysInCompare, missingKeysInBase));
@@ -238,16 +232,17 @@ public class PTALifecycleValidator extends Validator {
 	}
 
 	/**
-	 * check if the missing keys are Deleted or Expired in other node. If so, ignore them as missing Keys.
+	 * check if the missing keys are Deleted or Expired in the given expectedMap.
+	 * If so, ignore them as missing Keys.
 	 *
-	 * @param nodeNum
+	 * @param expectedMap
 	 * @param missingKeys
 	 * @return Set of missing keys other than expired or deleted ones
 	 */
-	private Set<MapKey> checkRemoved(int nodeNum, Set<MapKey> missingKeys) {
+	private Set<MapKey> checkRemoved(final Map<MapKey, ExpectedValue> expectedMap, final Set<MapKey> missingKeys) {
 		Set<MapKey> missingKeysSet = new HashSet<>();
 		for (MapKey key : missingKeys) {
-			LifecycleStatus latestHandleStatus = expectedMaps.get(nodeNum).get(key).getLatestHandledStatus();
+			LifecycleStatus latestHandleStatus = expectedMap.get(key).getLatestHandledStatus();
 			if (latestHandleStatus != null && latestHandleStatus.getTransactionType() != null &&
 					(!latestHandleStatus.getTransactionType().equals(Delete) &&
 							!latestHandleStatus.getTransactionType().equals(Expire))) {

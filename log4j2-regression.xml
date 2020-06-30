@@ -43,6 +43,7 @@
     <MarkerFilter marker="EVENT_SIG"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="CERTIFICATES"           onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY"               onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="FCM_DIFF_COPY"          onMatch="ACCEPT"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_FROM"          onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_COPY_TO"            onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FCM_DEMO"               onMatch="DENY"     onMismatch="NEUTRAL"/>
@@ -64,6 +65,7 @@
     <MarkerFilter marker="DEMO_INFO"              onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_STAT"              onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_TRANSACTION_INFO"  onMatch="DENY"     onMismatch="NEUTRAL"/>
+    <MarkerFilter marker="EXPIRATION"             onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="DEMO_MAP"               onMatch="DENY"     onMismatch="NEUTRAL"/>
     <MarkerFilter marker="FREEZE"                 onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
     <MarkerFilter marker="STALE_EVENTS"           onMatch="DENY"     onMismatch="NEUTRAL"/>

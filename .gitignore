@@ -144,6 +144,8 @@ results
 remoteExperiment.tar.gz
 multipage_pdf.pdf
 summaryHistory/*.*
+ExpectedMap.json
+ExpectedMap.json.gz
 
 # GitKeep
 .gitkeep

@@ -32,7 +32,6 @@
 	  "value": "data/eventStream"
 	}
   ],
-  "useLifecycleModel": true,
   "recoverConfig": {
 	"eventDir": "data/eventStreamRecover",
 	"sqlFile": "drop_database.psql"
@@ -46,10 +45,14 @@
   "resultFiles": [
 	"swirlds.log"
   ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST"
+  },
   "validator": [
 	"STATS",
 	"PLATFORM_TESTING_DEMO",
 	"RECOVER_STATE",
-	"GOSSIP_COMPENSATION"
+	"GOSSIP_COMPENSATION",
+	"LIFECYCLE"
   ]
 }

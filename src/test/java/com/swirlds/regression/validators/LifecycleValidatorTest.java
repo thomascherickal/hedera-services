@@ -20,7 +20,6 @@ package com.swirlds.regression.validators;
 import com.swirlds.common.crypto.Hash;
 
 
-import com.swirlds.fcmap.test.lifecycle.EntityType;
 import com.swirlds.fcmap.test.lifecycle.ExpectedValue;
 import com.swirlds.fcmap.test.lifecycle.LifecycleStatus;
 import com.swirlds.fcmap.test.lifecycle.TransactionState;
@@ -56,13 +55,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * test class for PTA LifecycleValidator
+ * test class for LifecycleValidator
  */
-public class PTALifeCycleValidatorTest {
+public class LifecycleValidatorTest {
 
 	private static final String positiveTestDir = "src/test/resources/logs/Lifecycle";
 	private static final String negativeTestDir = "src/test/resources/logs/LifecycleNeg";
 	private static final String missingMapsDir = "src/test/resources/logs/PTD-NodeKillReconnect";
+	private static final String generateMapsDir = "src/test/resources/logs/LifecycleMapTest";
 
 	/**
 	 * Positive test where ExpectedMaps of all 4 nodes are the same
@@ -70,8 +70,8 @@ public class PTALifeCycleValidatorTest {
 
 	@Test
 	void validateExpectedMapsPositiveTest() {
-		PTALifecycleValidator validator = new PTALifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(positiveTestDir));
+		LifecycleValidator validator = new LifecycleValidator(
+				ValidatorTestUtil.loadExpectedMapPaths(positiveTestDir));
 		validator.validate();
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
@@ -88,8 +88,9 @@ public class PTALifeCycleValidatorTest {
 	 */
 	@Test
 	void validateExpectedMapsErrors() {
-		PTALifecycleValidator validator = new PTALifecycleValidator(
-				ValidatorTestUtil.loadExpectedMapData(negativeTestDir));
+		LifecycleValidator validator = new LifecycleValidator(
+				ValidatorTestUtil.loadExpectedMapPaths
+(negativeTestDir));
 		validator.validate();
 
 		System.out.println("Error messages : \n" + String.join("\n", validator.getErrorMessages()));
@@ -118,22 +119,22 @@ public class PTALifeCycleValidatorTest {
 		final MapKey key = new MapKey(0, 1, 2);
 
 		assertEquals("Entity: MapKey[0,1,2] has field entityType mismatched. node0: Blob; node1: Crypto",
-				PTALifecycleValidator.buildFieldMissMatchMsg(key, Blob,
+				LifecycleValidator.buildFieldMissMatchMsg(key, Blob,
 						Crypto, 1, "entityType"));
 		byte[] content = generateRandomContent();
 		final Hash hash = new Hash(content);
 		assertEquals("Entity: MapKey[0,1,2] has field Hash mismatched. node0: null; node1: " + hash,
-				PTALifecycleValidator.buildFieldMissMatchMsg(key, null,
+				LifecycleValidator.buildFieldMissMatchMsg(key, null,
 						hash, 1, "Hash"));
 	}
 
 	@Test
 	void checkMissingKeyTest() {
 		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
-		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
-		validator.checkMissingKeys(expectedMaps.get(0).keySet(),
-				expectedMaps.get(2).keySet(), 2);
+		validator.checkMissingKeys(expectedMaps.get(0),
+				expectedMaps.get(2), 2);
 		List<String> errors = validator.getErrorMessages();
 		assertEquals(1, errors.size());
 
@@ -164,7 +165,7 @@ public class PTALifeCycleValidatorTest {
 		setValueStatus(map0, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
 		setValueStatus(map2, key3, null, buildLifeCycle(HANDLE_REJECTED, Update), null);
 
-		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
 		validator.checkHandleRejectedStatus(key, map0.get(key),
 				map2.get(key), 2);
@@ -219,7 +220,7 @@ public class PTALifeCycleValidatorTest {
 		setValueStatus(map2, key3, buildLifeCycle(INITIALIZED, Create), buildLifeCycle(HANDLE_FAILED, Create), null);
 		setValueStatus(map2, key4, buildLifeCycle(INITIALIZED, Create), null, null);
 
-		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
+		LifecycleValidator validator = new LifecycleValidator(null);
 
 		validator.checkErrorCause(key, map0.get(key), 0);
 		validator.checkErrorCause(key, map2.get(key), 2);
@@ -267,7 +268,7 @@ public class PTALifeCycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();
@@ -309,7 +310,7 @@ public class PTALifeCycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();
@@ -320,32 +321,11 @@ public class PTALifeCycleValidatorTest {
 	}
 
 	@Test
-	public void validateExpectedMapTests() {
-		Map<Integer, Map<MapKey, ExpectedValue>> expectedMaps = setUpMap();
-		Map<MapKey, ExpectedValue> map1 = new ConcurrentHashMap<>();
-		expectedMaps.put(1, map1);
-
-		PTALifecycleValidator validator = new PTALifecycleValidator(expectedMaps);
-		validator.validate();
-
-		List<String> errors = validator.getErrorMessages();
-		assertEquals(2, errors.size());
-		assertEquals("KeySet of the expectedMap of node 1 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 1 : [MapKey[0,2,3], MapKey[0,1,3], MapKey[0,1,2], MapKey[1,2,3]], " +
-				"MissingKeys in node 0 : []", errors.get(0));
-		assertEquals("KeySet of the expectedMap of node 2 doesn't match with expectedMap of node 0. " +
-				"Missing keys in node 2 : [MapKey[0,1,2], MapKey[1,2,3]], MissingKeys in node 0 : " +
-				"[MapKey[2,2,4], MapKey[2,2,3], MapKey[2,0,2]]", errors.get(1));
-		for (String error : errors) {
-			System.out.println(error);
-		}
-	}
-
-	@Test
 	public void checkMissingExpectedMapsTest() {
-		PTALifecycleValidator validator = null;
+		LifecycleValidator validator = null;
 		try {
-			validator = new PTALifecycleValidator(ValidatorTestUtil.loadExpectedMapData(missingMapsDir));
+			validator = new LifecycleValidator(ValidatorTestUtil.loadExpectedMapPaths
+(missingMapsDir));
 		} catch (Exception e) {
 			assertEquals(" expectedMap in node 0 doesn't exist", e.getMessage());
 		}
@@ -403,7 +383,7 @@ public class PTALifeCycleValidatorTest {
 
 		MapKey key = new MapKey(0, 0, 0);
 
-		PTALifecycleValidator validator = new PTALifecycleValidator(setUpMap());
+		LifecycleValidator validator = new LifecycleValidator(null);
 		validator.compareValues(key, ev1, ev2, 4);
 
 		List<String> errors = validator.getErrorMessages();

@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -20,27 +20,22 @@ package com.swirlds.regression.validators;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 
 import java.util.List;
+import java.util.Map;
 
 public class ValidatorFactory {
 
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
+			TestConfig testConfig) {
+		return getValidator(vt, nodeData, testConfig, null);
+	}
 
-	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData, TestConfig testConfig) {
+	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
+			TestConfig testConfig, Map<Integer, String> expectedMapPaths) {
 		if (vt == null) {
 			return null;
 		}
 
 		switch (vt) {
-/*			case FCFS_CSV:
-				return new FCFSValidator();
-				break;
-			case FCM_CSV:
-				return new FCMValidator();
-				break;
-			case RESTART:
-				return new RestartValidator();
-				break;
-			case PLATFORM_CSV:
-				break; */
 			case BLOB_STATE:
 				return new BlobStateValidator();
 			case RESTART:
@@ -63,6 +58,8 @@ public class ValidatorFactory {
 				return new StdoutValidator(nodeData);
 			case GOSSIP_COMPENSATION:
 				return new GossipCompensationValidator(nodeData);
+			case LIFECYCLE:
+				return new LifecycleValidator(expectedMapPaths);
 			default:
 				return new StandardValidator(nodeData);
 		}

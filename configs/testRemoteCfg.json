@@ -43,6 +43,7 @@
   ],
   "validator": [
     "STATS",
-    "STANDARD"
+    "STANDARD",
+    "LIFECYCLE"
   ]
 }
