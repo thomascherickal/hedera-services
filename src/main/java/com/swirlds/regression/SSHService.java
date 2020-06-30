@@ -1265,11 +1265,11 @@ public class SSHService {
 			// to periodically block and enable gossip tcp port
 			cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
 					"Change permission");
-			throwIfExitCodeBad(cmd, "Change permission");
+            logIfExitCodeBad(cmd, "Change permission");
 
 			execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
 					"Block network sync port");
-			throwIfExitCodeBad(cmd, "Block network sync port");
+            logIfExitCodeBad(cmd, "Block network sync port");
 
 			// if the network interface is blocked no need to setup packet loss or delay
 			return;
@@ -1280,7 +1280,7 @@ public class SSHService {
 					"sudo tc qdisc add dev ens3 root netem delay %dms",
 					config.getPacketDelayMS());
 			cmd = execCommand(cmdString, "Enable packet delay");
-			throwIfExitCodeBad(cmd, "Enable packet delay");
+            logIfExitCodeBad(cmd, "Enable packet delay");
 		}
 
 		if (config.isEnablePktLoss()) { //drop packet at network input face
@@ -1288,7 +1288,7 @@ public class SSHService {
 					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
 					config.getPacketLossPercentage() / 100f);
 			cmd = execCommand(cmdString, "Enable packet loss");
-			throwIfExitCodeBad(cmd, "Enable packet loss");
+            logIfExitCodeBad(cmd, "Enable packet loss");
 		}
 		cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
 	}
@@ -1302,17 +1302,17 @@ public class SSHService {
 			cmd = execCommand(
 					"sudo tc qdisc del dev ens3 root",
 					"Clean network delay rules");
-			throwIfExitCodeBad(cmd, "Clean network delay rules");
+            logIfExitCodeBad(cmd, "Clean network delay rules");
 		}
 		cmd = execCommand(
 				"sudo iptables --flush",
 				"Clean iptables");
-		throwIfExitCodeBad(cmd, "Clean iptables");
+        logIfExitCodeBad(cmd, "Clean iptables");
 
 		cmd = execCommand(
 				"sudo pkill -f block_sync_port.sh",
 				"Kill background script");
-		throwIfExitCodeBad(cmd, "Kill background script");
+        logIfExitCodeBad(cmd, "Kill background script");
 	}
 
 }
