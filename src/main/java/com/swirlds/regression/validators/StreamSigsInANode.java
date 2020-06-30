@@ -80,11 +80,12 @@ public class StreamSigsInANode implements Iterable<StreamSigFile> {
 			return false;
 		}
 
-		return equalsWithAllButTheLastTwo(other);
+		return equalsWithAllButTheLast(other);
 	}
 
-	private boolean equalsWithAllButTheLastTwo(final StreamSigsInANode other) {
-		final int minSize = this.streamSigFiles.size() > other.streamSigFiles.size() ? other.streamSigFiles.size() : this.streamSigFiles.size();
+	private boolean equalsWithAllButTheLast(final StreamSigsInANode other) {
+		final int minSize = this.streamSigFiles.size() > other.streamSigFiles.size() ?
+				other.streamSigFiles.size() : this.streamSigFiles.size();
 		for (int index = 0; index < minSize - 1; index++) {
 			if (!this.streamSigFiles.get(index).equals(other.streamSigFiles.get(index))) {
 				return false;

@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +61,8 @@ import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
+import static com.swirlds.regression.validators.StreamType.EVENT;
+import static com.swirlds.regression.validators.StreamType.RECORD;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 
@@ -503,10 +504,10 @@ public class SSHService {
 		String streamDir;
 		switch (streamType) {
 			case EVENT:
-				streamDir = findEventStreamDirectory();
+				streamDir = findStreamDirectory(EVENT);
 				break;
 			case RECORD:
-				streamDir = findRecordStreamDirectory();
+				streamDir = findStreamDirectory(RECORD);
 				break;
 			default:
 				log.error("Unknown StreamType: {}", streamType);
@@ -553,37 +554,33 @@ public class SSHService {
 		}
 	}
 
-	private String findEventStreamDirectory() {
-		if (this.eventStreamDirectory != null && !"".equals(this.eventStreamDirectory)) {
+	private String findStreamDirectory(final StreamType streamType) {
+		if (streamType == EVENT && this.eventStreamDirectory != null && !"".equals(this.eventStreamDirectory)) {
 			return this.eventStreamDirectory;
 		}
-		String commandStr = "find remoteExperiment -name \"*.evts\" | xargs dirname | sort -u";
-		final Session.Command cmd = execCommand(commandStr, "Find where event files are being stored", -1);
-		log.trace(MARKER, "Find events directory {}: ", ipAddress, commandStr);
-		Collection<String> returnCollection = readCommandOutput(cmd);
-		if (returnCollection.size() > 0) {
-			log.info(MARKER, "Events Directory: {}", ((ArrayList<String>) returnCollection).get(0));
-			this.eventStreamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
-			return this.eventStreamDirectory;
-		}
-
-		return null;
-	}
-
-	private String findRecordStreamDirectory() {
-		if (this.recordStreamDirectory != null && !"".equals(this.recordStreamDirectory)) {
+		if (streamType == RECORD && this.recordStreamDirectory != null && !"".equals(this.recordStreamDirectory)) {
 			return this.recordStreamDirectory;
 		}
-		String commandStr = "find remoteExperiment -name \"*.rcd\" | xargs dirname | sort -u";
-		final Session.Command cmd = execCommand(commandStr, "Find where record files are being stored", -1);
-		log.trace(MARKER, "Find records directory {}: ", ipAddress, commandStr);
+		String commandStr = String.format("find remoteExperiment -name \"*.%s\" | xargs dirname | sort -u",
+				streamType.getExtension());
+		final Session.Command cmd = execCommand(commandStr,
+				String.format("Find where %s files are being stored", streamType.getDescription()), -1);
+		log.trace(MARKER, "Find {} directory {}: {}", streamType.getDescription(), ipAddress, commandStr);
 		Collection<String> returnCollection = readCommandOutput(cmd);
 		if (returnCollection.size() > 0) {
-			log.info(MARKER, "Records Directory: {}", ((ArrayList<String>) returnCollection).get(0));
-			this.recordStreamDirectory = ((ArrayList<String>) returnCollection).get(0) + "/";
-			return this.recordStreamDirectory;
-		}
+			String directory = ((ArrayList<String>) returnCollection).get(0) + "/";
+			log.info(MARKER, "{} Directory: {}", streamType.getDescription(), directory);
 
+			if (streamType == EVENT) {
+				this.eventStreamDirectory = directory;
+				return this.eventStreamDirectory;
+			}
+
+			if (streamType == RECORD) {
+				this.recordStreamDirectory = directory;
+				return this.recordStreamDirectory;
+			}
+		}
 		return null;
 	}
 
