@@ -20,12 +20,16 @@ jobs:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx5200m
     steps:
-      - checkout
+      - run:
+          command: |
+            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            git clone -b develop git@github.com:swirlds/swirlds-platform.git
+            cd swilds-platform
       - run: git submodule update --init --recursive --checkout
       - run:
           command: |
             cd regression
-            git checkout origin/P2161-automatePointerUpdate
+            git checkout origin/$CIRCLE_BRANCH
       - run:
           command: mvn -s .circleci.settings.xml clean deploy -DskipTests
       - save_cache:
