@@ -28,11 +28,13 @@
 		},
 		// node 1 insert packet loss randomly
 		{
-			"enablePktLoss": true
+			"enablePktLoss": true,
+			"packetLossPercentage" : 0.2
 		},
 		// node 2 insert packet delay randomly
 		{
-			"enablePktDelay": true
+			"enablePktDelay": true,
+			"packetDelayMS" : 120
 		}
 	],
 	"experiments": [
