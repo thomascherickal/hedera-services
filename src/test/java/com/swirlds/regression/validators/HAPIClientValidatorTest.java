@@ -21,18 +21,21 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HAPIClientValidatorTest {
-	private static final String testDir = "src/test/resources/logs/ServicesRegression/ServicesDemo/";
+	private static final String negativeTestDir = "src/test/resources/logs/ServicesRegression/ServicesDemo/";
 	private static final int numberOfTestClients = 1;
 
 	@Test
-	void validateLogsPositiveTest() throws IOException {
+	void validateLogsNegativeTest() throws IOException {
 		HAPIClientValidator validator = new HAPIClientValidator(
-				ValidatorTestUtil.loadTestClientNodeData(testDir, numberOfTestClients));
+				ValidatorTestUtil.loadTestClientNodeData(negativeTestDir, numberOfTestClients));
 		validator.validate();
-		System.out.println("LOGS: " + testDir);
+		System.out.println("LOGS: " + negativeTestDir);
 		System.out.println(validator.concatAllMessages());
+		assertFalse(validator.isValid());
+		assertTrue(validator.errorMessages.size() > 0);
 	}
 }

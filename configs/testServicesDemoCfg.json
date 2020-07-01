@@ -22,7 +22,23 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	"ALL_SUITES" //	"TopicCreateSpecs","SubmitMessageSpecs"
+	//"ALL_SUITES" //
+	"TopicCreateSpecs",
+	"SubmitMessageSpecs",
+	"UmbrellaRedux",
+	"FileUpdateLoadTest",
+	"ContractCallLoadTest",
+	"SubmitMessageLoadTest",
+	"CryptoTransferLoadTest",
+	"MixedTransferAndSubmitLoadTest",
+	"MixedTransferCallAndSubmitLoadTest",
+	"TopicCreateSpecs",
+	"TopicDeleteSpecs",
+	"TopicUpdateSpecs",
+	"SubmitMessageSpecs",
+	"HCSTopicFragmentationSuite",
+	"TopicGetInfoSpecs",
+	"ConsensusThrottlesSpecs"
   ],
   "app": {
 	"jar": "HederaNode.jar"

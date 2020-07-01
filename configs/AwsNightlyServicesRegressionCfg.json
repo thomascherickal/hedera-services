@@ -1,5 +1,5 @@
 {
-  "name": "regression-services-test-Neeha",
+  "name": "Services-regression",
   "result": {
 	"uri": "results"
   },
@@ -15,8 +15,10 @@
 		"region": "us-east-2",
 		//"numberOfNodes" : 2,
 		"instanceList": [
-		  "i-0fb1680b9e839e8d4",
-		  "i-0802c914db617525e"
+		  "i-02a03b23122cc043b",
+		  "i-015bf72bcf585ec17",
+		  "i-0fd83e80b777bc936",
+		  "i-0b820055ba5306866"
 		],
 		"numberOfTestClientNodes": 1
 //		"testClientInstanceList": [
@@ -26,6 +28,7 @@
 	]
   },
   "eventFilesWriters": 2,
+  "recordFilesWriters" : 2,
   "log": {
 	"uri":"testing/logs/"
   },

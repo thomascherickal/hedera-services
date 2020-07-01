@@ -2,10 +2,10 @@
 cd "`dirname "$0"`"
 configFile="./configs/$1"
 pathToServiceRepo="$2"
-platformDir=`pwd`
+platformRegressionDir=`pwd`
 echo $configFile
 echo $pathToServiceRepo
-echo $platformDir
+echo $platformRegressionDir
 
 eval $(ssh-agent)
 ssh-add /home/ubuntu/.ssh/regression_rsa
@@ -13,7 +13,7 @@ ssh-add /home/ubuntu/.ssh/regression_rsa
 cd $pathToServiceRepo
 mvn -DskipTests clean install
 
-cd $platformDir
+cd $platformRegressionDir
 cd ..
 git pull
 git submodule update --init --merge
