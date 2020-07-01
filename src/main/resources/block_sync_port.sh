@@ -33,7 +33,7 @@ while true; do
     sudo -n iptables -D INPUT -p tcp --dport 40124:40224 -j DROP
     sudo -n iptables -D OUTPUT -p tcp --sport 40124:40224 -j DROP
 
-    # sleep long enough for sync to catch up some events
+    # sleep long enough to sync with others to catch up some events
     sleep $(( ( RANDOM % 5 )  + 8 ))
 done
 
