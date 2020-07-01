@@ -64,7 +64,7 @@ public class HAPIClientValidator extends Validator {
 			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
 					Arrays.asList(STARTING_OF_SUITE));
 			while (true) {
-				if (start == null) {
+				if (start == null || !start.getLogEntry().contains(STARTING_OF_SUITE)) {
 					break;
 				} else {
 					String[] logEntryArray = start.getLogEntry().split("STARTING ");
@@ -81,11 +81,11 @@ public class HAPIClientValidator extends Validator {
 					break;
 				} else if (end.getLogEntry().contains(WRONG_STATUS)) {
 					wrongStatus++;
-					addError("Suite " + suiteName + " : " + end.getLogEntry());
+					//addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else if (end.isException()) {
 					//Some exception is found
 					numProblems++;
-					addError("Suite " + suiteName + " : " + end.getLogEntry());
+					//addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else {
 					//check results of the suite and validate problems
 					start = validateResultsOfCurrentSuite(clientLogReader);
