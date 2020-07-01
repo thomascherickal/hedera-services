@@ -155,12 +155,18 @@ public class HAPIClientValidator extends Validator {
 			result.append("PASSED ");
 			addInfo(result.toString());
 		} else if (wrongStatus > 0 || resultErrorsOfSuite > 0 || numProblems > 0) {
+			result.append(SEPERATOR);
+			result.append("FAILED ");
 			addError(buildErrorMessage(result));
 			isValid &= false;
 		}
 	}
 
 	private String buildErrorMessage(StringBuilder result) {
+		result.append(SEPERATOR);
+		result.append(failedSpecs.size() > 0 ?
+				"Failed Tests: "+ StringUtils.join(failedSpecs, ", ")
+				:"");
 		if (wrongStatus > 0) {
 			result.append(SEPERATOR);
 			result.append("Wrong Status:" + wrongStatus);
@@ -169,12 +175,6 @@ public class HAPIClientValidator extends Validator {
 			result.append(SEPERATOR);
 			result.append("Exceptions:" + numProblems);
 		}
-		if (resultErrorsOfSuite > 0) {
-			result.append(SEPERATOR);
-			result.append("Failed Tests:" + resultErrorsOfSuite);
-		}
-		result.append(SEPERATOR);
-		result.append("[ " + StringUtils.join(failedSpecs, ", ") + " ]");
 		return result.toString();
 	}
 
@@ -200,8 +200,7 @@ public class HAPIClientValidator extends Validator {
 		failedSpecs.addAll(Stream.of(resultEntry.getLogEntry().
 				split("Spec"))
 				.filter(s -> s.contains("name="))
-				.map(s -> s.substring(s.indexOf("=") + 1, s.indexOf("}"))
-						.replace(",", " "))
+				.map(s -> s.substring(s.indexOf("=") + 1, s.indexOf(",")))
 				.collect(Collectors.toList()));
 	}
 

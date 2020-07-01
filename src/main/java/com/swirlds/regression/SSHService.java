@@ -465,7 +465,6 @@ public class SSHService {
 	}
 
 	int execTestClientWithProcessID(String jvmOptions) {
-		log.info(MARKER, "publicIPList :", RegressionUtilities.getPublicIPStringForServices());
 		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
 			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
 		}

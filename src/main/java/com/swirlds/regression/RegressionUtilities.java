@@ -156,7 +156,7 @@ public class RegressionUtilities {
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
-	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -c%s -N";
 	public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -203,6 +203,7 @@ public class RegressionUtilities {
 	public static final String HEDERA_NODE_DIR = "/hedera-node/";
 	public static final String HEDERA_TEST_CLIENT_DIR = "/test-clients/";
 	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
+	public static final long STARTING_CRYPTO_ACCOUNT = 3L;
 	private static String publicIPStringForServices = null;
 	private static TestConfig testConfig = null;
 	private static String testSuites;
@@ -519,6 +520,7 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
 		// TODO add only needed files in resource folder
 		returnIterator.add(new File(hederaTestClientDir + "src/"));
+		returnIterator.add(new File(hederaTestClientDir + "system-files/"));
 		returnIterator.add(keyFile);
 		return returnIterator;
 	}
@@ -540,8 +542,8 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaNodeDir + "data/config/"));
 		//returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
 		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
-		returnIterator.add(new File( "hedera.crt"));
-		returnIterator.add(new File( "hedera.key"));
+		returnIterator.add(new File("hedera.crt"));
+		returnIterator.add(new File("hedera.key"));
 		returnIterator.add(new File("log4j2-services-regression.xml"));
 		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
 		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
@@ -602,6 +604,8 @@ public class RegressionUtilities {
 		returnIterator.add("src/main/");
 		returnIterator.add("src/main/resource/");
 		returnIterator.add("src/main/resource/**");
+		returnIterator.add("system-files/");
+		returnIterator.add("system-files/**");
 		returnIterator.add(keyFile.getName());
 		return returnIterator;
 	}

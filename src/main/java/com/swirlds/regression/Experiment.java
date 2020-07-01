@@ -107,6 +107,7 @@ import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
+import static com.swirlds.regression.RegressionUtilities.STARTING_CRYPTO_ACCOUNT;
 import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
 import static com.swirlds.regression.RegressionUtilities.TEST_TIME_EXCEEDED_MSG;
@@ -879,8 +880,9 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	private void createStatsFile(String resultsFolder) {
+		String csvName = settingsFile.getSettingValue("csvFileName");
 		String[] insightCmd = String.format(INSIGHT_CMD, RegressionUtilities.getPythonExecutable(),
-				RegressionUtilities.INSIGHT_SCRIPT_LOCATION, resultsFolder).split(" ");
+				RegressionUtilities.INSIGHT_SCRIPT_LOCATION, resultsFolder, csvName).split(" ");
 		ExecStreamReader.outputProcessStreams(insightCmd);
 
 	}
@@ -958,7 +960,7 @@ public class Experiment implements ExperimentSummary {
 
 		// If it is services-regression set starting crypto account as 3
 		if (testConfig.isServicesRegression()) {
-			configFile.setStartingCryptoAccount(3L);
+			configFile.setStartingCryptoAccount(STARTING_CRYPTO_ACCOUNT);
 		}
 
 		configFile.exportConfigFile();
