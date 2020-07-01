@@ -61,8 +61,6 @@ jobs:
             else
             	echo everythign is the same
             fi
-      - run:
-          command: mvn -s .circleci.settings.xml clean deploy -DskipTests
       - save_cache:
           paths:
             - ~/.m2
