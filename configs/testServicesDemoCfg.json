@@ -25,21 +25,33 @@
 	//"ALL_SUITES" //
 	"TopicCreateSpecs",
 	"SubmitMessageSpecs",
-	"UmbrellaRedux",
-	"FileUpdateLoadTest",
-	"ContractCallLoadTest",
-	"SubmitMessageLoadTest",
-	"CryptoTransferLoadTest",
-	"MixedTransferAndSubmitLoadTest",
-	"MixedTransferCallAndSubmitLoadTest",
-	"TopicCreateSpecs",
 	"TopicDeleteSpecs",
 	"TopicUpdateSpecs",
 	"SubmitMessageSpecs",
 	"HCSTopicFragmentationSuite",
 	"TopicGetInfoSpecs",
-	"ConsensusThrottlesSpecs"
+	"ConsensusThrottlesSpecs",
+	"BucketAndLegacyThrottlingSpec",
+	"ControlAccountsExemptForUpdates",
+	"CryptoCreateSuite",
+	"CryptoRecordSanityChecks",
+	"SuperusersAreNeverThrottled",
+	"FileRecordSanityChecks",
+	"VersionInfoSpec",
+	"ProtectedFilesUpdateSuite",
+	"PermissionSemanticsSpec",
+	"SysDelSysUndelSpec",
+	"NewOpInConstructorSpecs",
+	"MultipleSelfDestructsAreSafe",
+	"FetchSystemFiles",
+	"ChildStorageSpecs",
+	"DeprecatedContractKeySpecs",
+	"ThresholdRecordCreationSpecs",
+	"ContractRecordSanityChecks"
   ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST"
+  },
   "app": {
 	"jar": "HederaNode.jar"
   },

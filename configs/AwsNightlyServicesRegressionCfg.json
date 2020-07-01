@@ -6,20 +6,20 @@
   "cloud": {
 	"service": "aws",
 	"securityGroup": "SwirldsSecGroup",
-	"instanceType": "M42xlarge",
+	"instanceType": "M410xlarge",
 	"instanceKey": "regression-key-neeha",
 	"keyLocation": "./keys/my-key",
 	"login": "ubuntu",
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		//"numberOfNodes" : 2,
-		"instanceList": [
-		  "i-02a03b23122cc043b",
-		  "i-015bf72bcf585ec17",
-		  "i-0fd83e80b777bc936",
-		  "i-0b820055ba5306866"
-		],
+		"numberOfNodes" : 2,
+//		"instanceList": [
+//		  "i-02a03b23122cc043b",
+//		  "i-015bf72bcf585ec17",
+//		  "i-0fd83e80b777bc936",
+//		  "i-0b820055ba5306866"
+//		],
 		"numberOfTestClientNodes": 1
 //		"testClientInstanceList": [
 //		  "i-088a86a25ab59c3ee"
