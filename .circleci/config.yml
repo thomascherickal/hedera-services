@@ -25,7 +25,8 @@ jobs:
             - "34:f2:e8:87:f3:e0:e4:97:e5:9d:c9:1c:9e:42:f4:54"
       - run:
           command: |
-            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            mkdir ~/.ssh/
+            echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
             cd $CIRCLE_WORKING_DIRECTORY/swilds-platform
       - run: git submodule update --init --recursive --checkout
