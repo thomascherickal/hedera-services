@@ -1,0 +1,88 @@
+# Java Maven CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+
+  build_development_branch:
+    docker:
+      - image: swirlds/cci-openjdk:12.0.2
+      - image: postgres:10.9
+        environment:
+          POSTGRES_USER: swirlds
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: fcfs
+        resource_class: large
+    working_directory: ~/repo
+    resource_class: large
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx5200m
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "34:f2:e8:87:f3:e0:e4:97:e5:9d:c9:1c:9e:42:f4:54"
+      - run:
+          command: |
+            echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+            git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
+            cd $CIRCLE_WORKING_DIRECTORY
+            git submodule update --init --recursive --checkout
+      - run:
+          command: |
+            cd $CIRCLE_WORKING_DIRECTORY
+            reg_dev=$(cd regression;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
+            reg_sub=$(git submodule status | grep regression | awk '{print $1}')
+            app_dev=$(cd platform-apps;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
+            app_sub=$(git submodule status | grep platform-apps | awk '{print $1}')
+            needCommit=0
+
+            if [ $reg_dev != $reg_sub ]
+            then
+            	echo they are different
+            	cd regression
+            	git checkout develop
+            	cd ..
+            	needCommit=1
+            else
+            	echo they are the same
+            fi
+            if [ $app_dev != $app_sub ]
+            then
+            	cd platform-apps
+            	git checkout develop
+            	cd ..
+            	needCommit=1
+            fi
+            if [ $needCommit -eq 1 ]
+            then
+            	echo something was different
+            else
+            	echo everythign is the same
+            fi
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build_development_branch:
+          filters:
+            branches:
+              only:
+                - P2161-automatePointerUpdate
