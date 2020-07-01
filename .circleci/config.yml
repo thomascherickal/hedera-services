@@ -24,7 +24,7 @@ jobs:
           fingerprints:
             - "34:f2:e8:87:f3:e0:e4:97:e5:9d:c9:1c:9e:42:f4:54"
       - run:
-          shell: /bin/bash
+          shell: /bin/bash +e
           command: mkdir ~/.ssh/
       - run:
           command: |
