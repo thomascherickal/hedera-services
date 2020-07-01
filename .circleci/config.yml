@@ -55,8 +55,8 @@ jobs:
             	cd ..
             	needCommit=1
             fi
-
             if [ $needCommit -eq 1 ]
+            then
             	echo something was different
             else
             	echo everythign is the same
