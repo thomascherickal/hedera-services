@@ -27,7 +27,7 @@ jobs:
           command: |
             echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
-            cd $CIRCLE_WORKING_DIRECTORY/swilds-platform
+            ls $CIRCLE_WORKING_DIRECTORY
       - run: git submodule update --init --recursive --checkout
       - run:
           command: |
