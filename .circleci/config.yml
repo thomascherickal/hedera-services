@@ -13,6 +13,7 @@ jobs:
           POSTGRES_USER: swirlds
           POSTGRES_PASSWORD: password
           POSTGRES_DB: fcfs
+          CIRCLE_TEST_BRANCH: 02161-D-AutomatePinterUpdate
         resource_class: large
     working_directory: ~/repo
     resource_class: large
@@ -26,7 +27,7 @@ jobs:
       - run:
           command: |
             echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-            git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
+            git clone -b $CIRCLE_TEST_BRANCH git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
             cd $CIRCLE_WORKING_DIRECTORY
             git submodule update --init --recursive --checkout
       - run:
@@ -42,7 +43,7 @@ jobs:
             then
             	echo they are different
             	cd regression
-            	git checkout develop
+            	git checkout $CIRCLE_BRANCH
             	cd ..
             	needCommit=1
             else
@@ -61,6 +62,10 @@ jobs:
             else
             	echo everythign is the same
             fi
+      - run:
+          command: |
+            cd $CIRCLE_WORKING_DIRECTORY
+            mvn -s .circleci.settings.xml clean deploy -DskipTests
       - save_cache:
           paths:
             - ~/.m2
