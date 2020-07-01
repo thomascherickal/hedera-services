@@ -27,12 +27,12 @@ jobs:
           command: |
             echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
-            ls $CIRCLE_WORKING_DIRECTORY
-      - run: git submodule update --init --recursive --checkout
+            cd $CIRCLE_WORKING_DIRECTORY
+            git submodule update --init --recursive --checkout
       - run:
           command: |
-            cd $CIRCLE_WORKING_DIRECTORY/swilds-platform/regression
-            git checkout origin/$CIRCLE_BRANCH
+            cd $CIRCLE_WORKING_DIRECTORY
+            
       - run:
           command: mvn -s .circleci.settings.xml clean deploy -DskipTests
       - save_cache:
