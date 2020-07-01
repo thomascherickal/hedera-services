@@ -92,11 +92,9 @@ public class HAPIClientValidator extends Validator {
 					break;
 				} else if (end.getLogEntry().contains(WRONG_STATUS)) {
 					wrongStatus++;
-					//addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else if (end.isException()) {
 					//Some exception is found
 					numProblems++;
-					//addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else {
 					//check results of the suite and validate problems
 					start = validateResultsOfCurrentSuite(clientLogReader);
@@ -150,29 +148,34 @@ public class HAPIClientValidator extends Validator {
 		StringBuilder result = new StringBuilder();
 		result.append(suiteName);
 
-		if (wrongStatus == 0 && resultErrorsOfSuite == 0 && numProblems == 0 && resultPassedOfSuite > 0) {
+		if (wrongStatus == 0 && resultErrorsOfSuite == 0
+				&& numProblems == 0 && resultPassedOfSuite > 0) {
 			isValid &= true;
 			result.append(SEPERATOR);
 			result.append("PASSED ");
 			addInfo(result.toString());
 		} else if (wrongStatus > 0 || resultErrorsOfSuite > 0 || numProblems > 0) {
-			if (wrongStatus > 0) {
-				result.append(SEPERATOR);
-				result.append("Wrong Status:" + wrongStatus);
-			}
-			if (numProblems > 0) {
-				result.append(SEPERATOR);
-				result.append("Runtime Exceptions:" + numProblems);
-			}
-			if (resultErrorsOfSuite > 0) {
-				result.append(SEPERATOR);
-				result.append("Failed Tests:" + resultErrorsOfSuite);
-			}
-			result.append(SEPERATOR);
-			result.append(StringUtils.join(failedSpecs, ","));
-			addError(result.toString());
+			addError(buildErrorMessage(result));
 			isValid &= false;
 		}
+	}
+
+	private String buildErrorMessage(StringBuilder result) {
+		if (wrongStatus > 0) {
+			result.append(SEPERATOR);
+			result.append("Wrong Status:" + wrongStatus);
+		}
+		if (numProblems > 0) {
+			result.append(SEPERATOR);
+			result.append("Exceptions:" + numProblems);
+		}
+		if (resultErrorsOfSuite > 0) {
+			result.append(SEPERATOR);
+			result.append("Failed Tests:" + resultErrorsOfSuite);
+		}
+		result.append(SEPERATOR);
+		result.append("[ " + StringUtils.join(failedSpecs, ", ") + " ]");
+		return result.toString();
 	}
 
 	private void initializeVariables() {
@@ -197,7 +200,7 @@ public class HAPIClientValidator extends Validator {
 		failedSpecs.addAll(Stream.of(resultEntry.getLogEntry().
 				split("Spec"))
 				.filter(s -> s.contains("name="))
-				.map(s-> s.substring(s.indexOf("=")+1, s.indexOf("}"))
+				.map(s -> s.substring(s.indexOf("=") + 1, s.indexOf("}"))
 						.replace(",", " "))
 				.collect(Collectors.toList()));
 	}
