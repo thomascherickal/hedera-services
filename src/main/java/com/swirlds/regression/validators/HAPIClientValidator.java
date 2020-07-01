@@ -44,7 +44,7 @@ public class HAPIClientValidator extends Validator {
 
 	public HAPIClientValidator(final List<NodeData> testClientNodeData) {
 		this.testClientNodeData = testClientNodeData;
-		isValid = false;
+		isValid = true;
 		isValidated = false;
 	}
 
@@ -64,8 +64,6 @@ public class HAPIClientValidator extends Validator {
 			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
 					Arrays.asList(STARTING_OF_SUITE));
 			while (true) {
-				initializeVariables();
-
 				if (start == null) {
 					break;
 				} else {
@@ -77,26 +75,47 @@ public class HAPIClientValidator extends Validator {
 						Arrays.asList(RESULTS_OF_SUITE, WRONG_STATUS, EXCEPTION, ERROR));
 
 				if (end == null) {
-					addError(String.format("Node %s started a test, but did not finish!", suiteName));
+					addError(String.format("Suite %s started, but did not finish!", suiteName));
+					validateProblemsInSuite();
 					isValid = false;
 					break;
 				} else if (end.getLogEntry().contains(WRONG_STATUS)) {
 					wrongStatus++;
+					addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else if (end.isException()) {
+					//Some exception is found
 					numProblems++;
+					addError("Suite " + suiteName + " : " + end.getLogEntry());
 				} else {
-					while (true) {
-						start = clientLogReader.nextEntry();
-						boolean isCurrentSuiteResults = checkResultsOfSuite(start);
-						if (!isCurrentSuiteResults) {
-							break;
-						}
-					}
+					//check results of the suite and validate problems
+					start = validateResultsOfCurrentSuite(clientLogReader);
 				}
-				validateProblems();
 			}
 		}
 		isValidated = true;
+	}
+
+	private HAPIClientLogEntry validateResultsOfCurrentSuite(LogReader<HAPIClientLogEntry> clientLogReader)
+			throws IOException {
+		HAPIClientLogEntry start;
+		while (true) {
+			start = clientLogReader.nextEntry();
+			if (start == null) {
+				validateProblemsInSuite();
+				return null;
+			}
+			boolean isCurrentSuiteResults = checkResultsOfSuite(start);
+			if (!isCurrentSuiteResults) {
+				validateProblemsInSuite();
+				break;
+			}
+		}
+		return start;
+	}
+
+	private void validateProblemsInSuite() {
+		validateProblems();
+		initializeVariables();
 	}
 
 	private boolean checkResultsOfSuite(HAPIClientLogEntry start) {
