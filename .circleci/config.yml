@@ -13,13 +13,13 @@ jobs:
           POSTGRES_USER: swirlds
           POSTGRES_PASSWORD: password
           POSTGRES_DB: fcfs
-          CIRCLE_TEST_BRANCH: 02161-D-AutomatePinterUpdate
         resource_class: large
     working_directory: ~/repo
     resource_class: large
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx5200m
+      CIRCLE_TEST_BRANCH: 02161-D-AutomatePinterUpdate
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -27,7 +27,7 @@ jobs:
       - run:
           command: |
             echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-            git clone -b $CIRCLE_TEST_BRANCH git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
+            git clone -b $CIRCLE_TEST_BRANCH --single-branch git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
             cd $CIRCLE_WORKING_DIRECTORY
             git submodule update --init --recursive --checkout
       - run:
