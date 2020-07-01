@@ -19,7 +19,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx5200m
-      CIRCLE_TEST_BRANCH: 02161-D-AutomatePinterUpdate
+      CIRCLE_TEST_BRANCH: 02161-D-AutomatePointerUpdate
     steps:
       - add_ssh_keys:
           fingerprints:
