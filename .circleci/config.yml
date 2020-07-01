@@ -25,14 +25,17 @@ jobs:
             - "34:f2:e8:87:f3:e0:e4:97:e5:9d:c9:1c:9e:42:f4:54"
       - run:
           command: |
+            set +e
             mkdir ~/.ssh/
+      - run:
+          command: |
             echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             git clone git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
             cd $CIRCLE_WORKING_DIRECTORY/swilds-platform
       - run: git submodule update --init --recursive --checkout
       - run:
           command: |
-            cd regression
+            cd $CIRCLE_WORKING_DIRECTORY/swilds-platform/regression
             git checkout origin/$CIRCLE_BRANCH
       - run:
           command: mvn -s .circleci.settings.xml clean deploy -DskipTests
