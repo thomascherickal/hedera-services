@@ -521,6 +521,9 @@ public class RegressionUtilities {
 		// TODO add only needed files in resource folder
 		returnIterator.add(new File(hederaTestClientDir + "src/"));
 		returnIterator.add(new File(hederaTestClientDir + "system-files/"));
+		returnIterator.add(new File(hederaTestClientDir + "remote-system-files/"));
+		returnIterator.add(new File(hederaTestClientDir + "testFiles/"));
+
 		returnIterator.add(keyFile);
 		return returnIterator;
 	}
@@ -606,6 +609,10 @@ public class RegressionUtilities {
 		returnIterator.add("src/main/resource/**");
 		returnIterator.add("system-files/");
 		returnIterator.add("system-files/**");
+		returnIterator.add("remote-system-files/");
+		returnIterator.add("remote-system-files/**");
+		returnIterator.add("testfiles/");
+		returnIterator.add("testfiles/**");
 		returnIterator.add(keyFile.getName());
 		return returnIterator;
 	}
