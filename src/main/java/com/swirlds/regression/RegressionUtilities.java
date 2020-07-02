@@ -522,7 +522,7 @@ public class RegressionUtilities {
 		returnIterator.add(new File(hederaTestClientDir + "src/"));
 		returnIterator.add(new File(hederaTestClientDir + "system-files/"));
 		returnIterator.add(new File(hederaTestClientDir + "remote-system-files/"));
-		returnIterator.add(new File(hederaTestClientDir + "testFiles/"));
+		returnIterator.add(new File(hederaTestClientDir + "testfiles/"));
 
 		returnIterator.add(keyFile);
 		return returnIterator;
