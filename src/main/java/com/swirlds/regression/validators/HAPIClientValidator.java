@@ -17,7 +17,6 @@
 
 package com.swirlds.regression.validators;
 
-import com.amazonaws.http.conn.ssl.ShouldClearSslSessionPredicate;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

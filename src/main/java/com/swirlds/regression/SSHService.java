@@ -475,7 +475,7 @@ public class SSHService {
 		String command = String.format(
 				"cd %s; " +
 						"NODES=\"%s\" DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-						"-NODE=random\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
