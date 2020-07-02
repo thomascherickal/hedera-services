@@ -33,9 +33,9 @@ jobs:
       - run:
           command: |
             cd $CIRCLE_WORKING_DIRECTORY
-            reg_dev=$(cd regression;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
+            reg_dev=$(cd regression;git pull;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
             reg_sub=$(git submodule status | grep regression | awk '{print $1}')
-            app_dev=$(cd platform-apps;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
+            app_dev=$(cd platform-apps;git pull;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
             app_sub=$(git submodule status | grep platform-apps | awk '{print $1}')
             needCommit=0
 
