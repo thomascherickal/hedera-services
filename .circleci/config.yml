@@ -30,37 +30,22 @@ jobs:
             git clone -b $CIRCLE_TEST_BRANCH --single-branch git@github.com:swirlds/swirlds-platform.git $CIRCLE_WORKING_DIRECTORY
             cd $CIRCLE_WORKING_DIRECTORY
             git submodule update --init --recursive --checkout
+            cd regression
+            git checkout origin/$CIRCLE_BRANCH
       - run:
           command: |
             cd $CIRCLE_WORKING_DIRECTORY
-            reg_dev=$(cd regression;git pull;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
-            reg_sub=$(git submodule status | grep regression | awk '{print $1}')
-            app_dev=$(cd platform-apps;git pull;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
-            app_sub=$(git submodule status | grep platform-apps | awk '{print $1}')
-            needCommit=0
+            current_reg_dev=$(cd regression;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
+            current_sub=$(git submodule status | grep regression | awk '{print $1}')
 
-            if [ $reg_dev != $reg_sub ]
+
+            if [ $current_reg_dev != $current_sub ]
             then
-            	echo they are different
-            	cd regression
-            	git checkout $CIRCLE_BRANCH
-            	cd ..
-            	needCommit=1
+            	git add regression
+                git commit -m "Updated regression pointer to commit $current_reg_dev"
+                git push
             else
-            	echo they are the same
-            fi
-            if [ $app_dev != $app_sub ]
-            then
-            	cd platform-apps
-            	git checkout develop
-            	cd ..
-            	needCommit=1
-            fi
-            if [ $needCommit -eq 1 ]
-            then
-            	echo something was different
-            else
-            	echo everythign is the same
+            	echo both commits are the same
             fi
       - run:
           command: |
