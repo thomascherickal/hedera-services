@@ -20,6 +20,7 @@ package com.swirlds.regression.validators;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.slack.SlackMsg;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -197,7 +198,7 @@ public class HAPIClientValidator extends Validator {
 			passedSuites.add(new ArrayList<>(Arrays.asList(suiteName, "PASSED")));
 		} else {
 			StringBuilder failResult = new StringBuilder();
-			failedSpecs.forEach(spec -> failResult.append(spec).append(SEPERATOR));
+			failResult.append(StringUtils.join(failedSpecs, SEPERATOR));
 			if (wrongStatus > 0) {
 				failResult.append("\n");
 				failResult.append("Wrong Status:" + wrongStatus);
