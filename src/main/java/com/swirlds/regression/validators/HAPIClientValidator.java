@@ -19,7 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
-import org.apache.commons.lang3.StringUtils;
+import com.swirlds.regression.slack.SlackMsg;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,10 @@ public class HAPIClientValidator extends Validator {
 	private int wrongStatus = 0;
 	private int numProblems = 0;
 	private String suiteName = "";
-	private ArrayList<String> failedSpecs = new ArrayList<>();
+
+	private ArrayList<String> failedSpecs;
+	private List<List<String>> passedSuites;
+	private List<List<String>> failedSuites;
 
 	private static final String WRONG_STATUS = "wrong status";
 	private static final String STARTING_OF_SUITE = "-------------- STARTING ";
@@ -47,17 +50,25 @@ public class HAPIClientValidator extends Validator {
 	private static final String EXCEPTION = "Exception";
 	private static final String ERROR = "ERROR";
 
-	private static final String SEPERATOR = "	";
+	private static final String SEPERATOR = ", ";
 
+	/**
+	 * Validator to validate logs from test client when running hedera-services regression
+	 *
+	 * @param testClientNodeData
+	 */
 	public HAPIClientValidator(final List<NodeData> testClientNodeData) {
 		this.testClientNodeData = testClientNodeData;
 		isValid = true;
 		isValidated = false;
+		initializeLists();
+		buildColumnHeaders();
 	}
 
 	/**
-	 * Check log of test results. Parse test logs of each test suite ran starting with
-	 * "-------------- STARTING" and results in " -------------- RESULTS OF"
+	 * Check logs of test results. Parse test logs of each test suite ran starting with
+	 * "-------------- STARTING" and results in " -------------- RESULTS OF".
+	 * Also validates if there are any exceptions
 	 *
 	 * @throws IOException
 	 */
@@ -83,7 +94,7 @@ public class HAPIClientValidator extends Validator {
 
 				if (end == null) {
 					addError(String.format("Suite %s started, but did not finish!", suiteName));
-					validateProblemsInSuite();
+					validateSuiteResults();
 					isValid = false;
 					break;
 				} else if (end.getLogEntry().contains(WRONG_STATUS)) {
@@ -97,42 +108,8 @@ public class HAPIClientValidator extends Validator {
 				}
 			}
 		}
+		createTableOfResults();
 		isValidated = true;
-	}
-
-	private HAPIClientLogEntry validateResultsOfCurrentSuite(LogReader<HAPIClientLogEntry> clientLogReader)
-			throws IOException {
-		HAPIClientLogEntry start;
-		while (true) {
-			start = clientLogReader.nextEntry();
-			if (start == null) {
-				validateProblemsInSuite();
-				return null;
-			}
-			boolean isCurrentSuiteResults = checkResultsOfSuite(start);
-			if (!isCurrentSuiteResults) {
-				validateProblemsInSuite();
-				break;
-			}
-		}
-		return start;
-	}
-
-	private void validateProblemsInSuite() {
-		validateProblems();
-		initializeVariables();
-	}
-
-	private boolean checkResultsOfSuite(HAPIClientLogEntry resultEntry) {
-		if (!resultEntry.getLogEntry().contains(suiteName)) {
-			return false;
-		} else if (isPassed(resultEntry)) {
-			resultPassedOfSuite++;
-		} else if (isFailed(resultEntry)) {
-			parseFailedSpecs(resultEntry);
-			resultErrorsOfSuite++;
-		}
-		return true;
 	}
 
 	@Override
@@ -140,58 +117,143 @@ public class HAPIClientValidator extends Validator {
 		return isValid && isValidated;
 	}
 
-	private void validateProblems() {
-		StringBuilder result = new StringBuilder();
-		result.append(suiteName);
+	/**
+	 * Creates a table with the passed and failed suites of the test, to post to slack channel.
+	 */
+	private void createTableOfResults() {
+		if (passedSuites.size() > 1) {
+			StringBuilder passedTests = new StringBuilder();
+			SlackMsg.table(passedTests, passedSuites);
+			addInfo(passedTests.substring(4, passedTests.lastIndexOf("\n")));
+		}
+		if (failedSuites.size() > 1) {
+			StringBuilder failedTests = new StringBuilder();
+			SlackMsg.table(failedTests, failedSuites);
+			addError(failedTests.substring(4, failedTests.lastIndexOf("\n")));
+		}
+	}
 
-		if (wrongStatus == 0 && resultErrorsOfSuite == 0
-				&& numProblems == 0 && resultPassedOfSuite > 0) {
+	/**
+	 * Checks all the results of current Suite in RESULTS section.
+	 * Break the loop after reaching to starting of next suite or when reaching end of the file
+	 *
+	 * @param logReader
+	 * @return
+	 * @throws IOException
+	 */
+	private HAPIClientLogEntry validateResultsOfCurrentSuite(LogReader<HAPIClientLogEntry> logReader)
+			throws IOException {
+		HAPIClientLogEntry entry;
+		while (true) {
+			entry = logReader.nextEntry();
+			if (entry == null) {
+				validateSuiteResults();
+				return null;
+			}
+			boolean isCurrentSuiteResults = checkResultsOfSuite(entry);
+			if (!isCurrentSuiteResults) {
+				validateSuiteResults();
+				break;
+			}
+		}
+		return entry;
+	}
+
+	/**
+	 * Validates if the suite has passed or failed based on number of wrong status messages,
+	 * number of exceptions and number of failed tests in the suite
+	 */
+	private void validateSuiteResults() {
+		boolean isPassed;
+		if (isSuitePassed()) {
 			isValid &= true;
-			result.append(SEPERATOR);
-			result.append("PASSED ");
-			addInfo(result.toString());
-		} else if (wrongStatus > 0 || resultErrorsOfSuite > 0 || numProblems > 0) {
-			result.append(SEPERATOR);
-			result.append("FAILED ");
-			addError(buildErrorMessage(result));
+			isPassed = true;
+		} else {
 			isValid &= false;
+			isPassed = false;
+		}
+		buildMessage(isPassed);
+		clear();
+	}
+
+	/**
+	 * validates if suite is passed or failed based on number of wrong status messages,
+	 * number of exceptions and number of failed/passed tests in the suite
+	 *
+	 * @return
+	 */
+	private boolean isSuitePassed() {
+		return wrongStatus == 0 && resultErrorsOfSuite == 0
+				&& numProblems == 0 && resultPassedOfSuite > 0;
+	}
+
+	/**
+	 * Build passed/fail message of the suite result
+	 *
+	 * @param isPassed
+	 */
+	private void buildMessage(boolean isPassed) {
+		if (isPassed) {
+			passedSuites.add(new ArrayList<>(Arrays.asList(suiteName, "PASSED")));
+		} else {
+			StringBuilder failResult = new StringBuilder();
+			failedSpecs.forEach(spec -> failResult.append(spec).append(SEPERATOR));
+			if (wrongStatus > 0) {
+				failResult.append("\n");
+				failResult.append("Wrong Status:" + wrongStatus);
+			}
+			if (numProblems > 0) {
+				failResult.append("\n");
+				failResult.append("Exceptions:" + numProblems);
+			}
+			failedSuites.add(new ArrayList<>(Arrays.asList(suiteName, "FAILED", failResult.toString())));
 		}
 	}
 
-	private String buildErrorMessage(StringBuilder result) {
-		result.append(SEPERATOR);
-		result.append(failedSpecs.size() > 0 ?
-				"Failed Tests: "+ StringUtils.join(failedSpecs, ", ")
-				:"");
-		if (wrongStatus > 0) {
-			result.append(SEPERATOR);
-			result.append("Wrong Status:" + wrongStatus);
+	/**
+	 * After reaching RESULTS section of the suite verify if any tests in suite failed/passed
+	 *
+	 * @param resultEntry
+	 * @return
+	 */
+	private boolean checkResultsOfSuite(HAPIClientLogEntry resultEntry) {
+		if (!resultEntry.getLogEntry().contains(suiteName)) {
+			return false;
+		} else if (isResultEntryPassed(resultEntry)) {
+			resultPassedOfSuite++;
+		} else if (isResultEntryFailed(resultEntry)) {
+			parseFailedSpecs(resultEntry);
+			resultErrorsOfSuite++;
 		}
-		if (numProblems > 0) {
-			result.append(SEPERATOR);
-			result.append("Exceptions:" + numProblems);
-		}
-		return result.toString();
+		return true;
 	}
 
-	private void initializeVariables() {
-		resultErrorsOfSuite = 0;
-		resultPassedOfSuite = 0;
-		wrongStatus = 0;
-		numProblems = 0;
-		suiteName = "";
-		failedSpecs = new ArrayList<>();
-	}
-
-	private boolean isFailed(HAPIClientLogEntry resultEntry) {
+	/**
+	 * Check if the result entry contains FAILED or ERROR
+	 *
+	 * @param resultEntry
+	 * @return
+	 */
+	private boolean isResultEntryFailed(HAPIClientLogEntry resultEntry) {
 		return resultEntry.getLogEntry().contains("status=FAILED")
 				|| resultEntry.getLogEntry().contains("status=ERROR");
 	}
 
-	private boolean isPassed(HAPIClientLogEntry resultEntry) {
+	/**
+	 * check if result entry contains PASSED
+	 *
+	 * @param resultEntry
+	 * @return
+	 */
+	private boolean isResultEntryPassed(HAPIClientLogEntry resultEntry) {
 		return resultEntry.getLogEntry().contains("status=PASSED");
 	}
 
+	/**
+	 * get names of failed tests of the suite from the results section
+	 *
+	 * @param resultEntry
+	 */
 	private void parseFailedSpecs(HAPIClientLogEntry resultEntry) {
 		failedSpecs.addAll(Stream.of(resultEntry.getLogEntry().
 				split("Spec"))
@@ -200,4 +262,32 @@ public class HAPIClientValidator extends Validator {
 				.collect(Collectors.toList()));
 	}
 
+	/**
+	 * reset all variables used
+	 */
+	private void clear() {
+		resultErrorsOfSuite = 0;
+		resultPassedOfSuite = 0;
+		wrongStatus = 0;
+		numProblems = 0;
+		suiteName = "";
+		failedSpecs = new ArrayList<>();
+	}
+
+	/**
+	 * initialize arraylists used in the validator
+	 */
+	private void initializeLists() {
+		failedSpecs = new ArrayList<>();
+		passedSuites = new ArrayList<>();
+		failedSuites = new ArrayList<>();
+	}
+
+	/**
+	 * build column headers for the passed tests table and failed tests table
+	 */
+	private void buildColumnHeaders() {
+		passedSuites.add(new ArrayList<>(Arrays.asList("Suite", "Result")));
+		failedSuites.add(new ArrayList<>(Arrays.asList("Suite", "Result", "Failures")));
+	}
 }

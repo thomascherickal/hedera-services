@@ -22,10 +22,10 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	//"ALL_SUITES" //
+	//"ALL_SUITES"
+	"UmbrellaRedux",
 	"TopicCreateSpecs",
 	"SubmitMessageSpecs",
-	"TopicDeleteSpecs",
 	"TopicUpdateSpecs",
 	"SubmitMessageSpecs",
 	"HCSTopicFragmentationSuite",
@@ -38,7 +38,6 @@
 	"SuperusersAreNeverThrottled",
 	"FileRecordSanityChecks",
 	"VersionInfoSpec",
-	"ProtectedFilesUpdateSuite",
 	"PermissionSemanticsSpec",
 	"SysDelSysUndelSpec",
 	"NewOpInConstructorSpecs",
@@ -47,7 +46,9 @@
 	"ChildStorageSpecs",
 	"DeprecatedContractKeySpecs",
 	"ThresholdRecordCreationSpecs",
-	"ContractRecordSanityChecks"
+	"ContractRecordSanityChecks",
+	"TopicDeleteSpecs",
+	"ProtectedFilesUpdateSuite"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
