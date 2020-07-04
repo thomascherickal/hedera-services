@@ -1380,4 +1380,17 @@ public class SSHService {
 
 		return execCommand(command, description, 5).getExitStatus();
 	}
+
+	/**
+	 * Sometimes the environment variable in application properties is set to DEV.
+	 * Modify it automatically to PROD when running regression on AWS
+	 */
+
+	public void modifyEnvToProd() {
+		String command = String.format(
+				"cd %s; " +
+						"sed -i 's/environment=0/environment=1/g' application.properties",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + "data/config");
+		execCommand(command, "Change environment to PROD");
+	}
 }

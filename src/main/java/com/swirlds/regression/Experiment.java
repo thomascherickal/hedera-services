@@ -689,6 +689,12 @@ public class Experiment implements ExperimentSummary {
 		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
 		long endTime = System.nanoTime();
 		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
+
+		// Sometimes the environment variable in application properties is set to DEV.
+		// Modify it automatically to PROD when running regression on AWS
+		if (testConfig.isServicesRegression() && !isTestClientNode) {
+			currentNode.modifyEnvToProd();
+		}
 	}
 
 	@Override
@@ -797,7 +803,7 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 			List<NodeData> testClientNodeData = new ArrayList<>();
-			if(testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT){
+			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
 				testClientNodeData = experimentLocalFileHelper.
 						loadTestClientNodeData(testClientNodes);
 			}
@@ -1190,10 +1196,10 @@ public class Experiment implements ExperimentSummary {
 		int recordFileWriters = Math.min(regConfig.getRecordFilesWriters(), sshNodes.size());
 		threadPoolService(IntStream.range(0, recordFileWriters)
 				.<Runnable>mapToObj(i -> () -> {
-							SSHService node = sshNodes.get(i);
-							node.makeSha1sumOfStreamedEvents(i, RECORD);
-							log.info(MARKER, "node:" + node.getIpAddress() +
-									" created sha1sum of ." + RECORD.getExtension());
+					SSHService node = sshNodes.get(i);
+					node.makeSha1sumOfStreamedEvents(i, RECORD);
+					log.info(MARKER, "node:" + node.getIpAddress() +
+							" created sha1sum of ." + RECORD.getExtension());
 				}).collect(Collectors.toList()));
 
 		threadPoolService(IntStream.range(0, sshNodes.size())
