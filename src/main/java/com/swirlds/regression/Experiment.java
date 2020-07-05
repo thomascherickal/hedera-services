@@ -327,6 +327,9 @@ public class Experiment implements ExperimentSummary {
 	 */
 	public void startHGCApp() {
 		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
+			// Sometimes the environment variable in application properties is set to DEV.
+			// Modify it automatically to PROD when running regression on AWS
+			node.modifyEnvToProd();
 			node.execHGCAppWithProcessID(getJVMOptionsString());
 			log.info(MARKER, "node:{} Browser started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
@@ -689,12 +692,6 @@ public class Experiment implements ExperimentSummary {
 		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
 		long endTime = System.nanoTime();
 		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
-
-		// Sometimes the environment variable in application properties is set to DEV.
-		// Modify it automatically to PROD when running regression on AWS
-		if (testConfig.isServicesRegression() && !isTestClientNode) {
-			currentNode.modifyEnvToProd();
-		}
 	}
 
 	@Override

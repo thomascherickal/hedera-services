@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 1000,
+  "duration": 1200,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -23,6 +23,8 @@
   "servicesRegression" : true,
   "testSuites": [
 	//"ALL_SUITES"
+	"BucketAndLegacyThrottlingSpec",
+	"ControlAccountsExemptForUpdates",
 	"UmbrellaRedux",
 	"TopicCreateSpecs",
 	"SubmitMessageSpecs",
@@ -31,8 +33,6 @@
 	"HCSTopicFragmentationSuite",
 	"TopicGetInfoSpecs",
 	"ConsensusThrottlesSpecs",
-	"BucketAndLegacyThrottlingSpec",
-	"ControlAccountsExemptForUpdates",
 	"CryptoCreateSuite",
 	"CryptoRecordSanityChecks",
 	"SuperusersAreNeverThrottled",

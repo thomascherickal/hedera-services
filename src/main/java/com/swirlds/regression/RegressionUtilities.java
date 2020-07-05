@@ -518,8 +518,7 @@ public class RegressionUtilities {
 		Collection<File> returnIterator = new ArrayList<>();
 		String hederaTestClientDir = RegressionUtilities.getHederaServicesRepoPath() + HEDERA_TEST_CLIENT_DIR;
 		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
-		// TODO add only needed files in resource folder
-		returnIterator.add(new File(hederaTestClientDir + "src/"));
+		returnIterator.add(new File(hederaTestClientDir + "src/main/resource/"));
 		returnIterator.add(new File(hederaTestClientDir + "system-files/"));
 		returnIterator.add(new File(hederaTestClientDir + "remote-system-files/"));
 		returnIterator.add(new File(hederaTestClientDir + "testfiles/"));
@@ -603,10 +602,8 @@ public class RegressionUtilities {
 	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 		returnIterator.add(SUITE_RUNNER_JAR);
-		returnIterator.add("src/");
-		returnIterator.add("src/main/");
-		returnIterator.add("src/main/resource/");
-		returnIterator.add("src/main/resource/**");
+		returnIterator.add("resource/");
+		returnIterator.add("resource/**");
 		returnIterator.add("system-files/");
 		returnIterator.add("system-files/**");
 		returnIterator.add("remote-system-files/");
@@ -624,7 +621,7 @@ public class RegressionUtilities {
 	 */
 	protected static ArrayList<String> getServicesFilesToDownload() {
 		ArrayList<String> returnIterator = new ArrayList<>();
-		returnIterator.add("output/*");
+		//returnIterator.add("output/*");
 		returnIterator.add("*.log");
 		return returnIterator;
 	}

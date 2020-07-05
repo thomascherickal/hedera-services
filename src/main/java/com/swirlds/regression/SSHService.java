@@ -474,6 +474,7 @@ public class SSHService {
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 		String command = String.format(
 				"cd %s; " +
+						"mkdir -p src/main/ && mv resource/ src/main/; " +
 						"NODES=\"%s\" DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
 						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
@@ -1389,8 +1390,8 @@ public class SSHService {
 	public void modifyEnvToProd() {
 		String command = String.format(
 				"cd %s; " +
-						"sed -i 's/environment=0/environment=1/g' application.properties",
-				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + "data/config");
+						"sed -i 's/environment=0/environment=1/g' data/config/application.properties",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
 		execCommand(command, "Change environment to PROD");
 	}
 }
