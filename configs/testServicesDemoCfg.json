@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 600,
+  "duration": 2000,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -18,37 +18,44 @@
 	{
 	  "name": "maxOutgoingSyncs",
 	  "value": "2"
+	},
+	{
+	  "name": "freezeSettings.active",
+	  "value": "0"
 	}
   ],
   "servicesRegression" : true,
   "testSuites": [
-	//"ALL_SUITES"
-	"BucketAndLegacyThrottlingSpec",
-	"ControlAccountsExemptForUpdates",
-	"UmbrellaRedux",
-	"TopicCreateSpecs",
-	"SubmitMessageSpecs",
-	"TopicUpdateSpecs",
-	"SubmitMessageSpecs",
-	"HCSTopicFragmentationSuite",
-	"TopicGetInfoSpecs",
-	"ConsensusThrottlesSpecs",
-	"CryptoCreateSuite",
-	"CryptoRecordSanityChecks",
-	"SuperusersAreNeverThrottled",
-	"FileRecordSanityChecks",
-	"VersionInfoSpec",
-	"PermissionSemanticsSpec",
-	"SysDelSysUndelSpec",
-	"NewOpInConstructorSpecs",
-	"MultipleSelfDestructsAreSafe",
-	"FetchSystemFiles",
-	"ChildStorageSpecs",
-	"DeprecatedContractKeySpecs",
-	"ThresholdRecordCreationSpecs",
-	"ContractRecordSanityChecks",
-	"TopicDeleteSpecs",
-	"ProtectedFilesUpdateSuite"
+	"ALL_SUITES",
+	"skip:ControlAccountsExemptForUpdates",
+	"skip:UpdateServerFiles"
+
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates"
+//	"UmbrellaRedux",
+//	"TopicCreateSpecs",
+//	"SubmitMessageSpecs",
+//	"TopicUpdateSpecs",
+//	"SubmitMessageSpecs",
+//	"HCSTopicFragmentationSuite",
+//	"TopicGetInfoSpecs",
+//	"ConsensusThrottlesSpecs",
+//	"CryptoCreateSuite",
+//	"CryptoRecordSanityChecks",
+//	"SuperusersAreNeverThrottled",
+//	"FileRecordSanityChecks",
+//	"VersionInfoSpec",
+//	"PermissionSemanticsSpec",
+//	"SysDelSysUndelSpec",
+//	"NewOpInConstructorSpecs",
+//	"MultipleSelfDestructsAreSafe",
+//	"FetchSystemFiles",
+//	"ChildStorageSpecs",
+//	"DeprecatedContractKeySpecs",
+//	"ThresholdRecordCreationSpecs",
+//	"ContractRecordSanityChecks",
+//	"TopicDeleteSpecs",
+//	"ProtectedFilesUpdateSuite"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
