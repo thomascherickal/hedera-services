@@ -154,25 +154,17 @@ public class ExperimentLocalFileHelper {
 		}
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0; i < numberOfTestClientNodes; i++) {
-			String hapiClientLogFileName = getExperimentResultsFolderForTestClientNode(i)
+			String outputLogFileName = getExperimentResultsFolderForTestClientNode(i)
 					+ OUTPUT_LOG_FILENAME;
 
-			InputStream logInput = getInputStream(hapiClientLogFileName);
+			InputStream logInput = getInputStream(outputLogFileName);
 
 			LogReader logReader = null;
 			if (logInput != null) {
 				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
 			}
 
-//			String outputLogFileName = getExperimentResultsFolderForTestClientNode(
-//					i) + OUTPUT_LOG_FILENAME;
-//			InputStream outputLogInput = getInputStream(outputLogFileName);
-//			LogReader outputLogReader = null;
-//			if (outputLogInput != null) {
-//				outputLogReader = LogReader.createReader(new StdoutLogParser(), outputLogInput);
-//			}
-
-			nodeData.add(new NodeData(logReader/*, outputLogReader*/));
+			nodeData.add(new NodeData(logReader));
 		}
 		return nodeData;
 	}
