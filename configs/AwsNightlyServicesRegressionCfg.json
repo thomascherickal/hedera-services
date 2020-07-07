@@ -1,5 +1,5 @@
 {
-  "name": "Services-regression-neeha",
+  "name": "Services-regression-neeha-closeChannels",
   "result": {
 	"uri": "results"
   },
@@ -13,7 +13,7 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes" : 2,
+		"numberOfNodes" : 4,
 //		"instanceList": [
 //		  "i-02a03b23122cc043b",
 //		  "i-015bf72bcf585ec17",
@@ -27,8 +27,8 @@
 	  }
 	]
   },
-  "eventFilesWriters": 2,
-  "recordFilesWriters" : 2,
+  "eventFilesWriters": 4,
+  "recordFilesWriters" : 4,
   "log": {
 	"uri":"testing/logs/"
   },
