@@ -27,7 +27,7 @@
   "servicesRegression" : true,
   "performanceRun" : true,
   "testSuites": [
-	"UmbrellaRedux duration=30,unit=MINUTES,props=regression-mixed_ops.properties,maxOpsPerSec=50"
+	"UmbrellaRedux duration=10,unit=MINUTES,props=regression-mixed_ops.properties,maxOpsPerSec=100"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
