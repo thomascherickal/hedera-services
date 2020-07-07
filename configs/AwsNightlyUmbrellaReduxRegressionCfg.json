@@ -24,12 +24,12 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testUmbrellaReduxShortFileOpsCfg.json",
-	"configs/testUmbrellaReduxLongFileOpsCfg.json",
-	"configs/testUmbrellaReduxShortContractTxnsCfg.json",
-	"configs/testUmbrellaReduxLongContractTxnsCfg.json",
-	"configs/testUmbrellaReduxShortConsensusOpsCfg.json",
-	"configs/testUmbrellaReduxLongConsensusOpsCfg.json"
+	"configs/testUmbrellaReduxShortFileOpsCfg.json"
+//	"configs/testUmbrellaReduxLongFileOpsCfg.json",
+//	"configs/testUmbrellaReduxShortContractTxnsCfg.json",
+//	"configs/testUmbrellaReduxLongContractTxnsCfg.json",
+//	"configs/testUmbrellaReduxShortConsensusOpsCfg.json",
+//	"configs/testUmbrellaReduxLongConsensusOpsCfg.json"
   ],
   "db": {
 	"type": "postgresql",

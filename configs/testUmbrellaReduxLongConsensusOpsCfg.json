@@ -21,6 +21,7 @@
 	}
   ],
   "servicesRegression" : true,
+  "performanceRun" : true,
   "testSuites": [
 	"UmbrellaRedux duration=85,unit=MINUTES,props=regression-consensus_ops.properties,maxOpsPerSec=20"
   ],

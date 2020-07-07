@@ -21,6 +21,7 @@
 	}
   ],
   "servicesRegression" : true,
+  "performanceRun" : true,
   "testSuites": [
 	"UmbrellaRedux duration=17,unit=MINUTES,props=regression-contract_txns6.properties,maxOpsPerSec=10"
   ],
