@@ -12,7 +12,7 @@ regress_sub_commit=$(git submodule status | grep regression | awk '{print $1}')
 apps_sub_commit=$(git submodule status | grep platform-apps | awk '{print $1}')
 # mvn -DskipTests clean deploy
 cd regression
-git checkout origin/P2161-automatePointerUpdate
+git checkout origin/develop
 regress_develop_commit=$(git log -n 1 | head -n1 | awk '{print $2}')
 cd ..
 # regress_sub_commit=$(git log -n 1 --submodule regression | head -n1 | awk '{print $2}')
