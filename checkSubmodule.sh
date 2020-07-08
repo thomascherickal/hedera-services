@@ -12,9 +12,11 @@ echo $JAVA_HOME
 
 regress_develop_commit=$(cd regression;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
 regress_sub_commit=$(git log -n 1 --submodule regression | head -n1 | awk '{print $2}')
+# regress_sub_commit=$(git submodule status | grep regression | awk '{print $1}')
 
 apps_develop_commit=$(cd platform-apps;git log -n 1 --decorate=short | head -n1 | awk '{print $2}';cd ..)
 apps_sub_commit=$(git log -n 1 --submodule platform-apps | head -n1 | awk '{print $2}')
+# apps_sub_commit=$(git submodule status | grep platform-apps | awk '{print $1}')
 
 if [ $regress_develop_commit != $regress_sub_commit ]
 then
