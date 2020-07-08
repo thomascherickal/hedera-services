@@ -40,8 +40,11 @@ then
 	echo $slackMsg
 fi
 
-cd regression
-#TODO delete this mvn deploy
-mvn -DskipTests clean deploy
-java -cp regression.jar com.swirlds.regression.slack.SlackSubmodulePointerMsg "$slackMsg"
+if [ -z "$slackMsg" ]
+then
+  cd regression
+  #TODO delete this mvn deploy
+  mvn -DskipTests clean deploy
+  java -cp regression.jar com.swirlds.regression.slack.SlackSubmodulePointerMsg "$slackMsg"
+fi 
 
