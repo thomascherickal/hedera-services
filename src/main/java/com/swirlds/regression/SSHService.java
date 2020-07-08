@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.jsonConfigs.NetworkErrorConfig;
 import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -216,7 +217,7 @@ public class SSHService {
 			String dataCommandStr = "find . | grep " + dataExtensions;
 
 			Session.Command dataCmd = null;
-			while ((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
+			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
 
 				try {
 					log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
@@ -1335,64 +1336,124 @@ public class SSHService {
 	void printCurrentTime(final int nodeId) {
 		String dateCmd = "date -u";
 
-		Session.Command cmd = executeCmd(dateCmd);
-		String cmdResult = readCommandOutput(cmd).toString();
-		log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
-	}
+        Session.Command cmd = executeCmd(dateCmd);
+        String cmdResult = readCommandOutput(cmd).toString();
+        log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+    }
 
-	/**
-	 * When running services regression, download needed files to be validated from test client nodes at the end of the
-	 * test
-	 *
-	 * @param topLevelFolders
-	 * @return
-	 */
-	boolean scpFromTestClient(String topLevelFolders) {
-		try {
-			Collection<String> foundFiles = getListOfFiles(
-					RegressionUtilities.getServicesFilesToDownload());
-			scpFilesFromList(topLevelFolders, foundFiles);
-			return true;
-		} catch (IOException | StringIndexOutOfBoundsException e) {
-			log.error(ERROR, "Could not download files from testClient", e);
-			return false;
-		}
-	}
+    /**
+     * Setup network configuration used for simulating network error
+     */
+	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
+        Session.Command cmd;
+		if (config.isBlockNetwork()) {
+			// run background script
+			// to periodically block and enable gossip tcp port
+			cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
+					"Change permission");
+            logIfExitCodeBad(cmd, "Change permission");
 
-	/**
-	 * When running services-regression , execute command to run Browser and HederaNode.jar
-	 *
-	 * @param jvmOptions
-	 * @return
-	 */
-	int execHGCAppWithProcessID(String jvmOptions) {
-		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
-			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+			execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
+					"Block network sync port");
+            logIfExitCodeBad(cmd, "Block network sync port");
+
+			// if the network interface is blocked no need to setup packet loss or delay
+			return;
 		}
 
-		String command = String.format(
-				"cd %s; " +
-						"java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
-						"-cp 'data/lib/*' com.swirlds.platform.Browser " +
-						">>output.log 2>&1 & " +
-						"disown -h",
-				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-				jvmOptions);
-		String description = "Start Browser";
+		if (config.isEnablePktDelay()) {
+			String cmdString = String.format(
+					"sudo tc qdisc add dev ens3 root netem delay %dms",
+					config.getPacketDelayMS());
+			cmd = execCommand(cmdString, "Enable packet delay");
+            logIfExitCodeBad(cmd, "Enable packet delay");
+		}
 
-		return execCommand(command, description, 5).getExitStatus();
+		if (config.isEnablePktLoss()) { //drop packet at network input face
+			String cmdString = String.format(
+					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
+					config.getPacketLossPercentage() / 100f);
+			cmd = execCommand(cmdString, "Enable packet loss");
+            logIfExitCodeBad(cmd, "Enable packet loss");
+		}
+		cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
 	}
 
-	/**
-	 * Sometimes the environment variable in application properties is set to DEV.
-	 * Modify it automatically to PROD when running regression on AWS
-	 */
+    /**
+     * Clear network configuration used for simulating network error
+     */
+	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
+        Session.Command cmd;
+        if (config.isEnablePktDelay()) {
+            cmd = execCommand(
+                    "sudo tc qdisc del dev ens3 root",
+                    "Clean network delay rules");
+            logIfExitCodeBad(cmd, "Clean network delay rules");
+        }
+        cmd = execCommand(
+                "sudo iptables --flush",
+                "Clean iptables");
+        logIfExitCodeBad(cmd, "Clean iptables");
 
-	public void modifyEnvToProd() {
-		String command = String.format(
-				"cd %s; " +
-						"sed -i 's/environment=0/environment=1/g' data/config/application.properties",
-				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
-		execCommand(command, "Change environment to PROD");
+        cmd = execCommand(
+                "sudo pkill -f block_sync_port.sh",
+                "Kill background script");
+        logIfExitCodeBad(cmd, "Kill background script");
 	}
+    /**
+     * When running services regression, download needed files to be validated from test client nodes at the end of the
+     * test
+     *
+     * @param topLevelFolders
+     * @return
+     */
+    boolean scpFromTestClient(String topLevelFolders) {
+        try {
+            Collection<String> foundFiles = getListOfFiles(
+                    RegressionUtilities.getServicesFilesToDownload());
+            scpFilesFromList(topLevelFolders, foundFiles);
+            return true;
+        } catch (IOException | StringIndexOutOfBoundsException e) {
+            log.error(ERROR, "Could not download files from testClient", e);
+            return false;
+        }
+    }
+
+    /**
+     * When running services-regression , execute command to run Browser and HederaNode.jar
+     *
+     * @param jvmOptions
+     * @return
+     */
+    int execHGCAppWithProcessID(String jvmOptions) {
+        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+        }
+
+        String command = String.format(
+                "cd %s; " +
+                        "java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
+                        "-cp 'data/lib/*' com.swirlds.platform.Browser " +
+                        ">>output.log 2>&1 & " +
+                        "disown -h",
+                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+                jvmOptions);
+        String description = "Start Browser";
+
+        return execCommand(command, description, 5).getExitStatus();
+    }
+
+    /**
+     * Sometimes the environment variable in application properties is set to DEV.
+     * Modify it automatically to PROD when running regression on AWS
+     */
+
+    public void modifyEnvToProd() {
+        String command = String.format(
+                "cd %s; " +
+                        "sed -i 's/environment=0/environment=1/g' data/config/application.properties",
+                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+        execCommand(command, "Change environment to PROD");
+    }
+
 }

@@ -14,7 +14,7 @@
 	  {
 		"region": "us-east-2",
 		"numberOfNodes" : 4,
-		"numberOfTestClientNodes": 5
+		"numberOfTestClientNodes": 10
 	  }
 	]
   },

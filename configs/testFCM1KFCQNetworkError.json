@@ -1,0 +1,18 @@
+{
+  "name":"FCMFCQ1K-With-Network-Error",
+  "description" : "FCMFCQ1K-With-Network-Error",
+  "duration": 1200,
+  "settings": [
+    {"name":"showInternalStats", "value": "1" },
+    {"name":"csvFileName", "value":"PlatformTesting" },
+    {"name":"csvAppend", "value":"true"}
+  ],
+  "app": {
+    "jar": "PlatformTestingApp.jar",
+    "parameterList": ["FCMFCQ1KNetworkErr.json"]
+  },
+  "resultFiles": [
+    "swirlds.log"
+  ],
+  "validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+}
