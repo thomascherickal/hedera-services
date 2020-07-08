@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 600,
+  "duration": 100,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -22,33 +22,33 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	//"ALL_SUITES"
-	"BucketAndLegacyThrottlingSpec",
-	"ControlAccountsExemptForUpdates",
-	"UmbrellaRedux",
-	"TopicCreateSpecs",
-	"SubmitMessageSpecs",
-	"TopicUpdateSpecs",
-	"SubmitMessageSpecs",
-	"HCSTopicFragmentationSuite",
-	"TopicGetInfoSpecs",
-	"ConsensusThrottlesSpecs",
-	"CryptoCreateSuite",
-	"CryptoRecordSanityChecks",
-	"SuperusersAreNeverThrottled",
-	"FileRecordSanityChecks",
-	"VersionInfoSpec",
-	"PermissionSemanticsSpec",
-	"SysDelSysUndelSpec",
-	"NewOpInConstructorSpecs",
-	"MultipleSelfDestructsAreSafe",
-	"FetchSystemFiles",
-	"ChildStorageSpecs",
-	"DeprecatedContractKeySpecs",
-	"ThresholdRecordCreationSpecs",
-	"ContractRecordSanityChecks",
-	"TopicDeleteSpecs",
-	"ProtectedFilesUpdateSuite"
+	"ALL_SUITES"
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates",
+//	"UmbrellaRedux",
+//	"TopicCreateSpecs",
+//	"SubmitMessageSpecs",
+//	"TopicUpdateSpecs",
+//	"SubmitMessageSpecs",
+//	"HCSTopicFragmentationSuite",
+//	"TopicGetInfoSpecs",
+//	"ConsensusThrottlesSpecs",
+//	"CryptoCreateSuite",
+//	"CryptoRecordSanityChecks",
+//	"SuperusersAreNeverThrottled",
+//	"FileRecordSanityChecks",
+//	"VersionInfoSpec",
+//	"PermissionSemanticsSpec",
+//	"SysDelSysUndelSpec",
+//	"NewOpInConstructorSpecs",
+//	"MultipleSelfDestructsAreSafe",
+//	"FetchSystemFiles",
+//	"ChildStorageSpecs",
+//	"DeprecatedContractKeySpecs",
+//	"ThresholdRecordCreationSpecs",
+//	"ContractRecordSanityChecks",
+//	"TopicDeleteSpecs",
+//	"ProtectedFilesUpdateSuite"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
@@ -62,6 +62,7 @@
   "validator": [
 	"STATS",
 	"STANDARD",
-	"HAPI_CLIENT"
+	"HAPI_CLIENT",
+    "HGCAA"
   ]
 }

@@ -32,13 +32,15 @@ import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.swirlds.regression.RegressionUtilities.HAPI_CLIENT_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
@@ -84,6 +86,16 @@ public class ExperimentLocalFileHelper {
 	 */
 	String getExperimentResultsFolderForTestClientNode(final int nodeNumber) {
 		return getExperimentFolder() + "node000" + nodeNumber + "-TestClient/";
+	}
+
+	/**
+	 * Experiment folder name for the logs downloaded from hedera nodes
+	 *
+	 * @param nodeNumber
+	 * @return
+	 */
+	String getExperimentResultsFolderForHederaNode(final int nodeNumber) {
+		return getExperimentFolder() + "node000" + nodeNumber + "/";
 	}
 
 	String getExperimentFolder() {
@@ -144,14 +156,7 @@ public class ExperimentLocalFileHelper {
 	}
 
 	List<NodeData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
-		int numberOfTestClientNodes;
-		if (regConfig.getLocal() != null) {
-			numberOfTestClientNodes = regConfig.getLocal().getNumberOfNodes();
-		} else if (testClientNodes == null || testClientNodes.isEmpty()) {
-			return null;
-		} else {
-			numberOfTestClientNodes = testClientNodes.size();
-		}
+		int numberOfTestClientNodes = getNumberOfTestClientNodes(testClientNodes);
 		List<NodeData> nodeData = new ArrayList<>();
 		for (int i = 0; i < numberOfTestClientNodes; i++) {
 			String hapiClientLogFileName = getExperimentResultsFolderForTestClientNode(i)
@@ -175,5 +180,40 @@ public class ExperimentLocalFileHelper {
 			nodeData.add(new NodeData(logReader/*, outputLogReader*/));
 		}
 		return nodeData;
+	}
+
+	List<NodeData> loadHederaNodeHGCAAData(ArrayList<SSHService> nodes) {
+		int numberOfTestClientNodes = getNumberOfTestClientNodes(nodes);
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; i< numberOfTestClientNodes ; i++) {
+			String hgcaaLogFileName = getExperimentResultsFolderForHederaNode(i)+
+					HGCAA_LOG_FILENAME;
+			String queryLogFileName = getExperimentResultsFolderForHederaNode(i) +
+					QUERY_LOG_FILENAME;
+			InputStream logInput = getInputStream(hgcaaLogFileName);
+			InputStream queryInput = getInputStream(queryLogFileName);
+			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
+
+			LogReader logReader = LogReader.createReader(new HAPIClientLogParser(), combinedLogInput);
+
+			nodeData.add(new NodeData(logReader));
+			if (nodeData.size() == 0) {
+				throw new RuntimeException("Cannot find hgcaa log file : " + hgcaaLogFileName
+						+ "Cannot find queries log file : " + queryLogFileName);
+			}
+		}
+		return nodeData;
+	}
+
+	int getNumberOfTestClientNodes(ArrayList<SSHService> testClientNodes){
+		int numberOfTestClientNodes;
+		if (regConfig.getLocal() != null) {
+			numberOfTestClientNodes = regConfig.getLocal().getNumberOfNodes();
+		} else if (testClientNodes == null || testClientNodes.isEmpty()) {
+			return 0;
+		} else {
+			numberOfTestClientNodes = testClientNodes.size();
+		}
+		return numberOfTestClientNodes;
 	}
 }
