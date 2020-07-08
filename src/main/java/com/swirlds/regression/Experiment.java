@@ -967,6 +967,9 @@ public class Experiment implements ExperimentSummary {
 		int nodeNumber = sshNodes.size();
 		ArrayList<File> addedFiles = buildAdditionalFileList();
 
+		if (regConfig.getNetErrorCfg() != null){
+			addedFiles.add(new File("src/main/resources/block_sync_port.sh"));
+		}
 		//Step 1, send tar to node 0
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
@@ -1038,7 +1041,10 @@ public class Experiment implements ExperimentSummary {
 		testRun.preRun(testConfig, this);
 		sendSettingFileToNodes();
 
+		setupNetworkErrorCfg();
 		testRun.runTest(testConfig, this);
+
+		cleanNetworkErrorCfg();
 
 		if (testConfig.validators.contains(ValidatorType.BLOB_STATE)) {
 			if (!isAllNodesBackedUpLastRound(REMOTE_SWIRLDS_LOG)) {
@@ -1087,6 +1093,30 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
+	}
+
+	/**
+	 * Setup network configuration used for simulating network error
+	 */
+	void setupNetworkErrorCfg() {
+		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
+			for (int i = 0; i < regConfig.getNetErrorCfg().size(); i++) {
+				SSHService node = sshNodes.get(i);
+				node.setupNetworkErrorCfg(regConfig.getNetErrorCfg().get(i));
+			}
+		}
+	}
+
+	/**
+	 * Clear network configuration used for simulating network error
+	 */
+	void cleanNetworkErrorCfg() {
+		if (regConfig.getNetErrorCfg() != null && regConfig.getNetErrorCfg().size() > 0) {
+			for (int i = 0; i < regConfig.getNetErrorCfg().size(); i++) {
+				SSHService node = sshNodes.get(i);
+				node.cleanNetworkErrorCfg(regConfig.getNetErrorCfg().get(i));
+			}
+		}
 	}
 
 	/**
