@@ -5,7 +5,7 @@ ssh-add ~/.ssh/circlci-pointer-update-rsa
 
 cd ..
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
-# git pull
+git fetch
 # git submodule update
 echo $JAVA_HOME
 # mvn -DskipTests clean deploy
