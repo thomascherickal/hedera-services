@@ -29,14 +29,7 @@ public class SlackSubmodulePointerMsg extends SlackMsg {
 
     private static final String SLACK_TOKEN = "xoxp-344480056389-344925970834-610132896599" +
             "-fb69be9200db37ce0b0d55a852b2a5dc";
-    private static final String SLACK_BOT_TOKEN = "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo";
-    private static final String SLACK_CHANNEL = "regression-test";
-    private static final String SLACK_FILE_TO_UPLOAD = "./regression/multipage_pdf.pdf";
-    private static final String SLACK_EXPERIMENT_NAME = "SlackUnitTestForFileUpload";
-
-    private static final String SLACK_TEST_FILE_LOCATION = "logs/PTD-FCM1K-success/";
-    private static final String INSIGHT_FILE_LOCATION = "regression/insight.py";
-    private static final String SLACK_REGRESSION_NAME = "Slack Regression Unit Test";
+    private static final String SLACK_CHANNEL = "eng-dev-chat";
 
     public SlackSubmodulePointerMsg(SlackConfig slackConfig) {
         super(slackConfig);
@@ -46,7 +39,7 @@ public class SlackSubmodulePointerMsg extends SlackMsg {
 
         SlackNotifier sn = createSlackNotifier(
                 SLACK_TOKEN);
-        sn.messageChannel(args[0], "UA5K2LZ1D");
+        sn.messageChannel(args[0], SLACK_CHANNEL);
     }
     @Override
     public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
