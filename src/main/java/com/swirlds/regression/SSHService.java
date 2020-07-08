@@ -1299,19 +1299,19 @@ public class SSHService {
 	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
         Session.Command cmd;
         if (config.isEnablePktDelay()) {
-			cmd = execCommand(
-					"sudo tc qdisc del dev ens3 root",
-					"Clean network delay rules");
+            cmd = execCommand(
+                    "sudo tc qdisc del dev ens3 root",
+                    "Clean network delay rules");
             logIfExitCodeBad(cmd, "Clean network delay rules");
-		}
-		cmd = execCommand(
-				"sudo iptables --flush",
-				"Clean iptables");
+        }
+        cmd = execCommand(
+                "sudo iptables --flush",
+                "Clean iptables");
         logIfExitCodeBad(cmd, "Clean iptables");
 
-		cmd = execCommand(
-				"sudo pkill -f block_sync_port.sh",
-				"Kill background script");
+        cmd = execCommand(
+                "sudo pkill -f block_sync_port.sh",
+                "Kill background script");
         logIfExitCodeBad(cmd, "Kill background script");
 	}
 
