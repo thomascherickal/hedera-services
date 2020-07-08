@@ -7,7 +7,7 @@ cd ..
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 git fetch
 git pull
-git submodule update
+git submodule update --force
 regress_sub_commit=$(git submodule status | grep regression | awk '{print $1}')
 apps_sub_commit=$(git submodule status | grep platform-apps | awk '{print $1}')
 # mvn -DskipTests clean deploy
