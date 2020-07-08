@@ -30,13 +30,13 @@ fi
 
 if [ $apps_develop_commit != $apps_sub_commit ]
 then
-	regression_develop_information=$(cd platform-apps;git log -n 1 --remotes)
+	apps_develop_information=$(cd platform-apps;git log -n 1 --remotes)
   slackMsg="$slackMsg
 
   platform-apps commit doesn't equal develop sub module
   *platform platform-apps pointer:* $apps_sub_commit
   *platform-apps current commit:*
-  $apps_develop_commit"
+  $apps_develop_information"
 	echo $slackMsg
 fi
 
