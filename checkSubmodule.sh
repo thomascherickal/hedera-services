@@ -8,17 +8,17 @@ echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 git fetch
 git pull
 
-regress_develop_commit=$(cd regression;git fetch;git log -n 1 --remotes | head -n1 | awk '{print $2}';cd ..)
+regress_develop_commit=$(cd regression;git fetch;git log -n 1 | head -n1 | awk '{print $2}';cd ..)
 # regress_sub_commit=$(git log -n 1 --submodule regression | head -n1 | awk '{print $2}')
 regress_sub_commit=$(git submodule status | grep regression | awk '{print $1}')
 
-apps_develop_commit=$(cd platform-apps;git fetch;git log -n 1 --remotes | head -n1 | awk '{print $2}';cd ..)
+apps_develop_commit=$(cd platform-apps;git fetch;git log -n 1 | head -n1 | awk '{print $2}';cd ..)
 # apps_sub_commit=$(git log -n 1 --submodule platform-apps | head -n1 | awk '{print $2}')
 apps_sub_commit=$(git submodule status | grep platform-apps | awk '{print $1}')
 
 if [ $regress_develop_commit != $regress_sub_commit ]
 then
-  regression_develop_information=$(cd regression;git log -n 1 --remotes)
+  regression_develop_information=$(cd regression;git log -n 1 )
   slackMsg="regression commit doesn't equal develop sub module
   *platform regression pointer:* $regress_sub_commit
   *regression current commit:*
@@ -28,7 +28,7 @@ fi
 
 if [ $apps_develop_commit != $apps_sub_commit ]
 then
-	apps_develop_information=$(cd platform-apps;git log -n 1 --remotes)
+	apps_develop_information=$(cd platform-apps;git log -n 1 )
   slackMsg="$slackMsg
 
   platform-apps commit doesn't equal develop sub module
