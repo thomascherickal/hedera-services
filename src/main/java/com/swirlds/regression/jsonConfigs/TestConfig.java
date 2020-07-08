@@ -52,6 +52,7 @@ public class TestConfig implements FileRequirement {
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 
 	private boolean servicesRegression = false;
+	private boolean performanceRun = false;
 	private List<String> testSuites;
 
 	public RunType getRunType() {
@@ -212,6 +213,14 @@ public class TestConfig implements FileRequirement {
 
 	public void setMemoryLeakCheckConfig(MemoryLeakCheckConfig memoryLeakCheckConfig) {
 		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
+	}
+
+	public boolean isPerformanceRun() {
+		return performanceRun;
+	}
+
+	public void setPerformanceRun(boolean performanceRun) {
+		this.performanceRun = performanceRun;
 	}
 
 	public boolean isServicesRegression() {

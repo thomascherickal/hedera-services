@@ -210,6 +210,7 @@ public class RegressionUtilities {
 	private static TestConfig testConfig = null;
 	private static String testSuites;
 	private static String hederaServicesRepoPath;
+	private static String ciPropertiesMap;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -486,6 +487,11 @@ public class RegressionUtilities {
 	 */
 	public static void setTestSuites(TestConfig testConfig) {
 		testSuites = StringUtils.join(testConfig.getTestSuites(), " ");
+		if (testConfig.isPerformanceRun()) {
+			String[] propertiesMap = testSuites.split("\\s+");
+			testSuites = propertiesMap[0];
+			ciPropertiesMap = propertiesMap[1];
+		}
 	}
 
 	/**
@@ -636,4 +642,14 @@ public class RegressionUtilities {
 		RegressionUtilities.hederaServicesRepoPath = hederaServicesRepoPath;
 	}
 
+	public static String getCiPropertiesMap() {
+		if (testConfig.isPerformanceRun()) {
+			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
+		}
+		return "";
+	}
+
+	public static void setCiPropertiesMap(String ciPropertiesMap) {
+		RegressionUtilities.ciPropertiesMap = ciPropertiesMap;
+	}
 }

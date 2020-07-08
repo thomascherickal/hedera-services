@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 100,
+  "duration": 2000,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -18,13 +18,26 @@
 	{
 	  "name": "maxOutgoingSyncs",
 	  "value": "2"
+	},
+	{
+	  "name": "freezeSettings.active",
+	  "value": "0"
 	}
   ],
   "servicesRegression" : true,
   "testSuites": [
+<<<<<<< HEAD
 	"ALL_SUITES"
 //	"BucketAndLegacyThrottlingSpec",
 //	"ControlAccountsExemptForUpdates",
+=======
+	"ALL_SUITES",
+	"skip:ControlAccountsExemptForUpdates",
+	"skip:UpdateServerFiles"
+
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates"
+>>>>>>> f104fd0a77debe9d9c156cb4321b62de71487be6
 //	"UmbrellaRedux",
 //	"TopicCreateSpecs",
 //	"SubmitMessageSpecs",

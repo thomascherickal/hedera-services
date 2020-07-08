@@ -26,6 +26,7 @@ public class StandardRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
 		if (testConfig.isServicesRegression()) {
+			//start all processes to run HGCApp
 			experiment.startServicesRegression();
 		} else {
 			// start all processes
