@@ -66,13 +66,13 @@ public class HGCAAValidator extends Validator{
                     exceptionCount++;
                 } else if(logLine.getLogEntry().contains(ERROR)) {
                     isValid = false;
-                    errorMessages.add(logLine.getLogEntry());
+                    errors.add(logLine.getLogEntry());
                     errorCount++;
                 }
                 logLine = hgcaaLogReader.nextEntry();
             }
-            validateResultsAndBuildMessage();
         }
+        validateResultsAndBuildMessage();
         createTableOfResults();
         isValidated = true;
         return;
@@ -80,10 +80,16 @@ public class HGCAAValidator extends Validator{
 
     private void validateResultsAndBuildMessage() {
         if( errorCount > 0 || exceptionCount > 0 ){
-            resultMessage.add(new ArrayList<>(Arrays.asList(String.format("Number of errors : {}", errorCount))));
-            resultMessage.add(new ArrayList<>(Arrays.asList(String.format("Number of exceptions : {}", exceptionCount))));
-            resultMessage.add(errors);
-            resultMessage.add(exceptions);
+            resultMessage.add(new ArrayList<>(Arrays.asList("Number of errors : " + errorCount)));
+            for(String errorMsg : errors) {
+                resultMessage.add(new ArrayList<>(Arrays.asList(errorMsg)));
+            }
+        }
+        if( exceptionCount > 0){
+            resultMessage.add(new ArrayList<>(Arrays.asList("Number of exceptions :" + exceptionCount)));
+            for(String exceptionMessage : exceptions) {
+                resultMessage.add(new ArrayList<>(Arrays.asList(exceptionMessage)));
+            }
         }
     }
 

@@ -639,6 +639,9 @@ public class RegressionUtilities {
 	}
 
 	public static void setHederaServicesRepoPath(String hederaServicesRepoPath) {
+		if(hederaServicesRepoPath.endsWith("/")) {
+			hederaServicesRepoPath = hederaServicesRepoPath.substring(0, hederaServicesRepoPath.length() -1);
+		}
 		RegressionUtilities.hederaServicesRepoPath = hederaServicesRepoPath;
 	}
 
