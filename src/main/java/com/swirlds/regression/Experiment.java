@@ -19,7 +19,7 @@ package com.swirlds.regression;
 
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.experiment.ExperimentSummary;
+import com.swirlds.regression.experiment1.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
@@ -31,7 +31,6 @@ import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
-import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
@@ -799,21 +798,25 @@ public class Experiment implements ExperimentSummary {
 						regConfig.getTotalNumberOfNodes(),
 						nodeData.size()));
 			}
+
 			List<NodeData> testClientNodeData = new ArrayList<>();
 			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
 				testClientNodeData = experimentLocalFileHelper.
 						loadTestClientNodeData(testClientNodes);
 			}
 
+			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+				hederaNodeHGCAAData = experimentLocalFileHelper.
+						loadHederaNodeHGCAAData(sshNodes);
+			}
+
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
 					experimentLocalFileHelper.loadExpectedMapPaths(),
-					testClientNodeData);
-			if (item == ValidatorType.BLOB_STATE) {
-				((BlobStateValidator) validatorToAdd).setExperimentFolder(
-						experimentLocalFileHelper.getExperimentFolder());
-			}
+					testClientNodeData, hederaNodeHGCAAData);
+
 			requiredValidator.add(validatorToAdd);
 		}
 		List<NodeData> nodeData = loadNodeData(testConfig.getName());
@@ -868,6 +871,12 @@ public class Experiment implements ExperimentSummary {
 		warnings = warnings || slackMsg.hasWarnings();
 		errors = errors || slackMsg.hasErrors();
 		exceptions = exceptions || slackMsg.hasExceptions();
+	}
+
+	private void addToValidatorList(ValidatorType item,
+									List<NodeData> nodeData,
+									List<NodeData> testClientNodeData,
+									List<Validator> requiredValidator) {
 	}
 
 	private int getLastStakedNode() {
