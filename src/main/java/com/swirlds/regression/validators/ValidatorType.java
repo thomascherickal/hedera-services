@@ -34,5 +34,6 @@ public enum ValidatorType {
 	STDOUT,
 	GOSSIP_COMPENSATION,
 	LIFECYCLE,
-	HAPI_CLIENT
+	HAPI_CLIENT,
+	HGCAA
 }

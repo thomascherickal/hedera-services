@@ -33,6 +33,7 @@ import com.swirlds.regression.logs.services.HAPIClientLogParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.*;
 import static com.swirlds.regression.utils.FileUtils.getInputStream;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamType.EVENT;
@@ -170,6 +171,28 @@ public abstract class ValidatorTestUtil {
 		}
 		if (nodeData.size() == 0) {
 			throw new RuntimeException("Cannot find log files in: " + directory);
+		}
+		return nodeData;
+	}
+
+	public static List<NodeData> loadHederaNodeHGCAAData(String directory, int numberOfTestClientNodes) {
+		List<NodeData> nodeData = new ArrayList<>();
+		for (int i = 0; i< numberOfTestClientNodes ; i++) {
+			String hgcaaLogFileName = String.format("%s/node%04d/" +
+					HGCAA_LOG_FILENAME, directory, i);
+			String queryLogFileName = String.format("%s/node%04d/" +
+					QUERY_LOG_FILENAME, directory, i);
+			InputStream logInput = getInputStream(hgcaaLogFileName);
+			InputStream queryInput = getInputStream(queryLogFileName);
+			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
+
+			LogReader logReader = LogReader.createReader(new HAPIClientLogParser(), combinedLogInput);
+
+			nodeData.add(new NodeData(logReader));
+			if (nodeData.size() == 0) {
+				throw new RuntimeException("Cannot find hgcaa log file : " + hgcaaLogFileName
+						+ "Cannot find queries log file : " + queryLogFileName);
+			}
 		}
 		return nodeData;
 	}

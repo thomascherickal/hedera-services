@@ -19,7 +19,7 @@ package com.swirlds.regression;
 
 import com.hubspot.slack.client.models.response.chat.ChatPostMessageResponse;
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.experiment1.ExperimentSummary;
+import com.swirlds.regression.experiment.ExperimentSummary;
 import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.FileLocationType;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
