@@ -40,7 +40,7 @@ then
 	echo $slackMsg
 fi
 
-if [ -z "$slackMsg" ]
+if [ -n "$slackMsg" ]
 then
   cd regression
   #TODO delete this mvn deploy
