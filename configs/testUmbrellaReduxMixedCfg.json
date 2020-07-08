@@ -1,7 +1,7 @@
 {
   "name": "mixed_ops-neeha",
   "description": "UmbrellaRedux",
-  "duration": 1100,
+  "duration": 650,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -27,7 +27,7 @@
   "servicesRegression" : true,
   "performanceRun" : true,
   "testSuites": [
-	"UmbrellaRedux duration=10,unit=MINUTES,props=regression-mixed_ops.properties,maxOpsPerSec=100"
+	"UmbrellaRedux duration=10,unit=MINUTES,props=regression-mixed_ops.properties,maxOpsPerSec=150,maxPendingOps=1000,backoffSleepSecs=30"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
