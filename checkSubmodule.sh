@@ -7,8 +7,6 @@ cd ..
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 git fetch
 git pull
-# git submodule update
-# mvn -DskipTests clean deploy
 
 regress_develop_commit=$(cd regression;git fetch;git log -n 1 --remotes | head -n1 | awk '{print $2}';cd ..)
 # regress_sub_commit=$(git log -n 1 --submodule regression | head -n1 | awk '{print $2}')
