@@ -6,6 +6,7 @@ ssh-add ~/.ssh/circlci-pointer-update-rsa
 cd ..
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 git fetch
+git pull
 # git submodule update
 # mvn -DskipTests clean deploy
 
