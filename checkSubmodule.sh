@@ -7,7 +7,6 @@ cd ..
 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
 git fetch
 # git submodule update
-echo $JAVA_HOME
 # mvn -DskipTests clean deploy
 
 regress_develop_commit=$(cd regression;git log -n 1 --remotes | head -n1 | awk '{print $2}';cd ..)
