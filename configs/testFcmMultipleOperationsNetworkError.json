@@ -1,0 +1,18 @@
+{
+	"name":"FCMMultipleOperationsWithNetworkError",
+	"description" : "FCMMultipleOperationsWithNetworkError",
+	"duration": 3600,
+	"settings": [
+	  {"name":"showInternalStats", "value": "1" },
+	  {"name":"csvFileName", "value":"PlatformTesting" },
+	  {"name":"csvAppend", "value":"true"}
+	],
+	"app": {
+	  "jar": "PlatformTestingApp.jar",
+	  "parameterList": ["FCMMultipleOperationsNetworkErr.json"]
+	},
+	"resultFiles": [
+	  "swirlds.log"
+	],
+	"validator": [ "STATS", "PLATFORM_TESTING_DEMO" ]
+  }

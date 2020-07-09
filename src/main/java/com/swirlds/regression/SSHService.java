@@ -17,6 +17,7 @@
 
 package com.swirlds.regression;
 
+import com.swirlds.regression.jsonConfigs.NetworkErrorConfig;
 import com.swirlds.regression.utils.FileUtils;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.SSHException;
@@ -215,10 +216,10 @@ public class SSHService {
 
 		if (dataExtensionCount > 0) {
 			String dataCommandStr = "find . | grep " + dataExtensions;
-			
+
 			Session.Command dataCmd = null;
 			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
-			
+
 				try {
 	                log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
 	                Thread.sleep(10000);
@@ -1253,4 +1254,65 @@ public class SSHService {
         String cmdResult = readCommandOutput(cmd).toString();
         log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
     }
+
+    /**
+     * Setup network configuration used for simulating network error
+     */
+	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
+        Session.Command cmd;
+		if (config.isBlockNetwork()) {
+			// run background script
+			// to periodically block and enable gossip tcp port
+			cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
+					"Change permission");
+            logIfExitCodeBad(cmd, "Change permission");
+
+			execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
+					"Block network sync port");
+            logIfExitCodeBad(cmd, "Block network sync port");
+
+			// if the network interface is blocked no need to setup packet loss or delay
+			return;
+		}
+
+		if (config.isEnablePktDelay()) {
+			String cmdString = String.format(
+					"sudo tc qdisc add dev ens3 root netem delay %dms",
+					config.getPacketDelayMS());
+			cmd = execCommand(cmdString, "Enable packet delay");
+            logIfExitCodeBad(cmd, "Enable packet delay");
+		}
+
+		if (config.isEnablePktLoss()) { //drop packet at network input face
+			String cmdString = String.format(
+					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
+					config.getPacketLossPercentage() / 100f);
+			cmd = execCommand(cmdString, "Enable packet loss");
+            logIfExitCodeBad(cmd, "Enable packet loss");
+		}
+		cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
+	}
+
+    /**
+     * Clear network configuration used for simulating network error
+     */
+	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
+        Session.Command cmd;
+        if (config.isEnablePktDelay()) {
+            cmd = execCommand(
+                    "sudo tc qdisc del dev ens3 root",
+                    "Clean network delay rules");
+            logIfExitCodeBad(cmd, "Clean network delay rules");
+        }
+        cmd = execCommand(
+                "sudo iptables --flush",
+                "Clean iptables");
+        logIfExitCodeBad(cmd, "Clean iptables");
+
+        cmd = execCommand(
+                "sudo pkill -f block_sync_port.sh",
+                "Kill background script");
+        logIfExitCodeBad(cmd, "Kill background script");
+	}
+
 }

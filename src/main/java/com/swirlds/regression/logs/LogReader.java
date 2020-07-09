@@ -56,6 +56,10 @@ public class LogReader<T extends LogEntry> {
 			if (line == null) {
 				return null;
 			}
+			//skip empty lines
+			if (line.strip().isEmpty()){
+				continue;
+			}
 			T entry = parser.parse(line);
 			if (entry != null) {
 				if (firstEntry == null) {
