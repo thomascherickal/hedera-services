@@ -33,6 +33,7 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
+	"configs/testServicesFreezeUpdateCfg.json",
 	"configs/testServicesDemoCfg.json"
   ],
   "db": {

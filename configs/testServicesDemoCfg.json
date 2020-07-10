@@ -26,7 +26,9 @@
   ],
   "servicesRegression" : true,
   "testSuites": [
-	"ALL_SUITES"
+	"ALL_SUITES",
+	"skip:UpdateServerFiles",
+	"skip:FreezeSuite"
 //	"BucketAndLegacyThrottlingSpec",
 //	"ControlAccountsExemptForUpdates",
 //	"UmbrellaRedux",

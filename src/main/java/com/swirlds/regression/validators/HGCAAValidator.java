@@ -40,6 +40,12 @@ public class HGCAAValidator extends Validator{
     private static final String EXCEPTION = "Exception";
     private static final String ERROR = "ERROR";
 
+    /** an mark string to indicate jar file has been updated successfully */
+    private static final String NEW_JAR_MARKER = "new version jar";
+
+    /** when testing freeze handler or update feature, hedear service will restart after freeze */
+    private boolean checkHGCAppRestart = false;
+
     public HGCAAValidator(List<NodeData> testClientNodeData) {
         this.hederaNodeData = testClientNodeData;
         isValid = true;
@@ -59,6 +65,7 @@ public class HGCAAValidator extends Validator{
 
             HAPIClientLogEntry logLine = hgcaaLogReader.nextEntry();
 
+            boolean foundNewJarVersionMarker = false;
             while ( logLine != null ) {
                 if(logLine.getLogEntry().contains(EXCEPTION)) {
                     isValid = false;
@@ -68,10 +75,18 @@ public class HGCAAValidator extends Validator{
                     isValid = false;
                     errors.add(logLine.getLogEntry());
                     errorCount++;
+                } else if (checkHGCAppRestart && logLine.getLogEntry().contains(NEW_JAR_MARKER)) {
+                    addInfo("Node " + i + " finished jar update");
+                    foundNewJarVersionMarker = true;
                 }
                 logLine = hgcaaLogReader.nextEntry();
             }
+            if (checkHGCAppRestart && !foundNewJarVersionMarker) {
+                isValid = false;
+                addError("Node " + i + " did not finish jar update");
+            }
         }
+
         validateResultsAndBuildMessage();
         createTableOfResults();
         isValidated = true;
@@ -113,5 +128,14 @@ public class HGCAAValidator extends Validator{
     @Override
     public boolean isValid() {
         return isValid && isValidated;
+    }
+
+    public boolean isCheckHGCAppRestart() {
+        return checkHGCAppRestart;
+    }
+
+    public void setCheckHGCAppRestart(boolean checkHGCAppRestart) {
+        log.info(MARKER, "setCheckHGCAppRestart");
+        this.checkHGCAppRestart = checkHGCAppRestart;
     }
 }

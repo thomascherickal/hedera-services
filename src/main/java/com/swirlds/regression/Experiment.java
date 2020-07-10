@@ -32,6 +32,7 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.EventStreamValidator;
+import com.swirlds.regression.validators.HGCAAValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -54,9 +55,11 @@ import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -110,6 +113,7 @@ import static com.swirlds.regression.RegressionUtilities.TEST_TIME_EXCEEDED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
 import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
 import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
+import static com.swirlds.regression.RegressionUtilities.getHederaServicesRepoPath;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
@@ -660,6 +664,32 @@ public class Experiment implements ExperimentSummary {
 		return true;
 	}
 
+	/**
+	 * Execute a process and dump its output
+	 */
+	public static void execCmd(Process process) throws java.io.IOException {
+		try {
+			process.waitFor();
+		} catch (InterruptedException e) {
+			log.error(ERROR, "Erorr", e);
+		}
+		BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+		// read the output from the command
+		log.info(MARKER, "Here is the standard output of the command:\n");
+		String s;
+		while ((s = stdInput.readLine()) != null)
+		{
+			log.info(MARKER, s);
+		}
+		// read any errors from the attempted command
+		log.info(MARKER, "Here is the standard error of the command (if any):\n");
+		while ((s = stdError.readLine()) != null)
+		{
+			log.info(MARKER, s);
+		}
+	}
+
 	private void sendTarToNode(SSHService currentNode, ArrayList<File> addedFiles, boolean isTestClientNode) {
 		String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
@@ -671,6 +701,20 @@ public class Experiment implements ExperimentSummary {
 			// upload necessary files
 			if (isTestClientNode) {
 				filesToSend = getServicesClientFilesToUpload(new File(pemFile));
+				if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+					//build new jar file for update feature test
+					String Command = "scripts/regressionFlowUpdateFiles.sh";
+					try {
+						File workDirectory = new File(String.format("%s/test-clients", getHederaServicesRepoPath()));
+						Process p = Runtime.getRuntime().exec( Command, null, workDirectory);
+						execCmd(p);
+						String newJarPath = getHederaServicesRepoPath() + "/test-clients/updateFiles/";
+						log.info(MARKER, "newJarPath = " + newJarPath);
+						filesToSend.add(new File(newJarPath));
+					} catch (IOException e) {
+						log.error(ERROR, "Error ", e);
+					}
+				}
 			} else {
 				filesToSend = getServicesFilesToUpload(new File(pemFile));
 			}
@@ -852,6 +896,12 @@ public class Experiment implements ExperimentSummary {
 			try {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
+				}
+				if (item instanceof HGCAAValidator) {
+					// if testing update feature, hedera service will restart after freeze
+					if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+						((HGCAAValidator)item).setCheckHGCAppRestart(true);
+					}
 				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
