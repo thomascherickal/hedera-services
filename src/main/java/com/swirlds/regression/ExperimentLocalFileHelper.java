@@ -33,9 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
-import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
-import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.utils.FileUtils.getInputStream;
