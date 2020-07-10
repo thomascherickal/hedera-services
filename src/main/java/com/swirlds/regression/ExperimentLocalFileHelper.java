@@ -82,16 +82,6 @@ public class ExperimentLocalFileHelper {
 		return getExperimentFolder() + "node000" + nodeNumber + "-TestClient/";
 	}
 
-	/**
-	 * Experiment folder name for the logs downloaded from hedera nodes
-	 *
-	 * @param nodeNumber
-	 * @return
-	 */
-	String getExperimentResultsFolderForHederaNode(final int nodeNumber) {
-		return getExperimentFolder() + "node000" + nodeNumber + "/";
-	}
-
 	String getExperimentFolder() {
 		String folderName = regConfig.getName() + "/" + testConfig.getName();
 		return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
