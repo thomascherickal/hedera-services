@@ -22,31 +22,31 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class EventSigEvent implements Iterable<EventSigFile> {
+public class StreamSigsInANode implements Iterable<StreamSigFile> {
 
-	private final List<EventSigFile> evtsSigEvents;
+	private final List<StreamSigFile> streamSigFiles;
 
-	public EventSigEvent(final List<String> evtsSigEvents) {
-		this.evtsSigEvents = new ArrayList<>();
-		for (final String eventSigFileName : evtsSigEvents) {
-			if (eventSigFileName.trim().isEmpty()) {
+	public StreamSigsInANode(final List<String> streamSigFiles, final StreamType streamType) {
+		this.streamSigFiles = new ArrayList<>();
+		for (final String sigFileName : streamSigFiles) {
+			if (sigFileName.trim().isEmpty()) {
 				continue;
 			}
 
-			this.evtsSigEvents.add(new EventSigFile((eventSigFileName)));
+			this.streamSigFiles.add(new StreamSigFile(sigFileName, streamType));
 		}
 
-		Collections.sort(this.evtsSigEvents);
+		Collections.sort(this.streamSigFiles);
 	}
 
 	public int size() {
-		return this.evtsSigEvents.size();
+		return this.streamSigFiles.size();
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder description = new StringBuilder();
-		for (final EventSigFile sigFile : this) {
+		for (final StreamSigFile sigFile : this) {
 			description.append(sigFile.getFilename());
 			description.append('\n');
 		}
@@ -61,33 +61,33 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 			return true;
 		}
 
-		if (!(o instanceof EventSigEvent)) {
+		if (!(o instanceof StreamSigsInANode)) {
 			return false;
 		}
 
-		final EventSigEvent other = (EventSigEvent) o;
+		final StreamSigsInANode other = (StreamSigsInANode) o;
 		if (this.size() == other.size()) {
-			return this.evtsSigEvents.equals(other.evtsSigEvents);
+			return this.streamSigFiles.equals(other.streamSigFiles);
 		}
 
-		final int diffInSize = Math.abs(this.evtsSigEvents.size() - other.evtsSigEvents.size());
+		final int diffInSize = Math.abs(this.streamSigFiles.size() - other.streamSigFiles.size());
 		/*
-		Because some nodes may be killed while events are still being written, the last event file or two may
-		mismatch. It is assumed that in this case if all other events are equal the last two events
-		would be equal as well. The difference is not allowed to be greater than 2.
+		Because some nodes may be killed while streams are still being written, the last stream file or two may
+		mismatch. The difference is not allowed to be greater than 2.
 		*/
 
 		if (diffInSize > 2) {
 			return false;
 		}
 
-		return equalsWithAllButTheLastEvent(other);
+		return equalsWithAllButTheLast(other);
 	}
 
-	private boolean equalsWithAllButTheLastEvent(final EventSigEvent other) {
-		final int minSize = this.evtsSigEvents.size() > other.evtsSigEvents.size() ? other.evtsSigEvents.size() : this.evtsSigEvents.size();
+	private boolean equalsWithAllButTheLast(final StreamSigsInANode other) {
+		final int minSize = this.streamSigFiles.size() > other.streamSigFiles.size() ?
+				other.streamSigFiles.size() : this.streamSigFiles.size();
 		for (int index = 0; index < minSize - 1; index++) {
-			if (!this.evtsSigEvents.get(index).equals(other.evtsSigEvents.get(index))) {
+			if (!this.streamSigFiles.get(index).equals(other.streamSigFiles.get(index))) {
 				return false;
 			}
 		}
@@ -96,7 +96,7 @@ public class EventSigEvent implements Iterable<EventSigFile> {
 	}
 
 	@Override
-	public Iterator<EventSigFile> iterator() {
-		return this.evtsSigEvents.iterator();
+	public Iterator<StreamSigFile> iterator() {
+		return this.streamSigFiles.iterator();
 	}
 }

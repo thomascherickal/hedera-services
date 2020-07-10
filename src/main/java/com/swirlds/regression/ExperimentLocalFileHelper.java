@@ -19,6 +19,7 @@ package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,17 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
-import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
-import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.utils.FileUtils.getInputStream;
 import static com.swirlds.regression.validators.LifecycleValidator.EXPECTED_MAP_ZIP;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_LIST_FILE;
-import static com.swirlds.regression.validators.StreamingServerValidator.EVENT_SIG_FILE_LIST;
-import static com.swirlds.regression.validators.StreamingServerValidator.FINAL_EVENT_FILE_HASH;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildFinalHashFileName;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildShaListFileName;
+import static com.swirlds.regression.validators.StreamingServerValidator.buildSigListFileName;
 
 /**
  * ExperimentFileHelper is in responsible for processing local files/Paths related to an Experiment,
@@ -104,17 +102,21 @@ public class ExperimentLocalFileHelper {
 		return expectedMapPaths;
 	}
 
-	List<StreamingServerData> loadStreamingServerData() {
+	List<StreamingServerData> loadStreamingServerData(final StreamType streamType) {
 		final List<StreamingServerData> nodeData = new ArrayList<>();
 		for (int i = 0; i < regConfig.getEventFilesWriters(); i++) {
-			final String shaFileName = getExperimentResultsFolderForNode(i) + FINAL_EVENT_FILE_HASH;
-			final String shaEventFileName = getExperimentResultsFolderForNode(i) + EVENT_LIST_FILE;
-			final String eventSigFileName = getExperimentResultsFolderForNode(i) + EVENT_SIG_FILE_LIST;
-			final String recoverEventMatchFileName = getExperimentResultsFolderForNode(i) + EVENT_MATCH_LOG_NAME;
+			final String experimentResultsFolder = getExperimentResultsFolderForNode(i);
+			final String extension = streamType.getExtension();
+
+			final String shaFileName = experimentResultsFolder +
+					buildFinalHashFileName(extension);
+			final String shaEventFileName = experimentResultsFolder + buildShaListFileName(extension);
+			final String eventSigFileName = experimentResultsFolder + buildSigListFileName(extension);
+			final String recoverEventMatchFileName = experimentResultsFolder + EVENT_MATCH_LOG_NAME;
 
 			InputStream recoverEventLogStream = getInputStream(recoverEventMatchFileName);
 			nodeData.add(new StreamingServerData(getInputStream(eventSigFileName), getInputStream(shaFileName),
-					getInputStream(shaEventFileName), recoverEventLogStream));
+					getInputStream(shaEventFileName), recoverEventLogStream, streamType));
 		}
 		return nodeData;
 	}
