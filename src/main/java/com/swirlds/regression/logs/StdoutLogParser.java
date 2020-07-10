@@ -25,6 +25,13 @@ public class StdoutLogParser implements LogParser<StdoutLogEntry> {
 
 	private static boolean isError(String s) {
 		s = s.toLowerCase();
+		//TODO that message occurs with an attempt to load the GPU processing,
+		// but since we removed it we are no longer uploading the file to remoteExperiment.
+		// This will be removed once ticket in regression is addressed.
+		if(s.contains("could not load libopencl.so, error libopencl.so: " +
+				"cannot open shared object file: no such file or directory")){
+			return false;
+		}
 		return s.contains("exception") || (s.contains("error"));
 	}
 }

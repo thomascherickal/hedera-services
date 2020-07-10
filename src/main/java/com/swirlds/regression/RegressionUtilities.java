@@ -25,14 +25,13 @@ import com.swirlds.regression.jsonConfigs.JvmOptionParametersConfig;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.SlackConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -46,8 +45,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
@@ -124,6 +121,9 @@ public class RegressionUtilities {
 
 	public static final String FALL_BEHIND_MSG = "has fallen behind";
 	public static final String OUTPUT_LOG_FILENAME = "output.log";
+	public static final String HGCAA_LOG_FILENAME = "hgcaa.log";
+	public static final String QUERY_LOG_FILENAME = "queries.log";
+	public static final String HAPI_CLIENT_LOG_FILENAME = "hapi-client.log";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -158,7 +158,7 @@ public class RegressionUtilities {
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
-	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -c%s -N";
 	public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -198,6 +198,19 @@ public class RegressionUtilities {
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
+
+	/**
+	 * Services regression related constants
+	 */
+	public static final String HEDERA_NODE_DIR = "/hedera-node/";
+	public static final String HEDERA_TEST_CLIENT_DIR = "/test-clients/";
+	public static final String SUITE_RUNNER_JAR = "SuiteRunner.jar";
+	public static final long STARTING_CRYPTO_ACCOUNT = 3L;
+	private static String publicIPStringForServices = null;
+	private static TestConfig testConfig = null;
+	private static String testSuites;
+	private static String hederaServicesRepoPath;
+	private static String ciPropertiesMap;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -298,6 +311,17 @@ public class RegressionUtilities {
 	}
 
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
+			ArrayList<File> configSpecifiedFiles, boolean isTestClient) {
+		if (isTestClient) {
+			return getRsyncTestClientFiles(keyFile);
+		}
+		if (testConfig.isServicesRegression()) {
+			return getServicesRsyncFiles(keyFile);
+		}
+		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+	}
+
+	private static ArrayList<String> getPlatformRsyncFiles(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 
@@ -445,13 +469,187 @@ public class RegressionUtilities {
 		}
 	}
 
-	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName){
+	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName) {
 		String returnString = null;
-		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+		if (slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()) {
 			returnString = "http://" + slackConfig.getWebServer().getWebServerAddress() +
-					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					":" + slackConfig.getWebServer().getWebServerPort() + "/" +
 					resultFolder + "/" + experimentName;
 		}
 		return returnString;
+	}
+
+	/**
+	 * Read all the test suites that are mentioned in testConfig
+	 *
+	 * @param testConfig
+	 * @return
+	 */
+	public static void setTestSuites(TestConfig testConfig) {
+		testSuites = StringUtils.join(testConfig.getTestSuites(), " ");
+		if (testConfig.isPerformanceRun()) {
+			String[] propertiesMap = testSuites.split("\\s+");
+			testSuites = propertiesMap[0];
+			ciPropertiesMap = propertiesMap[1];
+		}
+	}
+
+	/**
+	 * Returns testSuites that should be run for Services Regression
+	 *
+	 * @return
+	 */
+	public static String getTestSuites() {
+		return testSuites;
+	}
+
+	public static void setTestConfig(TestConfig config) {
+		testConfig = config;
+	}
+
+	public static String getPublicIPStringForServices() {
+		return publicIPStringForServices;
+	}
+
+	public static void setPublicIPStringForServices(String ipAddress) {
+		publicIPStringForServices = ipAddress;
+	}
+
+	/**
+	 * When running services regression, get list of files that should be uploaded on test client
+	 * nodes to run necessary test suites
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static Collection<File> getServicesClientFilesToUpload(File keyFile) {
+		Collection<File> returnIterator = new ArrayList<>();
+		String hederaTestClientDir = RegressionUtilities.getHederaServicesRepoPath() + HEDERA_TEST_CLIENT_DIR;
+		returnIterator.add(new File(hederaTestClientDir + "target/" + SUITE_RUNNER_JAR));
+		returnIterator.add(new File(hederaTestClientDir + "src/main/resource/"));
+		returnIterator.add(new File(hederaTestClientDir + "system-files/"));
+		returnIterator.add(new File(hederaTestClientDir + "remote-system-files/"));
+		returnIterator.add(new File(hederaTestClientDir + "testfiles/"));
+
+		returnIterator.add(keyFile);
+		return returnIterator;
+	}
+
+	/**
+	 * To run services regression , get list of files that should be uploaded to one of the server nodes
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static Collection<File> getServicesFilesToUpload(File keyFile) {
+		Collection<File> returnIterator = new ArrayList<>();
+		String hederaNodeDir = hederaServicesRepoPath + HEDERA_NODE_DIR;
+		returnIterator.add(new File(hederaNodeDir + "data/apps/"));
+		returnIterator.add(new File(hederaNodeDir + "data/backup/"));
+		returnIterator.add(new File(hederaNodeDir + "data/keys/"));
+		returnIterator.add(new File(hederaNodeDir + "data/lib/"));
+		returnIterator.add(new File(hederaNodeDir + "data/repos/"));
+		returnIterator.add(new File(hederaNodeDir + "data/config/"));
+		//returnIterator.add(new File(hederaNodeDir + "log4j2.xml"));
+		returnIterator.add(new File(hederaNodeDir + "data/onboard/"));
+		returnIterator.add(new File("hedera.crt"));
+		returnIterator.add(new File("hedera.key"));
+		returnIterator.add(new File("log4j2-services-regression.xml"));
+		returnIterator.add(new File(PRIVATE_IP_ADDRESS_FILE));
+		returnIterator.add(new File(PUBLIC_IP_ADDRESS_FILE));
+		returnIterator.add(keyFile);
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.CONFIG_FILE));
+		returnIterator.add(new File(RegressionUtilities.WRITE_FILE_DIRECTORY + RegressionUtilities.SETTINGS_FILE));
+		return returnIterator;
+	}
+
+	/**
+	 * when running services regression, get list of files from the Tar placed on one of the server nodes,
+	 * that should be rsynced to other server nodes
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	private static ArrayList<String> getServicesRsyncFiles(File keyFile) {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add("data/");
+		returnIterator.add("data/apps/");
+		returnIterator.add("data/apps/**");
+		returnIterator.add("data/backup/");
+		returnIterator.add("data/backup/**");
+		returnIterator.add("data/keys/");
+		returnIterator.add("data/keys/**");
+		returnIterator.add("data/lib/");
+		returnIterator.add("data/lib/**");
+		returnIterator.add("data/repos/");
+		returnIterator.add("data/repos/**");
+		returnIterator.add("data/config/");
+		returnIterator.add("data/config/**");
+		returnIterator.add("data/onboard");
+		returnIterator.add("data/onboard/**");
+		returnIterator.add("privateAddresses.txt");
+		returnIterator.add("publicAddresses.txt");
+		// TODO add functionality to generate these two files every-time test is run
+		//  For now they are in the base directory of regression
+		returnIterator.add("hedera.crt");
+		returnIterator.add("hedera.key");
+		returnIterator.add(keyFile.getName());
+		returnIterator.add(RegressionUtilities.CONFIG_FILE);
+		returnIterator.add(RegressionUtilities.SETTINGS_FILE);
+		returnIterator.add("log4j2-services-regression.xml");
+		return returnIterator;
+	}
+
+	/**
+	 * When running services regression, get list of files in the Tar that should be rsynced between test client
+	 * nodes to run test, after Tar is placed on one test client node
+	 *
+	 * @param keyFile
+	 * @return
+	 */
+	public static ArrayList<String> getRsyncTestClientFiles(File keyFile) {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		returnIterator.add(SUITE_RUNNER_JAR);
+		returnIterator.add("resource/");
+		returnIterator.add("resource/**");
+		returnIterator.add("system-files/");
+		returnIterator.add("system-files/**");
+		returnIterator.add("remote-system-files/");
+		returnIterator.add("remote-system-files/**");
+		returnIterator.add("testfiles/");
+		returnIterator.add("testfiles/**");
+		returnIterator.add(keyFile.getName());
+		return returnIterator;
+	}
+
+	/**
+	 * Get list of files that should be downloaded from test client nodes when running services regression
+	 *
+	 * @return
+	 */
+	protected static ArrayList<String> getServicesFilesToDownload() {
+		ArrayList<String> returnIterator = new ArrayList<>();
+		//returnIterator.add("output/*");
+		returnIterator.add("*.log");
+		return returnIterator;
+	}
+
+	public static String getHederaServicesRepoPath() {
+		return hederaServicesRepoPath;
+	}
+
+	public static void setHederaServicesRepoPath(String hederaServicesRepoPath) {
+		RegressionUtilities.hederaServicesRepoPath = hederaServicesRepoPath;
+	}
+
+	public static String getCiPropertiesMap() {
+		if (testConfig.isPerformanceRun()) {
+			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
+		}
+		return "";
+	}
+
+	public static void setCiPropertiesMap(String ciPropertiesMap) {
+		RegressionUtilities.ciPropertiesMap = ciPropertiesMap;
 	}
 }
