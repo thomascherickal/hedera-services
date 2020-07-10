@@ -1,0 +1,74 @@
+{
+  "name": "ServicesDemo",
+  "description": "ServicesDemo",
+  "duration": 2000,
+  "settings": [
+	{
+	  "name": "showInternalStats",
+	  "value": "1"
+	},
+	{
+	  "name": "csvFileName",
+	  "value": "ServicesStats"
+	},
+	{
+	  "name": "csvAppend",
+	  "value": "true"
+	},
+	{
+	  "name": "maxOutgoingSyncs",
+	  "value": "2"
+	},
+	{
+	  "name": "freezeSettings.active",
+	  "value": "0"
+	}
+  ],
+  "servicesRegression" : true,
+  "testSuites": [
+	"ALL_SUITES"
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates",
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates"
+//	"UmbrellaRedux",
+//	"TopicCreateSpecs",
+//	"SubmitMessageSpecs",
+//	"TopicUpdateSpecs",
+//	"SubmitMessageSpecs",
+//	"HCSTopicFragmentationSuite",
+//	"TopicGetInfoSpecs",
+//	"ConsensusThrottlesSpecs",
+//	"CryptoCreateSuite",
+//	"CryptoRecordSanityChecks",
+//	"SuperusersAreNeverThrottled",
+//	"FileRecordSanityChecks",
+//	"VersionInfoSpec",
+//	"PermissionSemanticsSpec",
+//	"SysDelSysUndelSpec",
+//	"NewOpInConstructorSpecs",
+//	"MultipleSelfDestructsAreSafe",
+//	"FetchSystemFiles",
+//	"ChildStorageSpecs",
+//	"DeprecatedContractKeySpecs",
+//	"ThresholdRecordCreationSpecs",
+//	"ContractRecordSanityChecks",
+//	"TopicDeleteSpecs",
+//	"ProtectedFilesUpdateSuite"
+  ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST"
+  },
+  "app": {
+	"jar": "HederaNode.jar"
+  },
+  "resultFiles": [
+	"swirlds.log"
+  ],
+  "validator": [
+	"STATS",
+	"STANDARD",
+	"HAPI_CLIENT",
+    "HGCAA"
+  ]
+}
