@@ -795,10 +795,6 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 
-			List<NodeData> testClientNodeData = new ArrayList<>();
-
-			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
-
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
@@ -1567,6 +1563,11 @@ public class Experiment implements ExperimentSummary {
 		setExperimentTime();
 		configFile = new ConfigBuilder(regConfig, testConfig);
 		settingsFile = new SettingsBuilder(testConfig);
+
+		// set up the suites from SuiteRunner that should be run on test clients in services-regression
+		if (testConfig.isServicesRegression()) {
+			RegressionUtilities.setTestSuites(testConfig);
+		}
 	}
 
 	public TestConfig getTestConfig() {
