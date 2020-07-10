@@ -18,6 +18,7 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogEntry;
 
@@ -36,12 +37,14 @@ import static com.swirlds.regression.RegressionUtilities.MB;
 
 public class StatsValidator extends NodeValidator {
 	private boolean isValidated = false;
+	private TestConfig testConfig;
 
 	// validation
 
-	public StatsValidator(List<NodeData> nodeData) {
+	public StatsValidator(List<NodeData> nodeData, TestConfig testConfig) {
 
 		super(nodeData);
+		this.testConfig = testConfig;
 	}
 
 	@Override
@@ -83,13 +86,17 @@ public class StatsValidator extends NodeValidator {
 
 			maxDiskSpaceUsed = Math.max(maxDiskSpaceUsed, nodeCsv.getColumn(DISK_SPACE_USED).getMax());
 
-			signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
-			signedStateHashingMax = Math.max(
-					signedStateHashingMax,
-					nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getMax());
+			if(!testConfig.isServicesRegression()){
+				signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
+				signedStateHashingMax = Math.max(
+						signedStateHashingMax,
+						nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getMax());
+			}
 		}
 		transHandleAverage /= nodeNum;
-		signedStateHashingAvg /= nodeNum;
+		if(!testConfig.isServicesRegression()) {
+			signedStateHashingAvg /= nodeNum;
+		}
 
 		if (startTime != null && endTime != null) {
 			Duration time = Duration.between(startTime, endTime);
@@ -98,15 +105,19 @@ public class StatsValidator extends NodeValidator {
 
 		addInfo(String.format("Average number of transactions handled per second is: %.3f", transHandleAverage));
 		addInfo(String.format("Max creation to consensus is: %.3f seconds", maxC2C));
-		addInfo(String.format("Signed state hashing - avg:%.3fs max:%.3fs",
-				signedStateHashingAvg, signedStateHashingMax));
+		if(!testConfig.isServicesRegression()) {
+			addInfo(String.format("Signed state hashing - avg:%.3fs max:%.3fs",
+					signedStateHashingAvg, signedStateHashingMax));
+		}
 		addInfo(String.format("Lowest Free Memory: %.3fMB", minFreeMem / MB));
 		addInfo(String.format("Maximum Total Memory Used: %.3fMB", maxTotalMem / MB));
 		addInfo(String.format("Maximum Diskspace Used: %.3fMB", maxDiskSpaceUsed / MB));
 
 		checkC2CVariation();
 		checkConsensusQueue();
-		checkStateHashingTime();
+		if(!testConfig.isServicesRegression()){
+			checkStateHashingTime();
+		}
 		checkMemFree();
 		checkTotalMemory();
 		checkDiskspaceFree();

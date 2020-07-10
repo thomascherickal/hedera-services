@@ -1,7 +1,7 @@
 {
   "name": "ServicesDemo",
   "description": "ServicesDemo",
-  "duration": 2000,
+  "duration": 100,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -27,34 +27,34 @@
   "servicesRegression" : true,
   "testSuites": [
 	//"ALL_SUITES"
-	"BucketAndLegacyThrottlingSpec",
-	"ControlAccountsExemptForUpdates",
-	"BucketAndLegacyThrottlingSpec",
-	"ControlAccountsExemptForUpdates",
-	"UmbrellaRedux",
-	"TopicCreateSpecs",
-	"SubmitMessageSpecs",
-	"TopicUpdateSpecs",
-	"SubmitMessageSpecs",
-	"HCSTopicFragmentationSuite",
-	"TopicGetInfoSpecs",
-	"ConsensusThrottlesSpecs",
-	"CryptoCreateSuite",
-	"CryptoRecordSanityChecks",
-	"SuperusersAreNeverThrottled",
-	"FileRecordSanityChecks",
-	"VersionInfoSpec",
-	"PermissionSemanticsSpec",
-	"SysDelSysUndelSpec",
-	"NewOpInConstructorSpecs",
-	"MultipleSelfDestructsAreSafe",
-	"FetchSystemFiles",
-	"ChildStorageSpecs",
-	"DeprecatedContractKeySpecs",
-	"ThresholdRecordCreationSpecs",
-	"ContractRecordSanityChecks",
-	"TopicDeleteSpecs",
-	"ProtectedFilesUpdateSuite"
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates",
+//	"BucketAndLegacyThrottlingSpec",
+//	"ControlAccountsExemptForUpdates",
+	"UmbrellaRedux"
+//	"TopicCreateSpecs",
+//	"SubmitMessageSpecs",
+//	"TopicUpdateSpecs",
+//	"SubmitMessageSpecs",
+//	"HCSTopicFragmentationSuite",
+//	"TopicGetInfoSpecs",
+//	"ConsensusThrottlesSpecs",
+//	"CryptoCreateSuite",
+//	"CryptoRecordSanityChecks",
+//	"SuperusersAreNeverThrottled",
+//	"FileRecordSanityChecks",
+//	"VersionInfoSpec",
+//	"PermissionSemanticsSpec",
+//	"SysDelSysUndelSpec",
+//	"NewOpInConstructorSpecs",
+//	"MultipleSelfDestructsAreSafe",
+//	"FetchSystemFiles",
+//	"ChildStorageSpecs",
+//	"DeprecatedContractKeySpecs",
+//	"ThresholdRecordCreationSpecs",
+//	"ContractRecordSanityChecks",
+//	"TopicDeleteSpecs",
+//	"ProtectedFilesUpdateSuite"
   ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
@@ -67,8 +67,6 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD",
-	"HAPI_CLIENT",
-    "HGCAA"
+	"STANDARD"
   ]
 }
