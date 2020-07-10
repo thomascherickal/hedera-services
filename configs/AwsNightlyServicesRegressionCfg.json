@@ -50,5 +50,6 @@
 	"notifyUserIds": ["ULV8PHZ9N"],
 	"notifyOn": "ERROR"
   },
-  "uploadToSharePoint": false
+  "uploadToSharePoint": false,
+  "useThreadPool" :true
 }

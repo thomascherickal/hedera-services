@@ -28,7 +28,9 @@
   "testSuites": [
 	"ALL_SUITES",
 	"skip:UpdateServerFiles",
-	"skip:FreezeSuite"
+	"skip:FreezeSuite",
+	"skip:FileUpdateLoadTest",      // has to run with smaller TPS setting
+	"skip:RecordStreamSanityChecks" //require access record file on node
 //	"BucketAndLegacyThrottlingSpec",
 //	"ControlAccountsExemptForUpdates",
 //	"UmbrellaRedux",
