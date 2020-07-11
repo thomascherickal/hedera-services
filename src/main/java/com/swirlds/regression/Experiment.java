@@ -37,6 +37,7 @@ import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
+import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
@@ -909,6 +910,10 @@ public class Experiment implements ExperimentSummary {
 						((HGCAAValidator)item).setCheckHGCAppRestart(true);
 					}
 				}
+				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
+					((StandardValidator)item).setIgnoreSyncException(true);
+				}
+
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);

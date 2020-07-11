@@ -26,10 +26,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Stream;
 
-import static com.swirlds.regression.RegressionUtilities.SYNC_CALLER_BROKEN;
-import static com.swirlds.regression.RegressionUtilities.SYNC_LISTENER_BROKEN;
-import static com.swirlds.regression.RegressionUtilities.SYNC_SERVER_BROKEN;
+import static com.swirlds.regression.RegressionUtilities.SYNC_BROKEN;
 
 /**
  * Reads in swirlds.log file
@@ -38,6 +37,9 @@ import static com.swirlds.regression.RegressionUtilities.SYNC_SERVER_BROKEN;
 public class StandardValidator extends NodeValidator {
 	private boolean isValidated = false;
 	private boolean isValid = true;
+
+	/** ignore socket exception of sync listener or sync caller */
+	boolean ignoreSyncException = false;
 
 	public StandardValidator(List<NodeData> nodeData) {
 		super(nodeData);
@@ -71,11 +73,7 @@ public class StandardValidator extends NodeValidator {
 					badExceptions++;
 					isValid = false;
 					addError(String.format("Node %d has fallen behind.", i));
-				} else if (ex.getLogEntry().contains(SYNC_CALLER_BROKEN)){
-					syncBrokenCount++;
-				} else if (ex.getLogEntry().contains(SYNC_LISTENER_BROKEN)){
-					syncBrokenCount++;
-				} else if (ex.getLogEntry().contains(SYNC_SERVER_BROKEN)){
+				} else if (ignoreSyncException && Stream.of(SYNC_BROKEN).anyMatch(ex.getLogEntry()::contains)){
 					syncBrokenCount++;
 				} else {
 					badExceptions++;
@@ -101,6 +99,10 @@ public class StandardValidator extends NodeValidator {
 		}
 
 		isValidated = true;
+	}
+
+	public void setIgnoreSyncException(boolean ignoreSyncException) {
+		this.ignoreSyncException = ignoreSyncException;
 	}
 
 	@Override
