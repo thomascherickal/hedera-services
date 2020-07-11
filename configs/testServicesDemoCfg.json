@@ -30,7 +30,8 @@
 	"skip:UpdateServerFiles",
 	"skip:FreezeSuite",
 	"skip:FileUpdateLoadTest",      // has to run with smaller TPS setting
-	"skip:RecordStreamSanityChecks" //require access record file on node
+	"skip:ContractCallLoadTest",  // has to run with smaller TPS setting
+	"skip:RecordStreamValidation" //require access record file on node
 //	"BucketAndLegacyThrottlingSpec",
 //	"ControlAccountsExemptForUpdates",
 //	"UmbrellaRedux",

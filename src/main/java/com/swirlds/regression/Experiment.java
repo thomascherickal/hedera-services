@@ -303,7 +303,7 @@ public class Experiment implements ExperimentSummary {
 	/**
 	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
 	 */
-	public void startServicesRegression() {
+	public void startServicesRegression(boolean startSuiteRunner) {
 		// start Browser and HGCApp
 		startHGCApp();
 		try {
@@ -311,8 +311,10 @@ public class Experiment implements ExperimentSummary {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		// Once the HGCApp jar starts running , run test clients
-		startSuiteRunner();
+		if (startSuiteRunner) {
+			// Once the HGCApp jar starts running , run test clients
+			startSuiteRunner();
+		}
 	}
 
 	/**

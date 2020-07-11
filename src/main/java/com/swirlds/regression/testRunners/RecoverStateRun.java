@@ -41,16 +41,27 @@ public class RecoverStateRun implements TestRun {
 		 Stage 1 normal run
 		 **************************/
 		// start all processes
-		experiment.startAllSwirlds();
+		if (testConfig.isServicesRegression()) {
+			experiment.startServicesRegression(true);
+		} else {
+			experiment.startAllSwirlds();
+		}
 
 		// sleep through the rest of the test
 		long testDuration = testConfig.getDuration() * MILLIS;
 
 		// sleep through the rest of the test
 		List<BooleanSupplier> checkerList = new LinkedList<>();
-		checkerList.add(experiment::isProcessFinished);
+		if (!testConfig.isServicesRegression()) {
+			checkerList.add(experiment::isProcessFinished);
+		}
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
+
+		if (testConfig.isServicesRegression()) {
+			//explicitly stop java process since hedera service itself will not exit
+			experiment.stopAllSwirlds();
+		}
 
 		String oldEventsLogDir = settingsBuilder.getSettingValue("eventsLogDir");
 		String originalStreamFileDir = oldEventsLogDir + "/*/";
@@ -85,14 +96,17 @@ public class RecoverStateRun implements TestRun {
 		experiment.recoverDatabase();
 
 		// start all processes
-		experiment.startAllSwirlds();
+		if (testConfig.isServicesRegression()) {
+			experiment.startServicesRegression(false);
+		} else {
+			experiment.startAllSwirlds();
+		}
 
 		// sleep through the rest of the test
 		checkerList.clear();
 		checkerList.add(experiment::isFoundStateRecoverDoneMessage);
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
-
 
 		experiment.displaySignedStates("AFTER recover");
 
@@ -112,11 +126,17 @@ public class RecoverStateRun implements TestRun {
 		experiment.sendConfigToNodes();
 
 		// start all processes
-		experiment.startAllSwirlds();
+		if (testConfig.isServicesRegression()) {
+			experiment.startServicesRegression(true);
+		} else {
+			experiment.startAllSwirlds();
+		}
 
 		checkerList.clear();
-		checkerList.add(experiment::isFoundTwoPTDFinishMessage);
-		checkerList.add(experiment::isAnyNodeFoundFallBehindMessage);
+		if (!testConfig.isServicesRegression()) {
+			checkerList.add(experiment::isFoundTwoPTDFinishMessage);
+			checkerList.add(experiment::isAnyNodeFoundFallBehindMessage);
+		}
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 	}

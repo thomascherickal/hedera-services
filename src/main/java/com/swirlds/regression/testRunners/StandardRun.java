@@ -25,13 +25,8 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 public class StandardRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		if (testConfig.isServicesRegression()) {
-			//start all processes to run HGCApp
-			experiment.startServicesRegression();
-		} else {
-			// start all processes
-			experiment.startAllSwirlds();
-		}
+		// start all processes
+		experiment.startAllSwirlds();
 
 		// sleep through the rest of the test
 		long testDuration = testConfig.getDuration() * MILLIS;
