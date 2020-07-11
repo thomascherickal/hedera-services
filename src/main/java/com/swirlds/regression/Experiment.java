@@ -307,7 +307,8 @@ public class Experiment implements ExperimentSummary {
 		// start Browser and HGCApp
 		startHGCApp();
 		try {
-			Thread.sleep(20000);
+			// need wait long enough for service init finished
+			Thread.sleep(35000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -719,6 +720,9 @@ public class Experiment implements ExperimentSummary {
 				}
 			} else {
 				filesToSend = getServicesFilesToUpload(new File(pemFile));
+			}
+			if (addedFiles != null) {
+				filesToSend.addAll(addedFiles);
 			}
 		} else {
 			filesToSend = getSDKFilesToUpload(

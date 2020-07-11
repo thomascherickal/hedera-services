@@ -183,6 +183,10 @@ public class RegressionUtilities {
 	static final String SAVED_STATE_LOCATION = REMOTE_STATE_LOCATION + "*/*/" + SWIRLDS_NAME;
 	public static final String EVENT_MATCH_MSG = "Recovered file match original ones";
 
+	public final static String SYNC_LISTENER_BROKEN = "didn't receive anything from";
+	public final static String SYNC_SERVER_BROKEN   = "disconnecting old one";
+	public final static String SYNC_CALLER_BROKEN   = "SyncCaller.sync SocketException";
+
 	static final boolean USE_STAKES_IN_CONFIG = true;
 	// total stakes are the same as the number of the number of tinybars in existence
 	// (50 billion)*(times 100 million)

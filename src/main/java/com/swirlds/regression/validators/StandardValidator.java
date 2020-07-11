@@ -27,6 +27,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import static com.swirlds.regression.RegressionUtilities.SYNC_CALLER_BROKEN;
+import static com.swirlds.regression.RegressionUtilities.SYNC_LISTENER_BROKEN;
+import static com.swirlds.regression.RegressionUtilities.SYNC_SERVER_BROKEN;
+
 /**
  * Reads in swirlds.log file
  */
@@ -50,6 +54,8 @@ public class StandardValidator extends NodeValidator {
 			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 			int sockExAtEnd = 0;
 			int badExceptions = 0;
+			/** Count the exception due to broken sync tcp connection */
+			long syncBrokenCount = 0;
 			Instant nodeEnd = nodeLog.getLastEntryRead().getTime();
 			for (PlatformLogEntry ex : nodeLog.getExceptions()) {
 				if (ex.getMarker() == LogMarkerInfo.SOCKET_EXCEPTIONS) {
@@ -65,8 +71,15 @@ public class StandardValidator extends NodeValidator {
 					badExceptions++;
 					isValid = false;
 					addError(String.format("Node %d has fallen behind.", i));
+				} else if (ex.getLogEntry().contains(SYNC_CALLER_BROKEN)){
+					syncBrokenCount++;
+				} else if (ex.getLogEntry().contains(SYNC_LISTENER_BROKEN)){
+					syncBrokenCount++;
+				} else if (ex.getLogEntry().contains(SYNC_SERVER_BROKEN)){
+					syncBrokenCount++;
 				} else {
 					badExceptions++;
+					addError(String.format("Node %d has exception:%s", i, ex.getLogEntry()));
 					isValid = false;
 				}
 			}
@@ -76,6 +89,11 @@ public class StandardValidator extends NodeValidator {
 						"Node %d has %d socket exceptions at the end of the run. " +
 								"This happens when nodes don't die at the same time.",
 						i, sockExAtEnd));
+			}
+			if (syncBrokenCount > 0){
+				addWarning(String.format(
+						"Node %d has %d broken sync tcp exceptions at the end of the run. ",
+						i, syncBrokenCount));
 			}
 			if (badExceptions > 0) {
 				addError(String.format("Node %d has %d unexpected errors!", i, badExceptions));
