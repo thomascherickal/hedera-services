@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02141-D-ExpectedMapPerf-4N-0ZSN-FCMMultiReconnect",
+  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-0ZSN-OmitTrans",
   "result": {
 	"uri": "results"
   },
@@ -10,23 +10,23 @@
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
-	//	"regionList": [
-	//	  {
-	//		"region": "us-east-2",
-	//		"numberOfNodes": 6
-	//	  }
-	//	]
 	"regionList": [
 	  {
 		"region": "ca-central-1",
-		"instanceList": [
-		  "i-0ae73323b3b459e5c",
-		  "i-0ac4093201228715a",
-		  "i-03ad791fac84720f9",
-		  "i-08aad7697d80db88e"
-		]
+		"numberOfNodes": 6
 	  }
 	]
+	//	"regionList": [
+	//	  {
+	//		"region": "ca-central-1",
+	//		"instanceList": [
+	//		  "i-0ae73323b3b459e5c",
+	//		  "i-0ac4093201228715a",
+	//		  "i-03ad791fac84720f9",
+	//		  "i-08aad7697d80db88e"
+	//		]
+	//	  }
+	//	]
 	//	"regionList": [
 	//	  {
 	//		"region": "ca-central-1",
@@ -42,14 +42,18 @@
 	//	]
   },
   "numberOfZeroStakeNodes": 0,
-  "eventFilesWriters": 4,
+  "eventFilesWriters": 6,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	//	"configs/testSigningDemoCfg.json",
-	//	"configs/testSigningDemo4KCfg.json",
+	//Updated list from AwsNightlyMirrorNodeRegressionCfg.json on 2020-07-10
+	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json"
 	//	"configs/testFcmMultipleOperationsCfg.json",
+	//	"configs/testStateRecover.json" ,
+	//	"configs/testStateRecoverBlob.json" ,
+	//	"configs/testStateRecoverFCQ.json" ,
 	//	"configs/testRestartCfg.json",
 	//	"configs/testRestartBlobCfg.json",
 	//	"configs/testFcmFreezeCfg.json",
@@ -57,16 +61,16 @@
 	//	"configs/testFcmMultisizeBlobCfg.json",
 	//	"configs/testFcmFreezeFCQCfg.json",
 	//	"configs/testFCM1KFCQCfg.json",
-	"configs/testReconnectFCMMultiReconnectCfg.json"
+	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	//	"configs/testReconnectBlobCfg.json",
 	//	"configs/testFcm1kThrottlingCfg.json",
-	//	"configs/testMigrationAppCfg2K.json",
-	//	"configs/testMigrationAppCfg.json"
-
 	//	"configs/testFcmCfg.json",
-	//	"configs/testFcm10MBx10KBlobCfg.json",
-	//	"configs/testFcm4kx100KBlobCfg.json"
+	//	"configs/testFcmSmallBlobCfg.json",
+	//	"configs/testFcmLargeBlobCfg.json",
+	//	"configs/testMigrationAppCfg2K.json",
+	//	"configs/testMigrationAppCfg.json",
+	//	"configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
