@@ -3,6 +3,17 @@ cd "`dirname "$0"`"
 configFile="./configs/$1"
 echo $configFile
 
+diskspace=$(df -h | grep xvda | awk '{print $5}' | cut -d'%' -f1)
+if [ $diskspace -gt 85 ];
+then
+  echo "diskspace is too high at $diskspace%, removing logs from current test directory";
+  cd results;  find ./ -type d -ctime +3 -exec rm {} \;
+
+else
+  echo "We're safe $diskspace";
+fi
+
+
 eval $(ssh-agent)
 ssh-add /home/ubuntu/.ssh/regression_rsa
 
