@@ -799,7 +799,10 @@ public class Experiment implements ExperimentSummary {
 					nodeData,
 					testConfig,
 					experimentLocalFileHelper.loadExpectedMapPaths());
-
+			if (item == ValidatorType.BLOB_STATE) {
+				((BlobStateValidator) validatorToAdd).setExperimentFolder(
+						experimentLocalFileHelper.getExperimentFolder());
+			}
 			requiredValidator.add(validatorToAdd);
 		}
 		List<NodeData> nodeData = loadNodeData(testConfig.getName());
