@@ -1,6 +1,6 @@
 {
-  "name": "SeriveFreezeUpdate",
-  "description": "SeriveFreezeUpdate",
+  "name": "ServiceFreezeUpdate",
+  "description": "ServiceFreezeUpdate",
   "duration": 300,
   "settings": [
 	{
