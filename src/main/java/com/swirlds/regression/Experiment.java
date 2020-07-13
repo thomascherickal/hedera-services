@@ -32,6 +32,7 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.HGCAAValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -795,10 +796,23 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 
+			List<NodeData> testClientNodeData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
+				testClientNodeData = experimentLocalFileHelper.
+						loadTestClientNodeData(testClientNodes);
+			}
+
+			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+				hederaNodeHGCAAData = experimentLocalFileHelper.
+						loadHederaNodeHGCAAData(sshNodes);
+			}
+
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths());
+					experimentLocalFileHelper.loadExpectedMapPaths(),
+					testClientNodeData, hederaNodeHGCAAData);
 
 			requiredValidator.add(validatorToAdd);
 		}
@@ -828,6 +842,12 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
 				}
+				if (item instanceof HGCAAValidator) {
+					// if testing update feature, hedera service will restart after freeze
+					if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+						((HGCAAValidator)item).setCheckHGCAppRestart(true);
+					}
+				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
@@ -846,6 +866,12 @@ public class Experiment implements ExperimentSummary {
 		warnings = warnings || slackMsg.hasWarnings();
 		errors = errors || slackMsg.hasErrors();
 		exceptions = exceptions || slackMsg.hasExceptions();
+	}
+
+	private void addToValidatorList(ValidatorType item,
+									List<NodeData> nodeData,
+									List<NodeData> testClientNodeData,
+									List<Validator> requiredValidator) {
 	}
 
 	private int getLastStakedNode() {

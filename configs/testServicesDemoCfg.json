@@ -67,6 +67,8 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD"
+	"STANDARD",
+	"HAPI_CLIENT",
+    "HGCAA"
   ]
 }
