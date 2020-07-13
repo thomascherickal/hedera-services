@@ -236,7 +236,6 @@ public class Experiment implements ExperimentSummary {
 
 	public Experiment(RegressionConfig regressionConfig, TestConfig experiment) {
 		experimentLocalFileHelper = new ExperimentLocalFileHelper(regressionConfig, experiment);
-		//experimentServicesHelper = new ExperimentServicesHelper(this);
 		this.regConfig = regressionConfig;
 		setupTest(experiment);
 
@@ -306,7 +305,6 @@ public class Experiment implements ExperimentSummary {
 	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
 	 */
 	public void startServicesRegression() {
-		//experimentServicesHelper = new ExperimentServicesHelper(this);
 		experimentServicesHelper.startServicesRegression();
 	}
 
@@ -637,6 +635,8 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	protected void sendTarToNode(SSHService currentNode, Collection<File> filesToSend) {
+		String pemFile = getPEMFile();
+		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
 		File oldTarFile = new File(TAR_NAME);
 		if (oldTarFile.exists()) {
@@ -647,7 +647,7 @@ public class Experiment implements ExperimentSummary {
 		tarball.add(new File(TAR_NAME));
 		currentNode.scpToSpecificFiles(tarball);
 		currentNode.extractTar();
-		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + getPEMFile());
+		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
 		long endTime = System.nanoTime();
 		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
 	}
@@ -658,8 +658,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	public String getPEMFile() {
-		String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
-		return pemFile.substring(pemFile.lastIndexOf('/') + 1);
+		return regConfig.getCloud().getKeyLocation() + ".pem";
 	}
 
 	@Override
@@ -1504,7 +1503,6 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	void setupTest(TestConfig experiment) {
-
 		this.testConfig = experiment;
 		RegressionUtilities.setTestConfig(testConfig);
 
