@@ -65,16 +65,18 @@ public class AWSNode {
 		}
 
 		if (!isTestClientNode && rl.getInstanceList() != null) {
-			instanceIDs.addAll(Arrays.asList(rl.getInstanceList()));
-			totalPreexistingInstances = rl.getInstanceList().length;
-			isExistingInstance = true;
+			addInstances(rl.getInstanceList());
 		}
 
 		if (this.isTestClientNode && rl.getTestClientInstanceList() != null) {
-			instanceIDs.addAll(Arrays.asList(rl.getTestClientInstanceList()));
-			totalPreexistingInstances = rl.getTestClientInstanceList().length;
-			isExistingInstance = true;
+			addInstances(rl.getTestClientInstanceList());
 		}
+	}
+
+	private void addInstances(String[] instanceList) {
+		instanceIDs.addAll(Arrays.asList(instanceList));
+		totalPreexistingInstances = instanceList.length;
+		isExistingInstance = true;
 	}
 
 /*	public AWSNode(String region, int totalNodes, AmazonEC2 ec2) {
