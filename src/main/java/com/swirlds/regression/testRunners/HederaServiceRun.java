@@ -15,23 +15,27 @@
  * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
-package com.swirlds.regression.logs;
+package com.swirlds.regression.testRunners;
 
-public class StdoutLogParser implements LogParser<StdoutLogEntry> {
+import com.swirlds.regression.Experiment;
+import com.swirlds.regression.jsonConfigs.TestConfig;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+
+import static com.swirlds.regression.RegressionUtilities.MILLIS;
+
+public class HederaServiceRun implements TestRun {
 	@Override
-	public StdoutLogEntry parse(String line) {
-		return new StdoutLogEntry(line, isError(line));
+	public void runTest(TestConfig testConfig, Experiment experiment) {
+		experiment.startServicesRegression();
+
+		// sleep through the rest of the test
+		long testDuration = testConfig.getDuration() * MILLIS;
+		List<BooleanSupplier> checkerList = new LinkedList<>();
+		experiment.sleepThroughExperimentWithCheckerList(testDuration,
+				checkerList);
 	}
 
-	private static boolean isError(String s) {
-		s = s.toLowerCase();
-		//TODO that message occurs with an attempt to load the GPU processing,
-		// but since we removed it we are no longer uploading the file to remoteExperiment.
-		// This will be removed once ticket in regression is addressed.
-		if(s.contains("could not load libopencl.so, error libopencl.so: " +
-				"cannot open shared object file: no such file or directory")){
-			return false;
-		}
-		return s.contains("exception") || (s.contains("error"));
-	}
 }

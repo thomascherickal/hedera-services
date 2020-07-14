@@ -24,13 +24,8 @@ import com.swirlds.regression.jsonConfigs.runTypeConfigs.RecoverConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.RestartConfig;
 import com.swirlds.regression.validators.ValidatorType;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TestConfig implements FileRequirement {
 
@@ -42,8 +37,8 @@ public class TestConfig implements FileRequirement {
 	private AppConfig app;
 	private List<String> resultFiles;
 	private String log4j2File = "log4j2-regression.xml";
-	private SavedState startSavedState;
-	private List<SavedState> startSavedStates;
+	private SavedState startSavedState = null;
+	private List<SavedState> startSavedStates = null;
 
 	private boolean downloadDbLogFiles = false;
 
@@ -56,6 +51,20 @@ public class TestConfig implements FileRequirement {
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 
+	/**
+	 * Boolean value which is true if the regression run is for hedera-services
+	 */
+	private boolean servicesRegression = false;
+	/**
+	 * Boolean value which is true, if the test run in hedera-services uses CI_PROPERTIES_MAP for running performance
+	 * tests
+	 */
+	private boolean performanceRun = false;
+	/**
+	 * List of suites to be run in the experiment from SuiteRunner, when running hedera-services regression
+	 */
+	private List<String> testSuites;
+
 	public RunType getRunType() {
 		if (restartConfig != null) {
 			return RunType.RESTART;
@@ -65,6 +74,8 @@ public class TestConfig implements FileRequirement {
 			return RunType.RECONNECT;
 		} else if (recoverConfig != null) {
 			return RunType.RECOVER;
+		} else if (servicesRegression) {
+			return RunType.HEDERA_SERVICE;
 		}
 		return RunType.STANDARD;
 	}
@@ -216,9 +227,36 @@ public class TestConfig implements FileRequirement {
 		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
 	}
 
+	public boolean isPerformanceRun() {
+		return performanceRun;
+	}
+
+	public void setPerformanceRun(boolean performanceRun) {
+		this.performanceRun = performanceRun;
+	}
+
+	public boolean isServicesRegression() {
+		return servicesRegression;
+	}
+
+	public void setServicesRegression(boolean servicesRegression) {
+		this.servicesRegression = servicesRegression;
+	}
+
+	public List<String> getTestSuites() {
+		return testSuites;
+	}
+
+	public void setTestSuites(List<String> testSuites) {
+		this.testSuites = testSuites;
+	}
+
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
+		if (servicesRegression) {
+			return list;
+		}
 		add(list, freezeConfig, recoverConfig, app);
 		return list;
 	}

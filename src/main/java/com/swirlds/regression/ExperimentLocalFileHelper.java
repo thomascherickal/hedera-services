@@ -69,7 +69,7 @@ public class ExperimentLocalFileHelper {
 		return getExperimentFolder() + "node000" + nodeNumber + "/";
 	}
 
-	String getExperimentFolder() {
+	public String getExperimentFolder() {
 		String folderName = regConfig.getName() + "/" + testConfig.getName();
 		return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
 				folderName) + "/";

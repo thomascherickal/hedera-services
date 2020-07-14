@@ -20,7 +20,9 @@ package com.swirlds.regression.jsonConfigs;
 public class RegionList {
 	private String region;
 	private int numberOfNodes = -1;
+	private int numberOfTestClientNodes = -1;
 	private String[] instanceList = null;
+	private String[] testClientInstanceList = null;
 	boolean isValid = false;
 
 	boolean isValidConfig() {
@@ -58,6 +60,25 @@ public class RegionList {
 		this.instanceList = instanceList;
 		if (this.numberOfNodes < instanceList.length) {
 			this.numberOfNodes = instanceList.length;
+		}
+	}
+
+	public int getNumberOfTestClientNodes() {
+		return numberOfTestClientNodes;
+	}
+
+	public void setNumberOfTestClientNodes(int numberOfTestClientNodes) {
+		this.numberOfTestClientNodes = numberOfTestClientNodes;
+	}
+
+	public String[] getTestClientInstanceList() {
+		return testClientInstanceList;
+	}
+
+	public void setTestClientInstanceList(String[] testClientInstanceList) {
+		this.testClientInstanceList = testClientInstanceList;
+		if (this.numberOfTestClientNodes < testClientInstanceList.length) {
+			this.numberOfTestClientNodes = testClientInstanceList.length;
 		}
 	}
 }
