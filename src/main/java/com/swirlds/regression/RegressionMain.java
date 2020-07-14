@@ -366,7 +366,7 @@ public class RegressionMain {
 			regressionFile = args[0];
 			if (args.length == 2) {
 				hederaServicesPath = args[1];
-				RegressionUtilities.setHederaServicesRepoPath(hederaServicesPath);
+				ExperimentServicesHelper.setHederaServicesRepoPath(hederaServicesPath);
 			}
 		} else {
 			log.info(MARKER, "regression file not found, using default regression file: {}",

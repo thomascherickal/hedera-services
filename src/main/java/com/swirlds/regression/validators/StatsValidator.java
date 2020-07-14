@@ -86,7 +86,9 @@ public class StatsValidator extends NodeValidator {
 
 			maxDiskSpaceUsed = Math.max(maxDiskSpaceUsed, nodeCsv.getColumn(DISK_SPACE_USED).getMax());
 
-			if(!testConfig.isServicesRegression()){
+			if (!testConfig.isServicesRegression()) {
+				// TODO enable this once hedera-services gets the latest SDK.
+				// This column is renamed recently in platform. Currently services doesn't have the latest SDK.
 				signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
 				signedStateHashingMax = Math.max(
 						signedStateHashingMax,
@@ -94,7 +96,8 @@ public class StatsValidator extends NodeValidator {
 			}
 		}
 		transHandleAverage /= nodeNum;
-		if(!testConfig.isServicesRegression()) {
+		if (!testConfig.isServicesRegression()) {
+			// TODO enable this once hedera-services gets the latest SDK.
 			signedStateHashingAvg /= nodeNum;
 		}
 
@@ -105,7 +108,8 @@ public class StatsValidator extends NodeValidator {
 
 		addInfo(String.format("Average number of transactions handled per second is: %.3f", transHandleAverage));
 		addInfo(String.format("Max creation to consensus is: %.3f seconds", maxC2C));
-		if(!testConfig.isServicesRegression()) {
+		if (!testConfig.isServicesRegression()) {
+			// TODO enable this once hedera-services gets the latest SDK.
 			addInfo(String.format("Signed state hashing - avg:%.3fs max:%.3fs",
 					signedStateHashingAvg, signedStateHashingMax));
 		}
@@ -115,7 +119,8 @@ public class StatsValidator extends NodeValidator {
 
 		checkC2CVariation();
 		checkConsensusQueue();
-		if(!testConfig.isServicesRegression()){
+		if (!testConfig.isServicesRegression()) {
+			// TODO enable this once hedera-services gets the latest SDK.
 			checkStateHashingTime();
 		}
 		checkMemFree();

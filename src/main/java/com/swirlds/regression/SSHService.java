@@ -484,7 +484,7 @@ public class SSHService {
 		}
 
 		// TODO These arguments should be constructed run time from a JSON config
-		String publicIpList = RegressionUtilities.getPublicIPStringForServices();
+		String publicIpList = ExperimentServicesHelper.getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 		String command = String.format(
 				"cd %s; " +
@@ -494,8 +494,8 @@ public class SSHService {
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
-				RegressionUtilities.getCiPropertiesMap(),
-				RegressionUtilities.getTestSuites(),
+				ExperimentServicesHelper.getCiPropertiesMap(),
+				ExperimentServicesHelper.getTestSuites(),
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
@@ -1356,7 +1356,7 @@ public class SSHService {
 	boolean scpFromTestClient(String topLevelFolders) {
 		try {
 			Collection<String> foundFiles = getListOfFiles(
-					RegressionUtilities.getServicesFilesToDownload());
+					ExperimentServicesHelper.getServicesFilesToDownload());
 			scpFilesFromList(topLevelFolders, foundFiles);
 			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {
