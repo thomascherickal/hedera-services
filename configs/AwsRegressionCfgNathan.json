@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-0ZSN-Final",
+  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-0ZSN-Final-7560408",
   "result": {
 	"uri": "results"
   },
@@ -48,26 +48,55 @@
   },
   "experiments": [
 	//Updated list from AwsNightlyMirrorNodeRegressionCfg.json on 2020-07-10
+
+	// Works
 	"configs/testSigningDemoCfg.json",
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
+	// Fails in develop
 	//	"configs/testStateRecover.json",
 	//	"configs/testStateRecoverBlob.json",
 	//	"configs/testStateRecoverFCQ.json",
+
+
+	// Works
 	"configs/testRestartCfg.json",
+	// Fails in develop
 	//	"configs/testRestartBlobCfg.json",
+
+
+	// Works
 	"configs/testFcmFreezeCfg.json",
+	// Fails in develop
 	//	"configs/testFcmFreezeBlobCfg.json",
+
+
+	// Works
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
 	"configs/testFCM1KFCQCfg.json",
+	// Fails in develop
 	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	//	"configs/testReconnectBlobCfg.json",
-	"configs/testFcm1kThrottlingCfg.json",
-	"configs/testFcmCfg.json",
+
+
+	// Works
+	"configs/testFcm1kThrottlingCfg.json"
+
+	// Large Test - Disabled Temp
+	//  "configs/testFcmCfg.json",
+
+
+	// Fails in develop
 	//	"configs/testFcmSmallBlobCfg.json",
-	"configs/testFcmLargeBlobCfg.json"
+
+
+	// Large Test - Disabled Temp
+	//  "configs/testFcmLargeBlobCfg.json"
+
+
+	// Fails in develop
 	//	"configs/testMigrationAppCfg2K.json",
 	//	"configs/testMigrationAppCfg.json",
 	//	"configs/testFcmFCQ1KSavedStateCfg.json"
