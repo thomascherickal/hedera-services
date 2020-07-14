@@ -31,8 +31,6 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -46,11 +44,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
+import static com.swirlds.regression.ExperimentServicesHelper.getRsyncTestClientFiles;
+import static com.swirlds.regression.ExperimentServicesHelper.getServicesRsyncFiles;
 
 public class RegressionUtilities {
 
@@ -124,6 +122,9 @@ public class RegressionUtilities {
 
 	public static final String FALL_BEHIND_MSG = "has fallen behind";
 	public static final String OUTPUT_LOG_FILENAME = "output.log";
+	public static final String HGCAA_LOG_FILENAME = "hgcaa.log";
+	public static final String QUERY_LOG_FILENAME = "queries.log";
+	public static final String HAPI_CLIENT_LOG_FILENAME = "hapi-client.log";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -158,7 +159,7 @@ public class RegressionUtilities {
 	public static final int SSH_TEST_CMD_AFTER_SEC = 60;
 	public static final String MVN_ERROR_FLAG = "[ERROR]";
 
-	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -cPlatformTesting -N";
+	public static final String INSIGHT_CMD = "%s %s -p -d%s -g -c%s -N";
 	public static final Object INSIGHT_SCRIPT_LOCATION = "./insight.py";
 
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -198,6 +199,7 @@ public class RegressionUtilities {
 	static final String NIGHTLY_REGRESSION_KICKOFF_SERVER = "172.31.9.236";
 
 	private static final String OS = System.getProperty("os.name").toLowerCase();
+	private static TestConfig testConfig = null;
 
 	static TestConfig importExperimentConfig() {
 		return importExperimentConfig(TEST_CONFIG);
@@ -298,6 +300,15 @@ public class RegressionUtilities {
 	}
 
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
+			ArrayList<File> configSpecifiedFiles, boolean isTestClient) {
+
+		if (testConfig.isServicesRegression()) {
+			return ExperimentServicesHelper.getServicesFiles(isTestClient, keyFile);
+		}
+		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
+	}
+
+	private static ArrayList<String> getPlatformRsyncFiles(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles) {
 		ArrayList<String> returnIterator = new ArrayList<>();
 
@@ -445,13 +456,18 @@ public class RegressionUtilities {
 		}
 	}
 
-	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName){
+	public static String buildResultsFolderURL(SlackConfig slackConfig, String resultFolder, String experimentName) {
 		String returnString = null;
-		if(slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()){
+		if (slackConfig.getWebServer() != null && slackConfig.getWebServer().isUseWebServer()) {
 			returnString = "http://" + slackConfig.getWebServer().getWebServerAddress() +
-					":" + slackConfig.getWebServer().getWebServerPort() +"/" +
+					":" + slackConfig.getWebServer().getWebServerPort() + "/" +
 					resultFolder + "/" + experimentName;
 		}
 		return returnString;
 	}
+
+	public static void setTestConfig(TestConfig config) {
+		testConfig = config;
+	}
+
 }
