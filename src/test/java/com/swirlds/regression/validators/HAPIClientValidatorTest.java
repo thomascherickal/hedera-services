@@ -39,7 +39,7 @@ public class HAPIClientValidatorTest {
 		System.out.println("LOGS: " + negativeTestDir);
 		System.out.println(validator.concatAllMessages());
 		assertFalse(validator.isValid());
-		assertTrue(validator.errorMessages.size() > 0);
+		assertTrue(validator.getErrorMessages().size() > 0);
 	}
 
 	@Test
@@ -50,6 +50,6 @@ public class HAPIClientValidatorTest {
 		System.out.println("LOGS: " + positiveTestDir);
 		System.out.println(validator.concatAllMessages());
 		assertTrue(validator.isValid());
-		assertEquals(0, validator.errorMessages.size());
+		assertEquals(0, validator.getErrorMessages().size());
 	}
 }

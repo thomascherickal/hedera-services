@@ -37,27 +37,17 @@ public class HGCAAValidator extends Validator {
 	private boolean isValid;
 	private boolean isValidated;
 	private int errorCount = 0;
-	private int exceptionCount = 0;
-	private List<List<String>> resultMessage;
-	private List<String> errors;
-	private List<String> exceptions;
 
-	private static final String EXCEPTION = "Exception";
-	private static final String ERROR = "ERROR";
-
-	/** an mark string to indicate jar file has been updated successfully */
+	/** string to indicate jar file has been updated successfully */
 	private static final String NEW_JAR_MESSAGE = "new version jar";
 
-	/** when testing freeze handler or update feature, hedera service will restart after freeze */
+	/** when testing freeze handler or update feature, hedera-services will restart after freeze */
 	private boolean checkHGCAppRestart = false;
 
 	public HGCAAValidator(List<NodeData> testClientNodeData) {
 		this.hederaNodeData = testClientNodeData;
 		isValid = true;
 		isValidated = false;
-		resultMessage = new ArrayList<>();
-		errors = new ArrayList<>();
-		exceptions = new ArrayList<>();
 	}
 
 	@Override
@@ -72,56 +62,33 @@ public class HGCAAValidator extends Validator {
 
 			boolean foundNewJarVersionMarker = false;
 			while (logLine != null) {
-				if (logLine.getLogEntry().contains(EXCEPTION)) {
+				if (logLine.isException()) {
 					isValid = false;
-					exceptions.add(logLine.getLogEntry());
-					exceptionCount++;
-				} else if (logLine.getLogEntry().contains(ERROR)) {
-					isValid = false;
-					errors.add(logLine.getLogEntry());
 					errorCount++;
-				} else if (checkHGCAppRestart && logLine.getLogEntry().contains(NEW_JAR_MESSAGE)) {
+					//addError(logLine.getLogEntry());
+				} else if (hasNewJarMessage(logLine)) {
 					addInfo("Node " + i + " finished jar update");
 					foundNewJarVersionMarker = true;
 				}
+
 				logLine = hgcaaLogReader.nextEntry();
 			}
+
 			if (checkHGCAppRestart && !foundNewJarVersionMarker) {
 				isValid = false;
 				addError("Node " + i + " did not finish jar update");
 			}
+
+			if (errorCount > 0) {
+				addError("Node " + i + " has " + errorCount + " errors");
+			}
 		}
 
-		validateResultsAndBuildMessage();
-		createTableOfResults();
 		isValidated = true;
-		return;
 	}
 
-	private void validateResultsAndBuildMessage() {
-		if (errorCount > 0 || exceptionCount > 0) {
-			resultMessage.add(new ArrayList<>(Arrays.asList("Number of errors : " + errorCount)));
-			for (String errorMsg : errors) {
-				resultMessage.add(new ArrayList<>(Arrays.asList(errorMsg)));
-			}
-		}
-		if (exceptionCount > 0) {
-			resultMessage.add(new ArrayList<>(Arrays.asList("Number of exceptions :" + exceptionCount)));
-			for (String exceptionMessage : exceptions) {
-				resultMessage.add(new ArrayList<>(Arrays.asList(exceptionMessage)));
-			}
-		}
-	}
-
-	/**
-	 * Creates a table with the passed and failed suites of the test, to post to slack channel.
-	 */
-	private void createTableOfResults() {
-		StringBuilder failedTests = new StringBuilder();
-		SlackMsg.table(failedTests, resultMessage);
-		if (!failedTests.toString().isEmpty()) {
-			addError(failedTests.toString());
-		}
+	private boolean hasNewJarMessage(HAPIClientLogEntry logLine) {
+		return checkHGCAppRestart && logLine.getLogEntry().contains(NEW_JAR_MESSAGE);
 	}
 
 	@Override
