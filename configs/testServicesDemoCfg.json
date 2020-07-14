@@ -1,6 +1,6 @@
 {
-  "name": "ServicesDemo",
-  "description": "ServicesDemo",
+  "name": "ServicesDemo-JRS",
+  "description": "ServicesDemo-JRS",
   "duration": 650,
   "settings": [
 	{
@@ -67,7 +67,7 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD",
+	"HEDERA_NODE",
 	"HAPI_CLIENT",
     "HGCAA"
   ]

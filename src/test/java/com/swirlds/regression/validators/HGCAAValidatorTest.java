@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

@@ -18,6 +18,9 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.validators.services.HAPIClientValidator;
+import com.swirlds.regression.validators.services.HGCAAValidator;
+import com.swirlds.regression.validators.services.HederaNodeValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,8 @@ public class ValidatorFactory {
 				return new HAPIClientValidator(testClientNodeData);
 			case HGCAA:
 				return new HGCAAValidator(hederaNodeData);
+			case HEDERA_NODE:
+				return new HederaNodeValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}

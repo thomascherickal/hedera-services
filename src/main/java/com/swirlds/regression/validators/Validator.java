@@ -38,15 +38,15 @@ public abstract class Validator {
 
 	private int lastStakedNode;
 
-	void addInfo(String msg) {
+	protected void addInfo(String msg) {
 		infoMessages.add(msg);
 	}
 
-	void addWarning(String msg) {
+	protected void addWarning(String msg) {
 		warnMessages.add(msg);
 	}
 
-	void addError(String msg) {
+	protected void addError(String msg) {
 		errorMessages.add(msg);
 	}
 

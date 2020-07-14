@@ -15,11 +15,13 @@
  * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
-package com.swirlds.regression.validators;
+package com.swirlds.regression.validators.services;
 
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.slack.SlackMsg;
+import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.Validator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -29,7 +31,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ * Validates logs on test-client node
+ */
 public class HAPIClientValidator extends Validator {
 	private List<NodeData> testClientNodeData;
 	private boolean isValid;
