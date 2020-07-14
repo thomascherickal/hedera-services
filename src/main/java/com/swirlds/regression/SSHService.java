@@ -186,8 +186,7 @@ public class SSHService {
 					extensions += " -o ";
 				}
 				extensions += "-name \"" + extension.get(i) + "\"";
-			}
-			else {
+			} else {
 				dataExtensionCount++;
 				dataExtensions += "-e \"" + extension.get(i) + "\" ";
 			}
@@ -351,18 +350,25 @@ public class SSHService {
         }
     }
 
-    // Use rsync to copy selected files to a list of IP addresses
-    public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses) {
-        long startTime = System.nanoTime();
-        makeRemoteDirectory(
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION); // make sure remoteExperiments directory exist before
-        // massive copy */
-        String rsyncCmd =
-                "rsync -a -r -z -e \"ssh -o StrictHostKeyChecking=no -i ~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + this.keyFile.getName() + "\" ";
-        for (String fileToUpload : RegressionUtilities.getRsyncListToUpload(keyFile, log4j2Xml,
-                additionalFiles)) {
-            rsyncCmd += "--include=\"" + fileToUpload + "\" ";
-        }
+	// Use rsync to copy selected files to a list of IP addresses
+	public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses) {
+		return rsyncTo(additionalFiles, log4j2Xml, toIPAddresses, false);
+	}
+
+
+	// Use rsync to copy selected files to a list of IP addresses
+	public boolean rsyncTo(ArrayList<File> additionalFiles, File log4j2Xml, List<String> toIPAddresses,
+			boolean isTestClient) {
+		long startTime = System.nanoTime();
+		makeRemoteDirectory(
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION); // make sure remoteExperiments directory exist before
+		// massive copy */
+		String rsyncCmd =
+				"rsync -a -r -z -e \"ssh -o StrictHostKeyChecking=no -i ~/" + RegressionUtilities.REMOTE_EXPERIMENT_LOCATION + this.keyFile.getName() + "\" ";
+		for (String fileToUpload : RegressionUtilities.getRsyncListToUpload(keyFile, log4j2Xml,
+				additionalFiles, isTestClient)) {
+			rsyncCmd += "--include=\"" + fileToUpload + "\" ";
+		}
 
         // chain multiple rsync command together and run them in background
         String addCmd = "";
@@ -471,6 +477,31 @@ public class SSHService {
 
         return execCommand(command, description, 5).getExitStatus();
     }
+
+	int execTestClientWithProcessID(String jvmOptions) {
+		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+		}
+
+		// TODO These arguments should be constructed run time from a JSON config
+		String publicIpList = ExperimentServicesHelper.getPublicIPStringForServices();
+		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
+		String command = String.format(
+				"cd %s; " +
+						"mkdir -p src/main/ && mv resource/ src/main/; " +
+						"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
+						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"disown -h",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				publicIpList,
+				ExperimentServicesHelper.getCiPropertiesMap(),
+				ExperimentServicesHelper.getTestSuites(),
+				jvmOptions,
+				firstIP);
+		String description = "Start SuiteRunner.jar";
+
+		return execCommand(command, description, 5).getExitStatus();
+	}
 
 
     int makeSha1sumOfStreamedEvents(String testName, int streamingServerNode, int testDuration) {
@@ -1313,6 +1344,62 @@ public class SSHService {
                 "sudo pkill -f block_sync_port.sh",
                 "Kill background script");
         logIfExitCodeBad(cmd, "Kill background script");
+	}
+
+	/**
+	 * When running services regression, download needed files to be validated from test client nodes at the end of the
+	 * test
+	 *
+	 * @param topLevelFolders
+	 * @return
+	 */
+	boolean scpFromTestClient(String topLevelFolders) {
+		try {
+			Collection<String> foundFiles = getListOfFiles(
+					ExperimentServicesHelper.getServicesFilesToDownload());
+			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files from testClient", e);
+			return false;
+		}
+	}
+
+	/**
+	 * When running services-regression , execute command to run Browser and HederaNode.jar
+	 *
+	 * @param jvmOptions
+	 * @return
+	 */
+	int execHGCAppWithProcessID(String jvmOptions) {
+		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+		}
+
+		String command = String.format(
+				"cd %s; " +
+						"java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
+						"-cp 'data/lib/*' com.swirlds.platform.Browser " +
+						">>output.log 2>&1 & " +
+						"disown -h",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				jvmOptions);
+		String description = "Start Browser";
+
+		return execCommand(command, description, 5).getExitStatus();
+	}
+
+	/**
+	 * Sometimes the environment variable in application properties is set to DEV.
+	 * Modify it automatically to PROD when running regression on AWS
+	 */
+
+	public void modifyEnvToProd() {
+		String command = String.format(
+				"cd %s; " +
+						"sed -i 's/environment=0/environment=1/g' data/config/application.properties",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+		execCommand(command, "Change environment to PROD");
 	}
 
 }

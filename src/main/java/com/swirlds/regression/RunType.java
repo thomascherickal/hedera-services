@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.testRunners.FreezeRun;
+import com.swirlds.regression.testRunners.HederaServiceRun;
 import com.swirlds.regression.testRunners.ReconnectRun;
 import com.swirlds.regression.testRunners.RecoverStateRun;
 import com.swirlds.regression.testRunners.RestartRun;
@@ -29,8 +30,8 @@ public enum RunType {
 	RESTART(new RestartRun()),
 	RECONNECT(new ReconnectRun()),
 	FREEZE(new FreezeRun()),
-	RECOVER(new RecoverStateRun());
-
+	RECOVER(new RecoverStateRun()),
+	HEDERA_SERVICE(new HederaServiceRun());
 	private final TestRun testRun;
 
 	RunType(TestRun testRun) {
