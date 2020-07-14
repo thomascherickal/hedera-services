@@ -21,6 +21,7 @@ import com.swirlds.regression.jsonConfigs.AppConfig;
 import com.swirlds.regression.jsonConfigs.RegionList;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -66,6 +67,11 @@ public class ConfigBuilder {
 	private String nodeNames = "aaaa";
 	private List<Long> stakes;
 
+	// get list of public IPs of sshNodes and corresponding crypto accounts used for services regression
+	private ArrayList<String> publicIPsWithCryptoAccounts = new ArrayList<>();
+	// Crypto account needed for building config.txt of services-regression
+	private Long startingCryptoAccount = 0L;
+
 	public ConfigBuilder(RegressionConfig regConfig, TestConfig expConf) {
 		isLocal = (regConfig.getLocal() != null);
 		if (isLocal) {
@@ -106,9 +112,11 @@ public class ConfigBuilder {
 		appString.append("app");
 		appString.append(SEPERATOR);
 		appString.append(app.getJar());
-		for (String param : app.getParameterList()) {
-			appString.append(SEPERATOR);
-			appString.append(param);
+		if (app.getParameterList() != null) {
+			for (String param : app.getParameterList()) {
+				appString.append(SEPERATOR);
+				appString.append(param);
+			}
 		}
 		lines.add(appString.toString());
 	}
@@ -116,6 +124,7 @@ public class ConfigBuilder {
 	void buildAddressStrings() {
 		for (int i = 0; i < totalNodes; i++) {
 			StringBuilder addressString = new StringBuilder();
+			StringBuilder ipAddressWithCryptoAccount = new StringBuilder();
 			addressString.append("address");
 			addressString.append(SEPERATOR);
 			addressString.append(nodeNames + Integer.toString(i));
@@ -131,7 +140,16 @@ public class ConfigBuilder {
 			addressString.append(publicIPList.get(i));
 			addressString.append(SEPERATOR);
 			addressString.append(startingPort + i);
+
+			// startingCryptoAccount is set to 3 only if services regression is enabled in testConfig
+			if (startingCryptoAccount != 0) {
+				addressString.append(SEPERATOR);
+				String cryptoAccount = "0.0." + startingCryptoAccount++;
+				addressString.append(cryptoAccount);
+				ipAddressWithCryptoAccount.append(publicIPList.get(i) + ":" + cryptoAccount);
+			}
 			lines.add(addressString.toString());
+			publicIPsWithCryptoAccounts.add(ipAddressWithCryptoAccount.toString());
 		}
 	}
 
@@ -150,6 +168,7 @@ public class ConfigBuilder {
 		}
 
 		lines.clear();
+		publicIPsWithCryptoAccounts.clear();
 		buildFileContent();
 
 		try {
@@ -247,6 +266,18 @@ public class ConfigBuilder {
 		this.stakes = stakes;
 	}
 
+	/**
+	 * Starting crypto account is set to 3 if it services regression is enabled in testConfig , else it is 0
+	 *
+	 * @param account
+	 */
+	public void setStartingCryptoAccount(Long account) {
+		if (account == null) {
+			throw new NullPointerException("Crypto account must not be null!");
+		}
+		this.startingCryptoAccount = account;
+	}
+
 	public ArrayList<String> getLines() {
 		return lines;
 	}
@@ -258,5 +289,14 @@ public class ConfigBuilder {
 
 	public void returnOriginalConfig() {
 		moveTempConfigBackToOldConfig();
+	}
+
+	/**
+	 * Concatenate all publicIps with corresponding crypto accounts with comma separator
+	 *
+	 * @return
+	 */
+	public String getPublicIPsWithCryptoAccounts() {
+		return StringUtils.join(publicIPsWithCryptoAccounts, ",");
 	}
 }
