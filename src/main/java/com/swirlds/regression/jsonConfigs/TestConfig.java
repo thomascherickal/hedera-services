@@ -51,8 +51,18 @@ public class TestConfig implements FileRequirement {
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 
+	/**
+	 * Boolean value which is true if the regression run is for hedera-services
+	 */
 	private boolean servicesRegression = false;
+	/**
+	 * Boolean value which is true, if the test run in hedera-services uses CI_PROPERTIES_MAP for running performance
+	 * tests
+	 */
 	private boolean performanceRun = false;
+	/**
+	 * List of suites to be run in the experiment from SuiteRunner, when running hedera-services regression
+	 */
 	private List<String> testSuites;
 
 	public RunType getRunType() {
