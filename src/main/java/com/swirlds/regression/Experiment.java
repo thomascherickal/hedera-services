@@ -842,12 +842,6 @@ public class Experiment implements ExperimentSummary {
 		exceptions = exceptions || slackMsg.hasExceptions();
 	}
 
-	private void addToValidatorList(ValidatorType item,
-									List<NodeData> nodeData,
-									List<NodeData> testClientNodeData,
-									List<Validator> requiredValidator) {
-	}
-
 	private int getLastStakedNode() {
 		return sshNodes.size() - regConfig.getNumberOfZeroStakeNodes() - 1;
 	}
