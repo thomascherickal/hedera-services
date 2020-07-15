@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-0ZSN-Final-7560408",
+  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-2ZSN-Final-7560408",
   "result": {
 	"uri": "results"
   },
@@ -41,7 +41,7 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 0,
+  "numberOfZeroStakeNodes": 2,
   "eventFilesWriters": 6,
   "log": {
 	"uri": "testing/logs/"
@@ -83,17 +83,14 @@
 
 	// Works
 	"configs/testFcm1kThrottlingCfg.json"
-
 	// Large Test - Disabled Temp
-	//  "configs/testFcmCfg.json",
-
-
+	//	"configs/testFcmCfg.json",
 	// Fails in develop
-	//	"configs/testFcmSmallBlobCfg.json",
+	//"configs/testFcmSmallBlobCfg.json",
 
 
 	// Large Test - Disabled Temp
-	//  "configs/testFcmLargeBlobCfg.json"
+	//	"configs/testFcmLargeBlobCfg.json"
 
 
 	// Fails in develop
