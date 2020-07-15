@@ -36,11 +36,19 @@ public class SlackSubmodulePointerMsg extends SlackMsg {
     }
 
     public static void main(String[] args) throws IOException {
+        if (args.length == 0) {
+            System.out.println("Please add message to slack. and channel to slack to if you don't want to message " + SLACK_CHANNEL);
+        }
 
         SlackNotifier sn = createSlackNotifier(
                 SLACK_TOKEN);
-        sn.messageChannel(args[0], SLACK_CHANNEL);
+        String slackChannel = SLACK_CHANNEL;
+        if (args.length >= 2) {
+            slackChannel = args[1];
+        }
+        sn.messageChannel(args[0], slackChannel);
     }
+
     @Override
     public List<Attachment> generateSlackMessage(StringBuilder stringBuilder) {
         return null;
