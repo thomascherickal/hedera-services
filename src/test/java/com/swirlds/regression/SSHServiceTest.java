@@ -25,8 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
-import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,11 +43,11 @@ import java.util.Map;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_EXPERIMENT_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SSHServiceTest {
 	private static final Logger log = LogManager.getLogger(SSHServiceTest.class);
@@ -78,7 +78,7 @@ public class SSHServiceTest {
 	/************************************************************
 	 * Connection Tests                                         *
 	 ***********************************************************/
-	@org.junit.Test
+	@Test
 	@DisplayName("test connection")
 	void TestConnection(){
 		SSHService ssh = Connect(USER, IPADDRESS, KEY_FILE_LOCATION);
