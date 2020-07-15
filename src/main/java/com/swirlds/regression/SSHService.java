@@ -503,24 +503,41 @@ public class SSHService {
 		execCommand(command, "Move resource to src/main/resource", 5).getExitStatus();
 	}
 
+	private String[] parseNodeIPandAccounts(String publicIpList) {
+		String[] nodeIPandAccounts = publicIpList.split(",");
+
+		for(int i = 0; i < nodeIPandAccounts.length; i++) {
+			log.info("Node {} address and account {}", i, nodeIPandAccounts[i]);
+		}
+		return nodeIPandAccounts;
+	}
+
 	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
 			String jvmOptions, String firstIP) {
+		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
+		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
 		for (int i = 0; i < testConfig.getNumOfSuiteRunnerProcesses(); i++) {
 //			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
 //					REMOTE_EXPERIMENT_LOCATION, i);
 //			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
 
+			String[] pair = nodeIPandAccounts[i %  TOTAL_HEDERA_NODE].split(":");
+			String currentIP = pair[0];
+			String[] accountElements = pair[1].split(".");
+			String currentAcctNum = accountElements[2];
+
 			String command = String.format(
 					"cd %s; " +
 							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-							"-NODE=fixed\" nohup java %s -jar SuiteRunner.jar %s 3 >>output%s.log 2>&1 & " +
+							"-NODE=fixed\" nohup java %s -jar SuiteRunner.jar %s %s >>output%s.log 2>&1 & " +
 							"disown -h",
 					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
 					jvmOptions,
-					firstIP,
+					currentIP,
+					currentAcctNum,
 					i);
 			String description = "Start SuiteRunner.jar";
 			int status = execCommand(command, description, 5).getExitStatus();
