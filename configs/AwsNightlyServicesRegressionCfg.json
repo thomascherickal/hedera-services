@@ -1,5 +1,5 @@
 {
-  "name": "Services-regression-ani",
+  "name": "Services-regression-JRS-1Clients",
   "result": {
 	"uri": "results"
   },
@@ -13,17 +13,19 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes" : 4,
-//		"instanceList": [
-//		  "i-02a03b23122cc043b",
-//		  "i-015bf72bcf585ec17",
-//		  "i-0fd83e80b777bc936",
-//		  "i-0b820055ba5306866"
-//		],
-		"numberOfTestClientNodes": 1
-//		"testClientInstanceList": [
-//		  "i-088a86a25ab59c3ee"
-//		]
+		//"numberOfNodes" : 4,
+		"instanceList": [
+		  "i-04c31782eca0f6347",
+		  "i-0e73e2a6721cf4f0d",
+		  "i-05f6c3657dae40d52",
+		  "i-09f93f577245fa688"
+		],
+		//"numberOfTestClientNodes": 1
+		"testClientInstanceList": [
+		  "i-036191ed53443b752"
+//		  "i-0978ce2828fde484c",
+//		  "i-02d441f76843fcef6"
+		]
 	  }
 	]
   },
@@ -33,8 +35,6 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testServicesFreezeUpdateCfg.json",
-	"configs/testServicesDemoCfg.json",
 	"configs/testUmbrellaReduxMixedCfg.json"
   ],
   "db": {

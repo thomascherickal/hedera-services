@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.NetworkErrorConfig;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -217,7 +218,7 @@ public class SSHService {
 			String dataCommandStr = "find . | grep " + dataExtensions;
 
 			Session.Command dataCmd = null;
-			while((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
+			while ((dataCmd = execCommand(dataCommandStr, "Find list of Files based on name", -1)) == null) {
 
 				try {
 					log.info(MARKER, "Connection might be down? Sleeping for 10 seconds and retrying..");
@@ -465,7 +466,7 @@ public class SSHService {
 		return execCommand(command, description, 5).getExitStatus();
 	}
 
-	int execTestClientWithProcessID(String jvmOptions) {
+	int execTestClientWithProcessID(String jvmOptions, TestConfig testConfig) {
 		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
 			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
 		}
@@ -473,6 +474,11 @@ public class SSHService {
 		// TODO These arguments should be constructed run time from a JSON config
 		String publicIpList = RegressionUtilities.getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
+
+		if (testConfig.isServicesRegression() && testConfig.isPerformanceRun()) {
+			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
+		}
+
 		String command = String.format(
 				"cd %s; " +
 						"mkdir -p src/main/ && mv resource/ src/main/; " +
@@ -488,6 +494,31 @@ public class SSHService {
 		String description = "Start SuiteRunner.jar";
 
 		return execCommand(command, description, 5).getExitStatus();
+	}
+
+	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
+			String jvmOptions, String firstIP) {
+		for (int i = 0; i < testConfig.getNumOfSuiteRunnerProcesses(); i++) {
+			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%d.jar",
+					REMOTE_EXPERIMENT_LOCATION, i);
+			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
+
+			command = String.format(
+					"cd %s; " +
+							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
+							"-NODE=fixed\" nohup java %s -jar SuiteRunner%s.jar %s 3 >>output%s.log 2>&1 & " +
+							"disown -h",
+					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+					publicIpList,
+					RegressionUtilities.getCiPropertiesMap(),
+					RegressionUtilities.getTestSuites(),
+					jvmOptions,
+					i,
+					firstIP,
+					i);
+			String description = "Start SuiteRunner.jar";
+			execCommand(command, description, 5).getExitStatus();
+		}
 	}
 
 	/**
@@ -1336,26 +1367,26 @@ public class SSHService {
 	void printCurrentTime(final int nodeId) {
 		String dateCmd = "date -u";
 
-        Session.Command cmd = executeCmd(dateCmd);
-        String cmdResult = readCommandOutput(cmd).toString();
-        log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
-    }
+		Session.Command cmd = executeCmd(dateCmd);
+		String cmdResult = readCommandOutput(cmd).toString();
+		log.trace(MARKER, "node{} CurrentTime: {}", nodeId, cmdResult);
+	}
 
-    /**
-     * Setup network configuration used for simulating network error
-     */
+	/**
+	 * Setup network configuration used for simulating network error
+	 */
 	public void setupNetworkErrorCfg(NetworkErrorConfig config) {
-        Session.Command cmd;
+		Session.Command cmd;
 		if (config.isBlockNetwork()) {
 			// run background script
 			// to periodically block and enable gossip tcp port
 			cmd = execCommand("chmod 755 remoteExperiment/block_sync_port.sh; ",
 					"Change permission");
-            logIfExitCodeBad(cmd, "Change permission");
+			logIfExitCodeBad(cmd, "Change permission");
 
 			execCommand("cd remoteExperiment; nohup ./block_sync_port.sh >> exec.log & ",
 					"Block network sync port");
-            logIfExitCodeBad(cmd, "Block network sync port");
+			logIfExitCodeBad(cmd, "Block network sync port");
 
 			// if the network interface is blocked no need to setup packet loss or delay
 			return;
@@ -1366,7 +1397,7 @@ public class SSHService {
 					"sudo tc qdisc add dev ens3 root netem delay %dms",
 					config.getPacketDelayMS());
 			cmd = execCommand(cmdString, "Enable packet delay");
-            logIfExitCodeBad(cmd, "Enable packet delay");
+			logIfExitCodeBad(cmd, "Enable packet delay");
 		}
 
 		if (config.isEnablePktLoss()) { //drop packet at network input face
@@ -1374,86 +1405,87 @@ public class SSHService {
 					"sudo iptables -A INPUT -m statistic --mode random --probability %f -j DROP",
 					config.getPacketLossPercentage() / 100f);
 			cmd = execCommand(cmdString, "Enable packet loss");
-            logIfExitCodeBad(cmd, "Enable packet loss");
+			logIfExitCodeBad(cmd, "Enable packet loss");
 		}
 		cmd = execCommand("sudo iptables -L; sudo tc qdisc list", "Show current network rules");
 	}
 
-    /**
-     * Clear network configuration used for simulating network error
-     */
+	/**
+	 * Clear network configuration used for simulating network error
+	 */
 	public void cleanNetworkErrorCfg(NetworkErrorConfig config) {
-        Session.Command cmd;
-        if (config.isEnablePktDelay()) {
-            cmd = execCommand(
-                    "sudo tc qdisc del dev ens3 root",
-                    "Clean network delay rules");
-            logIfExitCodeBad(cmd, "Clean network delay rules");
-        }
-        cmd = execCommand(
-                "sudo iptables --flush",
-                "Clean iptables");
-        logIfExitCodeBad(cmd, "Clean iptables");
+		Session.Command cmd;
+		if (config.isEnablePktDelay()) {
+			cmd = execCommand(
+					"sudo tc qdisc del dev ens3 root",
+					"Clean network delay rules");
+			logIfExitCodeBad(cmd, "Clean network delay rules");
+		}
+		cmd = execCommand(
+				"sudo iptables --flush",
+				"Clean iptables");
+		logIfExitCodeBad(cmd, "Clean iptables");
 
-        cmd = execCommand(
-                "sudo pkill -f block_sync_port.sh",
-                "Kill background script");
-        logIfExitCodeBad(cmd, "Kill background script");
+		cmd = execCommand(
+				"sudo pkill -f block_sync_port.sh",
+				"Kill background script");
+		logIfExitCodeBad(cmd, "Kill background script");
 	}
-    /**
-     * When running services regression, download needed files to be validated from test client nodes at the end of the
-     * test
-     *
-     * @param topLevelFolders
-     * @return
-     */
-    boolean scpFromTestClient(String topLevelFolders) {
-        try {
-            Collection<String> foundFiles = getListOfFiles(
-                    RegressionUtilities.getServicesFilesToDownload());
-            scpFilesFromList(topLevelFolders, foundFiles);
-            return true;
-        } catch (IOException | StringIndexOutOfBoundsException e) {
-            log.error(ERROR, "Could not download files from testClient", e);
-            return false;
-        }
-    }
 
-    /**
-     * When running services-regression , execute command to run Browser and HederaNode.jar
-     *
-     * @param jvmOptions
-     * @return
-     */
-    int execHGCAppWithProcessID(String jvmOptions) {
-        if (jvmOptions == null || jvmOptions.trim().length() == 0) {
-            jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
-        }
+	/**
+	 * When running services regression, download needed files to be validated from test client nodes at the end of the
+	 * test
+	 *
+	 * @param topLevelFolders
+	 * @return
+	 */
+	boolean scpFromTestClient(String topLevelFolders) {
+		try {
+			Collection<String> foundFiles = getListOfFiles(
+					RegressionUtilities.getServicesFilesToDownload());
+			scpFilesFromList(topLevelFolders, foundFiles);
+			return true;
+		} catch (IOException | StringIndexOutOfBoundsException e) {
+			log.error(ERROR, "Could not download files from testClient", e);
+			return false;
+		}
+	}
 
-        String command = String.format(
-                "cd %s; " +
-                        "java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
-                        "-cp 'data/lib/*' com.swirlds.platform.Browser " +
-                        ">>output.log 2>&1 & " +
-                        "disown -h",
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                jvmOptions);
-        String description = "Start Browser";
+	/**
+	 * When running services-regression , execute command to run Browser and HederaNode.jar
+	 *
+	 * @param jvmOptions
+	 * @return
+	 */
+	int execHGCAppWithProcessID(String jvmOptions) {
+		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
+			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
+		}
 
-        return execCommand(command, description, 5).getExitStatus();
-    }
+		String command = String.format(
+				"cd %s; " +
+						"java %s -Dlog4j.configurationFile=log4j2-services-regression.xml " +
+						"-cp 'data/lib/*' com.swirlds.platform.Browser " +
+						">>output.log 2>&1 & " +
+						"disown -h",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				jvmOptions);
+		String description = "Start Browser";
 
-    /**
-     * Sometimes the environment variable in application properties is set to DEV.
-     * Modify it automatically to PROD when running regression on AWS
-     */
+		return execCommand(command, description, 5).getExitStatus();
+	}
 
-    public void modifyEnvToProd() {
-        String command = String.format(
-                "cd %s; " +
-                        "sed -i 's/environment=0/environment=1/g' data/config/application.properties",
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
-        execCommand(command, "Change environment to PROD");
-    }
+	/**
+	 * Sometimes the environment variable in application properties is set to DEV.
+	 * Modify it automatically to PROD when running regression on AWS
+	 */
+
+	public void modifyEnvToProd() {
+		String command = String.format(
+				"cd %s; " +
+						"sed -i 's/environment=0/environment=1/g' data/config/application.properties",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+		execCommand(command, "Change environment to PROD");
+	}
 
 }

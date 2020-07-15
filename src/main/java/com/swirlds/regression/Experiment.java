@@ -324,7 +324,7 @@ public class Experiment implements ExperimentSummary {
 	 */
 	public void startSuiteRunner() {
 		threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
-			node.execTestClientWithProcessID(getJVMOptionsString());
+			node.execTestClientWithProcessID(getJVMOptionsString(), testConfig);
 			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}

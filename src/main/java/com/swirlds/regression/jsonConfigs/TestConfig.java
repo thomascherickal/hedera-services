@@ -54,6 +54,7 @@ public class TestConfig implements FileRequirement {
 	private boolean servicesRegression = false;
 	private boolean performanceRun = false;
 	private List<String> testSuites;
+	private int numOfSuiteRunnerProcesses = 10;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -240,6 +241,16 @@ public class TestConfig implements FileRequirement {
 	public void setTestSuites(List<String> testSuites) {
 		this.testSuites = testSuites;
 	}
+
+
+	public int getNumOfSuiteRunnerProcesses() {
+		return numOfSuiteRunnerProcesses;
+	}
+
+	public void setNumOfSuiteRunnerProcesses(int numOfSuiteRunnerProcesses) {
+		this.numOfSuiteRunnerProcesses = numOfSuiteRunnerProcesses;
+	}
+
 
 	@Override
 	public List<String> getFilesNeeded() {
