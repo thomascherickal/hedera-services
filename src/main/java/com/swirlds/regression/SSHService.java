@@ -475,13 +475,13 @@ public class SSHService {
 		String publicIpList = RegressionUtilities.getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
+		createDirForResource();
 		if (testConfig.isServicesRegression() && testConfig.isPerformanceRun()) {
 			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
 		}
 
 		String command = String.format(
 				"cd %s; " +
-						"mkdir -p src/main/ && mv resource/ src/main/; " +
 						"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
 						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
@@ -494,6 +494,13 @@ public class SSHService {
 		String description = "Start SuiteRunner.jar";
 
 		return execCommand(command, description, 5).getExitStatus();
+	}
+
+	private void createDirForResource() {
+		String command = String.format(
+				"cd %s; mkdir -p src/main/ && mv resource/ src/main/; ",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+		execCommand(command, "Move resource to src/main/resource", 5).getExitStatus();
 	}
 
 	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
