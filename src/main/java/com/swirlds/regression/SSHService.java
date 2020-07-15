@@ -506,7 +506,7 @@ public class SSHService {
 	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
 			String jvmOptions, String firstIP) {
 		for (int i = 0; i < testConfig.getNumOfSuiteRunnerProcesses(); i++) {
-			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%d.jar",
+			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
 					REMOTE_EXPERIMENT_LOCATION, i);
 			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
 
@@ -524,7 +524,8 @@ public class SSHService {
 					firstIP,
 					i);
 			String description = "Start SuiteRunner.jar";
-			execCommand(command, description, 5).getExitStatus();
+			int status = execCommand(command, description, 5).getExitStatus();
+			log.info("Status code "+status);
 		}
 	}
 
