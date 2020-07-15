@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
 cd "`dirname "$0"`"
 configFile="./configs/$1"
+pathToServiceRepo="$2"
+platformRegressionDir=`pwd`
 echo $configFile
-
-diskspace=$(df -h | grep xvda | awk '{print $5}' | cut -d'%' -f1)
-if [ $diskspace -gt 85 ];
-then
-  echo "diskspace is too high at $diskspace%, removing logs from current test directory";
-  cd results;  find ./ -type d -ctime +3 -exec rm -rf {} \;
-
-else
-  echo "We're safe $diskspace";
-fi
-
+echo $pathToServiceRepo
+echo $platformRegressionDir
 
 eval $(ssh-agent)
 ssh-add /home/ubuntu/.ssh/regression_rsa
 
+cd $pathToServiceRepo
+mvn -DskipTests clean install
+
+cd $platformRegressionDir
 cd ..
 git pull
 git submodule update --init --merge
@@ -30,4 +27,4 @@ java \
 -Daws.secretKey=y3EsXA3inhICpBPeNVlx7CHhv+5iUDqbTtHU6SaG \
 -Dlog4j.configurationFile=log4j2-jrs.xml \
 -Dspring.output.ansi.enabled=ALWAYS \
--jar regression.jar "$configFile"
+-jar regression.jar "$configFile" "$pathToServiceRepo"

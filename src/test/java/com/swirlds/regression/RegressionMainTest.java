@@ -80,6 +80,23 @@ public class RegressionMainTest {
 		assertFalse(rm.isRunningFromNightlyKickOffServer());
 	}
 
+	@Test
+	@DisplayName("Run test to instantiate test client nodes and server nodes.")
+	//To run this add -Daws.accessKeyId=XXX -Daws.secretKey=XXX in "VMOptions".
+	// Also the key name in localServicesRegressionCfg should match the key name in keys folder
+	public void isRunningExperiments() {
+		try {
+			URI uri = Thread.currentThread().getContextClassLoader().
+					getResource("configs/localServicesRegressionCfg.json").toURI();
+			rm = new RegressionMain(Paths.get(uri).toString());
+		} catch (URISyntaxException e) {
+			System.out.println("Could not load services regression config");
+		}
+
+		final CloudService cloud = rm.setUpCloudService();
+		rm.runExperiments(cloud);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"configs/RegressionMainTest/IsRequestingUseOfNightlyServerTest/returnFalse//BaseCloud.json",

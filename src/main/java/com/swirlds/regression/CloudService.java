@@ -56,16 +56,22 @@ class CloudService {
         runInstanceRequest = new RunInstancesRequest();
         ec2List = new ArrayList<>();
 
-        for (RegionList reg : cloudConfig.getRegionList()) {
-            if (reg.getInstanceList() != null || reg.getNumberOfNodes() >= 0) {
-                log.info(MARKER, "Getting existing nodes {}", reg.getNumberOfNodes());
-                ec2List.add(new AWSNode(reg));
-            } else {
-                log.error(ERROR, "Cloud config must have either number of nodes or an array of instances");
-                System.exit(0);
-            }
-        }
-    }
+		for (RegionList reg : cloudConfig.getRegionList()) {
+			if (reg.getInstanceList() != null || reg.getNumberOfNodes() >= 0) {
+				log.info(MARKER, "Getting existing nodes {}", reg.getNumberOfNodes());
+				ec2List.add(new AWSNode(reg, false));
+			} else {
+				log.error(ERROR, "Cloud config must have either number of nodes or an array of instances");
+				System.exit(0);
+			}
+			// If testClients exist add them to ec2List as a testClient AWSNode.
+			// Test client nodes are used for hedera-services regression
+			if (reg.getTestClientInstanceList() != null || reg.getNumberOfTestClientNodes() > 0) {
+				log.info(MARKER, "Getting existing test client nodes {}", reg.getNumberOfTestClientNodes());
+				ec2List.add(new AWSNode(reg, true));
+			}
+		}
+	}
 
     /**
      * prints out details about instances that were created for this cloud service object
@@ -408,30 +414,46 @@ class CloudService {
         return images.get(0).getImageId();
     }
 
+	/**
+	 * @return return list of public IPs of all nodes set up by this service, that are not test clients
+	 */
+	public ArrayList<String> getPublicIPList() {
+		ArrayList<String> publicIPList = new ArrayList<>();
+		for (AWSNode node : ec2List) {
+			if (!(node.isTestClientNode())) {
+				publicIPList.addAll(node.getPublicIPList());
+			}
+		}
+		return publicIPList;
+	}
 
+	/**
+	 * return list of public IPs of all nodes set up by this service, those are test clients
+	 *
+	 * @return
+	 */
+	public ArrayList<String> getPublicIPListOfTestClients() {
+		ArrayList<String> publicIPList = new ArrayList<>();
+		for (AWSNode node : ec2List) {
+			if (node.isTestClientNode()) {
+				publicIPList.addAll(node.getPublicIPList());
+			}
+		}
+		return publicIPList;
+	}
 
-
-    /**
-     * @return return list of public IPs of all nodes set up by this service
-     */
-    public ArrayList<String> getPublicIPList() {
-        ArrayList<String> publicIPList = new ArrayList<>();
-        for (AWSNode node : ec2List) {
-            publicIPList.addAll(node.getPublicIPList());
-        }
-        return publicIPList;
-    }
-
-    /**
-     * @return returns a list of private IPs of all nodes set up by this service
-     */
-    public ArrayList<String> getPrivateIPList() {
-        ArrayList<String> privateIPList = new ArrayList<>();
-        for (AWSNode node : ec2List) {
-            privateIPList.addAll(node.getPrivateIPList());
-        }
-        return privateIPList;
-    }
+	/**
+	 * @return returns a list of private IPs of all nodes set up by this service, that are not test clients
+	 */
+	public ArrayList<String> getPrivateIPList() {
+		ArrayList<String> privateIPList = new ArrayList<>();
+		for (AWSNode node : ec2List) {
+			if (!(node.isTestClientNode())) {
+				privateIPList.addAll(node.getPrivateIPList());
+			}
+		}
+		return privateIPList;
+	}
 
     public void setInstanceNames(String name) {
 

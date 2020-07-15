@@ -360,9 +360,14 @@ public class RegressionMain {
 
 	public static void main(String[] args) {
 		String regressionFile;
+		String hederaServicesPath;
 		RegressionMain rm;
 		if (args.length > 0) {
 			regressionFile = args[0];
+			if (args.length == 2) {
+				hederaServicesPath = args[1];
+				ExperimentServicesHelper.setHederaServicesRepoPath(hederaServicesPath);
+			}
 		} else {
 			log.info(MARKER, "regression file not found, using default regression file: {}",
 					RegressionUtilities.REGRESSION_CONFIG);
