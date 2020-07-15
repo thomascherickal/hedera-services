@@ -506,21 +506,20 @@ public class SSHService {
 	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
 			String jvmOptions, String firstIP) {
 		for (int i = 0; i < testConfig.getNumOfSuiteRunnerProcesses(); i++) {
-			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
-					REMOTE_EXPERIMENT_LOCATION, i);
-			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
+//			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
+//					REMOTE_EXPERIMENT_LOCATION, i);
+//			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
 
-			command = String.format(
+			String command = String.format(
 					"cd %s; " +
 							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-							"-NODE=fixed\" nohup java %s -jar SuiteRunner%s.jar %s 3 >>output%s.log 2>&1 & " +
+							"-NODE=fixed\" nohup java %s -jar SuiteRunner.jar %s 3 >>output%s.log 2>&1 & " +
 							"disown -h",
 					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
 					jvmOptions,
-					i,
 					firstIP,
 					i);
 			String description = "Start SuiteRunner.jar";
