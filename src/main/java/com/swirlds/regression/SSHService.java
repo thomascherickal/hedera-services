@@ -523,7 +523,7 @@ public class SSHService {
 
 			String[] pair = nodeIPandAccounts[i %  TOTAL_HEDERA_NODE].split(":");
 			String currentIP = pair[0];
-			String[] accountElements = pair[1].split(".");
+			String[] accountElements = pair[1].split("\\.");
 			String currentAcctNum = accountElements[2];
 
 			String command = String.format(
