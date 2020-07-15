@@ -7,7 +7,7 @@ diskspace=$(df -h | grep xvda | awk '{print $5}' | cut -d'%' -f1)
 if [ $diskspace -gt 85 ];
 then
   echo "diskspace is too high at $diskspace%, removing logs from current test directory";
-  cd results;  find ./ -type d -ctime +3 -exec rm {} \;
+  cd results;  find ./ -type d -ctime +3 -exec rm -rf {} \;
 
 else
   echo "We're safe $diskspace";
