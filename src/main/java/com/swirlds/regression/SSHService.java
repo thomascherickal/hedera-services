@@ -476,7 +476,7 @@ public class SSHService {
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
-		if (testConfig.isServicesRegression() && testConfig.isPerformanceRun()) {
+		if (testConfig.isServicesRegression() && testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
 		}
 
@@ -489,7 +489,7 @@ public class SSHService {
 				publicIpList,
 				RegressionUtilities.getCiPropertiesMap(),
 				RegressionUtilities.getTestSuites(),
-				testConfig.isFixedNode()?"fixed":"random",
+				testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
@@ -517,7 +517,7 @@ public class SSHService {
 			String jvmOptions, String firstIP) {
 		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
 		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
-		for (int i = 0; i < testConfig.getNumOfSuiteRunnerProcesses(); i++) {
+		for (int i = 0; i < testConfig.getHederaServicesConfig().getNumOfSuiteRunnerProcesses(); i++) {
 //			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
 //					REMOTE_EXPERIMENT_LOCATION, i);
 //			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
@@ -536,7 +536,7 @@ public class SSHService {
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
-					testConfig.isFixedNode()?"fixed":"random",
+					testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
 					jvmOptions,
 					currentIP,
 					currentAcctNum,

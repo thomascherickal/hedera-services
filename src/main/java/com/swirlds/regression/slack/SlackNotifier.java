@@ -138,7 +138,7 @@ public class SlackNotifier {
 		String[] uploadFileToSlackCmd = new String[] { "curl", CURL_DASH_F, fileOption, CURL_DASH_F, commentOption,
 				CURL_DASH_F, CURL_AS_USER_FALSE, CURL_DASH_F, channelOption, CURL_DASH_H, botAuthToken,
 				CURL_FILE_UPLOAD_ADDRESS };
-		log.trace(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
+		log.info(MARKER, "Curl Array: {}", Arrays.toString(uploadFileToSlackCmd));
 		return uploadFileToSlackCmd;
 	}
 }

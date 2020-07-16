@@ -19,6 +19,7 @@ package com.swirlds.regression.jsonConfigs;
 
 import com.swirlds.regression.RunType;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.FreezeConfig;
+import com.swirlds.regression.jsonConfigs.runTypeConfigs.HederaServicesConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.ReconnectConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.RecoverConfig;
 import com.swirlds.regression.jsonConfigs.runTypeConfigs.RestartConfig;
@@ -50,12 +51,9 @@ public class TestConfig implements FileRequirement {
 	private RecoverConfig recoverConfig;
 	private ExperimentConfig experimentConfig = new ExperimentConfig();
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
+	private HederaServicesConfig hederaServicesConfig;
 
 	private boolean servicesRegression = false;
-	private boolean performanceRun = false;
-	private List<String> testSuites;
-	private int numOfSuiteRunnerProcesses = 10;
-	private boolean isFixedNode = false;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -66,7 +64,7 @@ public class TestConfig implements FileRequirement {
 			return RunType.RECONNECT;
 		} else if (recoverConfig != null) {
 			return RunType.RECOVER;
-		} else if (servicesRegression) {
+		} else if (hederaServicesConfig !=null) {
 			return RunType.HEDERA_SERVICE;
 		}
 		return RunType.STANDARD;
@@ -219,12 +217,12 @@ public class TestConfig implements FileRequirement {
 		this.memoryLeakCheckConfig = memoryLeakCheckConfig;
 	}
 
-	public boolean isPerformanceRun() {
-		return performanceRun;
+	public HederaServicesConfig getHederaServicesConfig() {
+		return hederaServicesConfig;
 	}
 
-	public void setPerformanceRun(boolean performanceRun) {
-		this.performanceRun = performanceRun;
+	public void setHederaServicesConfig(HederaServicesConfig hederaServiceConfig) {
+		this.hederaServicesConfig = hederaServiceConfig;
 	}
 
 	public boolean isServicesRegression() {
@@ -233,31 +231,6 @@ public class TestConfig implements FileRequirement {
 
 	public void setServicesRegression(boolean servicesRegression) {
 		this.servicesRegression = servicesRegression;
-	}
-
-	public List<String> getTestSuites() {
-		return testSuites;
-	}
-
-	public void setTestSuites(List<String> testSuites) {
-		this.testSuites = testSuites;
-	}
-
-
-	public int getNumOfSuiteRunnerProcesses() {
-		return numOfSuiteRunnerProcesses;
-	}
-
-	public void setNumOfSuiteRunnerProcesses(int numOfSuiteRunnerProcesses) {
-		this.numOfSuiteRunnerProcesses = numOfSuiteRunnerProcesses;
-	}
-
-	public boolean isFixedNode() {
-		return isFixedNode;
-	}
-
-	public void setFixedNode(boolean fixedNode) {
-		isFixedNode = fixedNode;
 	}
 
 	@Override

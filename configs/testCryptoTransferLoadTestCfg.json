@@ -1,7 +1,7 @@
 {
   "name": "CryptoTransferLoadTest-JRS",
   "description": "CryptoTransferLoadTest",
-  "duration": 350,
+  "duration": 920,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -25,9 +25,11 @@
 	}
   ],
   "servicesRegression" : true,
-  "testSuites": [
-	"CryptoTransferLoadTest"
-  ],
+  "hederaServicesConfig": {
+	"testSuites": [
+	  "CryptoTransferLoadTest tps=15,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
+	]
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },

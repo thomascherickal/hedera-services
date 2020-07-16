@@ -1,7 +1,7 @@
 {
   "name": "UmbrellaRedux-JRS",
   "description": "UmbrellaRedux",
-  "duration": 670,
+  "duration": 920,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -25,11 +25,13 @@
 	}
   ],
   "servicesRegression" : true,
-  "performanceRun" : true,
-  "numOfSuiteRunnerProcesses" : 15,
-  "testSuites": [
-	"UmbrellaRedux duration=10,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=1000,backoffSleepSecs=30"
-  ],
+  "hederaServicesConfig": {
+	"performanceRun" : true,
+	"numOfSuiteRunnerProcesses" : 12,
+	"testSuites": [
+	  "UmbrellaRedux duration=15,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
+	]
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },

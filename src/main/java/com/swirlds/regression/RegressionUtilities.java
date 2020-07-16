@@ -493,8 +493,8 @@ public class RegressionUtilities {
 	 * @return
 	 */
 	public static void setTestSuites(TestConfig testConfig) {
-		testSuites = StringUtils.join(testConfig.getTestSuites(), " ");
-		if (testConfig.isPerformanceRun()) {
+		testSuites = StringUtils.join(testConfig.getHederaServicesConfig().getTestSuites(), " ");
+		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			String[] propertiesMap = testSuites.split("\\s+");
 			testSuites = propertiesMap[0];
 			ciPropertiesMap = propertiesMap[1];
@@ -653,7 +653,7 @@ public class RegressionUtilities {
 	}
 
 	public static String getCiPropertiesMap() {
-		if (testConfig.isPerformanceRun()) {
+		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
 		}
 		return "";

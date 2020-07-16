@@ -59,6 +59,13 @@
 //	"TopicDeleteSpecs",
 //	"ProtectedFilesUpdateSuite"
   ],
+  "hederaServicesConfig": {
+	"performanceRun" : true,
+	"numOfSuiteRunnerProcesses" : 30,
+	"testSuites": [
+	  "UmbrellaRedux duration=5,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=1000,backoffSleepSecs=30"
+	]
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },

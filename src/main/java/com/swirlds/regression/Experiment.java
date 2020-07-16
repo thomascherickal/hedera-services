@@ -705,7 +705,7 @@ public class Experiment implements ExperimentSummary {
 			// upload necessary files
 			if (isTestClientNode) {
 				filesToSend = getServicesClientFilesToUpload(new File(pemFile));
-				if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+				if (this.testConfig.getHederaServicesConfig().getTestSuites().contains("UpdateServerFiles")) {
 					//build new jar file for update feature test
 					String Command = "scripts/regressionFlowUpdateFiles.sh";
 					try {
@@ -906,7 +906,7 @@ public class Experiment implements ExperimentSummary {
 				}
 				if (item instanceof HGCAAValidator) {
 					// if testing update feature, hedera service will restart after freeze
-					if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+					if (this.testConfig.getHederaServicesConfig().getTestSuites().contains("UpdateServerFiles")) {
 						((HGCAAValidator)item).setCheckHGCAppRestart(true);
 					}
 				}
