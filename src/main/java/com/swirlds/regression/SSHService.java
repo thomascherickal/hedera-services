@@ -483,12 +483,13 @@ public class SSHService {
 		String command = String.format(
 				"cd %s; " +
 						"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"-NODE=%s\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
 				RegressionUtilities.getCiPropertiesMap(),
 				RegressionUtilities.getTestSuites(),
+				testConfig.isFixedNode()?"fixed":"random",
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
@@ -529,12 +530,13 @@ public class SSHService {
 			String command = String.format(
 					"cd %s; " +
 							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-							"-NODE=fixed\" nohup java %s -jar SuiteRunner.jar %s %s >>output%s.log 2>&1 & " +
+							"-NODE=%s\" nohup java %s -jar SuiteRunner.jar %s %s >>output%s.log 2>&1 & " +
 							"disown -h",
 					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
+					testConfig.isFixedNode()?"fixed":"random",
 					jvmOptions,
 					currentIP,
 					currentAcctNum,

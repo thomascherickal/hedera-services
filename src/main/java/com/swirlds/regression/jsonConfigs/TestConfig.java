@@ -55,6 +55,7 @@ public class TestConfig implements FileRequirement {
 	private boolean performanceRun = false;
 	private List<String> testSuites;
 	private int numOfSuiteRunnerProcesses = 10;
+	private boolean isFixedNode = false;
 
 	public RunType getRunType() {
 		if (restartConfig != null) {
@@ -251,6 +252,13 @@ public class TestConfig implements FileRequirement {
 		this.numOfSuiteRunnerProcesses = numOfSuiteRunnerProcesses;
 	}
 
+	public boolean isFixedNode() {
+		return isFixedNode;
+	}
+
+	public void setFixedNode(boolean fixedNode) {
+		isFixedNode = fixedNode;
+	}
 
 	@Override
 	public List<String> getFilesNeeded() {

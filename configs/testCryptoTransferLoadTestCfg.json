@@ -1,0 +1,45 @@
+{
+  "name": "CryptoTransferLoadTest-JRS",
+  "description": "CryptoTransferLoadTest",
+  "duration": 350,
+  "settings": [
+	{
+	  "name": "showInternalStats",
+	  "value": "1"
+	},
+	{
+	  "name": "csvFileName",
+	  "value": "ServicesStats"
+	},
+	{
+	  "name": "csvAppend",
+	  "value": "true"
+	},
+	{
+	  "name": "maxOutgoingSyncs",
+	  "value": "2"
+	},
+	{
+	  "name": "freezeSettings.active",
+	  "value": "0"
+	}
+  ],
+  "servicesRegression" : true,
+  "testSuites": [
+	"CryptoTransferLoadTest"
+  ],
+  "memoryLeakCheckConfig": {
+	"nodeGroupIdentifier": "FIRST"
+  },
+  "app": {
+	"jar": "HederaNode.jar"
+  },
+  "resultFiles": [
+	"swirlds.log"
+  ],
+  "validator": [
+	"STATS",
+	"STANDARD",
+	"HAPI_CLIENT"
+  ]
+}
