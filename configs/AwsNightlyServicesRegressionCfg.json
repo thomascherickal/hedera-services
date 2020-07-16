@@ -1,5 +1,5 @@
 {
-  "name": "Services-regression-JRS-1Clients",
+  "name": "Services-regression-JRS-3Clients",
   "result": {
 	"uri": "results"
   },
@@ -13,19 +13,19 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		//"numberOfNodes" : 4,
-		"instanceList": [
-		  "i-04c31782eca0f6347",
-		  "i-0e73e2a6721cf4f0d",
-		  "i-05f6c3657dae40d52",
-		  "i-09f93f577245fa688"
-		],
-		//"numberOfTestClientNodes": 1
-		"testClientInstanceList": [
-		  "i-036191ed53443b752"
-//		  "i-0978ce2828fde484c",
-//		  "i-02d441f76843fcef6"
-		]
+		"numberOfNodes" : 4,
+//		"instanceList": [
+//		  "i-0dc37995e1a70569d",
+//		  "i-05968bbb6d28169f3",
+//		  "i-016f31caf60b56d05",
+//		  "i-0d32c933b840102e4"
+//		],
+		"numberOfTestClientNodes": 3
+//		"testClientInstanceList": [
+//		  "i-0b05bbccb5dae1de7",
+//		  "i-0e9cf8f8300a9643c",
+//		  "i-09dc4b4b42b1bed64"
+//		]
 	  }
 	]
   },
@@ -36,6 +36,8 @@
   },
   "experiments": [
 	"configs/testUmbrellaReduxMixedCfg.json"
+//	"configs/testServicesDemoCfg.json",
+//	"configs/testServicesFreezeUpdateCfg.json"
   ],
   "db": {
 	"type": "postgresql",
