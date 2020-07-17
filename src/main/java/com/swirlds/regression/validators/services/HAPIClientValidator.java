@@ -86,6 +86,13 @@ public class HAPIClientValidator extends Validator {
 					getHapiClientLogReader();
 			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
 					Arrays.asList(STARTING_OF_SUITE));
+
+			if (start == null) {
+				// If Starting of Suite doesn't exist when reading a file, it is an error
+				addError(String.format("None of the Suites Started!"));
+				break;
+			}
+
 			while (true) {
 				if (start == null || !start.getLogEntry().contains(STARTING_OF_SUITE)) {
 					break;
