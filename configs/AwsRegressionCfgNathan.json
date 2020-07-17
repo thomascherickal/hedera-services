@@ -60,11 +60,10 @@
 	// Works
 	"configs/testRestartCfg.json",
 	// Fails in develop
-	"configs/testRestartBlobCfg.json",
+	"configs/testRestartBlobCfg.json"
 	// Works
 	"configs/testFcmFreezeCfg.json",
-	// Fails in develop
-	"configs/testFcmFreezeBlobCfg.json",
+	"configs/testFcmFreezeBlobCfg.json"
 	// Works
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
@@ -73,13 +72,10 @@
 	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	//	"configs/testReconnectBlobCfg.json",
-
-	// Fails in develop
+	// Works
 	"configs/testMigrationAppCfg2K.json",
 	"configs/testMigrationAppCfg.json",
-	// Works
 	"configs/testFcm1kThrottlingCfg.json",
-	// Fails in develop
 	"configs/testFcmSmallBlobCfg.json"
 	// Large Test - Disabled Temp
 	//	"configs/testFcmCfg.json",
