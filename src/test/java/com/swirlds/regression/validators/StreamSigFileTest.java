@@ -4,15 +4,16 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.swirlds.regression.validators.StreamType.EVENT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EventSigFileTest {
+public class StreamSigFileTest {
 
 	@Test
 	public void comparatorTest() {
-		EventSigFile eventSigFile1 = new EventSigFile("2020-01-07T17_27_00.001157Z.evts_sig");
-		EventSigFile eventSigFile2 = new EventSigFile("2020-01-07T17_25_06.273650Z.evts_sig");
-		assertTrue(eventSigFile1.compareTo(eventSigFile2) > 0);
+		StreamSigFile streamSigFile1 = new StreamSigFile("2020-01-07T17_27_00.001157Z.evts_sig", EVENT);
+		StreamSigFile streamSigFile2 = new StreamSigFile("2020-01-07T17_25_06.273650Z.evts_sig", EVENT);
+		assertTrue(streamSigFile1.compareTo(streamSigFile2) > 0);
 	}
 
 	@Test
@@ -29,7 +30,7 @@ public class EventSigFileTest {
 				"2020-01-07T17_30_00.351916Z.evts_sig",
 				"2020-01-07T17_28_01.472948Z.evts_sig",
 				"2020-01-07T17_26_00.926656Z.evts_sig");
-		EventSigEvent eventSigEvent1 = new EventSigEvent(evtsSigFiles1);
+		StreamSigsInANode streamSigsInANode1 = new StreamSigsInANode(evtsSigFiles1, EVENT);
 
 		List<String> evtsSigFiles2 = List.of(
 				"2020-01-07T17_23_00.006393Z.evts_sig",
@@ -42,8 +43,8 @@ public class EventSigFileTest {
 				"2020-01-07T17_30_00.351916Z.evts_sig",
 				"2020-01-07T17_28_01.472948Z.evts_sig",
 				"2020-01-07T17_26_00.926656Z.evts_sig");
-		EventSigEvent eventSigEvent2 = new EventSigEvent(evtsSigFiles2);
-		assertTrue(eventSigEvent1.equals(eventSigEvent2));
+		StreamSigsInANode streamSigsInANode2 = new StreamSigsInANode(evtsSigFiles2, EVENT);
+		assertTrue(streamSigsInANode1.equals(streamSigsInANode2));
 
 //		System.out.println(eventSigEvent1);
 //		System.out.println("______");

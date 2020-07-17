@@ -1,5 +1,5 @@
 {
-  "name": "Services-Regression",
+  "name": "Services-Regression-JRS",
   "result": {
 	"uri": "results"
   },
@@ -19,6 +19,7 @@
 	]
   },
   "eventFilesWriters": 4,
+  "recordFilesWriters" : 4,
   "log": {
 	"uri":"testing/logs/"
   },
