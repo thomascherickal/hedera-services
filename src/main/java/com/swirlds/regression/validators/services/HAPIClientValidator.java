@@ -89,8 +89,8 @@ public class HAPIClientValidator extends Validator {
 
 			if (start == null) {
 				// If Starting of Suite doesn't exist when reading a file, it is an error
-				addError(String.format("None of the Suites Started!"));
-				break;
+				addError(String.format("None of the suites started in node %d", i));
+				continue;
 			}
 
 			while (true) {
