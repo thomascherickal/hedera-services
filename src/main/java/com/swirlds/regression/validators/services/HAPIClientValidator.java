@@ -20,7 +20,7 @@ package com.swirlds.regression.validators.services;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.slack.SlackMsg;
-import com.swirlds.regression.validators.NodeData;
+import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.Validator;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * Validates logs on test-client node
  */
 public class HAPIClientValidator extends Validator {
-	private List<NodeData> testClientNodeData;
+	private List<HapiClientData> testClientNodeData;
 	private boolean isValid;
 	private boolean isValidated;
 
@@ -62,7 +62,7 @@ public class HAPIClientValidator extends Validator {
 	 *
 	 * @param testClientNodeData
 	 */
-	public HAPIClientValidator(final List<NodeData> testClientNodeData) {
+	public HAPIClientValidator(final List<HapiClientData> testClientNodeData) {
 		this.testClientNodeData = testClientNodeData;
 		isValid = true;
 		isValidated = false;

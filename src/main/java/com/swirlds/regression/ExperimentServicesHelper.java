@@ -17,10 +17,11 @@
 
 package com.swirlds.regression;
 
-import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
 import com.swirlds.regression.logs.services.HAPIClientLogParser;
+import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.NodeData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -344,9 +345,9 @@ public class ExperimentServicesHelper {
 		ExperimentServicesHelper.ciPropertiesMap = ciPropertiesMap;
 	}
 
-	List<NodeData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
+	List<HapiClientData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
 		int numberOfTestClientNodes = getNumberOfTestClientNodes(testClientNodes);
-		List<NodeData> nodeData = new ArrayList<>();
+		List<HapiClientData> testClientData = new ArrayList<>();
 		for (int i = 0; i < numberOfTestClientNodes; i++) {
 			String outputLogFileName = getExperimentResultsFolderForTestClientNode(i)
 					+ OUTPUT_LOG_FILENAME;
@@ -358,14 +359,14 @@ public class ExperimentServicesHelper {
 				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
 			}
 
-			nodeData.add(new NodeData(logReader));
+			testClientData.add(new HapiClientData(logReader));
 		}
-		return nodeData;
+		return testClientData;
 	}
 
 	List<NodeData> loadHederaNodeHGCAAData(ArrayList<SSHService> nodes) {
 		int numberOfTestClientNodes = getNumberOfTestClientNodes(nodes);
-		List<NodeData> nodeData = new ArrayList<>();
+		List<NodeData> servicesNodesData = new ArrayList<>();
 		for (int i = 0; i < numberOfTestClientNodes; i++) {
 			String hgcaaLogFileName = getExperimentResultsFolderForHederaNode(i) +
 					HGCAA_LOG_FILENAME;
@@ -375,15 +376,15 @@ public class ExperimentServicesHelper {
 			InputStream queryInput = getInputStream(queryLogFileName);
 			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
 
-			LogReader logReader = LogReader.createReader(new HAPIClientLogParser(), combinedLogInput);
+			LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1), combinedLogInput);
 
-			nodeData.add(new NodeData(logReader));
-			if (nodeData.size() == 0) {
+			servicesNodesData.add(new NodeData(logReader));
+			if (servicesNodesData.size() == 0) {
 				throw new RuntimeException("Cannot find hgcaa log file : " + hgcaaLogFileName
 						+ "Cannot find queries log file : " + queryLogFileName);
 			}
 		}
-		return nodeData;
+		return servicesNodesData;
 	}
 
 	int getNumberOfTestClientNodes(ArrayList<SSHService> testClientNodes) {

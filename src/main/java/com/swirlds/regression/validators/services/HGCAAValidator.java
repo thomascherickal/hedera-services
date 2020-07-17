@@ -18,14 +18,11 @@
 package com.swirlds.regression.validators.services;
 
 import com.swirlds.regression.logs.LogReader;
-import com.swirlds.regression.logs.services.HAPIClientLogEntry;
-import com.swirlds.regression.slack.SlackMsg;
+import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.Validator;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,10 +52,9 @@ public class HGCAAValidator extends Validator {
 		int nodeNum = hederaNodeData.size();
 
 		for (int i = 0; i < nodeNum; i++) {
-			LogReader<HAPIClientLogEntry> hgcaaLogReader = hederaNodeData.get(i).
-					getHapiClientLogReader();
+			LogReader<PlatformLogEntry> hgcaaLogReader = hederaNodeData.get(i).getLogReader();
 
-			HAPIClientLogEntry logLine = hgcaaLogReader.nextEntry();
+			PlatformLogEntry logLine = hgcaaLogReader.nextEntry();
 
 			boolean foundNewJarVersionMarker = false;
 			while (logLine != null) {
@@ -87,7 +83,7 @@ public class HGCAAValidator extends Validator {
 		isValidated = true;
 	}
 
-	private boolean hasNewJarMessage(HAPIClientLogEntry logLine) {
+	private boolean hasNewJarMessage(PlatformLogEntry logLine) {
 		return checkHGCAppRestart && logLine.getLogEntry().contains(NEW_JAR_MESSAGE);
 	}
 

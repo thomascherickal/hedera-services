@@ -34,7 +34,7 @@ public class ValidatorFactory {
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
 			TestConfig testConfig, Map<Integer, String> expectedMapPaths,
-			List<NodeData> testClientNodeData, List<NodeData> hederaNodeData) {
+			List<HapiClientData> testClientNodeData, List<NodeData> hederaNodeData) {
 		if (vt == null) {
 			return null;
 		}

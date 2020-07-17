@@ -18,7 +18,6 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.csv.CsvReader;
-import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.PlatformLogEntry;
 import com.swirlds.regression.logs.StdoutLogEntry;
@@ -27,10 +26,13 @@ public class NodeData {
 	private LogReader<PlatformLogEntry> logReader;
 	private CsvReader csvReader;
 	private LogReader<StdoutLogEntry> stdoutReader;
-	private LogReader<HAPIClientLogEntry> hapiClientLogReader;
 
 	public NodeData(LogReader<PlatformLogEntry> logReader, CsvReader csvReader) {
 		this(logReader, csvReader, null);
+	}
+
+	public NodeData(LogReader<PlatformLogEntry> logReader) {
+		this(logReader, null, null);
 	}
 
 	public NodeData(LogReader<PlatformLogEntry> logReader, CsvReader csvReader,
@@ -38,15 +40,6 @@ public class NodeData {
 		this.logReader = logReader;
 		this.csvReader = csvReader;
 		this.stdoutReader = stdoutReader;
-	}
-
-	/**
-	 * Used for services regression to validate test client node logs
-	 *
-	 * @param logReader
-	 */
-	public NodeData(LogReader<HAPIClientLogEntry> logReader) {
-		this.hapiClientLogReader = logReader;
 	}
 
 	public LogReader<PlatformLogEntry> getLogReader() {
@@ -59,9 +52,5 @@ public class NodeData {
 
 	public LogReader<StdoutLogEntry> getStdoutReader() {
 		return stdoutReader;
-	}
-
-	public LogReader<HAPIClientLogEntry> getHapiClientLogReader() {
-		return hapiClientLogReader;
 	}
 }
