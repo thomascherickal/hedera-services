@@ -682,14 +682,12 @@ public class Experiment implements ExperimentSummary {
 		// read the output from the command
 		log.info(MARKER, "Here is the standard output of the command:\n");
 		String s;
-		while ((s = stdInput.readLine()) != null)
-		{
+		while ((s = stdInput.readLine()) != null) {
 			log.info(MARKER, s);
 		}
 		// read any errors from the attempted command
 		log.info(MARKER, "Here is the standard error of the command (if any):\n");
-		while ((s = stdError.readLine()) != null)
-		{
+		while ((s = stdError.readLine()) != null) {
 			log.info(MARKER, s);
 		}
 	}
@@ -710,7 +708,7 @@ public class Experiment implements ExperimentSummary {
 					String Command = "scripts/regressionFlowUpdateFiles.sh";
 					try {
 						File workDirectory = new File(String.format("%s/test-clients", getHederaServicesRepoPath()));
-						Process p = Runtime.getRuntime().exec( Command, null, workDirectory);
+						Process p = Runtime.getRuntime().exec(Command, null, workDirectory);
 						execCmd(p);
 						String newJarPath = getHederaServicesRepoPath() + "/test-clients/updateFiles/";
 						log.info(MARKER, "newJarPath = " + newJarPath);
@@ -907,11 +905,11 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof HGCAAValidator) {
 					// if testing update feature, hedera service will restart after freeze
 					if (this.testConfig.getHederaServicesConfig().getTestSuites().contains("UpdateServerFiles")) {
-						((HGCAAValidator)item).setCheckHGCAppRestart(true);
+						((HGCAAValidator) item).setCheckHGCAppRestart(true);
 					}
 				}
 				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
-					((StandardValidator)item).setIgnoreSyncException(true);
+					((StandardValidator) item).setIgnoreSyncException(true);
 				}
 
 				item.setLastStakedNode(getLastStakedNode());
@@ -935,9 +933,9 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	private void addToValidatorList(ValidatorType item,
-									List<NodeData> nodeData,
-									List<NodeData> testClientNodeData,
-									List<Validator> requiredValidator) {
+			List<NodeData> nodeData,
+			List<NodeData> testClientNodeData,
+			List<Validator> requiredValidator) {
 	}
 
 	private int getLastStakedNode() {
@@ -1149,7 +1147,7 @@ public class Experiment implements ExperimentSummary {
 		int nodeNumber = sshNodes.size();
 		ArrayList<File> addedFiles = buildAdditionalFileList();
 
-		if (regConfig.getNetErrorCfg() != null){
+		if (regConfig.getNetErrorCfg() != null) {
 			addedFiles.add(new File("src/main/resources/block_sync_port.sh"));
 		}
 		//Step 1, send tar to node 0
@@ -1290,6 +1288,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * Create sha1sum for RECORD and EVENT streams
+	 *
 	 * @param writers
 	 * @param streamType
 	 */

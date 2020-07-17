@@ -70,113 +70,113 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class SSHService {
 
-    private static final Logger log = LogManager.getLogger(Experiment.class);
-    private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
-    private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
+	private static final Logger log = LogManager.getLogger(Experiment.class);
+	private static final Marker MARKER = MarkerManager.getMarker("REGRESSION_TESTS");
+	private static final Marker ERROR = MarkerManager.getMarker("EXCEPTION");
 
-    private static final long MAX_COMMAND_OUTPUT_WATCH = 5000000000l;
-    private static final long MAXIMUM_TIMEOUT_ALLOWANCE = 500; // seconds
+	private static final long MAX_COMMAND_OUTPUT_WATCH = 5000000000l;
+	private static final long MAXIMUM_TIMEOUT_ALLOWANCE = 500; // seconds
 
 
-    private String user;
-    private String ipAddress;
-    private ArrayList<String> files;
-    private File keyFile;
-    private SSHClient ssh;
-    private Session session;
+	private String user;
+	private String ipAddress;
+	private ArrayList<String> files;
+	private File keyFile;
+	private SSHClient ssh;
+	private Session session;
 
 	private Instant lastExec;
 	private String eventStreamDirectory;
 	private String recordStreamDirectory;
 
-    public SSHService(String user, String ipAddress, File keyFile) throws SocketException {
-        this.user = user;
-        this.ipAddress = ipAddress;
-        this.keyFile = keyFile;
+	public SSHService(String user, String ipAddress, File keyFile) throws SocketException {
+		this.user = user;
+		this.ipAddress = ipAddress;
+		this.keyFile = keyFile;
 
-        ssh = buildSession();
-        if (this.ssh == null) {
-            throw new SocketException("Unable to connect to cloud instance via ssh.");
-        }
-        lastExec = Instant.now();
-    }
+		ssh = buildSession();
+		if (this.ssh == null) {
+			throw new SocketException("Unable to connect to cloud instance via ssh.");
+		}
+		lastExec = Instant.now();
+	}
 
-    private String readStream(InputStream is) {
-        String returnString = "";
-        byte[] tmp = new byte[1024];
-        try {
-            while (is.available() > 0) {
-                int i = is.read(tmp, 0, 1024);
-                if (i < 0) {
-                    break;
-                }
-                returnString += new String(tmp, 0, i);
-                log.info(MARKER, new String(tmp, 0, i));
-            }
-        } catch (IOException | NullPointerException e) {
-            log.error(ERROR, "SSH Command failed! Could not read returned streams", e);
-        }
-        return returnString;
-    }
+	private String readStream(InputStream is) {
+		String returnString = "";
+		byte[] tmp = new byte[1024];
+		try {
+			while (is.available() > 0) {
+				int i = is.read(tmp, 0, 1024);
+				if (i < 0) {
+					break;
+				}
+				returnString += new String(tmp, 0, i);
+				log.info(MARKER, new String(tmp, 0, i));
+			}
+		} catch (IOException | NullPointerException e) {
+			log.error(ERROR, "SSH Command failed! Could not read returned streams", e);
+		}
+		return returnString;
+	}
 
-    private ArrayList<String> readCommandOutput(Session.Command cmd) {
-        ArrayList<String> returnArray = new ArrayList<>();
-        if (cmd == null) {
-            return returnArray;
-        }
+	private ArrayList<String> readCommandOutput(Session.Command cmd) {
+		ArrayList<String> returnArray = new ArrayList<>();
+		if (cmd == null) {
+			return returnArray;
+		}
 
-        String fullString = "";
-        log.trace(MARKER, "reading command");
+		String fullString = "";
+		log.trace(MARKER, "reading command");
 
-        InputStream is = cmd.getInputStream();
-        InputStream es = cmd.getErrorStream();
-        long startTime = System.nanoTime();
+		InputStream is = cmd.getInputStream();
+		InputStream es = cmd.getErrorStream();
+		long startTime = System.nanoTime();
 
-        while (true) {
-            fullString += readStream(is);
-            fullString += readStream(es);
-            if (!cmd.isOpen()) {
-                if (!isStreamEmpty(is)) {
-                    continue;
-                }
-                if (!isStreamEmpty(es)) {
-                    continue;
-                }
-                break;
-            }
-            if ((System.nanoTime() - startTime) > MAX_COMMAND_OUTPUT_WATCH) {
-                log.info(MARKER, "monitored output for 5 seconds, exiting loop.");
-                break;
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (Exception ee) {
-                ee.printStackTrace();
-            }
-        }
+		while (true) {
+			fullString += readStream(is);
+			fullString += readStream(es);
+			if (!cmd.isOpen()) {
+				if (!isStreamEmpty(is)) {
+					continue;
+				}
+				if (!isStreamEmpty(es)) {
+					continue;
+				}
+				break;
+			}
+			if ((System.nanoTime() - startTime) > MAX_COMMAND_OUTPUT_WATCH) {
+				log.info(MARKER, "monitored output for 5 seconds, exiting loop.");
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (Exception ee) {
+				ee.printStackTrace();
+			}
+		}
 
-        String lines[] = fullString.split("\\r?\\n");
-        log.trace(MARKER, "lines in output {}", lines.length);
-        for (String line : lines) {
-            returnArray.add(line);
-            log.trace(MARKER, "Added {} to returnArray", line);
-        }
-        return returnArray;
-    }
+		String lines[] = fullString.split("\\r?\\n");
+		log.trace(MARKER, "lines in output {}", lines.length);
+		for (String line : lines) {
+			returnArray.add(line);
+			log.trace(MARKER, "Added {} to returnArray", line);
+		}
+		return returnArray;
+	}
 
-    private boolean isStreamEmpty(InputStream is) {
-        try {
-            if (is.available() == 0) {
-                return true;
-            }
-        } catch (IOException | NullPointerException e) {
-            log.error(ERROR, "SSH command failed! Failed to check if stream is empty", e);
-        }
-        return false;
-    }
+	private boolean isStreamEmpty(InputStream is) {
+		try {
+			if (is.available() == 0) {
+				return true;
+			}
+		} catch (IOException | NullPointerException e) {
+			log.error(ERROR, "SSH command failed! Failed to check if stream is empty", e);
+		}
+		return false;
+	}
 
-    Collection<String> getListOfFiles(ArrayList<String> extension) {
-        Collection<String> returnCollection = new ArrayList<>();
+	Collection<String> getListOfFiles(ArrayList<String> extension) {
+		Collection<String> returnCollection = new ArrayList<>();
 		int extensionCount = 0;
 		int dataExtensionCount = 0;
 		String extensions = "\\( ";
@@ -231,25 +231,25 @@ public class SSHService {
 			returnCollection.addAll(readCommandOutput(dataCmd));
 		}
 
-        return returnCollection;
-    }
+		return returnCollection;
+	}
 
-    void createNewTar(Collection<File> fileList) {
-        File tarball = new File(RegressionUtilities.TAR_NAME);
-        if (tarball.exists()) {
-            return;
-        }
+	void createNewTar(Collection<File> fileList) {
+		File tarball = new File(RegressionUtilities.TAR_NAME);
+		if (tarball.exists()) {
+			return;
+		}
 
 		if (!FileUtils.generateTarGZFile(tarball, fileList)) {
 			log.error(ERROR, "could not create tarball on node: {}", ipAddress);
 		}
 	}
 
-    boolean scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
-        try {
-            log.info(MARKER, "top level folder: {}", topLevelFolders);
-            Collection<String> foundFiles = getListOfFiles(
-                    RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
+	boolean scpFrom(String topLevelFolders, ArrayList<String> downloadExtensions) {
+		try {
+			log.info(MARKER, "top level folder: {}", topLevelFolders);
+			Collection<String> foundFiles = getListOfFiles(
+					RegressionUtilities.getSDKFilesToDownload(downloadExtensions));
 			scpFilesFromList(topLevelFolders, foundFiles);
 			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {
@@ -489,7 +489,7 @@ public class SSHService {
 				publicIpList,
 				RegressionUtilities.getCiPropertiesMap(),
 				RegressionUtilities.getTestSuites(),
-				testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
+				testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
@@ -507,7 +507,7 @@ public class SSHService {
 	private String[] parseNodeIPandAccounts(String publicIpList) {
 		String[] nodeIPandAccounts = publicIpList.split(",");
 
-		for(int i = 0; i < nodeIPandAccounts.length; i++) {
+		for (int i = 0; i < nodeIPandAccounts.length; i++) {
 			log.info("Node {} address and account {}", i, nodeIPandAccounts[i]);
 		}
 		return nodeIPandAccounts;
@@ -522,7 +522,7 @@ public class SSHService {
 //					REMOTE_EXPERIMENT_LOCATION, i);
 //			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
 
-			String[] pair = nodeIPandAccounts[i %  TOTAL_HEDERA_NODE].split(":");
+			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
 			String currentIP = pair[0];
 			String[] accountElements = pair[1].split("\\.");
 			String currentAcctNum = accountElements[2];
@@ -536,14 +536,14 @@ public class SSHService {
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
-					testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
+					testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 					jvmOptions,
 					currentIP,
 					currentAcctNum,
 					i);
 			String description = "Start SuiteRunner.jar";
 			int status = execCommand(command, description, 5).getExitStatus();
-			log.info("Status code "+status);
+			log.info("Status code " + status);
 		}
 	}
 
@@ -605,13 +605,13 @@ public class SSHService {
 						+ " dir: " + streamDir;
 		log.trace(MARKER, "Hash creation commandStr = {}", commandStr);
 
-        Session.Command result = execCommand(commandStr, description);
-        if (result != null) {
-            return result.getExitStatus();
-        } else {
-            return -1;
-        }
-    }
+		Session.Command result = execCommand(commandStr, description);
+		if (result != null) {
+			return result.getExitStatus();
+		} else {
+			return -1;
+		}
+	}
 
 	private String findStreamDirectory(final StreamType streamType) {
 		if (streamType == EVENT && this.eventStreamDirectory != null && !"".equals(this.eventStreamDirectory)) {
@@ -643,701 +643,714 @@ public class SSHService {
 		return null;
 	}
 
-    Session.Command executeCmd(String command) {
-        final Session.Command cmd = execCommand(command, "generic command call:" + command, -1);
-        log.info(MARKER, "**{} exit status: {} :: {}", command, cmd.getExitStatus(), cmd.getExitErrorMessage());
-        return cmd;
-    }
-
-    private Session.Command execCommand(String command, String description) {
-        return execCommand(command, description, -1, true);
-    }
-
-    private Session.Command execCommand(String command, String description, int joinSec) {
-        return execCommand(command, description, joinSec, true);
-    }
-
-    private Session.Command execCommand(String command, String description, int joinSec, boolean reconnectIfNeeded) {
-        int returnValue = -1;
-
-        try {
-            if (reconnectIfNeeded) {
-                reconnectIfNeeded();
-            }
-            session = ssh.startSession();
-            final Session.Command cmd = session.exec(command);
-            if (joinSec <= 0) {
-                cmd.join(MAXIMUM_TIMEOUT_ALLOWANCE, TimeUnit.SECONDS);
-            } else {
-                cmd.join(joinSec, TimeUnit.SECONDS);
-            }
-            returnValue = cmd.getExitStatus();
-            log.trace(MARKER, "'{}' command:\n{}\nexit status: {} :: {}",
-                    description, command, returnValue, cmd.getExitErrorMessage());
-            lastExec = Instant.now();
-            return cmd;
-        } catch (ConnectionException e) {
-            log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", joinSec, command,
-                    description, e);
-        } catch (IOException | NullPointerException e) {
-            log.error(ERROR, "'{}' command failed!", description, e);
-        } catch (Exception e) {
-            log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", joinSec, command,
-                    description, e);
-        } finally {
-            try {
-                if (session != null) {
-                    session.close();
-                }
-            } catch (IOException e) {
-                log.error(ERROR, "could not close node {} session when executing '{}'",
-                        ipAddress, description, e);
-            }
-        }
-
-        return null;
-    }
-
-    void killJavaProcess() {
-        final Session.Command cmd = execCommand(RegressionUtilities.KILL_JAVA_PROC_COMMAND,
-                "command to kill the java process", -1);
-        log.info(MARKER, "**java kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
-    }
-
-    void killNetwork() {
-        final Session.Command cmd = execCommand(RegressionUtilities.KILL_NET_COMMAND,
-                "command to kill the network", -1);
-        log.info(MARKER, "**network kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
-    }
-
-    void reviveNetwork() {
-        final Session.Command cmd = execCommand(RegressionUtilities.REVIVE_NET_COMMAND,
-                "command to revive the network", -1);
-        log.info(MARKER, "**network revive exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
-    }
-
-    String checkTotalMemoryOnNode() {
-        final Session.Command cmd = execCommand(RegressionUtilities.GET_TOTAL_MB_MEMORY_ON_NODE, "command to get total MB of memory on node", -1);
-        log.info(MARKER, "Check memory exit status:" + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
-        /* M is added because vmstat doesn't have a human readable option. but the -SM option forces it to report in MB */
-        return getFirstLineOfStream(cmd.getInputStream()) + "MB";
-    }
-
-    SSHClient buildSession() {
-        SSHClient client = new SSHClient();
-        int count = 0;
-        while (count < 10) {
-            try {
-                KeyProvider keys = client.loadKeys(keyFile.getPath());
-                client.addHostKeyVerifier(new PromiscuousVerifier());
-                client.useCompression();
-                client.connect(this.ipAddress);
-                client.authPublickey(this.user, keys);
-
-                if (client.isConnected()) {
-                    return client;
-                }
-            } catch (IOException | IllegalThreadStateException e) {
-                log.error(ERROR, "attempt {} to connect to node {} failed, will retry {} more times.", count,
-                        this.ipAddress, 10 - count, e);
-            }
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                log.error(ERROR, "Unable to sleep thread before retrying to connect to {}", this.ipAddress, e);
-            }
-            count++;
-        }
-        log.error(ERROR, "Could not connect with the node over ssh");
-        return null;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public ArrayList<String> getFiles() {
-        return files;
-    }
-
-    public void setFiles(ArrayList<String> files) {
-        this.files = files;
-    }
-
-    public File getKeyFile() {
-        return keyFile;
-    }
-
-    public void setKeyFile(File keyFile) {
-        this.keyFile = keyFile;
-    }
-
-    public boolean isConnected() {
-        if (ssh == null) {
-            return false;
-        } else {
-            return ssh.isConnected();
-        }
-    }
-
-    private void reconnectIfNeeded() {
-        //TODO
-        if (lastExec.until(Instant.now(), SECONDS) > RegressionUtilities.SSH_TEST_CMD_AFTER_SEC) {
-            execCommand("echo test", "test if connection broken", -1, false);
-        }
-        if (isConnected()) {
-            return;
-        }
-        close();
-        log.debug(MARKER, "Reconnecting to node {}", this.ipAddress);
-        ssh = buildSession();
-        lastExec = Instant.now();
-    }
-
-    public boolean checkProcess() {
-        Session.Command cmd = execCommand(RegressionUtilities.CHECK_JAVA_PROC_COMMAND,
-                "Check if java process is running", 2);
-
-        if (cmd != null) {
-            ArrayList<String> output = readCommandOutput(cmd);
-
-            if (output.size() == 0 || "".equals(output.get(0))) {
-                log.info(MARKER, "Java proc is DOWN");
-                return false;
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isTestFinished() {
-        final Session.Command cmd = execCommand(RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE,
-                "Check if PTD test is done", -1);
-        ArrayList<String> output = readCommandOutput(cmd);
-        for (String out : output) {
-            log.trace(MARKER, "is test finished output size({}): {}", output.size(), out);
-            if (out.contains("No such file or directory")) {
-                log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
-                return true;
-            }
-        }
-        /* egrep gives a blank line of output if it finds nothing */
-        if (output.size() == 0 || output.get(0).isEmpty()) {
-            log.trace(MARKER, "Test is not finished");
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Search a lists of messages in the log file and
-     * return the total number of occurrences of all messages
-     * Or return -1 if error happened
-     *
-     * @param msgList  A list of message to search for
-     * @param fileName File name to search for the message
-     */
-    int countSpecifiedMsg(List<String> msgList, String fileName) {
-        String joined = String.join("|", msgList);
-        String searchCmd = "egrep " + " \"" + joined + "\" " + fileName;
-        String countCmd = " | wc -l";
-        final Session.Command cmd = execCommand(searchCmd + countCmd ,
-                "Check specified msg", -1);
-        ArrayList<String> output = readCommandOutput(cmd);
-        for (String out : output) {
-            if (out.contains("No such file or directory")) {
-                log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
-                return -1;
-            }
-        }
-
-        return Integer.valueOf(output.get(0));
-    }
-
-    /**
-     * Search a lists of messages in the log file and
-     * return the number of occurrences of each message
-     *
-     * @param msgList  A list of message to search for
-     * @param fileName File name to search for the message
-     * @return a Map which contains the number of occurrences of each message
-     *      Or return null if error happened
-     */
-    Map<String, Integer> countSpecifiedMsgEach(List<String> msgList, String fileName) {
-        String joined = String.join("|", msgList);
-        String searchCmd = "egrep  -Iho " + " \"" + joined + "\" " + fileName;
-        String countCmd = " | sort | uniq -c";
-        final Session.Command cmd = execCommand(searchCmd + countCmd ,
-                "Check specified msg", -1);
-        ArrayList<String> output = readCommandOutput(cmd);
-        Map<String, Integer> map = new HashMap<>();
-        for (String out : output) {
-            if (out.contains("No such file or directory")) {
-                log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
-                return null;
-            }
-
-            log.trace(MARKER, out);
-            out = out.trim();
-            // if the string is Empty, it means no occurrence
-            // if the string is not Empty, it should be: "num string"
-            if (!out.isEmpty()) {
-                String[] strs = out.split(" ", 2);
-                map.put(strs[1].trim(), Integer.valueOf(strs[0]));
-            }
-        }
-        log.trace(MARKER, "countSpecifiedMsgEach resultMap: {}", map);
-        return map;
-    }
-
-    /**
-     * Checks file for messages reporting that the state has been successfully saved
-     * and that a pg_backup has successfully been processed for each rounnd
-     *
-     * @param fileName File name to search for the message
-     *
-     * @return a map containing round numbers and whether their backup was completed
-     * for a given node
-     */
-    HashMap<Long,Boolean> checkSavedStateProgress(String fileName) {
-        HashMap<Long,Boolean> retMap = new HashMap<>();
-
-        final Session.Command cmd = execCommand(CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE,
-                "Get all state manager queuing messages", -1);;
-        ArrayList<String> output = readCommandOutput(cmd);
-        try {
-            for (String out : output) {
-
-                if (out.contains("No such file or directory")) {
-                    log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
-                    return null;
-                }
-
-                Long roundNum = null;
-                Boolean complete = null;
-
-                String[] keyVals = out.split(", ");
-                for (String keyVal : keyVals) {
-                    String[] parts = keyVal.split("=", 2);
-                    if (parts.length == 2) {
-                        if (parts[0].contentEquals("roundNumber")) {
-                            roundNum = Long.parseLong(parts[1]);
-                        } else if (parts[0].contentEquals("complete")) {
-                            if (parts[1].contentEquals("false")) {
-                                complete = false;
-                            } else if (parts[1].contentEquals("true")) {
-                                complete = true;
-                            } else {
-                                throw new NumberFormatException();
-                            }
-                        }
-                    }
-                }
-
-                if ((roundNum != null) && (complete != null)) {
-                    if (complete == false) {
-                        if (retMap.containsKey(roundNum)) {
-                            //already know this round completed
-                            continue;
-                        } else {
-                            retMap.put(roundNum, false);
-                        }
-                    } else {
-                        //round number completed
-                        retMap.put(roundNum, true);
-                    }
-                } else {
-                    throw new SSHException("invalid line read");
-                }
-            }
-        } catch (NumberFormatException | SSHException e) {
-            log.error(ERROR,"State message manager improperly formed");
-        }
-        if (retMap.size() == 0) {
-            log.info(MARKER,"No saved rounds found for node");
-            return null;
-        }
-        return retMap;
-    }
-
-    public void close() {
-        try {
-            ssh.close();
-        } catch (Exception e) {
-            log.error(ERROR, "Error while closing old connection to {}", this.ipAddress, e);
-        }
-    }
-
-    public boolean reset() {
-        killJavaProcess();
-        Session.Command cmd = execCommand(RegressionUtilities.RESET_NODE,
-                "Preparing node for next experiment", 2);
-        boolean isDatabaseReset = resetRemoteDatabase();
-        if (cmd == null || !isDatabaseReset) {
-            return false;
-        }
-        return true;
-    }
-
-    private String getFirstLineOfStream(InputStream is) {
-        BufferedReader inputBR = new BufferedReader(new InputStreamReader(is));
-        try {
-            return inputBR.readLine();
-        } catch (IOException e) {
-            log.error(ERROR, "can't read input from drop db extension command.", e);
-            return null;
-        }
-    }
-
-    private boolean resetRemoteDatabase() {
-        Session.Command dbDropExtensionCmd = execCommand(RegressionUtilities.DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST,
-                "Dropping fcfs extension");
-        String dropExtensionInputReturn = getFirstLineOfStream(dbDropExtensionCmd.getInputStream());
-        String dropExtensionErrorReturn = getFirstLineOfStream(dbDropExtensionCmd.getErrorStream());
-        log.info(MARKER, "Dropping extension: input {} \t error {}", dropExtensionInputReturn,
-                dropExtensionErrorReturn);
-        if (dropExtensionErrorReturn != null) {
-            log.info(MARKER, "Drop fcfs extension produced this error: {}", dropExtensionErrorReturn);
-        }
-
-        Session.Command dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
-                "Dropping fcfs table");
-        String dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
-        String dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
-        log.info(MARKER, "Dropping database: input {} \t error {}", dropDBInputReturn, dropDBErrorReturn);
-        /* database can still be tired up by a lingering java process, kill the javaprocess and retry dropping the db */
-        if (DROP_DATABASE_FCFS_KNOWN_RESPONCE.equals(dropDBErrorReturn)) {
-            killJavaProcess();
-            dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
-                    "Dropping fcfs table");
-            dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
-            dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
-            log.info(MARKER, "Dropping database retry: input {} \t error {}", dropDBInputReturn, dropDBErrorReturn);
-        }
-
-        Session.Command dbCreateTableCmd = execCommand(RegressionUtilities.CREATE_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST,
-                "recreating fcfs table before next test");
-        String dbCreateInputReturn = getFirstLineOfStream(dbCreateTableCmd.getInputStream());
-        String dbCreateErrorReturn = getFirstLineOfStream(dbCreateTableCmd.getErrorStream());
-        log.info(MARKER, "creating database: input {} \t error {}", dbCreateInputReturn, dbCreateErrorReturn);
-        if (DROP_DATABASE_FCFS_EXPECTED_RESPONCE.equals(
-                dropDBInputReturn) && CREATE_DATABASE_FCFS_EXPECTED_RESPONCE.equals(dbCreateInputReturn)) {
-            log.info(MARKER, "Successfully dropped and recreated db");
-            return true;
-        }
-        log.error(ERROR, "something went wrong with database drop/recreate");
-        return false;
-    }
-
-    public void copyS3ToInstance(String source, String destination) {
-        String command = String.format(
-                "aws s3 cp %s %s --recursive",
-                source, destination
-        );
-        String description = String.format(
-                "Copy '%s' from S3 to '%s:%s'",
-                source, ipAddress, destination
-        );
-        Session.Command cmd = execCommand(
-                command,
-                description
-        );
-        logIfExitCodeBad(cmd, description);
-    }
-
-    public void listDirFiles(String destination) {
-        String command = String.format(
-                "ls -al %s",
-                destination
-        );
-        String description = String.format(
-                "list files in %s: %s",
-                ipAddress, destination
-        );
-        Session.Command cmd = execCommand(
-                command,
-                description
-        );
-        ArrayList<String> output = readCommandOutput(cmd);
-        for (String outputStr : output) {
-            log.info(MARKER, outputStr);
-        }
-        logIfExitCodeBad(cmd, description);
-    }
-
-
-    void restoreDb(String tarGzPath) {
-        if (tarGzPath == null) {
-            throw new IllegalArgumentException("tarGzPath should not be null");
-        }
-        if (!tarGzPath.endsWith(".tar.gz")) {
-            throw new IllegalArgumentException("tarGzPath should end with '.tar.gz'");
-        }
-        String tarPath = tarGzPath.substring(0, tarGzPath.lastIndexOf('.'));
-
-        String command = String.format(
-                "test -f %s && gunzip --keep %s && sudo -u postgres pg_restore -d fcfs -F t %s",
-                tarGzPath, tarGzPath, tarPath
-        );
-        String description = String.format(
-                "Restore db from file '%s'",
-                tarGzPath
-        );
-        Session.Command cmd = execCommand(command, description, (int) MAXIMUM_TIMEOUT_ALLOWANCE);
-        logIfExitCodeBad(cmd, description);
-    }
-
-    private void logIfExitCodeBad(Session.Command cmd, String description) {
-        if (cmd.getExitStatus() != 0) {
-            String output = readCommandOutput(cmd).toString();
-            log.error(ERROR,"'{}' FAILED with error code '{%d}. Output: {}",description,cmd.getExitStatus(),output);
-        }
-    }
-
-    /**
-     * Read a list of directories of signed state from file system, parse them to a list of SavedStatePathInfo
-     * instances
-     * <p>
-     * Example of returned string value from ls command
-     * <p>
-     * [remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1,
-     * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/185,
-     * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/30,
-     * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/351,
-     * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/515,
-     * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/674]
-     *
-     * @return A list of SavedStatePathInfo instances
-     */
-    public List<SavedStatePathInfo> getSavedStatesDirectories() {
-        List<SavedStatePathInfo> dirList = new ArrayList<>();
-        String listCmd =
-                "ls -d " + getSavedStateDirectory() + "/*";
-        Session.Command cmd = executeCmd(listCmd);
-        if (cmd.getExitStatus() == 0) {
-            String cmdResultString = readCommandOutput(cmd).toString();
-            cmdResultString = cmdResultString.replace("[", "").replace("]", ""); //remove bracket
-            String[] directories = cmdResultString.split(" ");
-            for (String dir : directories) {
-                SavedStatePathInfo result = parseSavedStatPath(dir.replace(",", ""));
-                if (result != null) {
-                    dirList.add(result);
-                }
-            }
-            log.info(MARKER, "Saved states are {}", dirList.toString());
-        } else {
-            log.error(ERROR, "Exception running getSavedStatesDirectories command {} cmd result {}",
-                    cmd, readCommandOutput(cmd).toString());
-        }
-        //sorting by round number
-        dirList = dirList.stream().sorted(Comparator.comparingLong(SavedStatePathInfo::getRoundNumber)).collect(
-                Collectors.toList());
-        ;
-        return dirList;
-    }
-
-    /**
-     * Parse saved signed state path and return its main class name, nodeId, swirds name in a SavedStatePathInfo
-     * instance
-     *
-     * @param path A file system path of an saved signed state. It contains the main class name of swirlds App,
-     *             node ID, swirlds name and round number of the signed state
-     *             <p>
-     *             An example is : com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/33
-     * @return An SavedStatePathInfo instance contains the parsed results
-     */
-    private SavedStatePathInfo parseSavedStatPath(String path) {
-        String pathWithoutBase = path.replace(REMOTE_STATE_LOCATION, "");
-        String[] segments = pathWithoutBase.split("/");
-
-        try {
-            SavedStatePathInfo result = new SavedStatePathInfo(path, Long.parseLong(segments[3]),
-                    Long.parseLong(segments[1]), segments[2], segments[0]);
-
-            return result;
-        } catch (NumberFormatException e) {
-            log.error(ERROR, "Parsing saved state path {} -> {} error ", path, Arrays.toString(segments), e);
-            return null;
-        }
-
-    }
-
-    private String getSavedStateDirectory() {
-        return SAVED_STATE_LOCATION;
-    }
-
-    /**
-     * List names of signed state directories currently on disk
-     *
-     * @param memo Memo string
-     */
-    void displaySignedStates(String memo) {
-        String displayCmd =
-                "ls -tr " + getSavedStateDirectory();
-        Session.Command cmd = executeCmd(displayCmd);
-        log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
-    }
-
-    /**
-     * Restore database from backup file
-     */
-    void recoverDatabase() {
-        var list = getSavedStatesDirectories();
-        String targetDir = list.get(list.size() - 1).getFullPath();
-        // get the last state directory
-        String restoreCmd = "cd " + targetDir + "; tar -xf PostgresBackup.tar.gz; pwd  ";
-        Session.Command cmd = executeCmd(restoreCmd);
-        log.info(MARKER, "Node {}: Unzip data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-
-        restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION + "drop_database.psql\" ";
-        cmd = executeCmd(restoreCmd);
-        log.info(MARKER, "Node {}: Drop data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-        restoreCmd = "cd " + targetDir + ";  sudo -u postgres createdb fcfs ; " +
-                " chmod 666 * ;" +  // enable access
-                " sudo -u postgres pg_restore  --format=d --dbname=fcfs ./ ; cd -";
-
-        log.info(MARKER, "Before run cmd {}:", restoreCmd);
-        cmd = executeCmd(restoreCmd);
-        log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-    }
-
-
-    /**
-     * Hide expected map directory
-     */
-    void backupSavedExpectedMap() {
-        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup";
-        Session.Command cmd = executeCmd(mvCmd);
-    }
-
-    /**
-     * Restore expected map directory
-     */
-    void restoreSavedExpectedMap() {
-        String mvCmd = "mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting";
-        Session.Command cmd = executeCmd(mvCmd);
-    }
-
-
-    /**
-     * Backup signed state to a temp directory
-     */
-    void backupSavedSignedState(String tempDir) {
-        String cpCmd = "cp -r " + REMOTE_STATE_LOCATION + " " + tempDir;
-        Session.Command cmd = executeCmd(cpCmd);
-    }
-
-    /**
-     * Restore signed state from a temp directory
-     */
-    void restoreSavedSignedState(String tempDir) {
-        String rmCmd = " rm -rf " + REMOTE_STATE_LOCATION + "/* ; ";
-        String cpCmd = "cp -r " + tempDir + "/* " + REMOTE_STATE_LOCATION + " ; ";
-        String lsCmd = " ls " + REMOTE_STATE_LOCATION;
-        Session.Command cmd = executeCmd(rmCmd + cpCmd + lsCmd);
-    }
-
-    private void deleteSignedState(SavedStatePathInfo state) {
-        deleteRemoteFileOrDirectory(state.getFullPath());
-    }
-
-    public boolean deleteRemoteFileOrDirectory(String path) {
-        String rmStatesCmd = "rm -r " + path;
-        Session.Command cmd = executeCmd(rmStatesCmd);
-        if (cmd.getExitStatus() != 0) {
-            log.error(ERROR, "Exception running rm command {}", rmStatesCmd);
-            return false;
-        } else {
-            log.info(MARKER, "Delete {} is OK", path);
-            return true;
-        }
-    }
-
-    /**
-     * Find how many signed state subdirectories have been created
-     */
-    int getNumberOfSignedStates() {
-        List<SavedStatePathInfo> result = getSavedStatesDirectories();
-        return result.size();
-    }
-
-    /**
-     * Delete multiple signed state saved on disk
-     */
-    void deleteLastNSignedStates(int deleteAmount, List<SavedStatePathInfo> currentStates) {
-        int size = currentStates.size();
-        displaySignedStates("BEFORE deleting States");
-        for (int i = size - deleteAmount; i < size; i++) {
-            deleteSignedState(currentStates.get(i));
-        }
-        displaySignedStates("AFTER deleting States");
-    }
-
-    /**
-     * Compare event files generated during recover mode whether match original ones
-     */
-    boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
-
-        // compare generated event stream files with original ones, ignore only files exist in original ones
-        String compareCmd = "diff  " + REMOTE_EXPERIMENT_LOCATION + eventDir
-                + " " + REMOTE_EXPERIMENT_LOCATION + originalDir + " | grep diff | wc -l";
-
-        Session.Command cmd = executeCmd(compareCmd);
-
-        // return string is a number with bracket
-        String cmdResult = readCommandOutput(cmd).toString();
-        cmdResult = cmdResult.replace("[", "").replace("]", ""); //remove bracket
-
-        try {
-            if (Integer.parseInt(cmdResult) == 0) {
-                log.info(MARKER, "Found NO difference in recovered event files and original ones");
-                executeCmd("echo \"" + EVENT_MATCH_MSG + "\"  >> " +
-                        REMOTE_EXPERIMENT_LOCATION + EVENT_MATCH_LOG_NAME);
-                return true; // no difference found
-            } else {
-                log.info(MARKER, "Found difference in recovered event files and original ones");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            log.error(ERROR, "Exception ", e);
-            return false;
-        }
-    }
-
-    void badgerize() {
-        // call the badgerize.sh script that prepares database logs for download
-
-        String command = String.format("cd /home/ubuntu/; chmod -R 777 %s; sudo ./%sbadgerize.sh -u postgres;",
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-                RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
-
-        String description = "Badgerizing and taring database logs";
-
-        Session.Command cmd = execCommand(command, description);
-        logIfExitCodeBad(cmd, description);
-    }
-
-    public void adjustNodeMemoryAllocations(NodeMemory memoryNeeds) {
-        adjustNodeHugePageNumber(memoryNeeds.getHugePagesNumber());
-        adjustNodePostgresMemory(memoryNeeds);
-    }
+	Session.Command executeCmd(String command) {
+		final Session.Command cmd = execCommand(command, "generic command call:" + command, -1);
+		log.info(MARKER, "**{} exit status: {} :: {}", command, cmd.getExitStatus(), cmd.getExitErrorMessage());
+		return cmd;
+	}
+
+	private Session.Command execCommand(String command, String description) {
+		return execCommand(command, description, -1, true);
+	}
+
+	private Session.Command execCommand(String command, String description, int joinSec) {
+		return execCommand(command, description, joinSec, true);
+	}
+
+	private Session.Command execCommand(String command, String description, int joinSec, boolean reconnectIfNeeded) {
+		int returnValue = -1;
+
+		try {
+			if (reconnectIfNeeded) {
+				reconnectIfNeeded();
+			}
+			session = ssh.startSession();
+			final Session.Command cmd = session.exec(command);
+			if (joinSec <= 0) {
+				cmd.join(MAXIMUM_TIMEOUT_ALLOWANCE, TimeUnit.SECONDS);
+			} else {
+				cmd.join(joinSec, TimeUnit.SECONDS);
+			}
+			returnValue = cmd.getExitStatus();
+			log.trace(MARKER, "'{}' command:\n{}\nexit status: {} :: {}",
+					description, command, returnValue, cmd.getExitErrorMessage());
+			lastExec = Instant.now();
+			return cmd;
+		} catch (ConnectionException e) {
+			log.error(ERROR, " Join wait time out, joinSec={} command={} description={}", joinSec, command,
+					description, e);
+		} catch (IOException | NullPointerException e) {
+			log.error(ERROR, "'{}' command failed!", description, e);
+		} catch (Exception e) {
+			log.error(ERROR, "Unexpected error, joinSec={} command={} description={}", joinSec, command,
+					description, e);
+		} finally {
+			try {
+				if (session != null) {
+					session.close();
+				}
+			} catch (IOException e) {
+				log.error(ERROR, "could not close node {} session when executing '{}'",
+						ipAddress, description, e);
+			}
+		}
+
+		return null;
+	}
+
+	void killJavaProcess() {
+		final Session.Command cmd = execCommand(RegressionUtilities.KILL_JAVA_PROC_COMMAND,
+				"command to kill the java process", -1);
+		log.info(MARKER, "**java kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+	}
+
+	void killNetwork() {
+		final Session.Command cmd = execCommand(RegressionUtilities.KILL_NET_COMMAND,
+				"command to kill the network", -1);
+		log.info(MARKER, "**network kill exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+	}
+
+	void reviveNetwork() {
+		final Session.Command cmd = execCommand(RegressionUtilities.REVIVE_NET_COMMAND,
+				"command to revive the network", -1);
+		log.info(MARKER, "**network revive exit status: " + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+	}
+
+	String checkTotalMemoryOnNode() {
+		final Session.Command cmd = execCommand(RegressionUtilities.GET_TOTAL_MB_MEMORY_ON_NODE,
+				"command to get total MB of memory on node", -1);
+		log.info(MARKER, "Check memory exit status:" + cmd.getExitStatus() + " :: " + cmd.getExitErrorMessage());
+		/* M is added because vmstat doesn't have a human readable option. but the -SM option forces it to report in
+		MB */
+		return getFirstLineOfStream(cmd.getInputStream()) + "MB";
+	}
+
+	SSHClient buildSession() {
+		SSHClient client = new SSHClient();
+		int count = 0;
+		while (count < 10) {
+			try {
+				KeyProvider keys = client.loadKeys(keyFile.getPath());
+				client.addHostKeyVerifier(new PromiscuousVerifier());
+				client.useCompression();
+				client.connect(this.ipAddress);
+				client.authPublickey(this.user, keys);
+
+				if (client.isConnected()) {
+					return client;
+				}
+			} catch (IOException | IllegalThreadStateException e) {
+				log.error(ERROR, "attempt {} to connect to node {} failed, will retry {} more times.", count,
+						this.ipAddress, 10 - count, e);
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				log.error(ERROR, "Unable to sleep thread before retrying to connect to {}", this.ipAddress, e);
+			}
+			count++;
+		}
+		log.error(ERROR, "Could not connect with the node over ssh");
+		return null;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public ArrayList<String> getFiles() {
+		return files;
+	}
+
+	public void setFiles(ArrayList<String> files) {
+		this.files = files;
+	}
+
+	public File getKeyFile() {
+		return keyFile;
+	}
+
+	public void setKeyFile(File keyFile) {
+		this.keyFile = keyFile;
+	}
+
+	public boolean isConnected() {
+		if (ssh == null) {
+			return false;
+		} else {
+			return ssh.isConnected();
+		}
+	}
+
+	private void reconnectIfNeeded() {
+		//TODO
+		if (lastExec.until(Instant.now(), SECONDS) > RegressionUtilities.SSH_TEST_CMD_AFTER_SEC) {
+			execCommand("echo test", "test if connection broken", -1, false);
+		}
+		if (isConnected()) {
+			return;
+		}
+		close();
+		log.debug(MARKER, "Reconnecting to node {}", this.ipAddress);
+		ssh = buildSession();
+		lastExec = Instant.now();
+	}
+
+	public boolean checkProcess() {
+		Session.Command cmd = execCommand(RegressionUtilities.CHECK_JAVA_PROC_COMMAND,
+				"Check if java process is running", 2);
+
+		if (cmd != null) {
+			ArrayList<String> output = readCommandOutput(cmd);
+
+			if (output.size() == 0 || "".equals(output.get(0))) {
+				log.info(MARKER, "Java proc is DOWN");
+				return false;
+			}
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean isTestFinished() {
+		final Session.Command cmd = execCommand(RegressionUtilities.CHECK_FOR_PTD_TEST_MESSAGE,
+				"Check if PTD test is done", -1);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String out : output) {
+			log.trace(MARKER, "is test finished output size({}): {}", output.size(), out);
+			if (out.contains("No such file or directory")) {
+				log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+				return true;
+			}
+		}
+		/* egrep gives a blank line of output if it finds nothing */
+		if (output.size() == 0 || output.get(0).isEmpty()) {
+			log.trace(MARKER, "Test is not finished");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Search a lists of messages in the log file and
+	 * return the total number of occurrences of all messages
+	 * Or return -1 if error happened
+	 *
+	 * @param msgList
+	 * 		A list of message to search for
+	 * @param fileName
+	 * 		File name to search for the message
+	 */
+	int countSpecifiedMsg(List<String> msgList, String fileName) {
+		String joined = String.join("|", msgList);
+		String searchCmd = "egrep " + " \"" + joined + "\" " + fileName;
+		String countCmd = " | wc -l";
+		final Session.Command cmd = execCommand(searchCmd + countCmd,
+				"Check specified msg", -1);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String out : output) {
+			if (out.contains("No such file or directory")) {
+				log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+				return -1;
+			}
+		}
+
+		return Integer.valueOf(output.get(0));
+	}
+
+	/**
+	 * Search a lists of messages in the log file and
+	 * return the number of occurrences of each message
+	 *
+	 * @param msgList
+	 * 		A list of message to search for
+	 * @param fileName
+	 * 		File name to search for the message
+	 * @return a Map which contains the number of occurrences of each message
+	 * 		Or return null if error happened
+	 */
+	Map<String, Integer> countSpecifiedMsgEach(List<String> msgList, String fileName) {
+		String joined = String.join("|", msgList);
+		String searchCmd = "egrep  -Iho " + " \"" + joined + "\" " + fileName;
+		String countCmd = " | sort | uniq -c";
+		final Session.Command cmd = execCommand(searchCmd + countCmd,
+				"Check specified msg", -1);
+		ArrayList<String> output = readCommandOutput(cmd);
+		Map<String, Integer> map = new HashMap<>();
+		for (String out : output) {
+			if (out.contains("No such file or directory")) {
+				log.error(ERROR, "Something wrong, test is not running. No {} found", fileName);
+				return null;
+			}
+
+			log.trace(MARKER, out);
+			out = out.trim();
+			// if the string is Empty, it means no occurrence
+			// if the string is not Empty, it should be: "num string"
+			if (!out.isEmpty()) {
+				String[] strs = out.split(" ", 2);
+				map.put(strs[1].trim(), Integer.valueOf(strs[0]));
+			}
+		}
+		log.trace(MARKER, "countSpecifiedMsgEach resultMap: {}", map);
+		return map;
+	}
+
+	/**
+	 * Checks file for messages reporting that the state has been successfully saved
+	 * and that a pg_backup has successfully been processed for each rounnd
+	 *
+	 * @param fileName
+	 * 		File name to search for the message
+	 * @return a map containing round numbers and whether their backup was completed
+	 * 		for a given node
+	 */
+	HashMap<Long, Boolean> checkSavedStateProgress(String fileName) {
+		HashMap<Long, Boolean> retMap = new HashMap<>();
+
+		final Session.Command cmd = execCommand(CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE,
+				"Get all state manager queuing messages", -1);
+		;
+		ArrayList<String> output = readCommandOutput(cmd);
+		try {
+			for (String out : output) {
+
+				if (out.contains("No such file or directory")) {
+					log.error(ERROR, "Something wrong, test is not running. No swirlds.log found");
+					return null;
+				}
+
+				Long roundNum = null;
+				Boolean complete = null;
+
+				String[] keyVals = out.split(", ");
+				for (String keyVal : keyVals) {
+					String[] parts = keyVal.split("=", 2);
+					if (parts.length == 2) {
+						if (parts[0].contentEquals("roundNumber")) {
+							roundNum = Long.parseLong(parts[1]);
+						} else if (parts[0].contentEquals("complete")) {
+							if (parts[1].contentEquals("false")) {
+								complete = false;
+							} else if (parts[1].contentEquals("true")) {
+								complete = true;
+							} else {
+								throw new NumberFormatException();
+							}
+						}
+					}
+				}
+
+				if ((roundNum != null) && (complete != null)) {
+					if (complete == false) {
+						if (retMap.containsKey(roundNum)) {
+							//already know this round completed
+							continue;
+						} else {
+							retMap.put(roundNum, false);
+						}
+					} else {
+						//round number completed
+						retMap.put(roundNum, true);
+					}
+				} else {
+					throw new SSHException("invalid line read");
+				}
+			}
+		} catch (NumberFormatException | SSHException e) {
+			log.error(ERROR, "State message manager improperly formed");
+		}
+		if (retMap.size() == 0) {
+			log.info(MARKER, "No saved rounds found for node");
+			return null;
+		}
+		return retMap;
+	}
+
+	public void close() {
+		try {
+			ssh.close();
+		} catch (Exception e) {
+			log.error(ERROR, "Error while closing old connection to {}", this.ipAddress, e);
+		}
+	}
+
+	public boolean reset() {
+		killJavaProcess();
+		Session.Command cmd = execCommand(RegressionUtilities.RESET_NODE,
+				"Preparing node for next experiment", 2);
+		boolean isDatabaseReset = resetRemoteDatabase();
+		if (cmd == null || !isDatabaseReset) {
+			return false;
+		}
+		return true;
+	}
+
+	private String getFirstLineOfStream(InputStream is) {
+		BufferedReader inputBR = new BufferedReader(new InputStreamReader(is));
+		try {
+			return inputBR.readLine();
+		} catch (IOException e) {
+			log.error(ERROR, "can't read input from drop db extension command.", e);
+			return null;
+		}
+	}
+
+	private boolean resetRemoteDatabase() {
+		Session.Command dbDropExtensionCmd = execCommand(RegressionUtilities.DROP_DATABASE_EXTENSION_BEFORE_NEXT_TEST,
+				"Dropping fcfs extension");
+		String dropExtensionInputReturn = getFirstLineOfStream(dbDropExtensionCmd.getInputStream());
+		String dropExtensionErrorReturn = getFirstLineOfStream(dbDropExtensionCmd.getErrorStream());
+		log.info(MARKER, "Dropping extension: input {} \t error {}", dropExtensionInputReturn,
+				dropExtensionErrorReturn);
+		if (dropExtensionErrorReturn != null) {
+			log.info(MARKER, "Drop fcfs extension produced this error: {}", dropExtensionErrorReturn);
+		}
+
+		Session.Command dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
+				"Dropping fcfs table");
+		String dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
+		String dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
+		log.info(MARKER, "Dropping database: input {} \t error {}", dropDBInputReturn, dropDBErrorReturn);
+		/* database can still be tired up by a lingering java process, kill the javaprocess and retry dropping the db */
+		if (DROP_DATABASE_FCFS_KNOWN_RESPONCE.equals(dropDBErrorReturn)) {
+			killJavaProcess();
+			dbDropTableCmd = execCommand(RegressionUtilities.DROP_DATABASE_FCFS_TABLE_BEFORE_NEXT_TEST,
+					"Dropping fcfs table");
+			dropDBInputReturn = getFirstLineOfStream(dbDropTableCmd.getInputStream());
+			dropDBErrorReturn = getFirstLineOfStream(dbDropTableCmd.getErrorStream());
+			log.info(MARKER, "Dropping database retry: input {} \t error {}", dropDBInputReturn, dropDBErrorReturn);
+		}
+
+		Session.Command dbCreateTableCmd = execCommand(RegressionUtilities.CREATE_DATABASE_FCFS_TABE_BEFORE_NEXT_TEST,
+				"recreating fcfs table before next test");
+		String dbCreateInputReturn = getFirstLineOfStream(dbCreateTableCmd.getInputStream());
+		String dbCreateErrorReturn = getFirstLineOfStream(dbCreateTableCmd.getErrorStream());
+		log.info(MARKER, "creating database: input {} \t error {}", dbCreateInputReturn, dbCreateErrorReturn);
+		if (DROP_DATABASE_FCFS_EXPECTED_RESPONCE.equals(
+				dropDBInputReturn) && CREATE_DATABASE_FCFS_EXPECTED_RESPONCE.equals(dbCreateInputReturn)) {
+			log.info(MARKER, "Successfully dropped and recreated db");
+			return true;
+		}
+		log.error(ERROR, "something went wrong with database drop/recreate");
+		return false;
+	}
+
+	public void copyS3ToInstance(String source, String destination) {
+		String command = String.format(
+				"aws s3 cp %s %s --recursive",
+				source, destination
+		);
+		String description = String.format(
+				"Copy '%s' from S3 to '%s:%s'",
+				source, ipAddress, destination
+		);
+		Session.Command cmd = execCommand(
+				command,
+				description
+		);
+		logIfExitCodeBad(cmd, description);
+	}
+
+	public void listDirFiles(String destination) {
+		String command = String.format(
+				"ls -al %s",
+				destination
+		);
+		String description = String.format(
+				"list files in %s: %s",
+				ipAddress, destination
+		);
+		Session.Command cmd = execCommand(
+				command,
+				description
+		);
+		ArrayList<String> output = readCommandOutput(cmd);
+		for (String outputStr : output) {
+			log.info(MARKER, outputStr);
+		}
+		logIfExitCodeBad(cmd, description);
+	}
+
+
+	void restoreDb(String tarGzPath) {
+		if (tarGzPath == null) {
+			throw new IllegalArgumentException("tarGzPath should not be null");
+		}
+		if (!tarGzPath.endsWith(".tar.gz")) {
+			throw new IllegalArgumentException("tarGzPath should end with '.tar.gz'");
+		}
+		String tarPath = tarGzPath.substring(0, tarGzPath.lastIndexOf('.'));
+
+		String command = String.format(
+				"test -f %s && gunzip --keep %s && sudo -u postgres pg_restore -d fcfs -F t %s",
+				tarGzPath, tarGzPath, tarPath
+		);
+		String description = String.format(
+				"Restore db from file '%s'",
+				tarGzPath
+		);
+		Session.Command cmd = execCommand(command, description, (int) MAXIMUM_TIMEOUT_ALLOWANCE);
+		logIfExitCodeBad(cmd, description);
+	}
+
+	private void logIfExitCodeBad(Session.Command cmd, String description) {
+		if (cmd.getExitStatus() != 0) {
+			String output = readCommandOutput(cmd).toString();
+			log.error(ERROR, "'{}' FAILED with error code '{%d}. Output: {}", description, cmd.getExitStatus(), output);
+		}
+	}
+
+	/**
+	 * Read a list of directories of signed state from file system, parse them to a list of SavedStatePathInfo
+	 * instances
+	 * <p>
+	 * Example of returned string value from ls command
+	 * <p>
+	 * [remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/1,
+	 * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/185,
+	 * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/30,
+	 * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/351,
+	 * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/515,
+	 * remoteExperiment/data/saved/com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/674]
+	 *
+	 * @return A list of SavedStatePathInfo instances
+	 */
+	public List<SavedStatePathInfo> getSavedStatesDirectories() {
+		List<SavedStatePathInfo> dirList = new ArrayList<>();
+		String listCmd =
+				"ls -d " + getSavedStateDirectory() + "/*";
+		Session.Command cmd = executeCmd(listCmd);
+		if (cmd.getExitStatus() == 0) {
+			String cmdResultString = readCommandOutput(cmd).toString();
+			cmdResultString = cmdResultString.replace("[", "").replace("]", ""); //remove bracket
+			String[] directories = cmdResultString.split(" ");
+			for (String dir : directories) {
+				SavedStatePathInfo result = parseSavedStatPath(dir.replace(",", ""));
+				if (result != null) {
+					dirList.add(result);
+				}
+			}
+			log.info(MARKER, "Saved states are {}", dirList.toString());
+		} else {
+			log.error(ERROR, "Exception running getSavedStatesDirectories command {} cmd result {}",
+					cmd, readCommandOutput(cmd).toString());
+		}
+		//sorting by round number
+		dirList = dirList.stream().sorted(Comparator.comparingLong(SavedStatePathInfo::getRoundNumber)).collect(
+				Collectors.toList());
+		;
+		return dirList;
+	}
+
+	/**
+	 * Parse saved signed state path and return its main class name, nodeId, swirds name in a SavedStatePathInfo
+	 * instance
+	 *
+	 * @param path
+	 * 		A file system path of an saved signed state. It contains the main class name of swirlds App,
+	 * 		node ID, swirlds name and round number of the signed state
+	 * 		<p>
+	 * 		An example is : com.swirlds.demo.platform.PlatformTestingDemoMain/0/123/33
+	 * @return An SavedStatePathInfo instance contains the parsed results
+	 */
+	private SavedStatePathInfo parseSavedStatPath(String path) {
+		String pathWithoutBase = path.replace(REMOTE_STATE_LOCATION, "");
+		String[] segments = pathWithoutBase.split("/");
+
+		try {
+			SavedStatePathInfo result = new SavedStatePathInfo(path, Long.parseLong(segments[3]),
+					Long.parseLong(segments[1]), segments[2], segments[0]);
+
+			return result;
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Parsing saved state path {} -> {} error ", path, Arrays.toString(segments), e);
+			return null;
+		}
+
+	}
+
+	private String getSavedStateDirectory() {
+		return SAVED_STATE_LOCATION;
+	}
+
+	/**
+	 * List names of signed state directories currently on disk
+	 *
+	 * @param memo
+	 * 		Memo string
+	 */
+	void displaySignedStates(String memo) {
+		String displayCmd =
+				"ls -tr " + getSavedStateDirectory();
+		Session.Command cmd = executeCmd(displayCmd);
+		log.info(MARKER, "Node {}: States directories {} are {}", ipAddress, memo, readCommandOutput(cmd).toString());
+	}
+
+	/**
+	 * Restore database from backup file
+	 */
+	void recoverDatabase() {
+		var list = getSavedStatesDirectories();
+		String targetDir = list.get(list.size() - 1).getFullPath();
+		// get the last state directory
+		String restoreCmd = "cd " + targetDir + "; tar -xf PostgresBackup.tar.gz; pwd  ";
+		Session.Command cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Unzip data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+
+		restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION + "drop_database.psql\" ";
+		cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Drop data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+		restoreCmd = "cd " + targetDir + ";  sudo -u postgres createdb fcfs ; " +
+				" chmod 666 * ;" +  // enable access
+				" sudo -u postgres pg_restore  --format=d --dbname=fcfs ./ ; cd -";
+
+		log.info(MARKER, "Before run cmd {}:", restoreCmd);
+		cmd = executeCmd(restoreCmd);
+		log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
+
+	}
+
+
+	/**
+	 * Hide expected map directory
+	 */
+	void backupSavedExpectedMap() {
+		String mvCmd =
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data" +
+						"/platformtestingBackup";
+		Session.Command cmd = executeCmd(mvCmd);
+	}
+
+	/**
+	 * Restore expected map directory
+	 */
+	void restoreSavedExpectedMap() {
+		String mvCmd =
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION +
+						"data/platformtesting";
+		Session.Command cmd = executeCmd(mvCmd);
+	}
+
+
+	/**
+	 * Backup signed state to a temp directory
+	 */
+	void backupSavedSignedState(String tempDir) {
+		String cpCmd = "cp -r " + REMOTE_STATE_LOCATION + " " + tempDir;
+		Session.Command cmd = executeCmd(cpCmd);
+	}
+
+	/**
+	 * Restore signed state from a temp directory
+	 */
+	void restoreSavedSignedState(String tempDir) {
+		String rmCmd = " rm -rf " + REMOTE_STATE_LOCATION + "/* ; ";
+		String cpCmd = "cp -r " + tempDir + "/* " + REMOTE_STATE_LOCATION + " ; ";
+		String lsCmd = " ls " + REMOTE_STATE_LOCATION;
+		Session.Command cmd = executeCmd(rmCmd + cpCmd + lsCmd);
+	}
+
+	private void deleteSignedState(SavedStatePathInfo state) {
+		deleteRemoteFileOrDirectory(state.getFullPath());
+	}
+
+	public boolean deleteRemoteFileOrDirectory(String path) {
+		String rmStatesCmd = "rm -r " + path;
+		Session.Command cmd = executeCmd(rmStatesCmd);
+		if (cmd.getExitStatus() != 0) {
+			log.error(ERROR, "Exception running rm command {}", rmStatesCmd);
+			return false;
+		} else {
+			log.info(MARKER, "Delete {} is OK", path);
+			return true;
+		}
+	}
+
+	/**
+	 * Find how many signed state subdirectories have been created
+	 */
+	int getNumberOfSignedStates() {
+		List<SavedStatePathInfo> result = getSavedStatesDirectories();
+		return result.size();
+	}
+
+	/**
+	 * Delete multiple signed state saved on disk
+	 */
+	void deleteLastNSignedStates(int deleteAmount, List<SavedStatePathInfo> currentStates) {
+		int size = currentStates.size();
+		displaySignedStates("BEFORE deleting States");
+		for (int i = size - deleteAmount; i < size; i++) {
+			deleteSignedState(currentStates.get(i));
+		}
+		displaySignedStates("AFTER deleting States");
+	}
+
+	/**
+	 * Compare event files generated during recover mode whether match original ones
+	 */
+	boolean checkRecoveredEventFiles(String eventDir, String originalDir) {
+
+		// compare generated event stream files with original ones, ignore only files exist in original ones
+		String compareCmd = "diff  " + REMOTE_EXPERIMENT_LOCATION + eventDir
+				+ " " + REMOTE_EXPERIMENT_LOCATION + originalDir + " | grep diff | wc -l";
+
+		Session.Command cmd = executeCmd(compareCmd);
+
+		// return string is a number with bracket
+		String cmdResult = readCommandOutput(cmd).toString();
+		cmdResult = cmdResult.replace("[", "").replace("]", ""); //remove bracket
+
+		try {
+			if (Integer.parseInt(cmdResult) == 0) {
+				log.info(MARKER, "Found NO difference in recovered event files and original ones");
+				executeCmd("echo \"" + EVENT_MATCH_MSG + "\"  >> " +
+						REMOTE_EXPERIMENT_LOCATION + EVENT_MATCH_LOG_NAME);
+				return true; // no difference found
+			} else {
+				log.info(MARKER, "Found difference in recovered event files and original ones");
+				return false;
+			}
+		} catch (NumberFormatException e) {
+			log.error(ERROR, "Exception ", e);
+			return false;
+		}
+	}
+
+	void badgerize() {
+		// call the badgerize.sh script that prepares database logs for download
+
+		String command = String.format("cd /home/ubuntu/; chmod -R 777 %s; sudo ./%sbadgerize.sh -u postgres;",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+
+		String description = "Badgerizing and taring database logs";
+
+		Session.Command cmd = execCommand(command, description);
+		logIfExitCodeBad(cmd, description);
+	}
+
+	public void adjustNodeMemoryAllocations(NodeMemory memoryNeeds) {
+		adjustNodeHugePageNumber(memoryNeeds.getHugePagesNumber());
+		adjustNodePostgresMemory(memoryNeeds);
+	}
 
 	private void adjustNodePostgresMemory(NodeMemory postgresMemoryReqs) {
 //        "sudo sed -i 's/shared_buffers = [0-9]*MB/shared_buffers = %dMB/g\n" +
