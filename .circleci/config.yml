@@ -1273,11 +1273,10 @@ workflows:
           filters:
             branches:
               only:
-                - 00343-D-fix-freeze-restar
-
+                - 00343-D-fix-freeze-restart
           post-steps:
             - save-this-job-client-logs:
-                workflow-name: "fix-freeze-restart"
+#                workflow-name: "fix-freeze-restart"
       - regression-target-testnet:
           requires:
             - fast-build-artifact
@@ -1287,7 +1286,7 @@ workflows:
                 use-hugepage: true
           post-steps:
             - save-this-job-client-logs:
-                workflow-name: "fix-freeze-restart"
+#               workflow-name: "fix-freeze-restart"
       - regression-validate-freeze:
           requires:
             - regression-target-testnet
@@ -1297,7 +1296,6 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-#          workflow-name: "fix-freeze-restart"
       - cleanup-singlejob-testnet:
           requires:
             - regression-validate-freeze
@@ -1314,7 +1312,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
-                - 00343-D-fix-freeze-restar
+                - 00343-D-fix-freeze-restart
           workflow-name: "Continuous integration"
       - start-singlejob-testnet:
           requires:
@@ -2155,6 +2153,7 @@ jobs:
           active-status-timeout-secs: 120
       - run-eet-suites:
           dsl-args: "TopicCreateSpecs"
+
   regression-run-accessory-tests:
     executor:
       name: ci-test-executor
