@@ -86,13 +86,13 @@ public class HederaNodeValidator extends Validator {
 					// signature failure messages can be ignored when running services-regression
 					// as some tests intentionally send bad transactions
 					signatureFailure++;
-				} else if (ex.getLogEntry().contains(FALL_BEHIND_MSG)) {
-					badExceptions++;
-					isValid = false;
-					addError(String.format("Node %d has fallen behind.", i));
 				} else {
+					if (ex.getLogEntry().contains(FALL_BEHIND_MSG)) {
+						addError(String.format("Node %d has fallen behind.", i));
+					} else {
+						addError(String.format("Node %d has exception:%s", i, ex.getLogEntry()));
+					}
 					badExceptions++;
-					addError(String.format("Node %d has exception:%s", i, ex.getLogEntry()));
 					isValid = false;
 				}
 			}

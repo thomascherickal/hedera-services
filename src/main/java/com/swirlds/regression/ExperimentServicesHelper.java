@@ -365,9 +365,8 @@ public class ExperimentServicesHelper {
 	}
 
 	List<NodeData> loadHederaNodeHGCAAData(ArrayList<SSHService> nodes) {
-		int numberOfTestClientNodes = getNumberOfTestClientNodes(nodes);
 		List<NodeData> servicesNodesData = new ArrayList<>();
-		for (int i = 0; i < numberOfTestClientNodes; i++) {
+		for (int i = 0; i < nodes.size(); i++) {
 			String hgcaaLogFileName = getExperimentResultsFolderForHederaNode(i) +
 					HGCAA_LOG_FILENAME;
 			String queryLogFileName = getExperimentResultsFolderForHederaNode(i) +
@@ -379,10 +378,6 @@ public class ExperimentServicesHelper {
 			LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1), combinedLogInput);
 
 			servicesNodesData.add(new NodeData(logReader));
-			if (servicesNodesData.size() == 0) {
-				throw new RuntimeException("Cannot find hgcaa log file : " + hgcaaLogFileName
-						+ "Cannot find queries log file : " + queryLogFileName);
-			}
 		}
 		return servicesNodesData;
 	}

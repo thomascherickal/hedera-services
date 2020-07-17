@@ -41,8 +41,8 @@ public class HGCAAValidator extends Validator {
 	/** when testing freeze handler or update feature, hedera-services will restart after freeze */
 	private boolean checkHGCAppRestart = false;
 
-	public HGCAAValidator(List<NodeData> testClientNodeData) {
-		this.hederaNodeData = testClientNodeData;
+	public HGCAAValidator(List<NodeData> hederaNodeData) {
+		this.hederaNodeData = hederaNodeData;
 		isValid = true;
 		isValidated = false;
 	}
