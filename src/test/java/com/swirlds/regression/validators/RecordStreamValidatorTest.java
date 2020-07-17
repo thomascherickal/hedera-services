@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -17,45 +17,21 @@
 
 package com.swirlds.regression.validators;
 
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.io.IOException;
-
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class RecoverStateValidatorTest {
-
+public class RecordStreamValidatorTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"logs/recoverState/successRun"
-	})
-	void validRecoverStateLog(String testDir) throws IOException {
-		System.out.println("Dir: " + testDir);
-		List<NodeData> nodeData = ValidatorTestUtil.loadNodeData(testDir, "PlatformTesting", 1);
-		NodeValidator validator = new RecoverStateValidator(nodeData);
-		validator.validate();
-		for (String msg : validator.getInfoMessages()) {
-			System.out.println("INFO: " + msg);
-		}
-		for (String msg : validator.getErrorMessages()) {
-			System.out.println("ERROR: " + msg);
-		}
-		assertEquals(true, validator.isValid());
-	}
-
-
-	@ParameterizedTest
-	@ValueSource(strings = {
-			"logs/recoverState/successRun"
+			"logs/sha1test/recordStream-pass"
 	})
 	void validateSuccess(final String testDir) {
-		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.EVENT);
-		final EventStreamValidator validator = new EventStreamValidator(data, false);
+		final List<StreamingServerData> data = ValidatorTestUtil.loadStreamingServerData(testDir, StreamType.RECORD);
+		final RecordStreamValidator validator = new RecordStreamValidator(data);
 		validator.validate();
 
 		System.out.println(validator.concatAllMessages());

@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02141-D-ExpectedMapPerf-4N-0ZSN-FCMMultiReconnect",
+  "name": "Nathan-develop-Init-6N-2ZSN-c6f97d6a",
   "result": {
 	"uri": "results"
   },
@@ -10,23 +10,23 @@
 	"instanceKey": "nathan@swirlds.com",
 	"keyLocation": "/Users/nathan.klick/.ssh/id_rsa",
 	"login": "ubuntu",
-	//	"regionList": [
-	//	  {
-	//		"region": "us-east-2",
-	//		"numberOfNodes": 6
-	//	  }
-	//	]
 	"regionList": [
 	  {
 		"region": "ca-central-1",
-		"instanceList": [
-		  "i-0ae73323b3b459e5c",
-		  "i-0ac4093201228715a",
-		  "i-03ad791fac84720f9",
-		  "i-08aad7697d80db88e"
-		]
+		"numberOfNodes": 6
 	  }
 	]
+	//	"regionList": [
+	//	  {
+	//		"region": "ca-central-1",
+	//		"instanceList": [
+	//		  "i-0ae73323b3b459e5c",
+	//		  "i-0ac4093201228715a",
+	//		  "i-03ad791fac84720f9",
+	//		  "i-08aad7697d80db88e"
+	//		]
+	//	  }
+	//	]
 	//	"regionList": [
 	//	  {
 	//		"region": "ca-central-1",
@@ -41,32 +41,49 @@
 	//	  }
 	//	]
   },
-  "numberOfZeroStakeNodes": 0,
-  "eventFilesWriters": 4,
+  "numberOfZeroStakeNodes": 2,
+  "eventFilesWriters": 6,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	//	"configs/testSigningDemoCfg.json",
-	//	"configs/testSigningDemo4KCfg.json",
-	//	"configs/testFcmMultipleOperationsCfg.json",
-	//	"configs/testRestartCfg.json",
-	//	"configs/testRestartBlobCfg.json",
-	//	"configs/testFcmFreezeCfg.json",
-	//	"configs/testFcmFreezeBlobCfg.json",
-	//	"configs/testFcmMultisizeBlobCfg.json",
-	//	"configs/testFcmFreezeFCQCfg.json",
-	//	"configs/testFCM1KFCQCfg.json",
-	"configs/testReconnectFCMMultiReconnectCfg.json"
+	//Updated list from AwsNightlyMirrorNodeRegressionCfg.json on 2020-07-10
+
+	// Works
+	"configs/testSigningDemoCfg.json",
+	"configs/testSigningDemo4KCfg.json",
+	"configs/testFcmMultipleOperationsCfg.json",
+	// Fails in develop
+	"configs/testStateRecover.json",
+	"configs/testStateRecoverBlob.json",
+	"configs/testStateRecoverFCQ.json",
+	// Works
+	"configs/testRestartCfg.json",
+	// Fails in develop
+	"configs/testRestartBlobCfg.json"
+	// Works
+	"configs/testFcmFreezeCfg.json",
+	"configs/testFcmFreezeBlobCfg.json"
+	// Works
+	"configs/testFcmMultisizeBlobCfg.json",
+	"configs/testFcmFreezeFCQCfg.json",
+	"configs/testFCM1KFCQCfg.json",
+	// Fails in develop
+	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	//	"configs/testReconnectBlobCfg.json",
-	//	"configs/testFcm1kThrottlingCfg.json",
-	//	"configs/testMigrationAppCfg2K.json",
-	//	"configs/testMigrationAppCfg.json"
-
+	// Works
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testMigrationAppCfg.json",
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testFcmSmallBlobCfg.json"
+	// Large Test - Disabled Temp
 	//	"configs/testFcmCfg.json",
-	//	"configs/testFcm10MBx10KBlobCfg.json",
-	//	"configs/testFcm4kx100KBlobCfg.json"
+	// Large Test - Disabled Temp
+	//	"configs/testFcmLargeBlobCfg.json"
+
+	// Fails in develop
+	//		"configs/testFcmFCQ1KSavedStateCfg.json",
   ],
   "db": {
 	"type": "postgresql",

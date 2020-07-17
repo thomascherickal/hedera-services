@@ -29,6 +29,7 @@ import com.swirlds.fcmap.FCMap;
 import com.swirlds.fcmap.test.pta.MapKey;
 import com.swirlds.platform.SignedStateFileManager;
 import com.swirlds.platform.state.SignedState;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +72,7 @@ public class BlobStateValidator extends Validator {
 	 * get fcMap containing blobs from saved state file
 	 *
 	 * @param file
-	 * 	file is saved state
+	 * 		file is saved state
 	 * @return map from deserialized saved state file
 	 */
 	FCMap recoverStorageMapFromSavedState(File file) {
@@ -85,11 +86,15 @@ public class BlobStateValidator extends Validator {
 		return storageMap;
 	}
 
-	FCMap getStorageMapFromSavedState(File file) {
+	FCMap getStorageMapFromSavedState(final File file) {
 		PlatformTestingDemoState ptdState = new PlatformTestingDemoState();
 		SignedState signedState = new SignedState(ptdState);
 		try {
-			signedState = SignedStateFileManager.readSignedStateFromFile(file, signedState);
+			final Pair<Hash, SignedState> signedStatePair = SignedStateFileManager.readSignedStateFromFile(file,
+					signedState);
+
+			signedState = signedStatePair.getValue();
+			ptdState = (PlatformTestingDemoState) signedState.getState();
 		} catch (IOException e) {
 			addError("could not read signed state");
 			return null;
@@ -100,8 +105,9 @@ public class BlobStateValidator extends Validator {
 
 	/**
 	 * check for consistency between postgres backup and recovered saved state file
+	 *
 	 * @param map
-	 * 	FCMap containing values to verify the blob content of
+	 * 		FCMap containing values to verify the blob content of
 	 * @return true=all values consistent, false=fail
 	 */
 	boolean checkState(FCMap<MapKey, MapValueBlob> map) {
@@ -152,7 +158,7 @@ public class BlobStateValidator extends Validator {
 	 * whether there are any database inconsistencies or dangling objects
 	 *
 	 * @param roundDir
-	 * 	directory containing a saved state and a postgres backup for a round
+	 * 		directory containing a saved state and a postgres backup for a round
 	 * @return true=recovery succeeded and no dangling objects found, false=error found
 	 */
 	boolean checkStateMatchesDb(File roundDir) {
@@ -192,7 +198,7 @@ public class BlobStateValidator extends Validator {
 	 * check for consistency between saved state files for a round
 	 *
 	 * @param files
-	 * saved state files for each node of a round
+	 * 		saved state files for each node of a round
 	 * @return true=all states consistent, fail=at least 1 node inconsistent
 	 */
 
@@ -220,7 +226,7 @@ public class BlobStateValidator extends Validator {
 	 * traverse node directories and get list of directories for equivalent rounds for each node
 	 *
 	 * @param nodes
-	 *   directories containing data for nodes
+	 * 		directories containing data for nodes
 	 * @return list of node directories for a round, listed by round
 	 */
 	List<List<File>> getNodesByRound(File[] nodes) {
@@ -266,8 +272,7 @@ public class BlobStateValidator extends Validator {
 	 * verify saved state and postgres backup from experiment is consistent across all nodes and rounds
 	 *
 	 * @param path
-	 * path to folder containing data copied from nodes
-	 *
+	 * 		path to folder containing data copied from nodes
 	 * @return pass=true, fail=false
 	 */
 
