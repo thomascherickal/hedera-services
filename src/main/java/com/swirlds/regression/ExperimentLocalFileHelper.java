@@ -22,7 +22,6 @@ import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.logs.services.HAPIClientLogParser;
 import com.swirlds.regression.logs.LogReader;
-import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.StreamingServerData;
 import org.apache.logging.log4j.LogManager;

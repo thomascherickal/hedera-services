@@ -1,7 +1,7 @@
 {
-  "name": "ServicesDemo",
-  "description": "ServicesDemo",
-  "duration": 2000,
+  "name": "ServicesDemo-JRS",
+  "description": "ServicesDemo-JRS",
+  "duration": 650,
   "settings": [
 	{
 	  "name": "showInternalStats",

@@ -31,13 +31,13 @@ import com.swirlds.regression.logs.StdoutLogParser;
 import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
+import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
-import com.swirlds.regression.validators.HGCAAValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
-import com.swirlds.regression.validators.StandardValidator;
+import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
@@ -1256,24 +1256,12 @@ public class Experiment implements ExperimentSummary {
 		// generate files for validating event stream files
 		// make sure that more streaming client than nodes were not requested
 		int eventFileWriters = Math.min(regConfig.getEventFilesWriters(), sshNodes.size());
-		threadPoolService(IntStream.range(0, eventFileWriters)
-				.<Runnable>mapToObj(i -> () -> {
-					SSHService node = sshNodes.get(i);
-					node.makeSha1sumOfStreamedEvents(i, EVENT);
-					log.info(MARKER, "node:" + node.getIpAddress() +
-							" created sha1sum of ." + EVENT.getExtension());
-				}).collect(Collectors.toList()));
+		createSha1SumForStreams(eventFileWriters, EVENT);
 
 		// generate files for validating record stream files
 		// make sure that more streaming client than nodes were not requested
 		int recordFileWriters = Math.min(regConfig.getRecordFilesWriters(), sshNodes.size());
-		threadPoolService(IntStream.range(0, recordFileWriters)
-				.<Runnable>mapToObj(i -> () -> {
-					SSHService node = sshNodes.get(i);
-					node.makeSha1sumOfStreamedEvents(i, RECORD);
-					log.info(MARKER, "node:" + node.getIpAddress() +
-							" created sha1sum of ." + RECORD.getExtension());
-				}).collect(Collectors.toList()));
+		createSha1SumForStreams(recordFileWriters, RECORD);
 
 		threadPoolService(IntStream.range(0, sshNodes.size())
 				.<Runnable>mapToObj(i -> () -> {
@@ -1298,6 +1286,21 @@ public class Experiment implements ExperimentSummary {
 		//resetNodes();
 
 		killJavaProcess(); //kill any data collecting java process
+	}
+
+	/**
+	 * Create sha1sum for RECORD and EVENT streams
+	 * @param writers
+	 * @param streamType
+	 */
+	private void createSha1SumForStreams(int writers, StreamType streamType) {
+		threadPoolService(IntStream.range(0, writers)
+				.<Runnable>mapToObj(i -> () -> {
+					SSHService node = sshNodes.get(i);
+					node.makeSha1sumOfStreamedEvents(i, streamType);
+					log.info(MARKER, "node:" + node.getIpAddress() +
+							" created sha1sum of ." + streamType.getExtension());
+				}).collect(Collectors.toList()));
 	}
 
 	/**
