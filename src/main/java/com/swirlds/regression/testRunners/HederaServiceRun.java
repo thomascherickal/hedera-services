@@ -29,7 +29,7 @@ import static com.swirlds.regression.RegressionUtilities.MILLIS;
 public class HederaServiceRun implements TestRun {
 	@Override
 	public void runTest(TestConfig testConfig, Experiment experiment) {
-		experiment.startServicesRegression();
+		experiment.startServicesRegression(true);
 
 		// sleep through the rest of the test
 		long testDuration = testConfig.getDuration() * MILLIS;

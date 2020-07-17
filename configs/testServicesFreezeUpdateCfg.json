@@ -1,7 +1,7 @@
 {
-  "name": "UmbrellaRedux-JRS",
-  "description": "UmbrellaRedux",
-  "duration": 620,
+  "name": "ServiceFreezeUpdate",
+  "description": "ServiceFreezeUpdate",
+  "duration": 300,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -25,14 +25,9 @@
 	}
   ],
   "servicesRegression" : true,
-  "hederaServicesConfig": {
-	"performanceRun" : true,
-	"ciPropsMap" : true,
-	"numOfSuiteRunnerProcesses" : 10,
-	"testSuites": [
-	  "UmbrellaRedux duration=10,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
-	]
-  },
+  "testSuites": [
+    "UpdateServerFiles"
+  ],
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },
@@ -44,6 +39,8 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD"
+	"STANDARD",
+	"HAPI_CLIENT",
+    "HGCAA"
   ]
 }

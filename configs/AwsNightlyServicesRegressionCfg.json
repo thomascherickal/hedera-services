@@ -24,8 +24,10 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
+	"configs/testServicesFreezeUpdateCfg.json",
 	"configs/testServicesDemoCfg.json",
-	"configs/testUmbrellaReduxMixedCfg.json"
+	"configs/testUmbrellaReduxMixedCfg.json",
+	"configs/testCryptoTransferLoadTestCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -41,5 +43,6 @@
 	"notifyUserIds": ["UL19K9CTB"],
 	"notifyOn": "ERROR"
   },
-  "uploadToSharePoint": false
+  "uploadToSharePoint": false,
+   "useThreadPool" :true
 }

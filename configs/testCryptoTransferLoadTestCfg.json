@@ -1,7 +1,7 @@
 {
-  "name": "UmbrellaRedux-JRS",
-  "description": "UmbrellaRedux",
-  "duration": 620,
+  "name": "CryptoTransferLoadTest-JRS",
+  "description": "CryptoTransferLoadTest",
+  "duration": 920,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -26,11 +26,9 @@
   ],
   "servicesRegression" : true,
   "hederaServicesConfig": {
-	"performanceRun" : true,
 	"ciPropsMap" : true,
-	"numOfSuiteRunnerProcesses" : 10,
 	"testSuites": [
-	  "UmbrellaRedux duration=10,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
+	  "CryptoTransferLoadTest tps=50,mins=15,threadNumber=80"
 	]
   },
   "memoryLeakCheckConfig": {
@@ -44,6 +42,7 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD"
+	"STANDARD",
+	"HAPI_CLIENT"
   ]
 }
