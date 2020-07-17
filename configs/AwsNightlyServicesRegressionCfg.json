@@ -37,8 +37,8 @@
   "experiments": [
 	//"configs/testServicesFreezeUpdateCfg.json",
 //	"configs/testServicesDemoCfg.json",
-//	"configs/testUmbrellaReduxMixedCfg.json",
-	"configs/testCryptoTransferLoadTestCfg.json"
+	"configs/testUmbrellaReduxMixedCfg.json"
+	//"configs/testCryptoTransferLoadTestCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -55,6 +55,5 @@
 	"notifyOn": "ERROR"
   },
   "uploadToSharePoint": false,
-  "useThreadPool" :true //,
-//  "jvmOptions": "-Xmx60g -Xms12g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14"
+  "useThreadPool" :true
 }
