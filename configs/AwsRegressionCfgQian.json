@@ -1,5 +1,5 @@
 {
-  "name": "GCLog-Validator",
+  "name": "ReconnectTests-02193-D-Lazar-MinTimestamp-Fix",
   "result": {
 	"uri": "results"
   },
@@ -13,23 +13,19 @@
 	"regionList": [
 	  {
 		"region": "us-east-2",
-		"numberOfNodes":4
+		"numberOfNodes":6
 	  }
 	]
   },
-  "eventFilesWriters": 4,
+  "numberOfZeroStakeNodes": 2,
+  "eventFilesWriters": 6,
   "log": {
 	"uri": "testing/logs/"
   },
   "experiments": [
-	"configs/testSigningDemo4KCfg.json",
-	"configs/testMigrationAppCfg.json",
-	"configs/testReconnectBlobCfg.json",
-	"configs/testReconnectFCMMultiReconnectCfg.json" ,
-	"configs/testFcm1kThrottlingCfg.json",
-	"configs/testFcmCfg.json",
-	"configs/testFcmFreezeCfg.json",
-	"configs/testFCM1KFCQCfg.json"
+	"configs/testReconnectFCMMultiReconnectCfg.json",
+	"configs/testReconnectFCQMultiReconnectCfg.json",
+	"configs/testReconnectBlobCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -51,7 +47,7 @@
 	{
 	  "useWebServer": true,
 	  "webServerPort": "8070",
-	  "webServerAddress": "3.22.117.157"
+	  "webServerAddress": "3.19.241.94"
 	}
   },
   "uploadToSharePoint": false
