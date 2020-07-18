@@ -1702,7 +1702,7 @@ public class Experiment implements ExperimentSummary {
 			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
 			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
 			if (stateNumber != node0StateNumber) {
-				log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
+				log.error(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
 						0, i, node0StateNumber, stateNumber);
 				result = false;
 			}
@@ -1756,15 +1756,6 @@ public class Experiment implements ExperimentSummary {
 	public void displaySignedStates(String memo) {
 		for (SSHService node : sshNodes) {
 			node.displaySignedStates(memo);
-		}
-	}
-
-	/**
-	 * Restore database from backup file
-	 */
-	public void recoverDatabase() {
-		for (SSHService node : sshNodes) {
-			node.recoverDatabase();
 		}
 	}
 

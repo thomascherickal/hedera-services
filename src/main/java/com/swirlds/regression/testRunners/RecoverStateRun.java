@@ -92,9 +92,6 @@ public class RecoverStateRun implements TestRun {
 		experiment.sendSettingFileToNodes();
 		experiment.sendConfigToNodes();
 
-		// unzip database backup file and restore
-		experiment.recoverDatabase();
-
 		// start all processes
 		if (testConfig.isServicesRegression()) {
 			experiment.startServicesRegression(false);
@@ -144,9 +141,6 @@ public class RecoverStateRun implements TestRun {
 	boolean compareStateVSDatabase(Experiment experiment, long testDuration, List<BooleanSupplier> checkerList) {
 		// delete last states
 		experiment.deleteLastNSignedStates(1);
-
-		// unzip database backup file and restore
-		experiment.recoverDatabase();
 
 		// start all processes
 		experiment.startAllSwirlds();
