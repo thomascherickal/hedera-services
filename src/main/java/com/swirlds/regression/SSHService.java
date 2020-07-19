@@ -489,7 +489,7 @@ public class SSHService {
 				publicIpList,
 				RegressionUtilities.getCiPropertiesMap(),
 				RegressionUtilities.getTestSuites(),
-				testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
+				testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
@@ -507,7 +507,7 @@ public class SSHService {
 	private String[] parseNodeIPandAccounts(String publicIpList) {
 		String[] nodeIPandAccounts = publicIpList.split(",");
 
-		for(int i = 0; i < nodeIPandAccounts.length; i++) {
+		for (int i = 0; i < nodeIPandAccounts.length; i++) {
 			log.info("Node {} address and account {}", i, nodeIPandAccounts[i]);
 		}
 		return nodeIPandAccounts;
@@ -522,7 +522,7 @@ public class SSHService {
 //					REMOTE_EXPERIMENT_LOCATION, i);
 //			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
 
-			String[] pair = nodeIPandAccounts[i %  TOTAL_HEDERA_NODE].split(":");
+			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
 			String currentIP = pair[0];
 			String[] accountElements = pair[1].split("\\.");
 			String currentAcctNum = accountElements[2];
@@ -536,14 +536,14 @@ public class SSHService {
 					publicIpList,
 					RegressionUtilities.getCiPropertiesMap(),
 					RegressionUtilities.getTestSuites(),
-					testConfig.getHederaServicesConfig().isFixedNode()?"fixed":"random",
+					testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 					jvmOptions,
 					currentIP,
 					currentAcctNum,
 					i);
 			String description = "Start SuiteRunner.jar";
 			int status = execCommand(command, description, 5).getExitStatus();
-			log.info("Status code "+status);
+			log.info("Status code " + status);
 		}
 	}
 
@@ -1233,8 +1233,7 @@ public class SSHService {
 	 */
 	void backupSavedExpectedMap() {
 		String mvCmd =
-				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION +
-						"data" +
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data" +
 						"/platformtestingBackup";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
