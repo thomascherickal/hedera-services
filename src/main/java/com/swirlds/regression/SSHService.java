@@ -18,6 +18,7 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.NetworkErrorConfig;
+import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.utils.FileUtils;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.StreamingServerValidator;
@@ -49,6 +50,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.swirlds.regression.ExperimentServicesHelper.getCiPropertiesMap;
+import static com.swirlds.regression.ExperimentServicesHelper.getPublicIPStringForServices;
+import static com.swirlds.regression.ExperimentServicesHelper.getServicesFilesToDownload;
+import static com.swirlds.regression.ExperimentServicesHelper.getTestSuites;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
 import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE;
@@ -466,29 +471,81 @@ public class SSHService {
         return execCommand(command, description, 5).getExitStatus();
     }
 
-	int execTestClientWithProcessID(String jvmOptions) {
+	int execTestClientWithProcessID(String jvmOptions, TestConfig testConfig) {
 		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
 			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
 		}
 
 		// TODO These arguments should be constructed run time from a JSON config
-		String publicIpList = ExperimentServicesHelper.getPublicIPStringForServices();
+		String publicIpList = getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
+
+		createDirForResource();
+		if (testConfig.isServicesRegression() && testConfig.getHederaServicesConfig().isPerformanceRun()) {
+			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
+		}
+
 		String command = String.format(
 				"cd %s; " +
-						"mkdir -p src/main/ && mv resource/ src/main/; " +
 						"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-						"-NODE=fixed\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"-NODE=%s\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
-				ExperimentServicesHelper.getCiPropertiesMap(),
-				ExperimentServicesHelper.getTestSuites(),
+				getCiPropertiesMap(),
+				getTestSuites(),
+				testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 				jvmOptions,
 				firstIP);
 		String description = "Start SuiteRunner.jar";
 
 		return execCommand(command, description, 5).getExitStatus();
+	}
+
+	private void createDirForResource() {
+		String command = String.format(
+				"cd %s; mkdir -p src/main/ && mv resource/ src/main/; ",
+				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION);
+		execCommand(command, "Move resource to src/main/resource", 5).getExitStatus();
+	}
+
+	private String[] parseNodeIPandAccounts(String publicIpList) {
+		String[] nodeIPandAccounts = publicIpList.split(",");
+
+		for (int i = 0; i < nodeIPandAccounts.length; i++) {
+			log.info("Node {} address and account {}", i, nodeIPandAccounts[i]);
+		}
+		return nodeIPandAccounts;
+	}
+
+	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
+			String jvmOptions, String firstIP) {
+		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
+		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
+		for (int i = 0; i < testConfig.getHederaServicesConfig().getNumOfSuiteRunnerProcesses(); i++) {
+			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
+			String currentIP = pair[0];
+			String[] accountElements = pair[1].split("\\.");
+			String currentAcctNum = accountElements[2];
+
+			String command = String.format(
+					"cd %s; " +
+							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
+							"-NODE=%s\" nohup java %s -jar SuiteRunner.jar %s %s >>output%s.log 2>&1 & " +
+							"disown -h",
+					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
+					publicIpList,
+					getCiPropertiesMap(),
+					getTestSuites(),
+					testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
+					jvmOptions,
+					currentIP,
+					currentAcctNum,
+					i);
+			String description = "Start SuiteRunner.jar";
+			int status = execCommand(command, description, 5).getExitStatus();
+			log.info("Status code " + status);
+		}
 	}
 
 	/**
@@ -1393,7 +1450,7 @@ public class SSHService {
 	boolean scpFromTestClient(String topLevelFolders) {
 		try {
 			Collection<String> foundFiles = getListOfFiles(
-					ExperimentServicesHelper.getServicesFilesToDownload());
+					getServicesFilesToDownload());
 			scpFilesFromList(topLevelFolders, foundFiles);
 			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {

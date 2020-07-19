@@ -18,6 +18,9 @@
 package com.swirlds.regression.validators;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.validators.services.HAPIClientValidator;
+import com.swirlds.regression.validators.services.HGCAAValidator;
+import com.swirlds.regression.validators.services.HederaNodeValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +29,12 @@ public class ValidatorFactory {
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
 			TestConfig testConfig) {
-		return getValidator(vt, nodeData, testConfig, null);
+		return getValidator(vt, nodeData, testConfig, null, null, null);
 	}
 
 	public static Validator getValidator(ValidatorType vt, List<NodeData> nodeData,
-			TestConfig testConfig, Map<Integer, String> expectedMapPaths) {
+			TestConfig testConfig, Map<Integer, String> expectedMapPaths,
+			List<HapiClientData> testClientNodeData, List<NodeData> hederaNodeData) {
 		if (vt == null) {
 			return null;
 		}
@@ -60,6 +64,12 @@ public class ValidatorFactory {
 				return new GossipCompensationValidator(nodeData);
 			case LIFECYCLE:
 				return new LifecycleValidator(expectedMapPaths);
+			case HAPI_CLIENT:
+				return new HAPIClientValidator(testClientNodeData);
+			case HGCAA:
+				return new HGCAAValidator(hederaNodeData);
+			case HEDERA_NODE:
+				return new HederaNodeValidator(nodeData);
 			default:
 				return new StandardValidator(nodeData);
 		}

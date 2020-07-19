@@ -33,14 +33,17 @@ import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
+import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
+import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -308,8 +311,8 @@ public class Experiment implements ExperimentSummary {
 	/**
 	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
 	 */
-	public void startServicesRegression() {
-		experimentServicesHelper.startServicesRegression();
+	public void startServicesRegression(boolean startSuiteRunner) {
+		experimentServicesHelper.startServicesRegression(startSuiteRunner);
 	}
 
 	public void stopAllSwirlds() {
@@ -769,10 +772,24 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 
+			List<HapiClientData> testClientNodeData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
+				testClientNodeData = experimentServicesHelper.
+						loadTestClientNodeData(testClientNodes);
+			}
+
+			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+				hederaNodeHGCAAData = experimentServicesHelper.
+						loadHederaNodeHGCAAData(sshNodes);
+			}
+
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths());
+					experimentLocalFileHelper.loadExpectedMapPaths(),
+					testClientNodeData, hederaNodeHGCAAData);
+
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(
 						experimentLocalFileHelper.getExperimentFolder());
@@ -813,6 +830,16 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
 				}
+				if (item instanceof HGCAAValidator) {
+					// if testing update feature, hedera service will restart after freeze
+					if (this.testConfig.getHederaServicesConfig().getTestSuites().contains("UpdateServerFiles")) {
+						((HGCAAValidator) item).setCheckHGCAppRestart(true);
+					}
+				}
+				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
+					((StandardValidator) item).setIgnoreSyncException(true);
+				}
+
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
@@ -1052,7 +1079,11 @@ public class Experiment implements ExperimentSummary {
 		calculateNodeMemoryProfile(firstNode);
 
 		if (testConfig.isServicesRegression()) {
-			filesToSend = experimentServicesHelper.getListOfFilesToSend(false, new File(getPEMFile()));
+			filesToSend = experimentServicesHelper.getListOfFilesToSend(
+					false, new File(getPEMFile()));
+			if (addedFiles != null) {
+				filesToSend.addAll(addedFiles);
+			}
 		} else {
 			filesToSend = gatherFilesToSendToNode(addedFiles);
 		}
@@ -1192,6 +1223,7 @@ public class Experiment implements ExperimentSummary {
 
 	/**
 	 * Create sha1sum for RECORD and EVENT streams
+	 *
 	 * @param writers
 	 * @param streamType
 	 */
@@ -1546,6 +1578,10 @@ public class Experiment implements ExperimentSummary {
 
 	public TestConfig getTestConfig() {
 		return testConfig;
+	}
+
+	public RegressionConfig getRegConfig() {
+		return regConfig;
 	}
 
 	public SettingsBuilder getSettingsFile() {

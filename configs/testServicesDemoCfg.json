@@ -27,44 +27,41 @@
   "servicesRegression" : true,
   "hederaServicesConfig": {
 	"testSuites": [
-	  "ALL_SUITES",
-	  "skip:UpdateServerFiles",
-	  "skip:FreezeSuite",
-	  "skip:FileUpdateLoadTest",      // has to run with smaller TPS setting
-	  "skip:ContractCallLoadTest",  // has to run with smaller TPS setting
-	  "skip:RecordStreamValidation" //require access record file on node
-	  //	"BucketAndLegacyThrottlingSpec",
-	  //	"ControlAccountsExemptForUpdates",
-	  //	"UmbrellaRedux",
-	  //	"TopicCreateSpecs",
-	  //	"SubmitMessageSpecs",
-	  //	"TopicUpdateSpecs",
-	  //	"SubmitMessageSpecs",
-	  //	"HCSTopicFragmentationSuite",
-	  //	"TopicGetInfoSpecs",
-	  //	"ConsensusThrottlesSpecs",
-	  //	"CryptoCreateSuite",
-	  //	"CryptoRecordSanityChecks",
-	  //	"SuperusersAreNeverThrottled",
-	  //	"FileRecordSanityChecks",
-	  //	"VersionInfoSpec",
-	  //	"PermissionSemanticsSpec",
-	  //	"SysDelSysUndelSpec",
-	  //	"NewOpInConstructorSpecs",
-	  //	"MultipleSelfDestructsAreSafe",
-	  //	"FetchSystemFiles",
-	  //	"ChildStorageSpecs",
-	  //	"DeprecatedContractKeySpecs",
-	  //	"ThresholdRecordCreationSpecs",
-	  //	"ContractRecordSanityChecks",
-	  //	"TopicDeleteSpecs",
-	  //	"ProtectedFilesUpdateSuite"
-	]
+	  //"ALL_SUITES"
+	  "BucketAndLegacyThrottlingSpec",
+	  "ControlAccountsExemptForUpdates",
+	  "BucketAndLegacyThrottlingSpec",
+	  "ControlAccountsExemptForUpdates",
+	  "UmbrellaRedux",
+	  "TopicCreateSpecs",
+	  "SubmitMessageSpecs",
+	  "TopicUpdateSpecs",
+	  "SubmitMessageSpecs",
+	  "HCSTopicFragmentationSuite",
+	  "TopicGetInfoSpecs",
+	  "ConsensusThrottlesSpecs",
+	  "CryptoCreateSuite",
+	  "CryptoRecordSanityChecks",
+	  "SuperusersAreNeverThrottled",
+	  "FileRecordSanityChecks",
+	  "VersionInfoSpec",
+	  "PermissionSemanticsSpec",
+	  "SysDelSysUndelSpec",
+	  "NewOpInConstructorSpecs",
+	  "MultipleSelfDestructsAreSafe",
+	  "FetchSystemFiles",
+	  "ChildStorageSpecs",
+	  "DeprecatedContractKeySpecs",
+	  "ThresholdRecordCreationSpecs",
+	  "ContractRecordSanityChecks",
+	  "TopicDeleteSpecs",
+	  "ProtectedFilesUpdateSuite"
+	],
+	"isFixedNode": true
   },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },
-  "isFixedNode": true,
   "app": {
 	"jar": "HederaNode.jar"
   },
@@ -73,7 +70,7 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD",
+	"HEDERA_NODE",
 	"HAPI_CLIENT",
     "HGCAA"
   ]

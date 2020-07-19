@@ -18,21 +18,35 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.services.HAPIClientLogParser;
+import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.NodeData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
+import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
+import static com.swirlds.regression.utils.FileUtils.getInputStream;
 
 /**
  * ExperimentServicesHelper is helper class for services regression related functionality
@@ -79,16 +93,18 @@ public class ExperimentServicesHelper {
 	/**
 	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
 	 */
-	public void startServicesRegression() {
+	public void startServicesRegression(boolean startSuiteRunner) {
 		// start Browser and HGCApp
 		startHGCApp();
 		try {
-			Thread.sleep(20000);
+			Thread.sleep(35000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		// Once the HGCApp jar starts running , run test clients
-		startSuiteRunner();
+		if (startSuiteRunner) {
+			// Once the HGCApp jar starts running , run test clients
+			startSuiteRunner();
+		}
 	}
 
 	/**
@@ -102,9 +118,29 @@ public class ExperimentServicesHelper {
 		//If it is services-regression based on the type of node (test-client node or server node)
 		// upload necessary files
 		if (isTestClientNode) {
-			return getServicesClientFilesToUpload(pemFile);
+			Collection<File> filesToSend = getServicesClientFilesToUpload(pemFile);
+			if (this.testConfig.getHederaServicesConfig().getTestSuites().
+					contains("UpdateServerFiles")) {
+				//build new jar file for update feature test
+				addUpdateServerFilesScripts(filesToSend);
+			}
+			return filesToSend;
 		} else {
 			return getServicesFilesToUpload(pemFile);
+		}
+	}
+
+	private void addUpdateServerFilesScripts(Collection<File> filesToSend) {
+		String Command = "scripts/regressionFlowUpdateFiles.sh";
+		try {
+			File workDirectory = new File(String.format("%s/test-clients", getHederaServicesRepoPath()));
+			Process p = Runtime.getRuntime().exec(Command, null, workDirectory);
+			execCmd(p);
+			String newJarPath = getHederaServicesRepoPath() + "/test-clients/updateFiles/";
+			log.info(MARKER, "newJarPath = " + newJarPath);
+			filesToSend.add(new File(newJarPath));
+		} catch (IOException e) {
+			log.error(ERROR, "Error ", e);
 		}
 	}
 
@@ -113,7 +149,7 @@ public class ExperimentServicesHelper {
 	 */
 	private void startSuiteRunner() {
 		experiment.threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
-			node.execTestClientWithProcessID(experiment.getJVMOptionsString());
+			node.execTestClientWithProcessID(experiment.getJVMOptionsString(), testConfig);
 			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
 		}).collect(Collectors.toList()));
 	}
@@ -167,25 +203,14 @@ public class ExperimentServicesHelper {
 	}
 
 	/**
-	 * Experiment folder name for the logs downloaded from test client nodes
-	 *
-	 * @param nodeNumber
-	 * @return
-	 */
-	String getExperimentResultsFolderForTestClientNode(final int nodeNumber) {
-		return experiment.getExperimentLocalFileHelper().getExperimentFolder()
-				+ "node000" + nodeNumber + "-TestClient/";
-	}
-
-	/**
 	 * Read all the test suites that are mentioned in testConfig
 	 *
 	 * @param testConfig
 	 * @return
 	 */
 	public static void setTestSuites(TestConfig testConfig) {
-		testSuites = StringUtils.join(testConfig.getTestSuites(), " ");
-		if (testConfig.isPerformanceRun()) {
+		testSuites = StringUtils.join(testConfig.getHederaServicesConfig().getTestSuites(), " ");
+		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			String[] propertiesMap = testSuites.split("\\s+");
 			testSuites = propertiesMap[0];
 			ciPropertiesMap = propertiesMap[1];
@@ -335,7 +360,7 @@ public class ExperimentServicesHelper {
 	}
 
 	public static String getCiPropertiesMap() {
-		if (testConfig.isPerformanceRun()) {
+		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
 		}
 		return "";
@@ -343,5 +368,99 @@ public class ExperimentServicesHelper {
 
 	public void setCiPropertiesMap(String ciPropertiesMap) {
 		ExperimentServicesHelper.ciPropertiesMap = ciPropertiesMap;
+	}
+
+	List<HapiClientData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
+		int numberOfTestClientNodes = getNumberOfTestClientNodes(testClientNodes);
+		List<HapiClientData> testClientData = new ArrayList<>();
+		for (int i = 0; i < numberOfTestClientNodes; i++) {
+			String outputLogFileName = getExperimentResultsFolderForTestClientNode(i)
+					+ OUTPUT_LOG_FILENAME;
+
+			InputStream logInput = getInputStream(outputLogFileName);
+
+			LogReader logReader = null;
+			if (logInput != null) {
+				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
+			}
+
+			testClientData.add(new HapiClientData(logReader));
+		}
+		return testClientData;
+	}
+
+	List<NodeData> loadHederaNodeHGCAAData(ArrayList<SSHService> nodes) {
+		List<NodeData> servicesNodesData = new ArrayList<>();
+		for (int i = 0; i < nodes.size(); i++) {
+			String hgcaaLogFileName = getExperimentResultsFolderForHederaNode(i) +
+					HGCAA_LOG_FILENAME;
+			String queryLogFileName = getExperimentResultsFolderForHederaNode(i) +
+					QUERY_LOG_FILENAME;
+			InputStream logInput = getInputStream(hgcaaLogFileName);
+			InputStream queryInput = getInputStream(queryLogFileName);
+			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
+
+			LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1), combinedLogInput);
+
+			servicesNodesData.add(new NodeData(logReader));
+		}
+		return servicesNodesData;
+	}
+
+	int getNumberOfTestClientNodes(ArrayList<SSHService> testClientNodes) {
+		int numberOfTestClientNodes;
+		if (experiment.getRegConfig().getLocal() != null) {
+			numberOfTestClientNodes = experiment.getRegConfig().getLocal().getNumberOfNodes();
+		} else if (testClientNodes == null || testClientNodes.isEmpty()) {
+			return 0;
+		} else {
+			numberOfTestClientNodes = testClientNodes.size();
+		}
+		return numberOfTestClientNodes;
+	}
+
+	/**
+	 * Experiment folder name for the logs downloaded from test client nodes
+	 *
+	 * @param nodeNumber
+	 * @return
+	 */
+	String getExperimentResultsFolderForTestClientNode(final int nodeNumber) {
+		return experiment.getExperimentLocalFileHelper().getExperimentFolder() + "node000" + nodeNumber +
+				"-TestClient/";
+	}
+
+	/**
+	 * Experiment folder name for the logs downloaded from hedera nodes
+	 *
+	 * @param nodeNumber
+	 * @return
+	 */
+	String getExperimentResultsFolderForHederaNode(final int nodeNumber) {
+		return experiment.getExperimentLocalFileHelper().getExperimentFolder() + "node000" + nodeNumber + "/";
+	}
+
+	/**
+	 * Execute a process and dump its output
+	 */
+	public static void execCmd(Process process) throws java.io.IOException {
+		try {
+			process.waitFor();
+		} catch (InterruptedException e) {
+			log.error(ERROR, "Error", e);
+		}
+		BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+		// read the output from the command
+		log.info(MARKER, "Here is the standard output of the command:\n");
+		String s;
+		while ((s = stdInput.readLine()) != null) {
+			log.info(MARKER, s);
+		}
+		// read any errors from the attempted command
+		log.info(MARKER, "Here is the standard error of the command (if any):\n");
+		while ((s = stdError.readLine()) != null) {
+			log.info(MARKER, s);
+		}
 	}
 }

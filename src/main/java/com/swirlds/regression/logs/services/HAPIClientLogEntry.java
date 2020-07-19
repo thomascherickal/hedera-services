@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2019 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
@@ -15,26 +15,26 @@
  * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
-package com.swirlds.regression.validators;
+package com.swirlds.regression.logs.services;
 
-public enum ValidatorType {
-	STANDARD,
-	RESTART,
-	RECONNECT,
-	PLATFORM_CSV,
-	FCM_CSV,
-	FCFS_CSV,
-	PLATFORM_TESTING_DEMO,
-	STATS,
-	RECOVER_STATE,
-	THROTTLE,
-	PTA_THROTTLE,
-	BLOB_STATE,
-	MIGRATION,
-	STDOUT,
-	GOSSIP_COMPENSATION,
-	LIFECYCLE,
-	HAPI_CLIENT,
-	HGCAA,
-	HEDERA_NODE
+import com.swirlds.regression.logs.LogEntry;
+
+public class HAPIClientLogEntry implements LogEntry {
+	private String line;
+	private boolean isException;
+
+	public HAPIClientLogEntry(String line, boolean isException) {
+		this.line = line;
+		this.isException = isException;
+	}
+
+	@Override
+	public String getLogEntry() {
+		return line;
+	}
+
+	@Override
+	public boolean isException() {
+		return isException;
+	}
 }

@@ -44,6 +44,8 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD"
+	"HEDERA_NODE",
+	"HAPI_CLIENT",
+	"HGCAA"
   ]
 }

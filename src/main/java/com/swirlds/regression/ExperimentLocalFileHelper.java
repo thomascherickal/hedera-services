@@ -20,6 +20,9 @@ package com.swirlds.regression;
 import com.swirlds.regression.jsonConfigs.RegressionConfig;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.validators.StreamType;
+import com.swirlds.regression.logs.services.HAPIClientLogParser;
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.StreamingServerData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,12 +31,16 @@ import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.RESULTS_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.utils.FileUtils.getInputStream;
@@ -70,7 +77,7 @@ public class ExperimentLocalFileHelper {
 		return getExperimentFolder() + "node000" + nodeNumber + "/";
 	}
 
-	public String getExperimentFolder() {
+	String getExperimentFolder() {
 		String folderName = regConfig.getName() + "/" + testConfig.getName();
 		return RESULTS_FOLDER + "/" + getResultsFolder(experimentTime,
 				folderName) + "/";

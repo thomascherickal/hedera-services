@@ -31,6 +31,10 @@ public class NodeData {
 		this(logReader, csvReader, null);
 	}
 
+	public NodeData(LogReader<PlatformLogEntry> logReader) {
+		this(logReader, null, null);
+	}
+
 	public NodeData(LogReader<PlatformLogEntry> logReader, CsvReader csvReader,
 			LogReader<StdoutLogEntry> stdoutReader) {
 		this.logReader = logReader;
