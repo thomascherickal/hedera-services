@@ -17,6 +17,7 @@
 
 package com.swirlds.regression.validators;
 
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class HGCAAValidatorTest {
         System.out.println("LOGS: " + negativeTestDir);
         System.out.println(validator.concatAllMessages());
         assertFalse(validator.isValid());
-        assertTrue(validator.errorMessages.size() > 0);
+        assertTrue(validator.getErrorMessages().size() > 0);
     }
 
     @Test
@@ -47,6 +48,6 @@ public class HGCAAValidatorTest {
         System.out.println("LOGS: " + positiveTestDir);
         System.out.println(validator.concatAllMessages());
         assertTrue(validator.isValid());
-        assertEquals(0, validator.errorMessages.size());
+        assertEquals(0, validator.getErrorMessages().size());
     }
 }

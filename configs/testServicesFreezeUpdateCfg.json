@@ -25,9 +25,11 @@
 	}
   ],
   "servicesRegression" : true,
-  "testSuites": [
-    "UpdateServerFiles"
-  ],
+  "hederaServicesConfig": {
+	"testSuites": [
+	  "UpdateServerFiles"
+	]
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },

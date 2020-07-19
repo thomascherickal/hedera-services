@@ -50,6 +50,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.swirlds.regression.ExperimentServicesHelper.getCiPropertiesMap;
+import static com.swirlds.regression.ExperimentServicesHelper.getPublicIPStringForServices;
+import static com.swirlds.regression.ExperimentServicesHelper.getServicesFilesToDownload;
+import static com.swirlds.regression.ExperimentServicesHelper.getTestSuites;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_HUGEPAGE_NUMBER;
 import static com.swirlds.regression.RegressionUtilities.CHANGE_POSTGRES_MEMORY_ALLOCATION;
 import static com.swirlds.regression.RegressionUtilities.CHECK_FOR_STATE_MANAGER_QUEUE_MESSAGE;
@@ -472,7 +476,7 @@ public class SSHService {
 		}
 
 		// TODO These arguments should be constructed run time from a JSON config
-		String publicIpList = RegressionUtilities.getPublicIPStringForServices();
+		String publicIpList = getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
@@ -487,8 +491,8 @@ public class SSHService {
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
-				RegressionUtilities.getCiPropertiesMap(),
-				RegressionUtilities.getTestSuites(),
+				getCiPropertiesMap(),
+				getTestSuites(),
 				testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 				jvmOptions,
 				firstIP);
@@ -518,10 +522,6 @@ public class SSHService {
 		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
 		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
 		for (int i = 0; i < testConfig.getHederaServicesConfig().getNumOfSuiteRunnerProcesses(); i++) {
-//			String command = String.format("cd %s; cp SuiteRunner.jar SuiteRunner%s.jar",
-//					REMOTE_EXPERIMENT_LOCATION, i);
-//			execCommand(command, "Copy SuiteRunner Jar", 5).getExitStatus();
-
 			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
 			String currentIP = pair[0];
 			String[] accountElements = pair[1].split("\\.");
@@ -534,8 +534,8 @@ public class SSHService {
 							"disown -h",
 					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 					publicIpList,
-					RegressionUtilities.getCiPropertiesMap(),
-					RegressionUtilities.getTestSuites(),
+					getCiPropertiesMap(),
+					getTestSuites(),
 					testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 					jvmOptions,
 					currentIP,
@@ -1233,7 +1233,8 @@ public class SSHService {
 	 */
 	void backupSavedExpectedMap() {
 		String mvCmd =
-				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION + "data" +
+				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtesting" + " " + REMOTE_EXPERIMENT_LOCATION +
+						"data" +
 						"/platformtestingBackup";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
@@ -1467,7 +1468,7 @@ public class SSHService {
 	boolean scpFromTestClient(String topLevelFolders) {
 		try {
 			Collection<String> foundFiles = getListOfFiles(
-					RegressionUtilities.getServicesFilesToDownload());
+					getServicesFilesToDownload());
 			scpFilesFromList(topLevelFolders, foundFiles);
 			return true;
 		} catch (IOException | StringIndexOutOfBoundsException e) {

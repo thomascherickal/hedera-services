@@ -26,7 +26,7 @@
   ],
   "servicesRegression" : true,
   "hederaServicesConfig": {
-	"performanceRun" : true,
+	"ciPropsMap" : true,
 	"testSuites": [
 	  "CryptoTransferLoadTest tps=40,mins=15,threadNumber=60"
 	]

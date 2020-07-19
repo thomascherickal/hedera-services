@@ -25,51 +25,43 @@
 	}
   ],
   "servicesRegression" : true,
-  "testSuites": [
-	"ALL_SUITES",
-	"skip:UpdateServerFiles",
-	"skip:FreezeSuite",
-	"skip:FileUpdateLoadTest",      // has to run with smaller TPS setting
-	"skip:ContractCallLoadTest",  // has to run with smaller TPS setting
-	"skip:RecordStreamValidation" //require access record file on node
-//	"BucketAndLegacyThrottlingSpec",
-//	"ControlAccountsExemptForUpdates",
-//	"UmbrellaRedux",
-//	"TopicCreateSpecs",
-//	"SubmitMessageSpecs",
-//	"TopicUpdateSpecs",
-//	"SubmitMessageSpecs",
-//	"HCSTopicFragmentationSuite",
-//	"TopicGetInfoSpecs",
-//	"ConsensusThrottlesSpecs",
-//	"CryptoCreateSuite",
-//	"CryptoRecordSanityChecks",
-//	"SuperusersAreNeverThrottled",
-//	"FileRecordSanityChecks",
-//	"VersionInfoSpec",
-//	"PermissionSemanticsSpec",
-//	"SysDelSysUndelSpec",
-//	"NewOpInConstructorSpecs",
-//	"MultipleSelfDestructsAreSafe",
-//	"FetchSystemFiles",
-//	"ChildStorageSpecs",
-//	"DeprecatedContractKeySpecs",
-//	"ThresholdRecordCreationSpecs",
-//	"ContractRecordSanityChecks",
-//	"TopicDeleteSpecs",
-//	"ProtectedFilesUpdateSuite"
-  ],
   "hederaServicesConfig": {
-	"performanceRun" : true,
-	"numOfSuiteRunnerProcesses" : 30,
 	"testSuites": [
-	  "UmbrellaRedux duration=5,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=1000,backoffSleepSecs=30"
-	]
+	  //"ALL_SUITES"
+	  "BucketAndLegacyThrottlingSpec",
+	  "ControlAccountsExemptForUpdates",
+	  "BucketAndLegacyThrottlingSpec",
+	  "ControlAccountsExemptForUpdates",
+	  "UmbrellaRedux",
+	  "TopicCreateSpecs",
+	  "SubmitMessageSpecs",
+	  "TopicUpdateSpecs",
+	  "SubmitMessageSpecs",
+	  "HCSTopicFragmentationSuite",
+	  "TopicGetInfoSpecs",
+	  "ConsensusThrottlesSpecs",
+	  "CryptoCreateSuite",
+	  "CryptoRecordSanityChecks",
+	  "SuperusersAreNeverThrottled",
+	  "FileRecordSanityChecks",
+	  "VersionInfoSpec",
+	  "PermissionSemanticsSpec",
+	  "SysDelSysUndelSpec",
+	  "NewOpInConstructorSpecs",
+	  "MultipleSelfDestructsAreSafe",
+	  "FetchSystemFiles",
+	  "ChildStorageSpecs",
+	  "DeprecatedContractKeySpecs",
+	  "ThresholdRecordCreationSpecs",
+	  "ContractRecordSanityChecks",
+	  "TopicDeleteSpecs",
+	  "ProtectedFilesUpdateSuite"
+	],
+	"fixedNode": true
   },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },
-  "isFixedNode": true,
   "app": {
 	"jar": "HederaNode.jar"
   },
@@ -78,7 +70,7 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD",
+	"HEDERA_NODE",
 	"HAPI_CLIENT",
     "HGCAA"
   ]

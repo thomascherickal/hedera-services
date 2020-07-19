@@ -64,7 +64,7 @@ public class TestConfig implements FileRequirement {
 			return RunType.RECONNECT;
 		} else if (recoverConfig != null) {
 			return RunType.RECOVER;
-		} else if (hederaServicesConfig !=null) {
+		} else if (hederaServicesConfig !=null || isServicesRegression()) {
 			return RunType.HEDERA_SERVICE;
 		}
 		return RunType.STANDARD;
