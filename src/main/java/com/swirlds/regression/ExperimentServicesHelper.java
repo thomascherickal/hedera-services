@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -212,7 +210,7 @@ public class ExperimentServicesHelper {
 	 */
 	public static void setTestSuites(TestConfig testConfig) {
 		testSuites = StringUtils.join(testConfig.getHederaServicesConfig().getTestSuites(), " ");
-		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
+		if (testConfig.getHederaServicesConfig().hasCiPropsMap()) {
 			String[] propertiesMap = testSuites.split("\\s+");
 			testSuites = propertiesMap[0];
 			ciPropertiesMap = propertiesMap[1];
@@ -362,7 +360,7 @@ public class ExperimentServicesHelper {
 	}
 
 	public static String getCiPropertiesMap() {
-		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
+		if (testConfig.getHederaServicesConfig().hasCiPropsMap()) {
 			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
 		}
 		return "";
