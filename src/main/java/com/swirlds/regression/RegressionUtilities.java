@@ -494,7 +494,7 @@ public class RegressionUtilities {
 	 */
 	public static void setTestSuites(TestConfig testConfig) {
 		testSuites = StringUtils.join(testConfig.getHederaServicesConfig().getTestSuites(), " ");
-		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
+		if (testConfig.getHederaServicesConfig().hasCiPropsMap()) {
 			String[] propertiesMap = testSuites.split("\\s+");
 			testSuites = propertiesMap[0];
 			ciPropertiesMap = propertiesMap[1];
@@ -646,20 +646,16 @@ public class RegressionUtilities {
 	}
 
 	public static void setHederaServicesRepoPath(String hederaServicesRepoPath) {
-		if(hederaServicesRepoPath.endsWith("/")) {
-			hederaServicesRepoPath = hederaServicesRepoPath.substring(0, hederaServicesRepoPath.length() -1);
+		if (hederaServicesRepoPath.endsWith("/")) {
+			hederaServicesRepoPath = hederaServicesRepoPath.substring(0, hederaServicesRepoPath.length() - 1);
 		}
 		RegressionUtilities.hederaServicesRepoPath = hederaServicesRepoPath;
 	}
 
 	public static String getCiPropertiesMap() {
-		if (testConfig.getHederaServicesConfig().isPerformanceRun()) {
-			return "CI_PROPERTIES_MAP=" + ciPropertiesMap;
+		if (testConfig.getHederaServicesConfig().hasCiPropsMap()) {
+			return "CI_PROPERTIES_MAP=" + "\"" + ciPropertiesMap + "\"";
 		}
 		return "";
-	}
-
-	public static void setCiPropertiesMap(String ciPropertiesMap) {
-		RegressionUtilities.ciPropertiesMap = ciPropertiesMap;
 	}
 }

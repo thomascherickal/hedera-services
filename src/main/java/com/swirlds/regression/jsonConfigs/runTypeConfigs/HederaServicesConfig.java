@@ -24,12 +24,21 @@ import java.util.List;
  */
 public class HederaServicesConfig {
 	private boolean performanceRun = false;
+	private boolean ciPropsMap = false;
 	private List<String> testSuites;
-	private int numOfSuiteRunnerProcesses = 10;
+	private int numOfSuiteRunnerProcesses = 1;
 	private boolean isFixedNode = false;
 
 	public List<String> getTestSuites() {
 		return testSuites;
+	}
+
+	public boolean hasCiPropsMap() {
+		return ciPropsMap;
+	}
+
+	public void setCiPropsMap(boolean ciPropsMap) {
+		this.ciPropsMap = ciPropsMap;
 	}
 
 	public void setTestSuites(List<String> testSuites) {
