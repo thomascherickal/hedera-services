@@ -32,6 +32,8 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
 import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.MemoryLeakValidator;

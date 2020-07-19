@@ -18,6 +18,7 @@
 package com.swirlds.regression.logs.services;
 
 import com.swirlds.regression.logs.LogParser;
+import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 
 public class HAPIClientLogParser implements LogParser<HAPIClientLogEntry> {
 	@Override
