@@ -23,10 +23,27 @@ import java.util.List;
  * Configuration to run hedera-services regression
  */
 public class HederaServicesConfig {
+	/**
+	 * Used to run multiple suiteRunners in one testClient. Mainly used to run UmbrellaRedux tests
+	 */
 	private boolean performanceRun = false;
+	/**
+	 * Is true if the testSuites mentioned in configuration also has CI properties
+	 * after testSuite name, with space delimiter
+	 */
 	private boolean ciPropsMap = false;
+	/**
+	 * list of testSuites that should be run in one experiment
+	 */
 	private List<String> testSuites;
+	/**
+	 * number of suiteRunner processes that should be run in testClient.
+	 * When performanceRun is true, this number is considered
+	 */
 	private int numOfSuiteRunnerProcesses = 1;
+	/**
+	 * If false node is fixed, else it is random
+	 */
 	private boolean isFixedNode = false;
 
 	public List<String> getTestSuites() {
