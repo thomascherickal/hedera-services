@@ -112,22 +112,29 @@ public class ExperimentServicesHelper {
 	 *
 	 * @param isTestClientNode
 	 * @param pemFile
+	 * @param addedFiles
 	 * @return
 	 */
-	public Collection<File> getListOfFilesToSend(boolean isTestClientNode, File pemFile) {
+	public Collection<File> getListOfFilesToSend(boolean isTestClientNode, File pemFile,
+			ArrayList<File> addedFiles) {
 		//If it is services-regression based on the type of node (test-client node or server node)
 		// upload necessary files
+		Collection<File> filesToSend;
 		if (isTestClientNode) {
-			Collection<File> filesToSend = getServicesClientFilesToUpload(pemFile);
+			filesToSend = getServicesClientFilesToUpload(pemFile);
 			if (this.testConfig.getHederaServicesConfig().getTestSuites().
 					contains("UpdateServerFiles")) {
 				//build new jar file for update feature test
 				addUpdateServerFilesScripts(filesToSend);
 			}
-			return filesToSend;
 		} else {
-			return getServicesFilesToUpload(pemFile);
+			filesToSend = getServicesFilesToUpload(pemFile);
 		}
+
+		if (addedFiles != null) {
+			filesToSend.addAll(addedFiles);
+		}
+		return filesToSend;
 	}
 
 	private void addUpdateServerFilesScripts(Collection<File> filesToSend) {
@@ -176,7 +183,7 @@ public class ExperimentServicesHelper {
 		final SSHService firstTestClientNode = testClientNodes.get(0);
 		log.info(MARKER, "TestClientNode {}, {}", testClientNodes.size(), firstTestClientNode.toString());
 		experiment.calculateNodeMemoryProfile(firstTestClientNode);
-		Collection<File> filesToSend = getListOfFilesToSend(true, new File(experiment.getPEMFile()));
+		Collection<File> filesToSend = getListOfFilesToSend(true, new File(experiment.getPEMFile()), addedFiles);
 		experiment.sendTarToNode(firstTestClientNode, filesToSend);
 
 		// Get list of address of other N-1 nodes test client nodes

@@ -1080,10 +1080,7 @@ public class Experiment implements ExperimentSummary {
 
 		if (testConfig.isServicesRegression()) {
 			filesToSend = experimentServicesHelper.getListOfFilesToSend(
-					false, new File(getPEMFile()));
-			if (addedFiles != null) {
-				filesToSend.addAll(addedFiles);
-			}
+					false, new File(getPEMFile()), addedFiles);
 		} else {
 			filesToSend = gatherFilesToSendToNode(addedFiles);
 		}
