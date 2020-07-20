@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ (c) 2016-2019 Swirlds, Inc.
+  ~ (c) 2016-2020 Swirlds, Inc.
   ~
   ~ This software is the confidential and proprietary information of
   ~ Swirlds, Inc. ("Confidential Information"). You shall not
@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>com.swirlds</groupId>
 		<artifactId>swirlds-platform</artifactId>
-		<version>0.7.0-alpha.2</version>
+		<version>0.7.0-alpha.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -196,7 +196,7 @@
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-common</artifactId>
-			<version>0.7.0-alpha.2</version>
+			<version>0.7.0-alpha.3</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
@@ -236,18 +236,18 @@
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>fcmap-test</artifactId>
-			<version>0.7.0-alpha.2</version>
+			<version>0.7.0-alpha.3</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>swirlds-fcmap</artifactId>
-			<version>0.7.0-alpha.2</version>
+			<version>0.7.0-alpha.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.swirlds</groupId>
 			<artifactId>PlatformTestingApp</artifactId>
-			<version>0.7.0-alpha.2</version>
+			<version>0.7.0-alpha.3</version>
 			<scope>compile</scope>
 		</dependency>
 
