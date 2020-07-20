@@ -26,7 +26,7 @@ public class HederaServicesConfig {
 	/**
 	 * Used to run multiple suiteRunners in one testClient. Mainly used to run UmbrellaRedux tests
 	 */
-	private boolean performanceRun = false;
+	private boolean runMultipleSuiteRunners = false;
 	/**
 	 * Is true if the testSuites mentioned in configuration also has CI properties
 	 * after testSuite name, with space delimiter
@@ -37,8 +37,8 @@ public class HederaServicesConfig {
 	 */
 	private List<String> testSuites;
 	/**
-	 * number of suiteRunner processes that should be run in testClient.
-	 * When performanceRun is true, this number is considered
+	 * number of suiteRunner processes that should be run in testClient, mainly used for UmbrellaRedux tests.
+	 * When runMultipleSuiteRunners is true, this number is considered
 	 */
 	private int numOfSuiteRunnerProcesses = 1;
 	/**
@@ -79,11 +79,11 @@ public class HederaServicesConfig {
 		this.fixedNode = fixedNode;
 	}
 
-	public boolean isPerformanceRun() {
-		return performanceRun;
+	public boolean isRunMultipleSuiteRunners() {
+		return runMultipleSuiteRunners;
 	}
 
-	public void setPerformanceRun(boolean performanceRun) {
-		this.performanceRun = performanceRun;
+	public void setRunMultipleSuiteRunners(boolean runMultipleSuiteRunners) {
+		this.runMultipleSuiteRunners = runMultipleSuiteRunners;
 	}
 }
