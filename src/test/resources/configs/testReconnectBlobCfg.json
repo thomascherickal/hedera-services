@@ -9,7 +9,7 @@
     {"name":"showInternalStats", "value": "1" },
     {"name":"csvFileName", "value":"PlatformTesting" },
     {"name":"csvAppend", "value":"true"},
-    {"name":"reconnectActive", "value":"1"},
+    {"name":"reconnect.active", "value":"1"},
     {"name":"enableEventStreaming", "value":"true"}
   ],
   "reconnectConfig": {

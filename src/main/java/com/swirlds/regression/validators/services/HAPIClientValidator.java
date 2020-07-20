@@ -15,11 +15,13 @@
  * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
-package com.swirlds.regression.validators;
+package com.swirlds.regression.validators.services;
 
 import com.swirlds.regression.logs.LogReader;
 import com.swirlds.regression.logs.services.HAPIClientLogEntry;
 import com.swirlds.regression.slack.SlackMsg;
+import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.Validator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -29,9 +31,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ * Validates logs on test-client node
+ */
 public class HAPIClientValidator extends Validator {
-	private List<NodeData> testClientNodeData;
+	private List<HapiClientData> testClientNodeData;
 	private boolean isValid;
 	private boolean isValidated;
 
@@ -58,7 +62,7 @@ public class HAPIClientValidator extends Validator {
 	 *
 	 * @param testClientNodeData
 	 */
-	public HAPIClientValidator(final List<NodeData> testClientNodeData) {
+	public HAPIClientValidator(final List<HapiClientData> testClientNodeData) {
 		this.testClientNodeData = testClientNodeData;
 		isValid = true;
 		isValidated = false;
@@ -80,8 +84,23 @@ public class HAPIClientValidator extends Validator {
 		for (int i = 0; i < nodeNum; i++) {
 			LogReader<HAPIClientLogEntry> clientLogReader = testClientNodeData.get(i).
 					getHapiClientLogReader();
-			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
-					Arrays.asList(STARTING_OF_SUITE));
+			HAPIClientLogEntry start;
+			// check if any errors exist till any suite starts
+			while (true) {
+				start = clientLogReader.nextEntry();
+				if (start.getLogEntry().contains(STARTING_OF_SUITE)) {
+					break;
+				} else if (start.isException()) {
+					addError(start.getLogEntry());
+				}
+			}
+
+			if (start == null) {
+				// If Starting of Suite doesn't exist when reading a file, it is an error
+				addError(String.format("None of the suites started in node %d", i));
+				continue;
+			}
+
 			while (true) {
 				if (start == null || !start.getLogEntry().contains(STARTING_OF_SUITE)) {
 					break;

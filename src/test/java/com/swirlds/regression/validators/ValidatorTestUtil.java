@@ -19,6 +19,7 @@ package com.swirlds.regression.validators;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.swirlds.regression.csv.CsvReader;
 import com.swirlds.regression.jsonConfigs.TestConfig;
 import com.swirlds.regression.logs.LogReader;
@@ -151,8 +152,8 @@ public abstract class ValidatorTestUtil {
 		return objectMapper.readValue(jsonData, TestConfig.class);
 	}
 
-	public static List<NodeData> loadTestClientNodeData(String directory, int numberOfTestClients) {
-		List<NodeData> nodeData = new ArrayList<>();
+	public static List<HapiClientData> loadTestClientNodeData(String directory, int numberOfTestClients) {
+		List<HapiClientData> nodeData = new ArrayList<>();
 		for (int i = 0; i< numberOfTestClients ; i++) {
 			String hapiClientLogFileName = String.format("%s/node%04d-TestClient/"+
 					OUTPUT_LOG_FILENAME, directory, i);
@@ -162,7 +163,7 @@ public abstract class ValidatorTestUtil {
 			if (logInput != null) {
 				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
 			}
-			nodeData.add(new NodeData(logReader));
+			nodeData.add(new HapiClientData(logReader));
 		}
 		if (nodeData.size() == 0) {
 			throw new RuntimeException("Cannot find log files in: " + directory);

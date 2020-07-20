@@ -23,13 +23,39 @@ import java.util.List;
  * Configuration to run hedera-services regression
  */
 public class HederaServicesConfig {
-	private boolean performanceRun = false;
+	/**
+	 * Used to run multiple suiteRunners in one testClient. Mainly used to run UmbrellaRedux tests
+	 */
+	private boolean runMultipleSuiteRunners = false;
+	/**
+	 * Is true if the testSuites mentioned in configuration also has CI properties
+	 * after testSuite name, with space delimiter
+	 */
+	private boolean ciPropsMap = false;
+	/**
+	 * list of testSuites that should be run in one experiment
+	 */
 	private List<String> testSuites;
-	private int numOfSuiteRunnerProcesses = 10;
-	private boolean isFixedNode = false;
+	/**
+	 * number of suiteRunner processes that should be run in testClient, mainly used for UmbrellaRedux tests.
+	 * When runMultipleSuiteRunners is true, this number is considered
+	 */
+	private int numOfSuiteRunnerProcesses = 1;
+	/**
+	 * If false node is fixed, else it is random
+	 */
+	private boolean fixedNode = false;
 
 	public List<String> getTestSuites() {
 		return testSuites;
+	}
+
+	public boolean hasCiPropsMap() {
+		return ciPropsMap;
+	}
+
+	public void setCiPropsMap(boolean ciPropsMap) {
+		this.ciPropsMap = ciPropsMap;
 	}
 
 	public void setTestSuites(List<String> testSuites) {
@@ -46,18 +72,18 @@ public class HederaServicesConfig {
 	}
 
 	public boolean isFixedNode() {
-		return isFixedNode;
+		return fixedNode;
 	}
 
 	public void setFixedNode(boolean fixedNode) {
-		isFixedNode = fixedNode;
+		this.fixedNode = fixedNode;
 	}
 
-	public boolean isPerformanceRun() {
-		return performanceRun;
+	public boolean isRunMultipleSuiteRunners() {
+		return runMultipleSuiteRunners;
 	}
 
-	public void setPerformanceRun(boolean performanceRun) {
-		this.performanceRun = performanceRun;
+	public void setRunMultipleSuiteRunners(boolean runMultipleSuiteRunners) {
+		this.runMultipleSuiteRunners = runMultipleSuiteRunners;
 	}
 }

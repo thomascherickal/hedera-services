@@ -1,29 +1,17 @@
 {
-  "name": "regression-services-test-Neeha",
+  "name":"663-restart-validation",
   "result": {
-	"uri": "results"
+	"uri":"testing/results"
   },
-  "cloud": {
-	"service": "aws",
-	"securityGroup": "SwirldsSecGroup",
-	"instanceType": "M42xlarge",
-	"instanceKey": "regression-key-neeha",
-	"keyLocation": "./keys/my-key",
-	"login": "ubuntu",
-	"regionList": [
-	  {
-		"region": "us-east-2",
-		"numberOfNodes" : 2,
-		"numberOfTestClientNodes": 1
-	  }
-	]
+  "local":{
+	"numberOfNodes" : 4
   },
   "eventFilesWriters": 2,
   "log": {
 	"uri":"testing/logs/"
   },
   "experiments": [
-	"configs/testServicesDemoCfg.json"
+	"configs/testRestartCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -31,12 +19,5 @@
 	"address": "localhost",
 	"port": "5432",
 	"database": "stats"
-  },
-  "slack": {
-	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
-	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "UL19K9CTB",
-	"notifyOn": "ERROR"
-  },
-  "uploadToSharePoint": false
+  }
 }

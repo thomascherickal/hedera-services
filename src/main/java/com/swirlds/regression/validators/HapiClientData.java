@@ -17,24 +17,22 @@
 
 package com.swirlds.regression.validators;
 
-public enum ValidatorType {
-	STANDARD,
-	RESTART,
-	RECONNECT,
-	PLATFORM_CSV,
-	FCM_CSV,
-	FCFS_CSV,
-	PLATFORM_TESTING_DEMO,
-	STATS,
-	RECOVER_STATE,
-	THROTTLE,
-	PTA_THROTTLE,
-	BLOB_STATE,
-	MIGRATION,
-	STDOUT,
-	GOSSIP_COMPENSATION,
-	LIFECYCLE,
-	HAPI_CLIENT,
-	HGCAA,
-	HEDERA_NODE
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.services.HAPIClientLogEntry;
+
+public class HapiClientData {
+	private LogReader<HAPIClientLogEntry> hapiClientLogReader;
+
+	/**
+	 * Used for services regression to validate test client node logs
+	 *
+	 * @param logReader
+	 */
+	public HapiClientData(LogReader<HAPIClientLogEntry> logReader) {
+		this.hapiClientLogReader = logReader;
+	}
+
+	public LogReader<HAPIClientLogEntry> getHapiClientLogReader() {
+		return hapiClientLogReader;
+	}
 }

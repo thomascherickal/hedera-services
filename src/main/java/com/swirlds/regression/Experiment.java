@@ -33,7 +33,7 @@ import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
-import com.swirlds.regression.validators.HGCAAValidator;
+import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
@@ -44,6 +44,7 @@ import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
 import com.swirlds.regression.validators.ValidatorFactory;
 import com.swirlds.regression.validators.ValidatorType;
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -59,11 +60,9 @@ import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -88,6 +87,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.swirlds.regression.ExperimentServicesHelper.STARTING_CRYPTO_ACCOUNT;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
@@ -110,19 +110,15 @@ import static com.swirlds.regression.RegressionUtilities.REMOTE_SAVED_FOLDER;
 import static com.swirlds.regression.RegressionUtilities.REMOTE_SWIRLDS_LOG;
 import static com.swirlds.regression.RegressionUtilities.SETTINGS_FILE;
 import static com.swirlds.regression.RegressionUtilities.STANDARD_CHARSET;
-import static com.swirlds.regression.RegressionUtilities.STARTING_CRYPTO_ACCOUNT;
 import static com.swirlds.regression.RegressionUtilities.STATE_SAVED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TAR_NAME;
 import static com.swirlds.regression.RegressionUtilities.TEST_TIME_EXCEEDED_MSG;
 import static com.swirlds.regression.RegressionUtilities.TOTAL_STAKES;
 import static com.swirlds.regression.RegressionUtilities.USE_STAKES_IN_CONFIG;
 import static com.swirlds.regression.RegressionUtilities.WRITE_FILE_DIRECTORY;
-import static com.swirlds.regression.RegressionUtilities.getHederaServicesRepoPath;
 import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
-import static com.swirlds.regression.RegressionUtilities.getServicesClientFilesToUpload;
-import static com.swirlds.regression.RegressionUtilities.getServicesFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
 import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
@@ -173,6 +169,7 @@ public class Experiment implements ExperimentSummary {
 	protected String slackLink = null;
 
 	private ExperimentLocalFileHelper experimentLocalFileHelper;
+	private ExperimentServicesHelper experimentServicesHelper;
 
 	@Override
 	public boolean hasWarnings() {
@@ -196,6 +193,14 @@ public class Experiment implements ExperimentSummary {
 
 	public void setSlackLink(String slackLink) {
 		this.slackLink = slackLink;
+	}
+
+	public ArrayList<SSHService> getSSHNodes() {
+		return sshNodes;
+	}
+
+	public ArrayList<SSHService> getTestClientNodes() {
+		return testClientNodes;
 	}
 
 	public void setUseThreadPool(boolean useThreadPool) {
@@ -274,7 +279,7 @@ public class Experiment implements ExperimentSummary {
 	 * @param tasks
 	 * 		A list of runnable task
 	 */
-	private void threadPoolService(List<Runnable> tasks) {
+	protected void threadPoolService(List<Runnable> tasks) {
 		if (useThreadPool) {
 			if (tasks.size() > 0) {
 				if (es == null) {
@@ -308,41 +313,7 @@ public class Experiment implements ExperimentSummary {
 	 * Start Browser and HederaNode.jar. When they start running , start SuiteRunner.jar to run Services regression
 	 */
 	public void startServicesRegression(boolean startSuiteRunner) {
-		// start Browser and HGCApp
-		startHGCApp();
-		try {
-			// need wait long enough for service init finished
-			Thread.sleep(35000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (startSuiteRunner) {
-			// Once the HGCApp jar starts running , run test clients
-			startSuiteRunner();
-		}
-	}
-
-	/**
-	 * Start SuiteRunner JAR to run services-regression
-	 */
-	public void startSuiteRunner() {
-		threadPoolService(testClientNodes.stream().<Runnable>map(node -> () -> {
-			node.execTestClientWithProcessID(getJVMOptionsString(), testConfig);
-			log.info(MARKER, "node:{} SuiteRunner.jar started.", node.getIpAddress());
-		}).collect(Collectors.toList()));
-	}
-
-	/**
-	 * Start Browser and corresponding HederaNode.jar, if services regression is enabled
-	 */
-	public void startHGCApp() {
-		threadPoolService(sshNodes.stream().<Runnable>map(node -> () -> {
-			// Sometimes the environment variable in application properties is set to DEV.
-			// Modify it automatically to PROD when running regression on AWS
-			node.modifyEnvToProd();
-			node.execHGCAppWithProcessID(getJVMOptionsString());
-			log.info(MARKER, "node:{} Browser started.", node.getIpAddress());
-		}).collect(Collectors.toList()));
+		experimentServicesHelper.startServicesRegression(startSuiteRunner);
 	}
 
 	public void stopAllSwirlds() {
@@ -671,66 +642,10 @@ public class Experiment implements ExperimentSummary {
 		return true;
 	}
 
-	/**
-	 * Execute a process and dump its output
-	 */
-	public static void execCmd(Process process) throws java.io.IOException {
-		try {
-			process.waitFor();
-		} catch (InterruptedException e) {
-			log.error(ERROR, "Erorr", e);
-		}
-		BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-		BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-		// read the output from the command
-		log.info(MARKER, "Here is the standard output of the command:\n");
-		String s;
-		while ((s = stdInput.readLine()) != null) {
-			log.info(MARKER, s);
-		}
-		// read any errors from the attempted command
-		log.info(MARKER, "Here is the standard error of the command (if any):\n");
-		while ((s = stdError.readLine()) != null) {
-			log.info(MARKER, s);
-		}
-	}
-
-	private void sendTarToNode(SSHService currentNode, ArrayList<File> addedFiles, boolean isTestClientNode) {
-		String pemFile = regConfig.getCloud().getKeyLocation() + ".pem";
+	protected void sendTarToNode(SSHService currentNode, Collection<File> filesToSend) {
+		String pemFile = getPEMFile();
 		String pemFileName = pemFile.substring(pemFile.lastIndexOf('/') + 1);
 		long startTime = System.nanoTime();
-		Collection<File> filesToSend;
-
-		if (testConfig.isServicesRegression()) {
-			//If its is services-regression based on the type of node (test-client node or server node)
-			// upload necessary files
-			if (isTestClientNode) {
-				filesToSend = getServicesClientFilesToUpload(new File(pemFile));
-				if (this.testConfig.getHederaServicesConfig().getTestSuites().contains("UpdateServerFiles")) {
-					//build new jar file for update feature test
-					String Command = "scripts/regressionFlowUpdateFiles.sh";
-					try {
-						File workDirectory = new File(String.format("%s/test-clients", getHederaServicesRepoPath()));
-						Process p = Runtime.getRuntime().exec(Command, null, workDirectory);
-						execCmd(p);
-						String newJarPath = getHederaServicesRepoPath() + "/test-clients/updateFiles/";
-						log.info(MARKER, "newJarPath = " + newJarPath);
-						filesToSend.add(new File(newJarPath));
-					} catch (IOException e) {
-						log.error(ERROR, "Error ", e);
-					}
-				}
-			} else {
-				filesToSend = getServicesFilesToUpload(new File(pemFile));
-			}
-			if (addedFiles != null) {
-				filesToSend.addAll(addedFiles);
-			}
-		} else {
-			filesToSend = getSDKFilesToUpload(
-					new File(pemFile), new File(testConfig.getLog4j2File()), addedFiles);
-		}
-
 		File oldTarFile = new File(TAR_NAME);
 		if (oldTarFile.exists()) {
 			oldTarFile.delete();
@@ -743,6 +658,15 @@ public class Experiment implements ExperimentSummary {
 		currentNode.executeCmd("chmod 400 ~/" + REMOTE_EXPERIMENT_LOCATION + pemFileName);
 		long endTime = System.nanoTime();
 		log.trace(MARKER, "Took {} seconds to upload tarball", (endTime - startTime) / 1000000000);
+	}
+
+	private Collection<File> gatherFilesToSendToNode(ArrayList<File> addedFiles) {
+		return getSDKFilesToUpload(
+				new File(getPEMFile()), new File(testConfig.getLog4j2File()), addedFiles);
+	}
+
+	public String getPEMFile() {
+		return regConfig.getCloud().getKeyLocation() + ".pem";
 	}
 
 	@Override
@@ -769,7 +693,6 @@ public class Experiment implements ExperimentSummary {
 		for (int i = 0; i < numberOfNodes; i++) {
 			for (String logFile : testConfig.getResultFiles()) {
 				String logFileName = experimentLocalFileHelper.getExperimentResultsFolderForNode(i) + logFile;
-
 				InputStream logInput = getInputStream(logFileName);
 
 				String csvFileName = settingsFile.getSettingValue("csvFileName") + i + ".csv";
@@ -796,7 +719,6 @@ public class Experiment implements ExperimentSummary {
 		}
 		return nodeData;
 	}
-
 
 	private void validateTest() {
 		SlackTestMsg slackMsg = new SlackTestMsg(
@@ -851,15 +773,15 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 
-			List<NodeData> testClientNodeData = new ArrayList<>();
+			List<HapiClientData> testClientNodeData = new ArrayList<>();
 			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
-				testClientNodeData = experimentLocalFileHelper.
+				testClientNodeData = experimentServicesHelper.
 						loadTestClientNodeData(testClientNodes);
 			}
 
 			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
 			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
-				hederaNodeHGCAAData = experimentLocalFileHelper.
+				hederaNodeHGCAAData = experimentServicesHelper.
 						loadHederaNodeHGCAAData(sshNodes);
 			}
 
@@ -870,6 +792,10 @@ public class Experiment implements ExperimentSummary {
 					testConfig.isServicesRegression() ? null : experimentLocalFileHelper.loadExpectedMapPaths(),
 					testClientNodeData, hederaNodeHGCAAData);
 
+			if (item == ValidatorType.BLOB_STATE) {
+				((BlobStateValidator) validatorToAdd).setExperimentFolder(
+						experimentLocalFileHelper.getExperimentFolder());
+			}
 			requiredValidator.add(validatorToAdd);
 		}
 		List<NodeData> nodeData = loadNodeData(testConfig.getName());
@@ -936,12 +862,6 @@ public class Experiment implements ExperimentSummary {
 		warnings = warnings || slackMsg.hasWarnings();
 		errors = errors || slackMsg.hasErrors();
 		exceptions = exceptions || slackMsg.hasExceptions();
-	}
-
-	private void addToValidatorList(ValidatorType item,
-			List<NodeData> nodeData,
-			List<NodeData> testClientNodeData,
-			List<Validator> requiredValidator) {
 	}
 
 	private int getLastStakedNode() {
@@ -1036,7 +956,7 @@ public class Experiment implements ExperimentSummary {
 
 		//set the built public Ip string with crypto accounts
 		if (testConfig.isServicesRegression()) {
-			RegressionUtilities.setPublicIPStringForServices(configFile.getPublicIPsWithCryptoAccounts());
+			ExperimentServicesHelper.setPublicIPStringForServices(configFile.getPublicIPsWithCryptoAccounts());
 		}
 	}
 
@@ -1137,6 +1057,7 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	void runRemoteExperiment(CloudService cld, GitInfo git) throws IOException {
+		experimentServicesHelper = new ExperimentServicesHelper(this);
 		//TODO: unit test for null cld
 		if (cld == null) {
 			log.error(ERROR, "Cloud instance was null, cannot run test!");
@@ -1157,9 +1078,18 @@ public class Experiment implements ExperimentSummary {
 			addedFiles.add(new File("src/main/resources/block_sync_port.sh"));
 		}
 		//Step 1, send tar to node 0
+		Collection<File> filesToSend;
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
-		sendTarToNode(firstNode, addedFiles, false);
+
+		if (testConfig.isServicesRegression()) {
+			filesToSend = experimentServicesHelper.getListOfFilesToSend(
+					false, new File(getPEMFile()), addedFiles);
+		} else {
+			filesToSend = gatherFilesToSendToNode(addedFiles);
+		}
+
+		sendTarToNode(firstNode, filesToSend);
 
 		//Step 2, node 0 use a rsync to send files to other nodes in parallel mode
 		//ATF server launch a single SSH session on node0, and node0 uses N-1 rsync sessions
@@ -1173,7 +1103,7 @@ public class Experiment implements ExperimentSummary {
 
 		// Send suite runner jar to test client nodes if there are any
 		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
-			sendTarToTestClientNodes(addedFiles);
+			experimentServicesHelper.sendTarToTestClientNodes(addedFiles);
 		}
 
 		//Step 3, copy saved state to nodes if necessary
@@ -1278,7 +1208,7 @@ public class Experiment implements ExperimentSummary {
 				}).collect(Collectors.toList()));
 
 		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
-			scpFromTestClientNode();
+			experimentServicesHelper.scpFromTestClientNode();
 		}
 
 		log.info(MARKER, "Downloaded experiment data");
@@ -1333,48 +1263,13 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Send suite runner jar and other needed files to test client nodes
-	 *
-	 * @param addedFiles
-	 */
-	private void sendTarToTestClientNodes(ArrayList<File> addedFiles) {
-		final SSHService firstTestClientNode = testClientNodes.get(0);
-		log.info(MARKER, "TestClientNode {}, {}", testClientNodes.size(), firstTestClientNode.toString());
-		calculateNodeMemoryProfile(firstTestClientNode);
-		sendTarToNode(firstTestClientNode, addedFiles, true);
-
-		// Get list of address of other N-1 nodes test client nodes
-		List<String> testClientIpAddresses = IntStream.range(1, testClientNodes.size()).mapToObj(
-				i -> testClientNodes.get(i).getIpAddress()).collect(Collectors.toList());
-		firstTestClientNode.rsyncTo(addedFiles,
-				new File(testConfig.getLog4j2File()), testClientIpAddresses, true);
-		log.info(MARKER, "upload to test client nodes has finished");
-	}
-
-	/**
-	 * Download necessary files that need to be validated from test client nodes
-	 * Downloaded files will be placed in folder appended with "TestClient"
-	 */
-	private void scpFromTestClientNode() {
-		threadPoolService(IntStream.range(0, testClientNodes.size())
-				.<Runnable>mapToObj(i -> () -> {
-					SSHService node = testClientNodes.get(i);
-					boolean success = false;
-					while (!success)
-						success =
-								node.scpFromTestClient(experimentLocalFileHelper
-										.getExperimentResultsFolderForTestClientNode(i));
-				}).collect(Collectors.toList()));
-	}
-
-	/**
 	 * Calls the node to get total memory, and then sets nodeMemoryProfile to that amount.
 	 * This assumes all nodes are the same type of instance.
 	 *
 	 * @param currentNode
 	 * 		- the node to be profiled
 	 */
-	private void calculateNodeMemoryProfile(SSHService currentNode) {
+	protected void calculateNodeMemoryProfile(SSHService currentNode) {
 		String totalNodeMemory = currentNode.checkTotalMemoryOnNode();
 		nodeMemoryProfile = new NodeMemory(totalNodeMemory);
 	}
@@ -1580,7 +1475,7 @@ public class Experiment implements ExperimentSummary {
 	 *
 	 * @return string containing JVM options
 	 */
-	private String getJVMOptionsString() {
+	protected String getJVMOptionsString() {
 		String javaOptions;
         /* if the individual parameters for jvm options are set create the appropriate string, if not use the default.
         If a jvm options string was given in the regression config use that instead.
@@ -1669,7 +1564,6 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	void setupTest(TestConfig experiment) {
-
 		this.testConfig = experiment;
 		RegressionUtilities.setTestConfig(testConfig);
 
@@ -1679,12 +1573,16 @@ public class Experiment implements ExperimentSummary {
 
 		// set up the suites from SuiteRunner that should be run on test clients in services-regression
 		if (testConfig.isServicesRegression()) {
-			RegressionUtilities.setTestSuites(testConfig);
+			ExperimentServicesHelper.setTestSuites(testConfig);
 		}
 	}
 
 	public TestConfig getTestConfig() {
 		return testConfig;
+	}
+
+	public RegressionConfig getRegConfig() {
+		return regConfig;
 	}
 
 	public SettingsBuilder getSettingsFile() {
@@ -1906,5 +1804,9 @@ public class Experiment implements ExperimentSummary {
 	 */
 	public void setConfigApp(final AppConfig app) {
 		configFile.setApp(app);
+	}
+
+	public ExperimentLocalFileHelper getExperimentLocalFileHelper() {
+		return experimentLocalFileHelper;
 	}
 }

@@ -54,7 +54,6 @@ public class RestartRun implements TestRun {
 				testConfig.getRestartConfig().getRestartTiming(), experimentStartDelay, 0, false)) {
 			return;
 		}
-		;
 
 		log.info(MARKER, "First part of restart test completed.");
 

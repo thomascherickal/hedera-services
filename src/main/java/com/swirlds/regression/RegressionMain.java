@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
+import static com.swirlds.regression.ExperimentServicesHelper.setHederaServicesRepoPath;
 import static com.swirlds.regression.RegressionUtilities.CLOUD_WAIT_MILLIS;
 import static com.swirlds.regression.RegressionUtilities.WAIT_NODES_READY_TIMES;
 import static java.lang.Thread.sleep;
@@ -367,7 +368,7 @@ public class RegressionMain {
 			regressionFile = args[0];
 			if (args.length == 2) {
 				hederaServicesPath = args[1];
-				RegressionUtilities.setHederaServicesRepoPath(hederaServicesPath);
+				setHederaServicesRepoPath(hederaServicesPath);
 			}
 		} else {
 			log.info(MARKER, "regression file not found, using default regression file: {}",

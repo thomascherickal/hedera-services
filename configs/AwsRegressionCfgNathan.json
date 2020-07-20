@@ -1,5 +1,5 @@
 {
-  "name": "Nathan-02056-D-merkle-reconnect-v5-6N-2ZSN-Final-7560408",
+  "name": "Nathan-develop-Init-6N-2ZSN-c6f97d6a",
   "result": {
 	"uri": "results"
   },
@@ -54,23 +54,16 @@
 	"configs/testSigningDemo4KCfg.json",
 	"configs/testFcmMultipleOperationsCfg.json",
 	// Fails in develop
-	//	"configs/testStateRecover.json",
-	//	"configs/testStateRecoverBlob.json",
-	//	"configs/testStateRecoverFCQ.json",
-
-
+	"configs/testStateRecover.json",
+	"configs/testStateRecoverBlob.json",
+	"configs/testStateRecoverFCQ.json",
 	// Works
 	"configs/testRestartCfg.json",
 	// Fails in develop
-	//	"configs/testRestartBlobCfg.json",
-
-
+	"configs/testRestartBlobCfg.json"
 	// Works
 	"configs/testFcmFreezeCfg.json",
-	// Fails in develop
-	//	"configs/testFcmFreezeBlobCfg.json",
-
-
+	"configs/testFcmFreezeBlobCfg.json"
 	// Works
 	"configs/testFcmMultisizeBlobCfg.json",
 	"configs/testFcmFreezeFCQCfg.json",
@@ -79,24 +72,18 @@
 	//	"configs/testReconnectFCMMultiReconnectCfg.json",
 	//	"configs/testReconnectFCQMultiReconnectCfg.json",
 	//	"configs/testReconnectBlobCfg.json",
-
-
 	// Works
-	"configs/testFcm1kThrottlingCfg.json"
+	"configs/testMigrationAppCfg2K.json",
+	"configs/testMigrationAppCfg.json",
+	"configs/testFcm1kThrottlingCfg.json",
+	"configs/testFcmSmallBlobCfg.json"
 	// Large Test - Disabled Temp
 	//	"configs/testFcmCfg.json",
-	// Fails in develop
-	//"configs/testFcmSmallBlobCfg.json",
-
-
 	// Large Test - Disabled Temp
 	//	"configs/testFcmLargeBlobCfg.json"
 
-
 	// Fails in develop
-	//	"configs/testMigrationAppCfg2K.json",
-	//	"configs/testMigrationAppCfg.json",
-	//	"configs/testFcmFCQ1KSavedStateCfg.json"
+	//		"configs/testFcmFCQ1KSavedStateCfg.json",
   ],
   "db": {
 	"type": "postgresql",

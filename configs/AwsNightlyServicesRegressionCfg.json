@@ -1,5 +1,5 @@
 {
-  "name": "Services-Regression-JRS",
+  "name": "Services-Regression-JRS-merge-develop",
   "result": {
 	"uri": "results"
   },
@@ -20,7 +20,7 @@
 //		  "i-016f31caf60b56d05",
 //		  "i-0d32c933b840102e4"
 //		],
-		"numberOfTestClientNodes": 3
+		"numberOfTestClientNodes": 1
 //		"testClientInstanceList": [
 //		  "i-0b05bbccb5dae1de7",
 //		  "i-0e9cf8f8300a9643c",
@@ -35,10 +35,10 @@
 	"uri":"testing/logs/"
   },
   "experiments": [
-	//"configs/testServicesFreezeUpdateCfg.json",
-//	"configs/testServicesDemoCfg.json",
-	"configs/testUmbrellaReduxMixedCfg.json"
-	//"configs/testCryptoTransferLoadTestCfg.json"
+	"configs/testServicesFreezeUpdateCfg.json",
+	"configs/testServicesDemoCfg.json",
+	"configs/testUmbrellaReduxMixedCfg.json",
+	"configs/testCryptoTransferLoadTestCfg.json"
   ],
   "db": {
 	"type": "postgresql",
@@ -50,7 +50,7 @@
   "slack": {
 	"token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
 	"botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
-	"channel": "hedera-regression",
+	"channel": "regression-test",
 	"notifyUserIds": ["UL19K9CTB"],
 	"notifyOn": "ERROR"
   },

@@ -29,10 +29,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SSHServiceTest {
@@ -341,28 +345,5 @@ public class SSHServiceTest {
 		// the node's new config file should contain postAppName
 		assertEquals(1, currentNode.countSpecifiedMsg(
 				List.of(postAppName), REMOTE_EXPERIMENT_LOCATION + CONFIG_FILE));
-	}
-
-	@Test
-	public void checkParsingNodeIP(){
-		String publicIpList = "18.24.192.0:0.0.3,24.25.25.25:0.0.4";
-		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
-		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
-		for(int i=0;i<15;i++) {
-			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
-			String currentIP = pair[0];
-			String[] accountElements = pair[1].split(".");
-			String currentAcctNum = accountElements[2];
-		}
-
-	}
-
-	public String[] parseNodeIPandAccounts(String publicIpList) {
-		String[] nodeIPandAccounts = publicIpList.split(",");
-
-		for(int i = 0; i < nodeIPandAccounts.length; i++) {
-			log.info("Node {} address and account {}", i, nodeIPandAccounts[i]);
-		}
-		return nodeIPandAccounts;
 	}
 }

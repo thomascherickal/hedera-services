@@ -28,7 +28,7 @@
 	  "value": "true"
 	},
 	{
-	  "name": "reconnectActive",
+	  "name": "reconnect.active",
 	  "value": "1"
 	},
 	{
