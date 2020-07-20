@@ -26,7 +26,8 @@
   "experiments": [
 	"configs/testServicesFreezeUpdateCfg.json",
 	"configs/testServicesDemoCfg.json",
-	"configs/testUmbrellaReduxMixedCfg.json",
+	"configs/testUmbrellaReduxCryptoTransfersCfg.json",
+	//"configs/testUmbrellaReduxMixedCfg.json",
 	"configs/testCryptoTransferLoadTestCfg.json"
   ],
   "db": {

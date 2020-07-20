@@ -30,7 +30,7 @@
 	"ciPropsMap" : true,
 	"numOfSuiteRunnerProcesses" : 10,
 	"testSuites": [
-	  "UmbrellaRedux duration=10,unit=MINUTES,props=regression-mixed_ops.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
+	  "UmbrellaRedux duration=10,unit=MINUTES,props=regression-xfer_only_crypto.properties,maxOpsPerSec=300,maxPendingOps=100000,backoffSleepSecs=3"
 	]
   },
   "memoryLeakCheckConfig": {
