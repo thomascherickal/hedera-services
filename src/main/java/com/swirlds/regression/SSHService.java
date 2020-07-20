@@ -480,7 +480,7 @@ public class SSHService {
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
-		if (testConfig.isServicesRegression() && testConfig.getHederaServicesConfig().isPerformanceRun()) {
+		if (testConfig.isServicesRegression() && testConfig.getHederaServicesConfig().isRunMultipleSuiteRunners()) {
 			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
 		}
 
