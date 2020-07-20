@@ -38,6 +38,7 @@ import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
+import com.swirlds.regression.validators.RecoverStateValidator;
 import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
@@ -787,7 +788,8 @@ public class Experiment implements ExperimentSummary {
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths(),
+					// service test does not generated expectedMap file
+					testConfig.isServicesRegression() ? null : experimentLocalFileHelper.loadExpectedMapPaths(),
 					testClientNodeData, hederaNodeHGCAAData);
 
 			if (item == ValidatorType.BLOB_STATE) {
@@ -839,7 +841,9 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
 					((StandardValidator) item).setIgnoreSyncException(true);
 				}
-
+				if (testConfig.isServicesRegression() && item instanceof RecoverStateValidator) {
+					((RecoverStateValidator)item).setServiceRegression(true);
+				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
@@ -1600,7 +1604,7 @@ public class Experiment implements ExperimentSummary {
 			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
 			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
 			if (stateNumber != node0StateNumber) {
-				log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
+				log.error(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
 						0, i, node0StateNumber, stateNumber);
 				result = false;
 			}
@@ -1658,15 +1662,6 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Restore database from backup file
-	 */
-	public void recoverDatabase() {
-		for (SSHService node : sshNodes) {
-			node.recoverDatabase();
-		}
-	}
-
-	/**
 	 * Hide expected map directory
 	 */
 	public void backupSavedExpectedMap() {
@@ -1681,6 +1676,12 @@ public class Experiment implements ExperimentSummary {
 	public void restoreSavedExpectedMap() {
 		for (SSHService node : sshNodes) {
 			node.restoreSavedExpectedMap();
+		}
+	}
+
+	public void removeRecordStreamFile() {
+		for (SSHService node : sshNodes) {
+			node.removeRecordStreamFile();
 		}
 	}
 

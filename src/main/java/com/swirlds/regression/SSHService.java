@@ -406,7 +406,7 @@ public class SSHService {
 
 	private void makeRemoteDirectory(String newDir) {
 		log.trace(MARKER, "Making new Dir: {} ", newDir);
-		String commandStr = "mkdir " + newDir;
+		String commandStr = "mkdir -p " + newDir;
 		final Session.Command cmd = execCommand(commandStr, "make new directory:" + newDir, -1);
 		log.info(MARKER, "** exit status for making directory: {} was {} ", newDir, cmd.getExitStatus());
 	}
@@ -1202,33 +1202,6 @@ public class SSHService {
 	}
 
 	/**
-	 * Restore database from backup file
-	 */
-	void recoverDatabase() {
-		var list = getSavedStatesDirectories();
-		String targetDir = list.get(list.size() - 1).getFullPath();
-		// get the last state directory
-		String restoreCmd = "cd " + targetDir + "; tar -xf PostgresBackup.tar.gz; pwd  ";
-		Session.Command cmd = executeCmd(restoreCmd);
-		log.info(MARKER, "Node {}: Unzip data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-
-		restoreCmd = "pwd ; sudo -u postgres psql -f \"" + REMOTE_EXPERIMENT_LOCATION + "drop_database.psql\" ";
-		cmd = executeCmd(restoreCmd);
-		log.info(MARKER, "Node {}: Drop data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-		restoreCmd = "cd " + targetDir + ";  sudo -u postgres createdb fcfs ; " +
-				" chmod 666 * ;" +  // enable access
-				" sudo -u postgres pg_restore  --format=d --dbname=fcfs ./ ; cd -";
-
-		log.info(MARKER, "Before run cmd {}:", restoreCmd);
-		cmd = executeCmd(restoreCmd);
-		log.info(MARKER, "Node {}: Restore data base result is {}", ipAddress, readCommandOutput(cmd).toString());
-
-	}
-
-
-	/**
 	 * Hide expected map directory
 	 */
 	void backupSavedExpectedMap() {
@@ -1243,12 +1216,17 @@ public class SSHService {
 	 * Restore expected map directory
 	 */
 	void restoreSavedExpectedMap() {
+		//remove record stream from previous run
 		String mvCmd =
 				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION +
 						"data/platformtesting";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
 
+	void removeRecordStreamFile() {
+		String mvCmd =  "cat settings.txt; ps -ef |grep java ; rm -rf " + REMOTE_EXPERIMENT_LOCATION + "data/recordstreams;";
+		Session.Command cmd = executeCmd(mvCmd);
+	}
 
 	/**
 	 * Backup signed state to a temp directory
