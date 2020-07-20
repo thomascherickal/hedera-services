@@ -24,10 +24,11 @@
 	  "value": "0"
 	}
   ],
-  "servicesRegression" : true,
-  "testSuites": [
-    "UpdateServerFiles"
-  ],
+  "hederaServicesConfig": {
+	"testSuites": [
+	  "UpdateServerFiles"
+	]
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },
@@ -43,4 +44,4 @@
 	"HAPI_CLIENT",
     "HGCAA"
   ]
-}
+},

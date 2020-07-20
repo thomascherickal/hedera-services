@@ -24,7 +24,6 @@
 	  "value": "0"
 	}
   ],
-  "servicesRegression" : true,
   "hederaServicesConfig": {
 	"runMultipleSuiteRunners" : true,
 	"ciPropsMap" : true,
