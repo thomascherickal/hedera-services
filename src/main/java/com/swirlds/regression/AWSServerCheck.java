@@ -1,5 +1,5 @@
 /*
- * (c) 2016-2018 Swirlds, Inc.
+ * (c) 2016-2020 Swirlds, Inc.
  *
  * This software is the confidential and proprietary information of
  * Swirlds, Inc. ("Confidential Information"). You shall not
