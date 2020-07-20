@@ -84,8 +84,16 @@ public class HAPIClientValidator extends Validator {
 		for (int i = 0; i < nodeNum; i++) {
 			LogReader<HAPIClientLogEntry> clientLogReader = testClientNodeData.get(i).
 					getHapiClientLogReader();
-			HAPIClientLogEntry start = clientLogReader.nextEntryContaining(
-					Arrays.asList(STARTING_OF_SUITE));
+			HAPIClientLogEntry start;
+			// check if any errors exist till any suite starts
+			while (true) {
+				start = clientLogReader.nextEntry();
+				if (start.getLogEntry().contains(STARTING_OF_SUITE)) {
+					break;
+				} else if (start.isException()) {
+					addError(start.getLogEntry());
+				}
+			}
 
 			if (start == null) {
 				// If Starting of Suite doesn't exist when reading a file, it is an error
