@@ -402,7 +402,7 @@ public class SSHService {
 
 	private void makeRemoteDirectory(String newDir) {
 		log.trace(MARKER, "Making new Dir: {} ", newDir);
-		String commandStr = "mkdir " + newDir;
+		String commandStr = "mkdir -p " + newDir;
 		final Session.Command cmd = execCommand(commandStr, "make new directory:" + newDir, -1);
 		log.info(MARKER, "** exit status for making directory: {} was {} ", newDir, cmd.getExitStatus());
 	}
@@ -1215,12 +1215,17 @@ public class SSHService {
 	 * Restore expected map directory
 	 */
 	void restoreSavedExpectedMap() {
+		//remove record stream from previous run
 		String mvCmd =
 				"mv " + REMOTE_EXPERIMENT_LOCATION + "data/platformtestingBackup" + " " + REMOTE_EXPERIMENT_LOCATION +
 						"data/platformtesting";
 		Session.Command cmd = executeCmd(mvCmd);
 	}
 
+	void removeRecordStreamFile() {
+		String mvCmd =  "cat settings.txt; ps -ef |grep java ; rm -rf " + REMOTE_EXPERIMENT_LOCATION + "data/recordstreams;";
+		Session.Command cmd = executeCmd(mvCmd);
+	}
 
 	/**
 	 * Backup signed state to a temp directory

@@ -79,7 +79,10 @@ public class RecoverStateRun implements TestRun {
 			return;
 		}
 
+		if (!testConfig.isServicesRegression()) {
+			//Running PTA, not service, backup expected map
 		experiment.backupSavedExpectedMap();
+		}
 
 		// enable recover mode
 		settingsBuilder.addSetting("enableStateRecovery", "true");
@@ -113,7 +116,12 @@ public class RecoverStateRun implements TestRun {
 		 Stage 3 resume run
 		 **************************/
 
-		experiment.restoreSavedExpectedMap();
+		if (testConfig.isServicesRegression()) {
+			experiment.removeRecordStreamFile();
+		} else {
+			//Running PTA, not service, restore expected map
+			experiment.restoreSavedExpectedMap();
+		}
 		settingsBuilder.addSetting("enableStateRecovery", "false");
 
 		// restore event to original directory

@@ -37,7 +37,7 @@
 	},
 	{
 		"name": "state.saveStatePeriod",
-		"value": "30"
+		"value": "60"
 	},
 	{
 	  "name": "freezeSettings.active",
@@ -52,16 +52,17 @@
   "hederaServicesConfig": {
 	"performanceRun" : false,
 	"testSuites": [
-		"CryptoTransferLoadTest"
+		"CryptoTransferLoadTest",
+		"ci.properties.map=tps=10,threadNumber=3,status.wait.timeout.ms=38000"
 	]
-  },  
+  },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
   },
   "recoverConfig": {
 	"eventDir": "data/eventStreamRecover",
 	"sqlFile": "drop_database.psql"
-  },  
+  },
   "app": {
 	"jar": "HederaNode.jar"
   },

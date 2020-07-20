@@ -36,6 +36,7 @@ public class RecoverStateValidator extends NodeValidator {
 
 	boolean isValidated = false;
 	boolean isValid = true;
+	boolean isServiceRegression = false;
 
 	/**
 	 * An passing test case should have following key messages in order
@@ -55,11 +56,14 @@ public class RecoverStateValidator extends NodeValidator {
 		for (int i = 0; i < nodeNum; i++) {
 			LogReader<PlatformLogEntry> nodeLog = nodeData.get(i).getLogReader();
 
-			PlatformLogEntry end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
-			if (end == null) {
-				addError("Node " + i + " did not finish first run!");
-				isValid = false;
-				continue; //check next node
+			PlatformLogEntry end;
+			if (!isServiceRegression) {
+				end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
+				if (end == null) {
+					addError("Node " + i + " did not finish first run!");
+					isValid = false;
+					continue; //check next node
+				}
 			}
 
 			end = nodeLog.nextEntryContaining(STATE_SAVED_MSG);
@@ -69,11 +73,13 @@ public class RecoverStateValidator extends NodeValidator {
 				continue; //check next node
 			}
 
-			end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
-			if (end == null) {
-				addError("Node " + i + " did not resume run!");
-				isValid = false;
-				continue; //check next node
+			if (!isServiceRegression) {
+				end = nodeLog.nextEntryContaining(PTD_LOG_FINISHED_MESSAGES);
+				if (end == null) {
+					addError("Node " + i + " did not resume run!");
+					isValid = false;
+					continue; //check next node
+				}
 			}
 
 			addInfo("Node " + i + " finished recover run and resume normally as expected");
@@ -87,4 +93,11 @@ public class RecoverStateValidator extends NodeValidator {
 		return isValidated && isValid;
 	}
 
+	public boolean isServiceRegression() {
+		return isServiceRegression;
+	}
+
+	public void setServiceRegression(boolean serviceRegression) {
+		isServiceRegression = serviceRegression;
+	}
 }

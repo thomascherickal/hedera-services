@@ -38,6 +38,7 @@ import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
+import com.swirlds.regression.validators.RecoverStateValidator;
 import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
@@ -865,7 +866,8 @@ public class Experiment implements ExperimentSummary {
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths(),
+					// service test does not generated expectedMap file
+					testConfig.isServicesRegression() ? null : experimentLocalFileHelper.loadExpectedMapPaths(),
 					testClientNodeData, hederaNodeHGCAAData);
 
 			requiredValidator.add(validatorToAdd);
@@ -913,7 +915,9 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
 					((StandardValidator) item).setIgnoreSyncException(true);
 				}
-
+				if (testConfig.isServicesRegression() && item instanceof RecoverStateValidator) {
+					((RecoverStateValidator)item).setServiceRegression(true);
+				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
@@ -1774,6 +1778,12 @@ public class Experiment implements ExperimentSummary {
 	public void restoreSavedExpectedMap() {
 		for (SSHService node : sshNodes) {
 			node.restoreSavedExpectedMap();
+		}
+	}
+
+	public void removeRecordStreamFile() {
+		for (SSHService node : sshNodes) {
+			node.removeRecordStreamFile();
 		}
 	}
 
