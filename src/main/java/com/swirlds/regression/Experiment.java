@@ -32,6 +32,8 @@ import com.swirlds.regression.slack.SlackNotifier;
 import com.swirlds.regression.slack.SlackTestMsg;
 import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
+import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.services.HGCAAValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
@@ -769,10 +771,24 @@ public class Experiment implements ExperimentSummary {
 						nodeData.size()));
 			}
 
+			List<HapiClientData> testClientNodeData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
+				testClientNodeData = experimentServicesHelper.
+						loadTestClientNodeData(testClientNodes);
+			}
+
+			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
+			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+				hederaNodeHGCAAData = experimentServicesHelper.
+						loadHederaNodeHGCAAData(sshNodes);
+			}
+
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths());
+					experimentLocalFileHelper.loadExpectedMapPaths(),
+					testClientNodeData, hederaNodeHGCAAData);
+
 			if (item == ValidatorType.BLOB_STATE) {
 				((BlobStateValidator) validatorToAdd).setExperimentFolder(
 						experimentLocalFileHelper.getExperimentFolder());
@@ -812,6 +828,12 @@ public class Experiment implements ExperimentSummary {
 			try {
 				if (item instanceof ReconnectValidator) {
 					((ReconnectValidator) item).setSavedStateStartRoundNumber(savedStateStartRoundNumber);
+				}
+				if (item instanceof HGCAAValidator) {
+					// if testing update feature, hedera service will restart after freeze
+					if (this.testConfig.getTestSuites().contains("UpdateServerFiles")) {
+						((HGCAAValidator)item).setCheckHGCAppRestart(true);
+					}
 				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
@@ -1546,6 +1568,10 @@ public class Experiment implements ExperimentSummary {
 
 	public TestConfig getTestConfig() {
 		return testConfig;
+	}
+
+	public RegressionConfig getRegConfig() {
+		return regConfig;
 	}
 
 	public SettingsBuilder getSettingsFile() {

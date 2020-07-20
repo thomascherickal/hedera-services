@@ -18,6 +18,11 @@
 package com.swirlds.regression;
 
 import com.swirlds.regression.jsonConfigs.TestConfig;
+import com.swirlds.regression.logs.LogReader;
+import com.swirlds.regression.logs.PlatformLogParser;
+import com.swirlds.regression.logs.services.HAPIClientLogParser;
+import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.NodeData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,14 +30,20 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
+import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
+import static com.swirlds.regression.utils.FileUtils.getInputStream;
 
 /**
  * ExperimentServicesHelper is helper class for services regression related functionality
@@ -164,17 +175,6 @@ public class ExperimentServicesHelper {
 						success =
 								node.scpFromTestClient(getExperimentResultsFolderForTestClientNode(i));
 				}).collect(Collectors.toList()));
-	}
-
-	/**
-	 * Experiment folder name for the logs downloaded from test client nodes
-	 *
-	 * @param nodeNumber
-	 * @return
-	 */
-	String getExperimentResultsFolderForTestClientNode(final int nodeNumber) {
-		return experiment.getExperimentLocalFileHelper().getExperimentFolder()
-				+ "node000" + nodeNumber + "-TestClient/";
 	}
 
 	/**
@@ -343,5 +343,75 @@ public class ExperimentServicesHelper {
 
 	public void setCiPropertiesMap(String ciPropertiesMap) {
 		ExperimentServicesHelper.ciPropertiesMap = ciPropertiesMap;
+	}
+
+	List<HapiClientData> loadTestClientNodeData(ArrayList<SSHService> testClientNodes) {
+		int numberOfTestClientNodes = getNumberOfTestClientNodes(testClientNodes);
+		List<HapiClientData> testClientData = new ArrayList<>();
+		for (int i = 0; i < numberOfTestClientNodes; i++) {
+			String outputLogFileName = getExperimentResultsFolderForTestClientNode(i)
+					+ OUTPUT_LOG_FILENAME;
+
+			InputStream logInput = getInputStream(outputLogFileName);
+
+			LogReader logReader = null;
+			if (logInput != null) {
+				logReader = LogReader.createReader(new HAPIClientLogParser(), logInput);
+			}
+
+			testClientData.add(new HapiClientData(logReader));
+		}
+		return testClientData;
+	}
+
+	List<NodeData> loadHederaNodeHGCAAData(ArrayList<SSHService> nodes) {
+		List<NodeData> servicesNodesData = new ArrayList<>();
+		for (int i = 0; i < nodes.size(); i++) {
+			String hgcaaLogFileName = getExperimentResultsFolderForHederaNode(i) +
+					HGCAA_LOG_FILENAME;
+			String queryLogFileName = getExperimentResultsFolderForHederaNode(i) +
+					QUERY_LOG_FILENAME;
+			InputStream logInput = getInputStream(hgcaaLogFileName);
+			InputStream queryInput = getInputStream(queryLogFileName);
+			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
+
+			LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1), combinedLogInput);
+
+			servicesNodesData.add(new NodeData(logReader));
+		}
+		return servicesNodesData;
+	}
+
+	int getNumberOfTestClientNodes(ArrayList<SSHService> testClientNodes) {
+		int numberOfTestClientNodes;
+		if (experiment.getRegConfig().getLocal() != null) {
+			numberOfTestClientNodes = experiment.getRegConfig().getLocal().getNumberOfNodes();
+		} else if (testClientNodes == null || testClientNodes.isEmpty()) {
+			return 0;
+		} else {
+			numberOfTestClientNodes = testClientNodes.size();
+		}
+		return numberOfTestClientNodes;
+	}
+
+	/**
+	 * Experiment folder name for the logs downloaded from test client nodes
+	 *
+	 * @param nodeNumber
+	 * @return
+	 */
+	String getExperimentResultsFolderForTestClientNode(final int nodeNumber) {
+		return experiment.getExperimentLocalFileHelper().getExperimentFolder() + "node000" + nodeNumber +
+				"-TestClient/";
+	}
+
+	/**
+	 * Experiment folder name for the logs downloaded from hedera nodes
+	 *
+	 * @param nodeNumber
+	 * @return
+	 */
+	String getExperimentResultsFolderForHederaNode(final int nodeNumber) {
+		return experiment.getExperimentLocalFileHelper().getExperimentFolder() + "node000" + nodeNumber + "/";
 	}
 }

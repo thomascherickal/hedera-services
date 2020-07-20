@@ -1,0 +1,277 @@
+2020-07-07 16:57:46.425 INFO  87   ServicesState - Initializing context of Services node 0 with platform and address book...
+2020-07-07 16:57:46.442 INFO  94   ServicesState - ...done, context is set for Services node 0!
+2020-07-07 16:57:46.450 INFO  321  ServicesMain - Using context to initialize HederaNode#0...
+2020-07-07 16:57:46.476 INFO  171  ServicesMain - Property sources are available.
+2020-07-07 16:57:46.476 INFO  173  ServicesMain - Platform is configured.
+2020-07-07 16:57:46.476 INFO  175  ServicesMain - Migrations complete.
+2020-07-07 16:57:46.485 WARN  307  ServicesMain - Unexpected total balance in ledger, nodeId=0!
+2020-07-07 16:57:46.502 INFO  177  ServicesMain - Ledger state ok.
+2020-07-07 16:57:46.712 INFO  52   RecordCache - Constructing the RecordCache with TTL 180s
+2020-07-07 16:57:46.744 INFO  224  HfsSystemFilesManager - --- Bootstrapping network properties from 'data/config/application.properties' as below ---
+2020-07-07 16:57:46.746 INFO  228  HfsSystemFilesManager - NETTY_CHANNEL_TYPE = EPOLL
+2020-07-07 16:57:46.747 INFO  228  HfsSystemFilesManager - accountBalanceExportDir = data/accountBalances/
+2020-07-07 16:57:46.748 INFO  228  HfsSystemFilesManager - accountBalanceExportEnabled = true
+2020-07-07 16:57:46.748 INFO  228  HfsSystemFilesManager - accountBalanceExportPeriodMinutes = 10
+2020-07-07 16:57:46.749 INFO  228  HfsSystemFilesManager - accountExpirationTime = 10000000
+2020-07-07 16:57:46.749 INFO  228  HfsSystemFilesManager - addressBook = data/onboard/addressBook.txt
+2020-07-07 16:57:46.749 INFO  228  HfsSystemFilesManager - claimHashSize = 48
+2020-07-07 16:57:46.749 INFO  228  HfsSystemFilesManager - configAccountNum = 100000000
+2020-07-07 16:57:46.749 INFO  228  HfsSystemFilesManager - configRealmNum = 0
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - configShardNum = 0
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - currentCentEquivalent = 12
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - currentHbarEquivalent = 1
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - currentShard = 0
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - currentTime = 1534861917589
+2020-07-07 16:57:46.750 INFO  228  HfsSystemFilesManager - defaultContractDurationSec = 31536000
+2020-07-07 16:57:46.751 INFO  228  HfsSystemFilesManager - defaultContractReceiverThreshold = 5000000000000000000
+2020-07-07 16:57:46.751 INFO  228  HfsSystemFilesManager - defaultContractSenderThreshold = 5000000000000000000
+2020-07-07 16:57:46.751 INFO  228  HfsSystemFilesManager - defaultFeeCollectionAccount = 0.0.98
+2020-07-07 16:57:46.751 INFO  228  HfsSystemFilesManager - enableRecordStreaming = true
+2020-07-07 16:57:46.752 INFO  228  HfsSystemFilesManager - environment = 1
+2020-07-07 16:57:46.752 INFO  228  HfsSystemFilesManager - exchangeRateAllowedPercentage = 5
+2020-07-07 16:57:46.752 INFO  228  HfsSystemFilesManager - expiryTime = 4688462211
+2020-07-07 16:57:46.752 INFO  228  HfsSystemFilesManager - exportedAccountPath = data/onboard/exportedAccount.txt
+2020-07-07 16:57:46.752 INFO  228  HfsSystemFilesManager - genesisAccountNum = 2
+2020-07-07 16:57:46.753 INFO  228  HfsSystemFilesManager - genesisAccountPath = data/onboard/StartUpAccount.txt
+2020-07-07 16:57:46.753 INFO  228  HfsSystemFilesManager - genesisPrivKeyPath = data/onboard/GenesisPrivKey.txt
+2020-07-07 16:57:46.753 INFO  228  HfsSystemFilesManager - genesisPubKeyPath = data/onboard/GenesisPubKey.txt
+2020-07-07 16:57:46.753 INFO  228  HfsSystemFilesManager - getReceiptTps = 0
+2020-07-07 16:57:46.754 INFO  228  HfsSystemFilesManager - hederaStartupPath = data/onboard/InitialHederaAccounts.txt
+2020-07-07 16:57:46.754 INFO  228  HfsSystemFilesManager - initialCoins = 0
+2020-07-07 16:57:46.754 INFO  228  HfsSystemFilesManager - initialGenesisCoins = 5000000000000000000
+2020-07-07 16:57:46.754 INFO  228  HfsSystemFilesManager - initializeHederaLedgerFlag = YES
+2020-07-07 16:57:46.754 INFO  228  HfsSystemFilesManager - keyExpansionDepth = 100
+2020-07-07 16:57:46.755 INFO  228  HfsSystemFilesManager - localCallEstReturnBytes = 32
+2020-07-07 16:57:46.755 INFO  228  HfsSystemFilesManager - masterAccountNum = 50
+2020-07-07 16:57:46.755 INFO  228  HfsSystemFilesManager - maxContractStateSize = 1024
+2020-07-07 16:57:46.755 INFO  228  HfsSystemFilesManager - maxFileSize = 1024
+2020-07-07 16:57:46.755 INFO  228  HfsSystemFilesManager - maxGasLimit = 300000
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - maximumAutoRenewDuration = 1000000000
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - minimumAutoRenewDuration = 10
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - nettyFlowControlWindow = 10240
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - nettyKeepAliveTime = 30
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - nettyKeepAliveTimeOut = 3
+2020-07-07 16:57:46.756 INFO  228  HfsSystemFilesManager - nettyMaxConcurrentCalls = 10
+2020-07-07 16:57:46.757 INFO  228  HfsSystemFilesManager - nettyMaxConnectionAge = 35
+2020-07-07 16:57:46.757 INFO  228  HfsSystemFilesManager - nettyMaxConnectionAgeGrace = 5
+2020-07-07 16:57:46.757 INFO  228  HfsSystemFilesManager - nettyMaxConnectionIdle = 10
+2020-07-07 16:57:46.757 INFO  228  HfsSystemFilesManager - nettyMode = DEV
+2020-07-07 16:57:46.758 INFO  228  HfsSystemFilesManager - nodeAccountBalanceValidity = 0
+2020-07-07 16:57:46.758 INFO  228  HfsSystemFilesManager - port = 50211
+2020-07-07 16:57:46.758 INFO  228  HfsSystemFilesManager - protectedMaxEntityNum = 1000
+2020-07-07 16:57:46.758 INFO  228  HfsSystemFilesManager - queriesTps = 0
+2020-07-07 16:57:46.758 INFO  228  HfsSystemFilesManager - recordLogPeriod = 60
+2020-07-07 16:57:46.759 INFO  228  HfsSystemFilesManager - saveAccounts = NO
+2020-07-07 16:57:46.759 INFO  228  HfsSystemFilesManager - simpletransferTps = 0
+2020-07-07 16:57:46.759 INFO  228  HfsSystemFilesManager - skipExitOnStartupFailures = NO
+2020-07-07 16:57:46.759 INFO  228  HfsSystemFilesManager - specialAccountNum = 55
+2020-07-07 16:57:46.759 INFO  228  HfsSystemFilesManager - thresholdTxRecordTTL = 90000
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.createTopic.burstPeriod = 1.0
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.createTopic.tps = 33.3
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.deleteTopic.burstPeriod = 1.0
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.deleteTopic.tps = 33.3
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.getTopicInfo.burstPeriod = 1.0
+2020-07-07 16:57:46.760 INFO  228  HfsSystemFilesManager - throttling.hcs.getTopicInfo.tps = 33.3
+2020-07-07 16:57:46.761 INFO  228  HfsSystemFilesManager - throttling.hcs.submitMessage.burstPeriod = 1.0
+2020-07-07 16:57:46.761 INFO  228  HfsSystemFilesManager - throttling.hcs.submitMessage.tps = 333.3
+2020-07-07 16:57:46.761 INFO  228  HfsSystemFilesManager - throttling.hcs.updateTopic.burstPeriod = 1.0
+2020-07-07 16:57:46.761 INFO  228  HfsSystemFilesManager - throttling.hcs.updateTopic.tps = 33.3
+2020-07-07 16:57:46.761 INFO  228  HfsSystemFilesManager - throttlingTps = 0
+2020-07-07 16:57:46.762 INFO  228  HfsSystemFilesManager - transferListSizeLimit = 10
+2020-07-07 16:57:46.762 INFO  228  HfsSystemFilesManager - txMaximumDuration = 180
+2020-07-07 16:57:46.762 INFO  228  HfsSystemFilesManager - txMinimumDuration = 5
+2020-07-07 16:57:46.762 INFO  228  HfsSystemFilesManager - txMinimumRemaining = 10
+2020-07-07 16:57:46.762 INFO  228  HfsSystemFilesManager - txReceiptTTL = 180
+2020-07-07 16:57:46.763 INFO  236  HfsSystemFilesManager - ---------------------------------------------------
+2020-07-07 16:57:46.849 INFO  90   StandardizedPropertySources - Updating throttle props from 74 candidates
+2020-07-07 16:57:46.851 INFO  57   PropertiesLoader - Application Properties Populated with these values :: {throttling.hcs.submitMessage.tps=333.3, genesisAccountPath=data/onboard/StartUpAccount.txt, genesisPubKeyPath=data/onboard/GenesisPubKey.txt, masterAccountNum=50, throttling.hcs.deleteTopic.burstPeriod=1.0, configRealmNum=0, currentCentEquivalent=12, throttling.hcs.deleteTopic.tps=33.3, nettyKeepAliveTimeOut=3, nettyMaxConnectionAge=35, initialCoins=0, throttling.hcs.createTopic.burstPeriod=1.0, txReceiptTTL=180, recordLogPeriod=60, addressBook=data/onboard/addressBook.txt, configShardNum=0, simpletransferTps=0, skipExitOnStartupFailures=NO, throttling.hcs.updateTopic.burstPeriod=1.0, accountBalanceExportDir=data/accountBalances/, initializeHederaLedgerFlag=YES, throttling.hcs.updateTopic.tps=33.3, configAccountNum=100000000, enableRecordStreaming=true, NETTY_CHANNEL_TYPE=EPOLL, defaultContractSenderThreshold=5000000000000000000, defaultContractDurationSec=31536000, currentTime=1534861917589, nettyKeepAliveTime=30, queriesTps=0, accountBalanceExportEnabled=true, defaultFeeCollectionAccount=0.0.98, port=50211, transferListSizeLimit=10, txMinimumDuration=5, nodeAccountBalanceValidity=0, throttling.hcs.createTopic.tps=33.3, localCallEstReturnBytes=32, currentShard=0, protectedMaxEntityNum=1000, claimHashSize=48, throttlingTps=0, saveAccounts=NO, hederaStartupPath=data/onboard/InitialHederaAccounts.txt, currentHbarEquivalent=1, throttling.hcs.getTopicInfo.burstPeriod=1.0, nettyFlowControlWindow=10240, minimumAutoRenewDuration=10, throttling.hcs.submitMessage.burstPeriod=1.0, defaultContractReceiverThreshold=5000000000000000000, specialAccountNum=55, exportedAccountPath=data/onboard/exportedAccount.txt, accountBalanceExportPeriodMinutes=10, throttling.hcs.getTopicInfo.tps=33.3, thresholdTxRecordTTL=90000, nettyMaxConcurrentCalls=10, genesisPrivKeyPath=data/onboard/GenesisPrivKey.txt, maxFileSize=1024, txMaximumDuration=180, nettyMaxConnectionIdle=10, maxContractStateSize=1024, genesisAccountNum=2, maximumAutoRenewDuration=1000000000, txMinimumRemaining=10, keyExpansionDepth=100, environment=1, maxGasLimit=300000, nettyMaxConnectionAgeGrace=5, nettyMode=DEV, accountExpirationTime=10000000, initialGenesisCoins=5000000000000000000, expiryTime=4688462211, exchangeRateAllowedPercentage=5, getReceiptTps=0}
+2020-07-07 16:57:46.858 INFO  82   ThrottlingPropsBuilder - --- Resolved network-wide throttling properties (4 nodes) ---
+2020-07-07 16:57:46.859 INFO  87   ThrottlingPropsBuilder - hapi.throttling.config.useLegacyProps=true
+2020-07-07 16:57:46.859 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.burstPeriod=1.0
+2020-07-07 16:57:46.859 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.capacity=2.147483647E9
+2020-07-07 16:57:46.859 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.queryBucket=defaultQueryBucket
+2020-07-07 16:57:46.859 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.queryCapacityRequired=1.0
+2020-07-07 16:57:46.860 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.txnBucket=defaultTxnBucket
+2020-07-07 16:57:46.860 INFO  87   ThrottlingPropsBuilder - hapi.throttling.defaults.txnCapacityRequired=1.0
+2020-07-07 16:57:46.860 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.createTopicBucket.burstPeriod=1.0
+2020-07-07 16:57:46.860 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.createTopicBucket.capacity=133.2
+2020-07-07 16:57:46.860 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.defaultQueryBucket.capacity=2.147483647E9
+2020-07-07 16:57:46.861 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.defaultTxnBucket.capacity=2.147483647E9
+2020-07-07 16:57:46.861 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.deleteTopicBucket.burstPeriod=1.0
+2020-07-07 16:57:46.861 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.deleteTopicBucket.capacity=133.2
+2020-07-07 16:57:46.861 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.getTopicInfoBucket.burstPeriod=1.0
+2020-07-07 16:57:46.862 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.getTopicInfoBucket.capacity=133.2
+2020-07-07 16:57:46.862 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.receiptsBucket.capacity=2.147483647E9
+2020-07-07 16:57:46.862 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.submitMessageBucket.burstPeriod=1.0
+2020-07-07 16:57:46.862 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.submitMessageBucket.capacity=1333.2
+2020-07-07 16:57:46.862 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.transferBucket.capacity=2.147483647E9
+2020-07-07 16:57:46.863 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.updateTopicBucket.burstPeriod=1.0
+2020-07-07 16:57:46.863 INFO  87   ThrottlingPropsBuilder - hapi.throttling.buckets.updateTopicBucket.capacity=133.2
+2020-07-07 16:57:46.863 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.consensusCreateTopic.bucket=createTopicBucket
+2020-07-07 16:57:46.863 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.consensusDeleteTopic.bucket=deleteTopicBucket
+2020-07-07 16:57:46.864 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.consensusGetTopicInfo.bucket=getTopicInfoBucket
+2020-07-07 16:57:46.864 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.consensusSubmitMessage.bucket=submitMessageBucket
+2020-07-07 16:57:46.864 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.consensusUpdateTopic.bucket=updateTopicBucket
+2020-07-07 16:57:46.865 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.cryptoTransfer.bucket=transferBucket
+2020-07-07 16:57:46.865 INFO  87   ThrottlingPropsBuilder - hapi.throttling.ops.transactionGetReceipt.bucket=receiptsBucket
+2020-07-07 16:57:46.865 INFO  88   ThrottlingPropsBuilder - --------------------------------------------------------------
+2020-07-07 16:57:46.871 INFO  98   ThrottlingPropsBuilder - --- Resolved node-level throttling ---
+2020-07-07 16:57:46.873 INFO  99   ThrottlingPropsBuilder - ConsensusCreateTopic :: Test{req=1.00, in=Bucket{name=createTopicBucket, cap=33.3, bp=1.0}}
+2020-07-07 16:57:46.874 INFO  99   ThrottlingPropsBuilder - ConsensusDeleteTopic :: Test{req=1.00, in=Bucket{name=deleteTopicBucket, cap=33.3, bp=1.0}}
+2020-07-07 16:57:46.874 INFO  99   ThrottlingPropsBuilder - ConsensusGetTopicInfo :: Test{req=1.00, in=Bucket{name=getTopicInfoBucket, cap=33.3, bp=1.0}}
+2020-07-07 16:57:46.874 INFO  99   ThrottlingPropsBuilder - ConsensusSubmitMessage :: Test{req=1.00, in=Bucket{name=submitMessageBucket, cap=333.3, bp=1.0}}
+2020-07-07 16:57:46.875 INFO  99   ThrottlingPropsBuilder - ConsensusUpdateTopic :: Test{req=1.00, in=Bucket{name=updateTopicBucket, cap=33.3, bp=1.0}}
+2020-07-07 16:57:46.875 INFO  99   ThrottlingPropsBuilder - ContractAutoRenew :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.875 INFO  99   ThrottlingPropsBuilder - ContractCall :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.876 INFO  99   ThrottlingPropsBuilder - ContractCallLocal :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.876 INFO  99   ThrottlingPropsBuilder - ContractCreate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.876 INFO  99   ThrottlingPropsBuilder - ContractDelete :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.876 INFO  99   ThrottlingPropsBuilder - ContractGetBytecode :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.876 INFO  99   ThrottlingPropsBuilder - ContractGetInfo :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.877 INFO  99   ThrottlingPropsBuilder - ContractGetRecords :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.877 INFO  99   ThrottlingPropsBuilder - ContractUpdate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.877 INFO  99   ThrottlingPropsBuilder - CreateTransactionRecord :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.877 INFO  99   ThrottlingPropsBuilder - CryptoAccountAutoRenew :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.878 INFO  99   ThrottlingPropsBuilder - CryptoAddLiveHash :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.878 INFO  99   ThrottlingPropsBuilder - CryptoCreate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.878 INFO  99   ThrottlingPropsBuilder - CryptoDelete :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.878 INFO  99   ThrottlingPropsBuilder - CryptoDeleteLiveHash :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.878 INFO  99   ThrottlingPropsBuilder - CryptoGetAccountBalance :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.879 INFO  99   ThrottlingPropsBuilder - CryptoGetAccountRecords :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.879 INFO  99   ThrottlingPropsBuilder - CryptoGetInfo :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.879 INFO  99   ThrottlingPropsBuilder - CryptoGetLiveHash :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.879 INFO  99   ThrottlingPropsBuilder - CryptoGetStakers :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.879 INFO  99   ThrottlingPropsBuilder - CryptoTransfer :: Test{req=1.00, in=Bucket{name=transferBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.880 INFO  99   ThrottlingPropsBuilder - CryptoUpdate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.880 INFO  99   ThrottlingPropsBuilder - FileAppend :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.880 INFO  99   ThrottlingPropsBuilder - FileCreate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.880 INFO  99   ThrottlingPropsBuilder - FileDelete :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.880 INFO  99   ThrottlingPropsBuilder - FileGetContents :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.881 INFO  99   ThrottlingPropsBuilder - FileGetInfo :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.881 INFO  99   ThrottlingPropsBuilder - FileUpdate :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.881 INFO  99   ThrottlingPropsBuilder - Freeze :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.881 INFO  99   ThrottlingPropsBuilder - GetByKey :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.881 INFO  99   ThrottlingPropsBuilder - GetBySolidityID :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  99   ThrottlingPropsBuilder - GetVersionInfo :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  99   ThrottlingPropsBuilder - SystemDelete :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  99   ThrottlingPropsBuilder - SystemUndelete :: Test{req=1.00, in=Bucket{name=defaultTxnBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  99   ThrottlingPropsBuilder - TransactionGetReceipt :: Test{req=1.00, in=Bucket{name=receiptsBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  99   ThrottlingPropsBuilder - TransactionGetRecord :: Test{req=1.00, in=Bucket{name=defaultQueryBucket, cap=UNLIMITED, bp=1.0}}
+2020-07-07 16:57:46.882 INFO  100  ThrottlingPropsBuilder - --------------------------------------------
+2020-07-07 16:57:46.883 INFO  224  HfsSystemFilesManager - --- Bootstrapping network API permissions from 'data/config/api-permission.properties' as below ---
+2020-07-07 16:57:46.883 INFO  228  HfsSystemFilesManager - addLiveHash = 
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - appendContent = 0-*
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - contractCallLocalMethod = 0-*
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - contractCallMethod = 0-*
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - contractGetBytecode = 0-*
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - createAccount = 0-*
+2020-07-07 16:57:46.884 INFO  228  HfsSystemFilesManager - createContract = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - createFile = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - createTopic = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - cryptoDelete = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - cryptoGetBalance = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - cryptoTransfer = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - deleteContract = 0-*
+2020-07-07 16:57:46.885 INFO  228  HfsSystemFilesManager - deleteFile = 0-*
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - deleteLiveHash = 
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - deleteTopic = 0-*
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - freeze = 2-58
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - getAccountInfo = 0-*
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - getAccountRecords = 0-*
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - getBySolidityID = 0-*
+2020-07-07 16:57:46.886 INFO  228  HfsSystemFilesManager - getContractInfo = 0-*
+2020-07-07 16:57:46.887 INFO  228  HfsSystemFilesManager - getFastTransactionRecord = 
+2020-07-07 16:57:46.887 INFO  228  HfsSystemFilesManager - getFileContent = 0-*
+2020-07-07 16:57:46.887 INFO  228  HfsSystemFilesManager - getFileInfo = 0-*
+2020-07-07 16:57:46.888 INFO  228  HfsSystemFilesManager - getLiveHash = 
+2020-07-07 16:57:46.888 INFO  228  HfsSystemFilesManager - getTopicInfo = 0-*
+2020-07-07 16:57:46.888 INFO  228  HfsSystemFilesManager - getTransactionReceipts = 0-*
+2020-07-07 16:57:46.888 INFO  228  HfsSystemFilesManager - getTxRecordByContractID = 0-*
+2020-07-07 16:57:46.889 INFO  228  HfsSystemFilesManager - getTxRecordByTxID = 0-*
+2020-07-07 16:57:46.889 INFO  228  HfsSystemFilesManager - getVersionInfo = 0-*
+2020-07-07 16:57:46.889 INFO  228  HfsSystemFilesManager - submitMessage = 0-*
+2020-07-07 16:57:46.889 INFO  228  HfsSystemFilesManager - systemDelete = 2-59
+2020-07-07 16:57:46.889 INFO  228  HfsSystemFilesManager - systemUndelete = 2-60
+2020-07-07 16:57:46.889 ERROR  228  Dummy error added manually to test
+2020-07-07 16:57:46.890 INFO  228  HfsSystemFilesManager - updateAccount = 0-*
+2020-07-07 16:57:46.890 INFO  228  HfsSystemFilesManager - updateContract = 0-*
+2020-07-07 16:57:46.890 INFO  228  HfsSystemFilesManager - updateFile = 0-*
+2020-07-07 16:57:46.890 INFO  228  HfsSystemFilesManager - updateTopic = 0-*
+2020-07-07 16:57:46.890 INFO  236  HfsSystemFilesManager - ---------------------------------------------------
+2020-07-07 16:57:46.912 INFO  68   PropertiesLoader - API Properties Populated with these values :: {deleteTopic=0-*, getContractInfo=0-*, getLiveHash=, cryptoTransfer=0-*, getTxRecordByContractID=0-*, contractCallMethod=0-*, getTopicInfo=0-*, deleteContract=0-*, appendContent=0-*, updateAccount=0-*, createFile=0-*, cryptoGetBalance=0-*, updateTopic=0-*, freeze=2-58, contractCallLocalMethod=0-*, getVersionInfo=0-*, submitMessage=0-*, cryptoDelete=0-*, createContract=0-*, getFileContent=0-*, getTransactionReceipts=0-*, deleteFile=0-*, systemUndelete=2-60, getAccountRecords=0-*, contractGetBytecode=0-*, createTopic=0-*, updateContract=0-*, createAccount=0-*, addLiveHash=, getBySolidityID=0-*, updateFile=0-*, getAccountInfo=0-*, systemDelete=2-59, deleteLiveHash=, getFastTransactionRecord=, getFileInfo=0-*, getTxRecordByTxID=0-*}
+2020-07-07 16:57:46.913 INFO  179  ServicesMain - Initialized properties and permissions.
+2020-07-07 16:57:46.930 INFO  181  ServicesMain - Record stream started.
+2020-07-07 16:57:46.930 INFO  253  ServicesMain - TLS is turned on by default on node 0
+2020-07-07 16:57:46.930 INFO  255  ServicesMain - Active profile: PROD
+2020-07-07 16:57:47.094 INFO  321  ServicesMain - Starting Netty on port 50211...
+2020-07-07 16:57:47.178 INFO  57   NettyServerManager - NETTY SERVER in ROGUE MODE
+2020-07-07 16:57:47.324 INFO  321  ServicesMain - ...done starting Netty on port 50211.
+2020-07-07 16:57:47.324 INFO  321  ServicesMain - Starting Netty with TLS support on port 50212...
+2020-07-07 16:57:47.324 INFO  57   NettyServerManager - NETTY SERVER in ROGUE MODE
+2020-07-07 16:57:47.324 INFO  95   NettyServerManager - NETTY SERVER with TLS support on port 50212
+2020-07-07 16:57:47.529 INFO  321  ServicesMain - ...done starting Netty with TLS support on port 50212.
+2020-07-07 16:57:47.529 INFO  183  ServicesMain - Netty started.
+2020-07-07 16:57:57.585 INFO  185  ServicesMain - System accounts rationalized.
+2020-07-07 16:57:57.872 INFO  187  ServicesMain - System files rationalized.
+2020-07-07 16:57:57.918 INFO  189  ServicesMain - Accounts exported.
+2020-07-07 16:57:57.933 INFO  191  ServicesMain - Record expiration reviewed.
+2020-07-07 16:57:57.941 INFO  193  ServicesMain - Fee schedule loaded.
+2020-07-07 16:57:57.941 INFO  119  ServicesMain - init finished.
+2020-07-07 16:57:58.108 INFO  133  ServicesMain - Now current platform status = ACTIVE in HederaNode#0.
+2020-07-07 16:58:05.512 WARN  155  FeePayingRecordsHistorian - No queryable record will be available for consensus transaction body {
+  transactionID {
+    transactionValidStart {
+      seconds: 1594141025
+      nanos: 259390987
+    }
+    accountID {
+      accountNum: 1001
+    }
+  }
+  nodeAccountID {
+    accountNum: 3
+  }
+  transactionFee: 2000000
+  transactionValidDuration {
+    seconds: 120
+  }
+  memo: "\303\203\302\256\303\202\302\267\303\203\302\271tF8\303\202\302\256J\303\203\302\213\303\203\302\220\303\203\302\216"
+  cryptoTransfer {
+    transfers {
+      accountAmounts {
+        accountID {
+          accountNum: 98
+        }
+        amount: 100
+      }
+      accountAmounts {
+        accountID {
+          accountNum: 2
+        }
+        amount: -100
+      }
+    }
+  }
+}
+sigMap {
+  sigPair {
+    pubKeyPrefix: "J"
+    ed25519: "P\200\274G\251\254\036\310\324\324\257\2248:\367U.\354\275\236\344\223]Y\272\347\027\004\032z++j8 \244\266t1\225kJ\a~\270\332\027x\352\243\363\315\032\367\264\350\345?64\024>\t\004"
+  }
+  sigPair {
+    pubKeyPrefix: "\366"
+    ed25519: "!D\302U.\243\206\303\217\334\b\204Q\220!\226\307\371\226\225\201\372Ie\213\006\203\251\024N\210\206KaK\f\226\371\357\374\363a\240c\324\273\3705\251\v\330\035\332\356\260\330\a\v\206\350\327\034n\v"
+  }
+  sigPair {
+    pubKeyPrefix: "\250"
+    ed25519: ":\272\265\321\351V\037\273\b\200.\331\005\216>\325\226\247xt\300\222\363\252H\267\376\204\233C\253\350\270\032\342\305u\371\274\035\256\f)?\304\243>\360\303\030w\035\331\213\241,\251\a\351\203D\273)\004"
+  }
+  sigPair {
+    pubKeyPrefix: "\n"
+    ed25519: "\247\004\233\367\303S\365\364l=\300\246$p\215\003\"\023X\233U\350\231Q\300\330\272\000\207q\024s\323\027\213\222\000\340r\272\352\020#\207\346$RNo&\356\312\214\352\270)\364~\362p\031sj\016"
+  }
+}
+ (final status 'INVALID_PAYER_SIGNATURE')!
+2020-07-07 16:58:10.784 WARN  75   ContextOptionValidator - Key type not implemented: key=ed25519: ""
+
+2020-07-07 16:59:38.705 INFO  321  ServicesMain - Terminating Netty on port 50211...
