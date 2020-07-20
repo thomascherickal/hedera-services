@@ -37,6 +37,7 @@ import java.util.HashMap;
 import static com.swirlds.regression.Experiment.EXPERIMENT_FREEZE_SECOND_AFTER_STARTUP;
 import static com.swirlds.regression.ExperimentServicesHelper.HEDERA_NODE_DIR;
 import static com.swirlds.regression.ExperimentServicesHelper.getHederaServicesRepoPath;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 
 public class SettingsBuilder {
 	private static final Logger log = LogManager.getLogger(Experiment.class);
@@ -62,7 +63,7 @@ public class SettingsBuilder {
 		this.testConfig = expConf;
 
 		// If it is services-regression read settings.txt file from hedera-services repo
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			String hederaNodeDir = getHederaServicesRepoPath() + HEDERA_NODE_DIR;
 			readSettings(hederaNodeDir + RegressionUtilities.SETTINGS_FILE);
 		} else {

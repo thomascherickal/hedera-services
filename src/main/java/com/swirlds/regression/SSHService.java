@@ -66,6 +66,7 @@ import static com.swirlds.regression.RegressionUtilities.REMOTE_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.SAVED_STATE_LOCATION;
 import static com.swirlds.regression.RegressionUtilities.START_POSTGRESQL_SERVICE;
 import static com.swirlds.regression.RegressionUtilities.STOP_POSTGRESQL_SERVICE;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 import static com.swirlds.regression.validators.RecoverStateValidator.EVENT_MATCH_LOG_NAME;
 import static com.swirlds.regression.validators.StreamType.EVENT;
 import static com.swirlds.regression.validators.StreamType.RECORD;
@@ -481,7 +482,7 @@ public class SSHService {
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
-		if (testConfig.isServicesRegression() && testConfig.getHederaServicesConfig().isPerformanceRun()) {
+		if (isServicesRegression() && testConfig.getHederaServicesConfig().isPerformanceRun()) {
 			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions, firstIP);
 		}
 

@@ -47,8 +47,7 @@ import java.util.stream.Collectors;
 
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_FINISH;
 import static com.swirlds.common.logging.PlatformLogMessages.PTD_SUCCESS;
-import static com.swirlds.regression.ExperimentServicesHelper.getRsyncTestClientFiles;
-import static com.swirlds.regression.ExperimentServicesHelper.getServicesRsyncFiles;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 
 public class RegressionUtilities {
 
@@ -309,7 +308,7 @@ public class RegressionUtilities {
 	protected static ArrayList<String> getRsyncListToUpload(File keyFile, File log4jFile,
 			ArrayList<File> configSpecifiedFiles, boolean isTestClient) {
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			return ExperimentServicesHelper.getServicesFiles(isTestClient, keyFile);
 		}
 		return getPlatformRsyncFiles(keyFile, log4jFile, configSpecifiedFiles);
@@ -476,5 +475,4 @@ public class RegressionUtilities {
 	public static void setTestConfig(TestConfig config) {
 		testConfig = config;
 	}
-
 }

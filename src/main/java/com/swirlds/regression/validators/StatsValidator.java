@@ -33,6 +33,7 @@ import static com.swirlds.common.PlatformStatNames.FREE_MEMORY;
 import static com.swirlds.common.PlatformStatNames.SIGNED_STATE_HASHING_TIME;
 import static com.swirlds.common.PlatformStatNames.TOTAL_MEMORY_USED;
 import static com.swirlds.common.PlatformStatNames.TRANSACTIONS_HANDLED_PER_SECOND;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 import static com.swirlds.regression.RegressionUtilities.MB;
 
 public class StatsValidator extends NodeValidator {
@@ -86,7 +87,7 @@ public class StatsValidator extends NodeValidator {
 
 			maxDiskSpaceUsed = Math.max(maxDiskSpaceUsed, nodeCsv.getColumn(DISK_SPACE_USED).getMax());
 
-			if (!testConfig.isServicesRegression()) {
+			if (!isServicesRegression()) {
 				// TODO enable this once hedera-services gets the latest SDK.
 				// This column is renamed recently in platform. Currently services doesn't have the latest SDK.
 				signedStateHashingAvg += nodeCsv.getColumn(SIGNED_STATE_HASHING_TIME).getAverage();
@@ -96,7 +97,7 @@ public class StatsValidator extends NodeValidator {
 			}
 		}
 		transHandleAverage /= nodeNum;
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			// TODO enable this once hedera-services gets the latest SDK.
 			signedStateHashingAvg /= nodeNum;
 		}
@@ -108,7 +109,7 @@ public class StatsValidator extends NodeValidator {
 
 		addInfo(String.format("Average number of transactions handled per second is: %.3f", transHandleAverage));
 		addInfo(String.format("Max creation to consensus is: %.3f seconds", maxC2C));
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			// TODO enable this once hedera-services gets the latest SDK.
 			addInfo(String.format("Signed state hashing - avg:%.3fs max:%.3fs",
 					signedStateHashingAvg, signedStateHashingMax));
@@ -119,7 +120,7 @@ public class StatsValidator extends NodeValidator {
 
 		checkC2CVariation();
 		checkConsensusQueue();
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			// TODO enable this once hedera-services gets the latest SDK.
 			checkStateHashingTime();
 		}

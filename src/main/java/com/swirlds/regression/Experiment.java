@@ -121,6 +121,7 @@ import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
@@ -775,13 +776,13 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			List<HapiClientData> testClientNodeData = new ArrayList<>();
-			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
+			if (isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
 				testClientNodeData = experimentServicesHelper.
 						loadTestClientNodeData(testClientNodes);
 			}
 
 			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
-			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+			if (isServicesRegression() && item == ValidatorType.HGCAA) {
 				hederaNodeHGCAAData = experimentServicesHelper.
 						loadHederaNodeHGCAAData(sshNodes);
 			}
@@ -946,14 +947,14 @@ public class Experiment implements ExperimentSummary {
 		}
 
 		// If it is services-regression set starting crypto account as 3
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			configFile.setStartingCryptoAccount(STARTING_CRYPTO_ACCOUNT);
 		}
 
 		configFile.exportConfigFile();
 
 		//set the built public Ip string with crypto accounts
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			ExperimentServicesHelper.setPublicIPStringForServices(configFile.getPublicIPsWithCryptoAccounts());
 		}
 	}
@@ -995,7 +996,7 @@ public class Experiment implements ExperimentSummary {
 		File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
 		setUpSSHServicesForInstances(login, keyfile);
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			setUpSSHServicesForInstances(login, keyfile, true);
 		}
 	}
@@ -1080,12 +1081,9 @@ public class Experiment implements ExperimentSummary {
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			filesToSend = experimentServicesHelper.getListOfFilesToSend(
-					false, new File(getPEMFile()));
-			if (addedFiles != null) {
-				filesToSend.addAll(addedFiles);
-			}
+					false, new File(getPEMFile()), addedFiles);
 		} else {
 			filesToSend = gatherFilesToSendToNode(addedFiles);
 		}
@@ -1103,7 +1101,7 @@ public class Experiment implements ExperimentSummary {
 		log.info(MARKER, "upload to nodes has finished");
 
 		// Send suite runner jar to test client nodes if there are any
-		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+		if (isServicesRegression() && testClientNodes.size() > 0) {
 			experimentServicesHelper.sendTarToTestClientNodes(addedFiles);
 		}
 
@@ -1208,7 +1206,7 @@ public class Experiment implements ExperimentSummary {
 								(ArrayList<String>) testConfig.getResultFiles());
 				}).collect(Collectors.toList()));
 
-		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+		if (isServicesRegression() && testClientNodes.size() > 0) {
 			experimentServicesHelper.scpFromTestClientNode();
 		}
 
@@ -1573,7 +1571,7 @@ public class Experiment implements ExperimentSummary {
 		settingsFile = new SettingsBuilder(testConfig);
 
 		// set up the suites from SuiteRunner that should be run on test clients in services-regression
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			ExperimentServicesHelper.setTestSuites(testConfig);
 		}
 	}
