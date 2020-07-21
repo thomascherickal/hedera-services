@@ -155,7 +155,7 @@ public abstract class ValidatorTestUtil {
 		List<HapiClientData> nodeData = new ArrayList<>();
 		for (int i = 0; i< numberOfTestClients ; i++) {
 			String hapiClientLogFileName = String.format("%s/node%04d-TestClient/"+
-					OUTPUT_LOG_FILENAME, directory, i);
+					HAPI_CLIENT_COMBINED_LOG, directory, i);
 			InputStream logInput = getInputStream(hapiClientLogFileName);
 
 			LogReader logReader = null;

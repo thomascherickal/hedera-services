@@ -46,7 +46,7 @@ public class HederaServicesConfig {
 	/**
 	 * If false node is fixed, else it is random
 	 */
-	private boolean isFixedNode = false;
+	private boolean fixedNode = false;
 
 	public List<String> getTestSuites() {
 		return testSuites;
@@ -74,11 +74,11 @@ public class HederaServicesConfig {
 	}
 
 	public boolean isFixedNode() {
-		return isFixedNode;
+		return fixedNode;
 	}
 
 	public void setFixedNode(boolean fixedNode) {
-		isFixedNode = fixedNode;
+		this.fixedNode = fixedNode;
 	}
 
 	public boolean isRunMultipleSuiteRunners() {

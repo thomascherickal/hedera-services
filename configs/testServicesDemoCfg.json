@@ -56,7 +56,7 @@
 	  "TopicDeleteSpecs",
 	  "ProtectedFilesUpdateSuite"
 	],
-	"isFixedNode": true
+	"fixedNode": true
   },
   "memoryLeakCheckConfig": {
 	"nodeGroupIdentifier": "FIRST"
