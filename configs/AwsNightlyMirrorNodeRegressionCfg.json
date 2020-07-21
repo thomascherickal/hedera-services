@@ -1,4 +1,5 @@
 {
+	// NOTE: This should ONLY be changed to match experiments in AwsNightlyRegressionCfg.json
   "name": "ZERO_STAKE_MIRROR-regression-suite",
   "result": {
 	"uri": "results"
