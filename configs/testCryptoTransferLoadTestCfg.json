@@ -22,12 +22,16 @@
 	{
 	  "name": "freezeSettings.active",
 	  "value": "0"
+	},
+	{
+	  "name": "maxEventQueueForCons",
+	  "value": "10000"
 	}
   ],
   "hederaServicesConfig": {
 	"ciPropsMap" : true,
 	"testSuites": [
-	  "CryptoTransferLoadTest tps=50,mins=15,threadNumber=80"
+	  "CryptoTransferLoadTest tps=45,mins=15,threadNumber=50"
 	]
   },
   "memoryLeakCheckConfig": {
