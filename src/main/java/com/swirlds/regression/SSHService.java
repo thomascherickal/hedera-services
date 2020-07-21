@@ -472,24 +472,48 @@ public class SSHService {
         return execCommand(command, description, 5).getExitStatus();
     }
 
-	int execTestClientWithProcessID(String jvmOptions, TestConfig testConfig) {
+	/**
+	 * Execute command to run in test client nodes
+	 * @param jvmOptions
+	 * @param testConfig
+	 */
+	void execTestClientWithProcessID(String jvmOptions, TestConfig testConfig) {
 		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
 			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
 		}
 
-		// TODO These arguments should be constructed run time from a JSON config
 		String publicIpList = getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
+		// If only one suite runner process should be run
+		String command = getSuiteRunnerCommand(publicIpList, testConfig, jvmOptions,
+				firstIP, "3", -1);
+		String description = "Start SuiteRunner.jar";
+		execCommand(command, description, 5).getExitStatus();
+
+		// If multiple suiteRunner processes have to be run in umbrellaRedux test
 		if (isServicesRegression() && testConfig.getHederaServicesConfig().isRunMultipleSuiteRunners()) {
 			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions);
 		}
+	}
 
-		String command = String.format(
+	/**
+	 * Get the command to run SuiteRunner jar with corresponding options and env variables
+	 * @param publicIpList
+	 * @param testConfig
+	 * @param jvmOptions
+	 * @param currentIP
+	 * @param currentAcctNum
+	 * @param logNumber
+	 * @return
+	 */
+	private String getSuiteRunnerCommand(String publicIpList, TestConfig testConfig, String jvmOptions,
+			String currentIP, String currentAcctNum, int logNumber) {
+		return String.format(
 				"cd %s; " +
 						"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-						"-NODE=%s\" java %s -jar SuiteRunner.jar %s 3 >>output.log 2>&1 & " +
+						"-NODE=%s\" nohup java %s -jar SuiteRunner.jar %s %s >>hapi-client-combined%s.log 2>&1 & " +
 						"disown -h",
 				RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
 				publicIpList,
@@ -497,12 +521,14 @@ public class SSHService {
 				getTestSuites(),
 				testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
 				jvmOptions,
-				firstIP);
-		String description = "Start SuiteRunner.jar";
-
-		return execCommand(command, description, 5).getExitStatus();
+				currentIP,
+				currentAcctNum,
+				logNumber != -1 ? logNumber : "");
 	}
 
+	/**
+	 * Create resource directory in specified format src/main/resource to be accessible for tests
+	 */
 	private void createDirForResource() {
 		String command = String.format(
 				"cd %s; mkdir -p src/main/ && mv resource/ src/main/; ",
@@ -510,6 +536,12 @@ public class SSHService {
 		execCommand(command, "Move resource to src/main/resource", 5).getExitStatus();
 	}
 
+	/**
+	 * Parse nodeIp and crypto accounts of each server node.
+	 * This is needed to spread the transactions generated from multiple suite runner processes equally to all nodes
+	 * @param publicIpList
+	 * @return
+	 */
 	private String[] parseNodeIPandAccounts(String publicIpList) {
 		String[] nodeIPandAccounts = publicIpList.split(",");
 
@@ -519,33 +551,27 @@ public class SSHService {
 		return nodeIPandAccounts;
 	}
 
+	/**
+	 * Run multiple SuiteRunner jars in one test client node based on numOfSuiteRunnerProcesses
+	 * in HederaServicesConfig
+	 * @param testConfig
+	 * @param publicIpList
+	 * @param jvmOptions
+	 */
 	private void runSuiteRunnerProcesses(TestConfig testConfig, String publicIpList,
 			String jvmOptions) {
 		String[] nodeIPandAccounts = parseNodeIPandAccounts(publicIpList);
 		final int TOTAL_HEDERA_NODE = nodeIPandAccounts.length;
-		for (int i = 0; i < testConfig.getHederaServicesConfig().getNumOfSuiteRunnerProcesses(); i++) {
+		for (int i = 0; i < testConfig.getHederaServicesConfig().getNumOfSuiteRunnerProcesses() - 1; i++) {
 			String[] pair = nodeIPandAccounts[i % TOTAL_HEDERA_NODE].split(":");
 			String currentIP = pair[0];
 			String[] accountElements = pair[1].split("\\.");
 			String currentAcctNum = accountElements[2];
 
-			String command = String.format(
-					"cd %s; " +
-							"NODES=\"%s\" %s DSL_SUITE_RUNNER_ARGS=\"%s -TLS=off " +
-							"-NODE=%s\" nohup java %s -jar SuiteRunner.jar %s %s >>output%s.log 2>&1 & " +
-							"disown -h",
-					RegressionUtilities.REMOTE_EXPERIMENT_LOCATION,
-					publicIpList,
-					getCiPropertiesMap(),
-					getTestSuites(),
-					testConfig.getHederaServicesConfig().isFixedNode() ? "fixed" : "random",
-					jvmOptions,
-					currentIP,
-					currentAcctNum,
-					i);
+			String command = getSuiteRunnerCommand(publicIpList, testConfig, jvmOptions, currentIP,
+					currentAcctNum, i);
 			String description = "Start SuiteRunner.jar";
-			int status = execCommand(command, description, 5).getExitStatus();
-			log.info("Status code " + status);
+			execCommand(command, description, 5).getExitStatus();
 		}
 	}
 

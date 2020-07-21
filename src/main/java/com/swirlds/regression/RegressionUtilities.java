@@ -121,9 +121,9 @@ public class RegressionUtilities {
 
 	public static final String FALL_BEHIND_MSG = "has fallen behind";
 	public static final String OUTPUT_LOG_FILENAME = "output.log";
+	public static final String HAPI_CLIENT_COMBINED_FILE_NAME = "hapi-client-combined.log";
 	public static final String HGCAA_LOG_FILENAME = "hgcaa.log";
 	public static final String QUERY_LOG_FILENAME = "queries.log";
-	public static final String HAPI_CLIENT_LOG_FILENAME = "hapi-client.log";
 	public static final String RESET_NODE = "sudo rm -rf remoteExperiment";
 	public static final String EMPTY_HASH = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 	public static final long CLOUD_WAIT_MILLIS = 30000;
@@ -474,5 +474,9 @@ public class RegressionUtilities {
 
 	public static void setTestConfig(TestConfig config) {
 		testConfig = config;
+	}
+
+	public static TestConfig getTestConfig() {
+		return testConfig;
 	}
 }
