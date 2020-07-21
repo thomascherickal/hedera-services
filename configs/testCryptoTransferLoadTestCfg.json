@@ -1,7 +1,7 @@
 {
   "name": "CryptoTransferLoadTest-JRS",
   "description": "CryptoTransferLoadTest",
-  "duration": 920,
+  "duration": 1800,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -32,7 +32,7 @@
   "hederaServicesConfig": {
 	"ciPropsMap" : true,
 	"testSuites": [
-	  "CryptoTransferLoadTest tps=45,mins=15,threadNumber=50"
+	  "CryptoTransferLoadTest tps=40,mins=30,threads=10"
 	]
   },
   "memoryLeakCheckConfig": {
@@ -46,7 +46,8 @@
   ],
   "validator": [
 	"STATS",
-	"STANDARD",
-	"HAPI_CLIENT"
+	"HEDERA_NODE",
+	"HAPI_CLIENT",
+	"HGCAA"
   ]
 }
