@@ -233,7 +233,7 @@ public class ExperimentServicesHelper {
 	}
 
 	/**
-	 *
+	 * get publicIP list string with corresponding crypto accounts for each IP
 	 *
 	 * @return
 	 */
