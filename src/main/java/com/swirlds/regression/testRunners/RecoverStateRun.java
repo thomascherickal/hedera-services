@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import static com.swirlds.regression.RegressionUtilities.MILLIS;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 
 /**
  * Recover signed state from event stream file
@@ -41,7 +42,7 @@ public class RecoverStateRun implements TestRun {
 		 Stage 1 normal run
 		 **************************/
 		// start all processes
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			experiment.startServicesRegression(true);
 		} else {
 			experiment.startAllSwirlds();
@@ -52,13 +53,13 @@ public class RecoverStateRun implements TestRun {
 
 		// sleep through the rest of the test
 		List<BooleanSupplier> checkerList = new LinkedList<>();
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			checkerList.add(experiment::isProcessFinished);
 		}
 		experiment.sleepThroughExperimentWithCheckerList(testDuration,
 				checkerList);
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			//explicitly stop java process since hedera service itself will not exit
 			experiment.stopAllSwirlds();
 		}
@@ -79,7 +80,7 @@ public class RecoverStateRun implements TestRun {
 			return;
 		}
 
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			//Running PTA, not service, backup expected map
 		experiment.backupSavedExpectedMap();
 		}
@@ -96,7 +97,7 @@ public class RecoverStateRun implements TestRun {
 		experiment.sendConfigToNodes();
 
 		// start all processes
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			experiment.startServicesRegression(false);
 		} else {
 			experiment.startAllSwirlds();
@@ -116,7 +117,7 @@ public class RecoverStateRun implements TestRun {
 		 Stage 3 resume run
 		 **************************/
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			experiment.removeRecordStreamFile();
 		} else {
 			//Running PTA, not service, restore expected map
@@ -131,14 +132,14 @@ public class RecoverStateRun implements TestRun {
 		experiment.sendConfigToNodes();
 
 		// start all processes
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			experiment.startServicesRegression(true);
 		} else {
 			experiment.startAllSwirlds();
 		}
 
 		checkerList.clear();
-		if (!testConfig.isServicesRegression()) {
+		if (!isServicesRegression()) {
 			checkerList.add(experiment::isFoundTwoPTDFinishMessage);
 			checkerList.add(experiment::isAnyNodeFoundFallBehindMessage);
 		}

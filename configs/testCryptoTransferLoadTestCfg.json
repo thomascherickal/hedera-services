@@ -1,7 +1,7 @@
 {
   "name": "CryptoTransferLoadTest-JRS",
   "description": "CryptoTransferLoadTest",
-  "duration": 1800,
+  "duration": 920,
   "settings": [
 	{
 	  "name": "showInternalStats",
@@ -28,11 +28,10 @@
 	  "value": "10000"
 	}
   ],
-  "servicesRegression" : true,
   "hederaServicesConfig": {
 	"ciPropsMap" : true,
 	"testSuites": [
-	  "CryptoTransferLoadTest tps=40,mins=30,threads=10"
+	  "CryptoTransferLoadTest tps=40,mins=15,threads=10"
 	]
   },
   "memoryLeakCheckConfig": {
