@@ -1,7 +1,7 @@
 {
   // NOTE: All changed to Experiments MUST be propogated to: AwsNightlyMirrorNodeRegressionCfg.json,
   //       AwsNightlyMultiRegionCfg.json, AwsNightlyRegressionNonMirrorCfg.json, AwsNightlyRegressionReconnectCfg.json
-  "name": "regression-suite",
+  "name": "ZERO-STAKE-regression-suite",
   "result": {
     "uri": "results"
   },
