@@ -1,4 +1,5 @@
 {
+	// NOTE: This should ONLY be changed to match experiments in AwsNightlyRegressionCfg.json
   "name":"regression-suite-MultiRegion",
   "result": {
 	"uri":"results"
@@ -28,20 +29,26 @@
 	  "configs/testSigningDemoCfg.json",
 	  "configs/testSigningDemo4KCfg.json",
 	  "configs/testFcmMultipleOperationsCfg.json",
+	  "configs/testStateRecover.json",
+	  "configs/testStateRecoverBlob.json",
+	  "configs/testStateRecoverFCQ.json",
 	  "configs/testRestartCfg.json",
 	  "configs/testRestartBlobCfg.json",
 	  "configs/testFcmFreezeCfg.json",
 	  "configs/testFcmFreezeBlobCfg.json",
-	  "configs/testFcmCfg.json",
 	  "configs/testFcmMultisizeBlobCfg.json",
-	  "configs/testFcmSmallBlobCfg.json",
-	  "configs/testFcmLargeBlobCfg.json",
 	  "configs/testFcmFreezeFCQCfg.json",
 	  "configs/testFCM1KFCQCfg.json",
 	  "configs/testReconnectFCMMultiReconnectCfg.json",
 	  "configs/testReconnectFCQMultiReconnectCfg.json",
 	  "configs/testReconnectBlobCfg.json",
-	  "configs/testFcm1kThrottlingCfg.json"
+	  "configs/testFcm1kThrottlingCfg.json",
+	  "configs/testFcmCfg.json",
+	  "configs/testFcmSmallBlobCfg.json",
+	  "configs/testFcmLargeBlobCfg.json",
+	  "configs/testMigrationAppCfg2K.json",
+	  "configs/testMigrationAppCfg.json",
+	  "configs/testFcmFCQ1KSavedStateCfg.json"
   ],
   "db": {
 	"type": "postgresql",

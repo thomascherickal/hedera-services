@@ -23,6 +23,8 @@ import java.util.List;
  * Configuration to run hedera-services regression
  */
 public class HederaServicesConfig {
+	private static int DEFAULT_SUITE_RUNNER_PROCESSES = 1;
+
 	/**
 	 * Used to run multiple suiteRunners in one testClient. Mainly used to run UmbrellaRedux tests
 	 */
@@ -37,10 +39,10 @@ public class HederaServicesConfig {
 	 */
 	private List<String> testSuites;
 	/**
-	 * number of suiteRunner processes that should be run in testClient, mainly used for UmbrellaRedux tests.
+	 * number of suiteRunner processes that should be run in testClient.
 	 * When runMultipleSuiteRunners is true, this number is considered
 	 */
-	private int numOfSuiteRunnerProcesses = 1;
+	private int numOfSuiteRunnerProcesses = DEFAULT_SUITE_RUNNER_PROCESSES;
 	/**
 	 * If false node is fixed, else it is random
 	 */

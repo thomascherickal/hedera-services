@@ -156,7 +156,7 @@ public abstract class ValidatorTestUtil {
 		List<HapiClientData> nodeData = new ArrayList<>();
 		for (int i = 0; i< numberOfTestClients ; i++) {
 			String hapiClientLogFileName = String.format("%s/node%04d-TestClient/"+
-					OUTPUT_LOG_FILENAME, directory, i);
+					HAPI_CLIENT_COMBINED_FILE_NAME, directory, i);
 			InputStream logInput = getInputStream(hapiClientLogFileName);
 
 			LogReader logReader = null;
@@ -182,7 +182,7 @@ public abstract class ValidatorTestUtil {
 			InputStream queryInput = getInputStream(queryLogFileName);
 			SequenceInputStream combinedLogInput = new SequenceInputStream(logInput, queryInput);
 
-			LogReader logReader = LogReader.createReader(new HAPIClientLogParser(), combinedLogInput);
+			LogReader logReader = LogReader.createReader(PlatformLogParser.createParser(1), combinedLogInput);
 
 			nodeData.add(new NodeData(logReader));
 			if (nodeData.size() == 0) {

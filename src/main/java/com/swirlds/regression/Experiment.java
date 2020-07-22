@@ -34,10 +34,15 @@ import com.swirlds.regression.testRunners.TestRun;
 import com.swirlds.regression.validators.BlobStateValidator;
 import com.swirlds.regression.validators.EventStreamValidator;
 import com.swirlds.regression.validators.HapiClientData;
+import com.swirlds.regression.validators.services.HGCAAValidator;
+import com.swirlds.regression.validators.EventStreamValidator;
+import com.swirlds.regression.validators.HapiClientData;
 import com.swirlds.regression.validators.MemoryLeakValidator;
 import com.swirlds.regression.validators.NodeData;
 import com.swirlds.regression.validators.ReconnectValidator;
 import com.swirlds.regression.validators.RecordStreamValidator;
+import com.swirlds.regression.validators.RecoverStateValidator;
+import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.StandardValidator;
 import com.swirlds.regression.validators.StreamType;
 import com.swirlds.regression.validators.Validator;
@@ -119,6 +124,7 @@ import static com.swirlds.regression.RegressionUtilities.getResultsFolder;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToDownload;
 import static com.swirlds.regression.RegressionUtilities.getSDKFilesToUpload;
 import static com.swirlds.regression.RegressionUtilities.importExperimentConfig;
+import static com.swirlds.regression.ExperimentServicesHelper.isServicesRegression;
 import static com.swirlds.regression.logs.LogMessages.CHANGED_TO_MAINTENANCE;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP;
 import static com.swirlds.regression.logs.LogMessages.PTD_SAVE_EXPECTED_MAP_ERROR;
@@ -773,13 +779,13 @@ public class Experiment implements ExperimentSummary {
 			}
 
 			List<HapiClientData> testClientNodeData = new ArrayList<>();
-			if (testConfig.isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
+			if (isServicesRegression() && item == ValidatorType.HAPI_CLIENT) {
 				testClientNodeData = experimentServicesHelper.
 						loadTestClientNodeData(testClientNodes);
 			}
 
 			List<NodeData> hederaNodeHGCAAData = new ArrayList<>();
-			if (testConfig.isServicesRegression() && item == ValidatorType.HGCAA) {
+			if (isServicesRegression() && item == ValidatorType.HGCAA) {
 				hederaNodeHGCAAData = experimentServicesHelper.
 						loadHederaNodeHGCAAData(sshNodes);
 			}
@@ -787,7 +793,8 @@ public class Experiment implements ExperimentSummary {
 			Validator validatorToAdd = ValidatorFactory.getValidator(item,
 					nodeData,
 					testConfig,
-					experimentLocalFileHelper.loadExpectedMapPaths(),
+					// service test does not generated expectedMap file
+					isServicesRegression() ? null : experimentLocalFileHelper.loadExpectedMapPaths(),
 					testClientNodeData, hederaNodeHGCAAData);
 
 			if (item == ValidatorType.BLOB_STATE) {
@@ -839,7 +846,9 @@ public class Experiment implements ExperimentSummary {
 				if (item instanceof StandardValidator && regConfig.getNetErrorCfg() != null) {
 					((StandardValidator) item).setIgnoreSyncException(true);
 				}
-
+				if (isServicesRegression() && item instanceof RecoverStateValidator) {
+					((RecoverStateValidator)item).setServiceRegression(true);
+				}
 				item.setLastStakedNode(getLastStakedNode());
 				item.validate();
 				slackMsg.addValidatorInfo(item);
@@ -944,14 +953,14 @@ public class Experiment implements ExperimentSummary {
 		}
 
 		// If it is services-regression set starting crypto account as 3
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			configFile.setStartingCryptoAccount(STARTING_CRYPTO_ACCOUNT);
 		}
 
 		configFile.exportConfigFile();
 
 		//set the built public Ip string with crypto accounts
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			ExperimentServicesHelper.setPublicIPStringForServices(configFile.getPublicIPsWithCryptoAccounts());
 		}
 	}
@@ -993,7 +1002,7 @@ public class Experiment implements ExperimentSummary {
 		File keyfile = new File(regConfig.getCloud().getKeyLocation() + ".pem");
 		setUpSSHServicesForInstances(login, keyfile);
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			setUpSSHServicesForInstances(login, keyfile, true);
 		}
 	}
@@ -1078,7 +1087,7 @@ public class Experiment implements ExperimentSummary {
 		final SSHService firstNode = sshNodes.get(0);
 		calculateNodeMemoryProfile(firstNode);
 
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			filesToSend = experimentServicesHelper.getListOfFilesToSend(
 					false, new File(getPEMFile()), addedFiles);
 		} else {
@@ -1098,7 +1107,7 @@ public class Experiment implements ExperimentSummary {
 		log.info(MARKER, "upload to nodes has finished");
 
 		// Send suite runner jar to test client nodes if there are any
-		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+		if (isServicesRegression() && testClientNodes.size() > 0) {
 			experimentServicesHelper.sendTarToTestClientNodes(addedFiles);
 		}
 
@@ -1203,7 +1212,7 @@ public class Experiment implements ExperimentSummary {
 								(ArrayList<String>) testConfig.getResultFiles());
 				}).collect(Collectors.toList()));
 
-		if (testConfig.isServicesRegression() && testClientNodes.size() > 0) {
+		if (isServicesRegression() && testClientNodes.size() > 0) {
 			experimentServicesHelper.scpFromTestClientNode();
 		}
 
@@ -1568,7 +1577,7 @@ public class Experiment implements ExperimentSummary {
 		settingsFile = new SettingsBuilder(testConfig);
 
 		// set up the suites from SuiteRunner that should be run on test clients in services-regression
-		if (testConfig.isServicesRegression()) {
+		if (isServicesRegression()) {
 			ExperimentServicesHelper.setTestSuites(testConfig);
 		}
 	}
@@ -1600,7 +1609,7 @@ public class Experiment implements ExperimentSummary {
 			int stateNumber = sshNodes.get(i).getNumberOfSignedStates();
 			log.info(MARKER, "Important Node {} generated {} states", i, stateNumber);
 			if (stateNumber != node0StateNumber) {
-				log.info(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
+				log.error(ERROR, "Node 0 and node {} have different number of states : {} vs {}",
 						0, i, node0StateNumber, stateNumber);
 				result = false;
 			}
@@ -1658,15 +1667,6 @@ public class Experiment implements ExperimentSummary {
 	}
 
 	/**
-	 * Restore database from backup file
-	 */
-	public void recoverDatabase() {
-		for (SSHService node : sshNodes) {
-			node.recoverDatabase();
-		}
-	}
-
-	/**
 	 * Hide expected map directory
 	 */
 	public void backupSavedExpectedMap() {
@@ -1681,6 +1681,12 @@ public class Experiment implements ExperimentSummary {
 	public void restoreSavedExpectedMap() {
 		for (SSHService node : sshNodes) {
 			node.restoreSavedExpectedMap();
+		}
+	}
+
+	public void removeRecordStreamFile() {
+		for (SSHService node : sshNodes) {
+			node.removeRecordStreamFile();
 		}
 	}
 

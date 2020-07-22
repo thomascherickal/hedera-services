@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.swirlds.regression.RegressionUtilities.HGCAA_LOG_FILENAME;
-import static com.swirlds.regression.RegressionUtilities.OUTPUT_LOG_FILENAME;
+import static com.swirlds.regression.RegressionUtilities.HAPI_CLIENT_COMBINED_FILE_NAME;
 import static com.swirlds.regression.RegressionUtilities.PRIVATE_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.PUBLIC_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.QUERY_LOG_FILENAME;
@@ -130,7 +130,6 @@ public class ExperimentServicesHelper {
 		} else {
 			filesToSend = getServicesFilesToUpload(pemFile);
 		}
-
 		if (addedFiles != null) {
 			filesToSend.addAll(addedFiles);
 		}
@@ -233,6 +232,11 @@ public class ExperimentServicesHelper {
 		return testSuites;
 	}
 
+	/**
+	 * get publicIP list string with corresponding crypto accounts for each IP
+	 *
+	 * @return
+	 */
 	public static String getPublicIPStringForServices() {
 		return publicIPStringForServices;
 	}
@@ -382,7 +386,7 @@ public class ExperimentServicesHelper {
 		List<HapiClientData> testClientData = new ArrayList<>();
 		for (int i = 0; i < numberOfTestClientNodes; i++) {
 			String outputLogFileName = getExperimentResultsFolderForTestClientNode(i)
-					+ OUTPUT_LOG_FILENAME;
+					+ HAPI_CLIENT_COMBINED_FILE_NAME;
 
 			InputStream logInput = getInputStream(outputLogFileName);
 
@@ -469,5 +473,9 @@ public class ExperimentServicesHelper {
 		while ((s = stdError.readLine()) != null) {
 			log.info(MARKER, s);
 		}
+	}
+
+	public static boolean isServicesRegression() {
+		return RegressionUtilities.getTestConfig().getHederaServicesConfig() != null;
 	}
 }

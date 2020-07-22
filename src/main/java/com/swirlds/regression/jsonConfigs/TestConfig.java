@@ -53,8 +53,6 @@ public class TestConfig implements FileRequirement {
 	private MemoryLeakCheckConfig memoryLeakCheckConfig;
 	private HederaServicesConfig hederaServicesConfig;
 
-	private boolean servicesRegression = false;
-
 	public RunType getRunType() {
 		if (restartConfig != null) {
 			return RunType.RESTART;
@@ -64,7 +62,7 @@ public class TestConfig implements FileRequirement {
 			return RunType.RECONNECT;
 		} else if (recoverConfig != null) {
 			return RunType.RECOVER;
-		} else if (hederaServicesConfig !=null || isServicesRegression()) {
+		} else if (hederaServicesConfig != null) {
 			return RunType.HEDERA_SERVICE;
 		}
 		return RunType.STANDARD;
@@ -225,18 +223,10 @@ public class TestConfig implements FileRequirement {
 		this.hederaServicesConfig = hederaServiceConfig;
 	}
 
-	public boolean isServicesRegression() {
-		return servicesRegression;
-	}
-
-	public void setServicesRegression(boolean servicesRegression) {
-		this.servicesRegression = servicesRegression;
-	}
-
 	@Override
 	public List<String> getFilesNeeded() {
 		List<String> list = new LinkedList<>();
-		if (servicesRegression) {
+		if (hederaServicesConfig != null) {
 			return list;
 		}
 		add(list, freezeConfig, recoverConfig, app);

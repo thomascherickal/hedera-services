@@ -1,7 +1,6 @@
 {
-  // NOTE: All changed to Experiments MUST be propogated to: AwsNightlyMirrorNodeRegressionCfg.json,
-  //       AwsNightlyMultiRegionCfg.json, AwsNightlyRegressionNonMirrorCfg.json, AwsNightlyRegressionReconnectCfg.json
-  "name": "regression-suite",
+  // NOTE: This should ONLY be changed to match experiments in AwsNightlyRegressionCfg.json
+  "name": "NO_ZERO_STAKED_NODES_regression-suite",
   "result": {
     "uri": "results"
   },
@@ -15,18 +14,11 @@
     "regionList": [
       {
         "region": "us-east-2",
-        "numberOfNodes": 6,
-        "instanceList": [
-          "i-04223a00a2884931c",
-          "i-08eafb29a6b39dc22",
-          "i-09aceb44773d0b2da",
-          "i-0a80c3d91ce61c5f0"
-        ]
+        "numberOfNodes": 4
       }
     ]
   },
-  "numberOfZeroStakeNodes": 2,
-  "eventFilesWriters": 6,
+  "eventFilesWriters": 4,
   "log": {
     "uri": "testing/logs/"
   },
@@ -75,7 +67,7 @@
     ],
     "webServer": {
       "useWebServer": true,
-      "webServerPort": "8070",
+      "webServerPort": "8075",
       "webServerAddress": "18.222.60.10"
     }
   },
