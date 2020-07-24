@@ -1,0 +1,68 @@
+{
+    "name": "Services-regression-JRS-TPS-HCS-default-settings-Leo",
+    "result": {
+	"uri": "results"
+  },
+  "cloud": {
+	"service": "aws",
+	"securityGroup": "SwirldsSecGroup",
+	"instanceType": "M410xlarge",
+	"instanceKey": "Regression-key-for-ljiang",
+	  "keyLocation": "./keys/my-key",
+	  "login": "ubuntu",
+	  "regionList": [
+	      {
+			"region": "us-east-2",
+//              "numberOfNodes" : 4,
+			"instanceList": [
+		           "i-03bd2d9fb92bfa1ec",
+		           "i-066334409347a8803",
+		           "i-0a914fb049a66cdf8",
+		           "i-0ecd30d4367adffdc"
+			],
+              //              "numberOfTestClientNodes": 4
+			  "testClientInstanceList": [
+//                  "i-00f24a13943530c5c",
+//                  "i-0190aae497a25b88d",
+//                  "i-0731ae23aefc02a38",
+//                  "i-077fe7d1f75da0d69",
+                  "i-078144994f5f76ad9",
+                  "i-0b816dc45522d9fc0",
+                  
+                  "i-005fbb17e26e4cc6e",
+                  "i-06032d488740072bf",
+                  "i-066f0ed89adbd7d4e",
+                  "i-0aef0a6f00fa27045"
+                  
+			  ]
+		  }
+	  ]
+  },
+    "eventFilesWriters": 4,
+    "recordFilesWriters" : 4,
+    "log": {
+	    "uri":"testing/logs/"
+    },
+    "experiments": [
+        //        "configs/testUmbrellaReduxCryptoCfg.json"
+        "configs/testUmbrellaReduxHCSCfg.json"
+        //        "configs/testUmbrellaReduxMixedCfg.json"
+    ],
+    "db": {
+	    "type": "postgresql",
+	    "login": "dbregression",
+	    "address": "localhost",
+	    "port": "5432",
+	    "database": "stats"
+    },
+    "slack": {
+	    "token": "xoxp-344480056389-344925970834-610132896599-fb69be9200db37ce0b0d55a852b2a5dc",
+	    "botToken": "xoxb-344480056389-723753217792-D5RXu4lKOPt3mDFyLTqtSHKo",
+	    "channel": "regression-test",
+	    "notifyUserIds": ["UMQ7SUGBE"],
+	    "notifyOn": "ERROR"
+    },
+    "uploadToSharePoint": false,
+    "useThreadPool" :true
+//    "jvmOptions": "-Xmx136g -Xms4g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14"
+}

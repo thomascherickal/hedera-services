@@ -22,11 +22,11 @@
 #   must install matplotlib to work properly
 #
 #
-#  Given a list of statistics 
+#  Given a list of statistics
 #  scan csv files and draw
 #  graph
 #
-#  By default, run this script from sdk/testing directory, 
+#  By default, run this script from sdk/testing directory,
 #  it will list subdirectories under sdk/testing/results and ask
 #  use to choose one subdirectory to scan for results.
 #
@@ -300,6 +300,38 @@ default_stat_names = [
     "fileCreate", "fileUpdate", "fileAppend", "fileDelete",
     "cryptoTransferRcv", "cryptoTransferSub", "cryptoTransferRcv/sec", "cryptoTransferSub/sec",
     "cryptoTransferHdl", "createAccountRcv", "createAccountSub", "createAccountHdl",
+
+    "createTopicHdl",
+    "createTopicHdl/sec",
+    "createTopicRcv",
+    "createTopicRcv/sec",
+    "createTopicSub",
+    "createTopicSub/sec",
+    "deleteTopicHdl",
+    "deleteTopicHdl/sec",
+    "deleteTopicRcv",
+    "deleteTopicRcv/sec",
+    "deleteTopicSub",
+    "deleteTopicSub/sec",
+    "submitMessageHdl",
+    "submitMessageHdl/sec",
+    "submitMessageRcv",
+    "submitMessageRcv/sec",
+    "submitMessageSub",
+    "submitMessageSub/sec",
+
+    "updateTopicHdl",
+    "updateTopicHdl/sec",
+    "updateTopicRcv",
+    "updateTopicRcv/sec",
+    "updateTopicSub",
+    "updateTopicSub/sec",
+
+    "getTopicInfoRcv",
+    "getTopicInfoRcv/sec",
+    "getTopicInfoSub",
+    "getTopicInfoSub/sec",
+
     "cEvents/sec", "sigVerifyAsync/sec", "sigVerifySync/sec", "secTransH",
     "expandDoneWaitCount", "expandDoneWaitTime", "zeroSigsCountExpand", "zeroSigsCountHandle",
     "threads", "stateSigs", "secStateCopy", "acctLookupRetries/sec",
@@ -1116,7 +1148,7 @@ def align_time_stamp():
 
 
 ############################################################
-#   main 
+#   main
 ############################################################
 
 
@@ -1131,7 +1163,7 @@ def align_time_stamp():
 #         "2" :
 #     }
 #     "1":{
-#         "1" : 
+#         "1" :
 #         "2" :
 #     }
 # }
@@ -1142,12 +1174,12 @@ invalid_state_dict = {}  # savd invalid_state occurrences
 #  {  "stat1" : {
 #         "0" : [ ]
 #         "1" : [ ]
-#         "2" : [ ]  
+#         "2" : [ ]
 #     }
 #     "stat2" : {
 #         "0" : [ ]
 #         "1" : [ ]
-#         "2" : [ ] 
+#         "2" : [ ]
 #     }
 #  }
 

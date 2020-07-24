@@ -94,6 +94,7 @@ import java.util.stream.Stream;
 import static com.swirlds.regression.ExperimentServicesHelper.STARTING_CRYPTO_ACCOUNT;
 import static com.swirlds.regression.RegressionUtilities.CHECK_BRANCH_CHANNEL;
 import static com.swirlds.regression.RegressionUtilities.CHECK_USER_EMAIL_CHANNEL;
+import static com.swirlds.regression.RegressionUtilities.CLIENT_PUBLIC_IP_ADDRESS_FILE;
 import static com.swirlds.regression.RegressionUtilities.CONFIG_FILE;
 import static com.swirlds.regression.RegressionUtilities.FALL_BEHIND_MSG;
 import static com.swirlds.regression.RegressionUtilities.INSIGHT_CMD;
@@ -415,8 +416,11 @@ public class Experiment implements ExperimentSummary {
 
 			while (System.nanoTime() < endTime) { // Don't go over set test time
 				try {
-					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
-					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+//					log.trace(MARKER, "sleeping for {} seconds ", JAVA_PROC_CHECK_INTERVAL / MILLIS);
+//					Thread.sleep(JAVA_PROC_CHECK_INTERVAL);
+					log.trace(MARKER, "sleeping for {} seconds ", 60);
+					Thread.sleep(60 * MILLIS);
+
 				} catch (InterruptedException e) {
 					log.error(ERROR, "could not sleep.", e);
 				}
@@ -1412,12 +1416,15 @@ public class Experiment implements ExperimentSummary {
 			return;
 		}
 		ArrayList<String> pubIPs = cloud.getPublicIPList();
+		ArrayList<String> pubClientIPs = cloud.getPublicIPListOfTestClients();
 		ArrayList<String> prvtIPs = cloud.getPrivateIPList();
 		Path pubIPFile = Paths.get(PUBLIC_IP_ADDRESS_FILE);
 		Path pvtIPFile = Paths.get(PRIVATE_IP_ADDRESS_FILE);
+		Path pubClientIPFile = Paths.get(CLIENT_PUBLIC_IP_ADDRESS_FILE);
 		try {
 			Files.write(pubIPFile, pubIPs, STANDARD_CHARSET);
 			Files.write(pvtIPFile, prvtIPs, STANDARD_CHARSET);
+			Files.write(pubClientIPFile, pubClientIPs, STANDARD_CHARSET);
 		} catch (IOException e) {
 			log.error(ERROR, "unable to output public and private IP address files.", e);
 		}

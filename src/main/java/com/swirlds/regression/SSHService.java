@@ -481,20 +481,23 @@ public class SSHService {
 		if (jvmOptions == null || jvmOptions.trim().length() == 0) {
 			jvmOptions = RegressionUtilities.JVM_OPTIONS_DEFAULT;
 		}
+		// Force TestClient to use the hardcoded option...
+//		String clientJvmOptions = " -Xmx98g -Xms8g -XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:ConcGCThreads=14 ";
+		String clientJvmOptions = jvmOptions;
 
 		String publicIpList = getPublicIPStringForServices();
 		String firstIP = publicIpList.substring(0, publicIpList.indexOf(":"));
 
 		createDirForResource();
 		// If only one suite runner process should be run
-		String command = getSuiteRunnerCommand(publicIpList, testConfig, jvmOptions,
+		String command = getSuiteRunnerCommand(publicIpList, testConfig, clientJvmOptions,
 				firstIP, "3", -1);
 		String description = "Start SuiteRunner.jar";
 		execCommand(command, description, 5).getExitStatus();
 
 		// If multiple suiteRunner processes have to be run in umbrellaRedux test
 		if (isServicesRegression() && testConfig.getHederaServicesConfig().isRunMultipleSuiteRunners()) {
-			runSuiteRunnerProcesses(testConfig, publicIpList, jvmOptions);
+			runSuiteRunnerProcesses(testConfig, publicIpList, clientJvmOptions);
 		}
 	}
 

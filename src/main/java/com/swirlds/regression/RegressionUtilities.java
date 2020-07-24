@@ -54,6 +54,7 @@ public class RegressionUtilities {
 	public static final String PLATFORM_TESTING_APP = "PlatformTestingApp.jar";
 	public static final String WRITE_FILE_DIRECTORY = "tmp/";
 	public static final String PUBLIC_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "publicAddresses.txt";
+	public static final String CLIENT_PUBLIC_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "publicAddressesForClients.txt";
 	public static final String PRIVATE_IP_ADDRESS_FILE = WRITE_FILE_DIRECTORY + "privateAddresses.txt";
 
 	public static final String SDK_DIR = "../sdk/";

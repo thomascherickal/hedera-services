@@ -1,0 +1,53 @@
+{
+    "name": "UmbrellaRedux-JRS-TPS-HCS-2048bytes-6x6x~195-4-30min-Leo",
+    "description": "UmbrellaRedux-TPS-HCS-Leo",
+    "duration": 1860,
+    "settings": [
+	    {
+	        "name": "showInternalStats",
+	        "value": "1"
+	    },
+	    {
+	        "name": "csvFileName",
+	        "value": "ServicesStats"
+	    },
+	    {
+	        "name": "csvAppend",
+	        "value": "true"
+	    },
+	    {
+	        "name": "maxOutgoingSyncs",
+	        "value": "2"
+	    },
+	  {
+		"name": "freezeSettings.active",
+		"value": "0"
+	  }
+	    //     {
+	    //         "name": "maxEventQueueForCons",
+	    //         "value": "60000"
+	    //     }
+         ],
+    "hederaServicesConfig": {
+	    "numOfSuiteRunnerProcesses" : 6,
+	    "runMultipleSuiteRunners" : true,
+	    "ciPropsMap" : true,
+	    "testSuites": [
+		    "UmbrellaRedux duration=30,unit=MINUTES,props=regression-consensus_ops.properties,maxOpsPerSec=380,maxPendingOps=50000,backoffSleepSecs=5"
+	    ]
+	},
+    "memoryLeakCheckConfig": {
+	    "nodeGroupIdentifier": "FIRST"
+    },
+    "app": {
+	    "jar": "HederaNode.jar"
+    },
+    "resultFiles": [
+	    "swirlds.log"
+    ],
+    "validator": [
+	    "STATS",
+	    "STANDARD",
+	    "HAPI_CLIENT"
+    ]
+}
