@@ -60,7 +60,8 @@ import static com.swirlds.common.PlatformStatus.*;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 /**
- * Drives the major state transitions for a Hedera Node via its {@link ServicesContext}.
+ * Drives the major state transitions for a Hedera Node via its
+ * {@link ServicesContext}.
  *
  * @author Michael Tinker
  */

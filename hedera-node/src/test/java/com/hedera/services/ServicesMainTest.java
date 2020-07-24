@@ -3,15 +3,15 @@ package com.hedera.services;
 /*-
  * ‌
  * Hedera Services Node
- * ​
+ *
  * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
- * ​
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -420,7 +420,7 @@ public class ServicesMainTest {
 		// then:
 		verify(grpc).start(intThat(i -> i == 50212), intThat(i -> i == 50213), any());
 	}
-	
+
 	@Test
 	public void managesSystemFiles() throws Exception {
 		given(properties.getBooleanProperty("hedera.createSystemFilesOnStartup")).willReturn(true);
