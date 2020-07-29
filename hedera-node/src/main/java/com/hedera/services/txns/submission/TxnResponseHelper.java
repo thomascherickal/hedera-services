@@ -20,6 +20,8 @@ package com.hedera.services.txns.submission;
  * ‍
  */
 
+import com.hedera.services.context.domain.trackers.IssEventInfo;
+import com.hedera.services.legacy.exception.OnGoingISSException;
 import com.hedera.services.queries.answering.QueryResponseHelper;
 import com.hedera.services.txns.SubmissionFlow;
 import com.hedera.services.utils.SignedTxnAccessor;
@@ -30,6 +32,7 @@ import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 
@@ -42,10 +45,12 @@ public class TxnResponseHelper {
 
 	private final SubmissionFlow submissionFlow;
 	private final HederaNodeStats stats;
+	private final IssEventInfo issEventInfo;
 
-	public TxnResponseHelper(SubmissionFlow submissionFlow, HederaNodeStats stats) {
+	public TxnResponseHelper(SubmissionFlow submissionFlow, HederaNodeStats stats, IssEventInfo issEventInfo) {
 		this.stats = stats;
 		this.submissionFlow = submissionFlow;
+		this.issEventInfo = issEventInfo;
 	}
 
 	public void respondToHcs(
@@ -94,7 +99,11 @@ public class TxnResponseHelper {
 		TransactionResponse response;
 
 		try {
-			response = submissionFlow.submit(signedTxn);
+			if(issEventInfo.status() == ONGOING_ISS) {
+				throw new OnGoingISSException("On Going ISS on the Platform");
+			} else {
+				response = submissionFlow.submit(signedTxn);
+			}
 		} catch (Exception surprising) {
 			SignedTxnAccessor accessor = SignedTxnAccessor.uncheckedFrom(signedTxn);
 			log.warn("Submission flow unable to submit {}!", accessor.getSignedTxn4Log(), surprising);

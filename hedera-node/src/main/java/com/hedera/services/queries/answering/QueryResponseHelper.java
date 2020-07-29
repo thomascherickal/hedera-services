@@ -20,6 +20,8 @@ package com.hedera.services.queries.answering;
  * ‍
  */
 
+import com.hedera.services.context.domain.trackers.IssEventInfo;
+import com.hedera.services.legacy.exception.OnGoingISSException;
 import com.hedera.services.queries.AnswerFlow;
 import com.hedera.services.queries.AnswerService;
 import com.hederahashgraph.api.proto.java.Query;
@@ -31,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
+import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hedera.services.context.primitives.StateView.EMPTY_VIEW;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
@@ -41,10 +44,12 @@ public class QueryResponseHelper {
 
 	private final AnswerFlow answerFlow;
 	private final HederaNodeStats stats;
+	private final IssEventInfo issEventInfo;
 
-	public QueryResponseHelper(AnswerFlow answerFlow, HederaNodeStats stats) {
+	public QueryResponseHelper(AnswerFlow answerFlow, HederaNodeStats stats, IssEventInfo issEventInfo) {
 		this.answerFlow = answerFlow;
 		this.stats = stats;
+		this.issEventInfo = issEventInfo;
 	}
 
 	public void respondToNetwork(
@@ -117,7 +122,11 @@ public class QueryResponseHelper {
 		incReceivedCount.run();
 
 		try {
-			response = answerFlow.satisfyUsing(answer, query);
+			if(issEventInfo.status() == ONGOING_ISS) {
+				throw new OnGoingISSException("On Going ISS on the Platform");
+			} else {
+				response = answerFlow.satisfyUsing(answer, query);
+			}
 		} catch (Exception surprising) {
 			log.warn("Query flow unable to satisfy query {}!", query, surprising);
 			response = answer.responseGiven(query, EMPTY_VIEW, FAIL_INVALID, 0L);

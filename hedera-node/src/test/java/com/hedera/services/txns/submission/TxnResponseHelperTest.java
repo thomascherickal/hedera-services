@@ -20,8 +20,12 @@ package com.hedera.services.txns.submission;
  * ‍
  */
 
+import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hedera.services.context.domain.trackers.IssEventStatus.NO_KNOWN_ISS;
 
+import com.hedera.services.context.ServicesContext;
+import com.hedera.services.context.domain.trackers.IssEventInfo;
 import com.hedera.services.txns.SubmissionFlow;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionResponse;
@@ -41,6 +45,7 @@ class TxnResponseHelperTest {
 	TransactionResponse okResponse;
 	TransactionResponse notOkResponse;
 
+	IssEventInfo issEventInfo;
 	SubmissionFlow submissionFlow;
 	HederaNodeStats stats;
 	StreamObserver<TransactionResponse> observer;
@@ -48,6 +53,7 @@ class TxnResponseHelperTest {
 
 	@BeforeEach
 	private void setup() {
+		issEventInfo = mock(IssEventInfo.class);
 		submissionFlow = mock(SubmissionFlow.class);
 		stats = mock(HederaNodeStats.class);
 		observer = mock(StreamObserver.class);
@@ -55,7 +61,7 @@ class TxnResponseHelperTest {
 		given(okResponse.getNodeTransactionPrecheckCode()).willReturn(OK);
 		notOkResponse = mock(TransactionResponse.class);
 
-		subject = new TxnResponseHelper(submissionFlow, stats);
+		subject = new TxnResponseHelper(submissionFlow, stats, issEventInfo);
 	}
 
 	@Test
@@ -63,6 +69,7 @@ class TxnResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(submissionFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(submissionFlow.submit(txn)).willReturn(okResponse);
 
 		// when:
@@ -81,6 +88,7 @@ class TxnResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(submissionFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(submissionFlow.submit(txn)).willReturn(okResponse);
 
 		// when:
@@ -99,6 +107,7 @@ class TxnResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(submissionFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(submissionFlow.submit(txn)).willReturn(okResponse);
 
 		// when:
@@ -117,6 +126,7 @@ class TxnResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(submissionFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(submissionFlow.submit(txn)).willReturn(notOkResponse);
 
 		// when:
@@ -135,6 +145,7 @@ class TxnResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(submissionFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(submissionFlow.submit(txn)).willThrow(IllegalStateException.class);
 
 		// when:
@@ -147,4 +158,22 @@ class TxnResponseHelperTest {
 		inOrder.verify(observer).onCompleted();
 		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
 	}
+
+	@Test
+	public void helpsWithOngoingISSExceptionPath() {
+		// setup:
+		InOrder inOrder = inOrder(submissionFlow, stats, observer);
+
+		given(issEventInfo.status()).willReturn(ONGOING_ISS);
+
+		// when:
+		subject.respondToCrypto(txn, observer, metric);
+
+		// then:
+		inOrder.verify(stats).cryptoTransactionReceived(metric);
+		inOrder.verify(observer).onNext(TxnResponseHelper.FAIL_INVALID_RESPONSE);
+		inOrder.verify(observer).onCompleted();
+		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
+	}
+
 }

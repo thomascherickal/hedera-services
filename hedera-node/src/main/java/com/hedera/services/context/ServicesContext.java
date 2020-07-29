@@ -433,7 +433,7 @@ public class ServicesContext {
 
 	public TxnResponseHelper txnResponseHelper() {
 		if (txnResponseHelper == null) {
-			txnResponseHelper = new TxnResponseHelper(submissionFlow(), stats());
+			txnResponseHelper = new TxnResponseHelper(submissionFlow(), stats(), this.issEventInfo());
 		}
 		return txnResponseHelper;
 	}
@@ -472,7 +472,7 @@ public class ServicesContext {
 
 	public QueryResponseHelper queryResponseHelper() {
 		if (queryResponseHelper == null) {
-			queryResponseHelper = new QueryResponseHelper(answerFlow(), stats());
+			queryResponseHelper = new QueryResponseHelper(answerFlow(), stats(), this.issEventInfo());
 		}
 		return queryResponseHelper;
 	}

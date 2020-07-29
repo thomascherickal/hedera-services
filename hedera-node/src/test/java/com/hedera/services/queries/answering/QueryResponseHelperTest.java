@@ -20,6 +20,8 @@ package com.hedera.services.queries.answering;
  * ‍
  */
 
+import com.hedera.services.context.ServicesContext;
+import com.hedera.services.context.domain.trackers.IssEventInfo;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.queries.AnswerFlow;
 import com.hedera.services.queries.AnswerService;
@@ -33,6 +35,8 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
+import static com.hedera.services.context.domain.trackers.IssEventStatus.NO_KNOWN_ISS;
+import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_START;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
@@ -43,6 +47,7 @@ import static org.mockito.BDDMockito.*;
 
 @RunWith(JUnitPlatform.class)
 class QueryResponseHelperTest {
+	IssEventInfo issEventInfo;
 	Query query = Query.getDefaultInstance();
 	String metric = "imaginary";
 	Response okResponse;
@@ -57,6 +62,7 @@ class QueryResponseHelperTest {
 
 	@BeforeEach
 	private void setup() {
+		issEventInfo = mock(IssEventInfo.class);
 		answerFlow = mock(AnswerFlow.class);
 		stats = mock(HederaNodeStats.class);
 		answer = mock(AnswerService.class);
@@ -64,7 +70,7 @@ class QueryResponseHelperTest {
 		okResponse = mock(Response.class);
 		notOkResponse = mock(Response.class);
 
-		subject = new QueryResponseHelper(answerFlow, stats);
+		subject = new QueryResponseHelper(answerFlow, stats, issEventInfo);
 	}
 
 	@Test
@@ -72,6 +78,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willReturn(okResponse);
 		given(answer.extractValidityFrom(okResponse)).willReturn(OK);
 
@@ -91,6 +98,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willReturn(okResponse);
 		given(answer.extractValidityFrom(okResponse)).willReturn(OK);
 
@@ -110,6 +118,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willReturn(okResponse);
 		given(answer.extractValidityFrom(okResponse)).willReturn(OK);
 
@@ -129,6 +138,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willReturn(notOkResponse);
 		given(answer.extractValidityFrom(okResponse)).willReturn(INVALID_TRANSACTION_START);
 
@@ -148,6 +158,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer, answer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willThrow(IllegalStateException.class);
 		given(answer.responseGiven(query, StateView.EMPTY_VIEW, FAIL_INVALID, 0L)).willReturn(notOkResponse);
 
@@ -168,6 +179,7 @@ class QueryResponseHelperTest {
 		// setup:
 		InOrder inOrder = inOrder(answerFlow, stats, observer);
 
+		given(issEventInfo.status()).willReturn(NO_KNOWN_ISS);
 		given(answerFlow.satisfyUsing(answer, query)).willReturn(okResponse);
 		given(answer.extractValidityFrom(okResponse)).willReturn(OK);
 
@@ -181,4 +193,22 @@ class QueryResponseHelperTest {
 		inOrder.verify(observer).onCompleted();
 		inOrder.verify(stats).networkQueryAnswered(metric);
 	}
+
+	@Test
+	public void heplsWithOnGoingISSExceptionPath() {
+		// setup:
+		InOrder inOrder = inOrder(answerFlow, stats, observer, answer);
+
+		given(issEventInfo.status()).willReturn(ONGOING_ISS);
+
+		// when:
+		subject.respondToCrypto(query, observer, answer, metric);
+
+		// then:
+		inOrder.verify(stats).cryptoQueryReceived(metric);
+		inOrder.verify(answer).responseGiven(query, StateView.EMPTY_VIEW, FAIL_INVALID, 0L);
+		inOrder.verify(observer).onCompleted();
+		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
+	}
+
 }
