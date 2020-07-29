@@ -39,6 +39,7 @@ import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_START;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_NOT_ACTIVE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -205,7 +206,7 @@ class QueryResponseHelperTest {
 
 		// then:
 		inOrder.verify(stats).cryptoQueryReceived(metric);
-		inOrder.verify(answer).responseGiven(query, StateView.EMPTY_VIEW, FAIL_INVALID, 0L);
+		inOrder.verify(answer).responseGiven(query, StateView.EMPTY_VIEW, PLATFORM_NOT_ACTIVE, 0L);
 		inOrder.verify(observer).onCompleted();
 		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
 	}

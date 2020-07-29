@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_NOT_ACTIVE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 
 public class TxnResponseHelper {
@@ -44,7 +45,7 @@ public class TxnResponseHelper {
 			.build();
 
 	static final TransactionResponse ONGOING_ISS_EXCEPTION_RESPONSE = TransactionResponse.newBuilder()
-			.setNodeTransactionPrecheckCode(FAIL_INVALID)
+			.setNodeTransactionPrecheckCode(PLATFORM_NOT_ACTIVE)
 			.build();
 
 	private final SubmissionFlow submissionFlow;

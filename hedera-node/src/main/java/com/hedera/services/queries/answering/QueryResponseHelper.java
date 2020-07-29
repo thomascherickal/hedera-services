@@ -36,6 +36,7 @@ import org.apache.logging.log4j.MarkerManager;
 import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
 import static com.hedera.services.context.primitives.StateView.EMPTY_VIEW;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_NOT_ACTIVE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 
 public class QueryResponseHelper {
@@ -130,7 +131,7 @@ public class QueryResponseHelper {
 		}
 		catch (OnGoingISSException e) {
 			log.warn("Query flow unable to satisfy query {}! because of {}", query, e.getMessage());
-			response = answer.responseGiven(query, EMPTY_VIEW, FAIL_INVALID,0L);
+			response = answer.responseGiven(query, EMPTY_VIEW, PLATFORM_NOT_ACTIVE,0L);
 		}
 		catch (Exception surprising) {
 			log.warn("Query flow unable to satisfy query {}!", query, surprising);
