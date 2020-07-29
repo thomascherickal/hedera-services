@@ -24,7 +24,6 @@ import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hedera.services.context.domain.trackers.IssEventStatus.NO_KNOWN_ISS;
 
-import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.domain.trackers.IssEventInfo;
 import com.hedera.services.txns.SubmissionFlow;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -171,7 +170,7 @@ class TxnResponseHelperTest {
 
 		// then:
 		inOrder.verify(stats).cryptoTransactionReceived(metric);
-		inOrder.verify(observer).onNext(TxnResponseHelper.FAIL_INVALID_RESPONSE);
+		inOrder.verify(observer).onNext(TxnResponseHelper.ONGOING_ISS_EXCEPTION_RESPONSE);
 		inOrder.verify(observer).onCompleted();
 		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
 	}

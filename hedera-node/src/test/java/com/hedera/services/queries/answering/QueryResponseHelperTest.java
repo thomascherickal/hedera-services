@@ -37,9 +37,7 @@ import org.mockito.InOrder;
 
 import static com.hedera.services.context.domain.trackers.IssEventStatus.NO_KNOWN_ISS;
 import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_START;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -206,7 +204,7 @@ class QueryResponseHelperTest {
 
 		// then:
 		inOrder.verify(stats).cryptoQueryReceived(metric);
-		inOrder.verify(answer).responseGiven(query, StateView.EMPTY_VIEW, FAIL_INVALID, 0L);
+		inOrder.verify(answer).responseGiven(query, StateView.EMPTY_VIEW, ONGOING_ISS_EXCEPTION, 0L);
 		inOrder.verify(observer).onCompleted();
 		inOrder.verify(stats, never()).cryptoQuerySubmitted(metric);
 	}

@@ -33,14 +33,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 public class TxnResponseHelper {
 	private static final Logger log = LogManager.getLogger(QueryResponseHelper.class);
 
 	static final TransactionResponse FAIL_INVALID_RESPONSE = TransactionResponse.newBuilder()
 			.setNodeTransactionPrecheckCode(FAIL_INVALID)
+			.build();
+
+	static final TransactionResponse ONGOING_ISS_EXCEPTION_RESPONSE = TransactionResponse.newBuilder()
+			.setNodeTransactionPrecheckCode(ONGOING_ISS_EXCEPTION)
 			.build();
 
 	private final SubmissionFlow submissionFlow;
@@ -104,7 +107,13 @@ public class TxnResponseHelper {
 			} else {
 				response = submissionFlow.submit(signedTxn);
 			}
-		} catch (Exception surprising) {
+		}
+		catch (OnGoingISSException e){
+			SignedTxnAccessor accessor = SignedTxnAccessor.uncheckedFrom(signedTxn);
+			log.warn("Submission flow unable to submit {}! because of {}", accessor.getSignedTxn4Log(), e.getMessage());
+			response = ONGOING_ISS_EXCEPTION_RESPONSE;
+		}
+		catch (Exception surprising) {
 			SignedTxnAccessor accessor = SignedTxnAccessor.uncheckedFrom(signedTxn);
 			log.warn("Submission flow unable to submit {}!", accessor.getSignedTxn4Log(), surprising);
 			response = FAIL_INVALID_RESPONSE;
