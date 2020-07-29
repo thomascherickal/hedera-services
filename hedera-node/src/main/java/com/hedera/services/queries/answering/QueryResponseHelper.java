@@ -37,7 +37,6 @@ import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING
 import static com.hedera.services.context.primitives.StateView.EMPTY_VIEW;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ONGOING_ISS_EXCEPTION;
 
 public class QueryResponseHelper {
 	private static final Logger log = LogManager.getLogger(QueryResponseHelper.class);
@@ -131,7 +130,7 @@ public class QueryResponseHelper {
 		}
 		catch (OnGoingISSException e) {
 			log.warn("Query flow unable to satisfy query {}! because of {}", query, e.getMessage());
-			response = answer.responseGiven(query, EMPTY_VIEW, ONGOING_ISS_EXCEPTION,0L);
+			response = answer.responseGiven(query, EMPTY_VIEW, FAIL_INVALID,0L);
 		}
 		catch (Exception surprising) {
 			log.warn("Query flow unable to satisfy query {}!", query, surprising);
