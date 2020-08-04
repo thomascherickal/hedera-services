@@ -1128,8 +1128,8 @@ workflows:
             - long-crypto_txns300-8
             - long-crypto_txns300-9
             - long-crypto_txns300-10
-#            - long-crypto_txns300-11
-#            - long-crypto_txns300-12
+            - long-crypto_txns300-11
+            - long-crypto_txns300-12
             - long-file_ops-0
             - long-consensus_ops-0
           post-steps:
@@ -1205,8 +1205,8 @@ workflows:
             - short-crypto_txns300-8
             - short-crypto_txns300-9
             - short-crypto_txns300-10
-#            - short-crypto_txns300-11
-#            - short-crypto_txns300-12
+            - short-crypto_txns300-11
+            - short-crypto_txns300-12
             - short-file_ops-0
             - short-consensus_ops-0
 #
