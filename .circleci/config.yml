@@ -1176,12 +1176,12 @@ workflows:
       - short-crypto_txns300-10:
           requires:
             - regression-validate-freeze
-      - short-crypto_txns300-11:
-           requires:
-             - regression-validate-freeze
-      - short-crypto_txns300-12:
-           requires:
-             - regression-validate-freeze
+#      - short-crypto_txns300-11:
+#           requires:
+#             - regression-validate-freeze
+#      - short-crypto_txns300-12:
+#           requires:
+#             - regression-validate-freeze
       - short-file_ops-0:
           requires:
             - regression-validate-freeze
@@ -1205,8 +1205,8 @@ workflows:
             - short-crypto_txns300-8
             - short-crypto_txns300-9
             - short-crypto_txns300-10
-            - short-crypto_txns300-11
-            - short-crypto_txns300-12
+#            - short-crypto_txns300-11
+#            - short-crypto_txns300-12
             - short-file_ops-0
             - short-consensus_ops-0
 #
