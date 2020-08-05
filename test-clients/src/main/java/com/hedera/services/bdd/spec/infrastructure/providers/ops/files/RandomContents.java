@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FILE_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
@@ -40,14 +41,16 @@ public class RandomContents implements OpProvider {
 	private final ResponseCodeEnum[] permissibleCostAnswerPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
 			INSUFFICIENT_TX_FEE,
-			INVALID_FILE_ID
+			INVALID_FILE_ID,
+			FAIL_INVALID
 
 	);
 
 	private final ResponseCodeEnum[] permissibleAnswerOnlyPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
 			INSUFFICIENT_TX_FEE,
-			INVALID_TOPIC_ID
+			INVALID_TOPIC_ID,
+			FAIL_INVALID
 	);
 
 	private final EntityNameProvider<FileID> files;
