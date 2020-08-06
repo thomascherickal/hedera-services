@@ -217,6 +217,19 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 	private void resolveStatus(HapiApiSpec spec) throws Throwable {
 		actualStatus = resolvedStatusOfSubmission(spec);
 		spec.updateResolvedCounts(actualStatus);
+
+		if( actualStatus == OK && deferStatusResolution ) {
+			// Debug: Since the txn is supposed to resolved here, we should either get SUCCESS or other error code,
+			// Shouldn't be OK. So we want to do another query here to see exactly what happens
+			Query receiptQuery = txnReceiptQueryFor(extractTxnId(txnSubmitted));
+			Response response = statusResponse(spec, receiptQuery);
+			lastReceipt = response.getTransactionGetReceipt().getReceipt();
+			log.info(spec.logPrefix() + " Getting OK for txn resolvedStatus. Why? ");
+			log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txnSubmitted));
+			log.info(spec.logPrefix() + "receiptQuery: " + receiptQuery.toString());
+		}
+
+
 		if (actualStatus == INSUFFICIENT_PAYER_BALANCE) {
 			if (payerIsRechargingFor(spec)) {
 				addIpbToPermissibleStatuses();
@@ -225,6 +238,8 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 				}
 			}
 		}
+
+
 		if (permissibleStatuses.isPresent()) {
 			if (permissibleStatuses.get().contains(actualStatus)) {
 				expectedStatus = Optional.of(actualStatus);
@@ -355,6 +370,17 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 			Response response = statusResponse(spec, receiptQuery);
 			lastReceipt = response.getTransactionGetReceipt().getReceipt();
 			ResponseCodeEnum statusNow = lastReceipt.getStatus();
+
+
+//			if( actualStatus == OK) {
+//				// Debug: Since the txn is supposed to resolved here, we should either get SUCCESS or other error code,
+//				// Shouldn't be OK. Dump the query and the transaction here to see exactly what happens
+//				log.info(spec.logPrefix() + " Getting OK for txn resolvedStatus. Why? ");
+//				log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txn));
+//				log.info(spec.logPrefix() + "receiptQuery: " + receiptQuery.toString());
+//			}
+//
+
 			if (acceptAnyStatus) {
 				expectedStatus = Optional.of(statusNow);
 				return statusNow;
