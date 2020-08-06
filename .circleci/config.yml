@@ -2194,6 +2194,7 @@ jobs:
       - publish-platform-stats:
           source-desc: pre-freeze regression
           publish-to-slack: false
+          append-to-last-stats: 'true'
       - persist_to_workspace:
           root: /
           paths:
@@ -2226,6 +2227,7 @@ jobs:
           workflow-name: "nightly-regression"
       - publish-platform-stats:
           source-desc: full regression
+          append-to-last-stats: 'true'
   run-oc-regression:
     parameters:
       runner:
