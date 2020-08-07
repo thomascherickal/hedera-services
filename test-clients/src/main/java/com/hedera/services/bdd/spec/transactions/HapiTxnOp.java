@@ -43,6 +43,7 @@ import static com.hederahashgraph.api.proto.java.HederaFunctionality.Transaction
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.RECEIPT_NOT_FOUND;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNKNOWN;
 import static com.hederahashgraph.api.proto.java.ResponseType.ANSWER_ONLY;
@@ -392,7 +393,14 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 			}
 			pause(spec.setup().statusWaitSleepMs());
 		} while ((Instant.now().toEpochMilli() - beginWait) < spec.setup().statusWaitTimeoutMs());
-		return UNKNOWN;
+		//return UNKNOWN;
+
+		// Temp change to verify whether the UNKNOWN status code was caused by consensus timeout.
+		log.info(spec.logPrefix() + " TIMEOUT waiting to get receipt for submitted txn to resolveStatus:");
+		log.info(spec.logPrefix() + " The transaction is: " + txnSubmitted.toString());
+		log.info(spec.logPrefix() + " and my for this receiptQuery: " + receiptQuery.toString());
+
+		return RECEIPT_NOT_FOUND;
 	}
 
 	private Response statusResponse(HapiApiSpec spec, Query receiptQuery) throws Throwable {
