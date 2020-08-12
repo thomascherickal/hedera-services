@@ -33,6 +33,7 @@ import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.swirlds.common.crypto.Signature;
 import com.swirlds.common.crypto.VerificationStatus;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -164,11 +165,14 @@ public class HederaKeyActivation {
 	 * @return a supplier that produces the backing list sigs by public key.
 	 */
 	public static Function<byte[], Signature> pkToSigMapFrom(List<Signature> sigs) {
-		final Map<ByteString, Signature> pkSigs = sigs
-				.stream()
-				.collect(toMap(s -> ByteString.copyFrom(s.getExpandedPublicKeyDirect()), s -> s, (a, b) -> a));
-
-		return ed25519 -> pkSigs.getOrDefault(ByteString.copyFrom(ed25519), INVALID_SIG);
+		return pk -> {
+			for (Signature sig : sigs) {
+				if (Arrays.equals(pk, sig.getExpandedPublicKeyDirect())) {
+					return sig;
+				}
+			}
+			return INVALID_SIG;
+		};
 	}
 
 	private static class InvalidSignature extends Signature {
@@ -176,7 +180,7 @@ public class HederaKeyActivation {
 				(byte)0xAB
 		};
 
-		public InvalidSignature() {
+		InvalidSignature() {
 			super(MEANINGLESS_BYTE, 0, 0, 0, 0, 0, 0);
 		}
 
