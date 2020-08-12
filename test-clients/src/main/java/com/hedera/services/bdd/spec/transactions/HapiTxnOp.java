@@ -377,7 +377,7 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 				// Debug: Since the txn is supposed to resolved here, we should either get SUCCESS or other error code,
 				// Shouldn't be OK. Dump the query and the transaction here to see exactly what happens
 				log.info(spec.logPrefix() + " Getting OK for txn resolvedStatus. Why? ");
-				log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txn));
+				log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txnSubmitted));
 				log.info(spec.logPrefix() + "receiptQuery: " + receiptQuery.toString());
 			}
 
