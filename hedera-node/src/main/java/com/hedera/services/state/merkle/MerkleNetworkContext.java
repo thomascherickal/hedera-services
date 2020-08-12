@@ -36,6 +36,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.hedera.services.state.submerkle.RichInstant.fromJava;
+
 public class MerkleNetworkContext extends AbstractMerkleNode implements MerkleLeaf {
 	private static final Logger log = LogManager.getLogger(MerkleNetworkContext.class);
 
@@ -48,6 +50,7 @@ public class MerkleNetworkContext extends AbstractMerkleNode implements MerkleLe
 	static Supplier<ExchangeRates> ratesSupplier = ExchangeRates::new;
 	static Supplier<SequenceNumber> seqNoSupplier = SequenceNumber::new;
 
+	Instant pojo;
 	RichInstant consensusTimeOfLastHandledTxn;
 	SequenceNumber seqNo;
 	ExchangeRates midnightRates;
@@ -62,10 +65,12 @@ public class MerkleNetworkContext extends AbstractMerkleNode implements MerkleLe
 		this.consensusTimeOfLastHandledTxn = consensusTimeOfLastHandledTxn;
 		this.seqNo = seqNo;
 		this.midnightRates = midnightRates;
+		syncPojo();
 	}
 
 	public void setConsensusTimeOfLastHandledTxn(Instant consensusTimeOfLastHandledTxn) {
-		this.consensusTimeOfLastHandledTxn = RichInstant.fromJava(consensusTimeOfLastHandledTxn);
+		this.pojo = consensusTimeOfLastHandledTxn;
+		this.consensusTimeOfLastHandledTxn = fromJava(consensusTimeOfLastHandledTxn);
 	}
 
 	public MerkleNetworkContext copy() {
@@ -78,6 +83,7 @@ public class MerkleNetworkContext extends AbstractMerkleNode implements MerkleLe
 		seqNo = seqNoSupplier.get();
 		seqNo.deserialize(in);
 		midnightRates = in.readSerializable(true, ratesSupplier);
+		syncPojo();
 	}
 
 	@Override
@@ -87,8 +93,12 @@ public class MerkleNetworkContext extends AbstractMerkleNode implements MerkleLe
 		out.writeSerializable(midnightRates, true);
 	}
 
+	private void syncPojo() {
+		pojo = (consensusTimeOfLastHandledTxn != null) ? consensusTimeOfLastHandledTxn.toJava() : null;
+	}
+
 	public Instant consensusTimeOfLastHandledTxn() {
-		return Optional.ofNullable(consensusTimeOfLastHandledTxn).map(RichInstant::toJava).orElse(null);
+		return pojo;
 	}
 
 	public SequenceNumber seqNo() {

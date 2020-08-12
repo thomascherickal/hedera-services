@@ -29,12 +29,13 @@ import com.hedera.services.state.expiry.ExpiryManager;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.utils.EntityIdUtils;
-import com.hederahashgraph.api.proto.java.AccountAmount;
+import com.hederahashgraph.api.proto.java.AccountAmountOrBuilder;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import com.swirlds.fcmap.FCMap;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -45,7 +46,6 @@ import static com.hedera.services.fees.charging.ItemizableFeeCharging.CACHE_RECO
 import static com.hedera.services.fees.charging.ItemizableFeeCharging.THRESHOLD_RECORD_FEE;
 import static com.hedera.services.state.merkle.MerkleEntityId.fromAccountId;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Provides a {@link AccountRecordsHistorian} using the natural collaborators.
@@ -140,7 +140,7 @@ public class FeeChargingRecordsHistorian implements AccountRecordsHistorian {
 		expiries.resumeTrackingFrom(accounts.get());
 	}
 
-	private boolean qualifiesForRecord(AccountAmount adjustment, long recordFee) {
+	private boolean qualifiesForRecord(AccountAmountOrBuilder adjustment, long recordFee) {
 		AccountID id = adjustment.getAccountID();
 		if (ledger.isPendingCreation(id)) {
 			return false;
@@ -166,12 +166,15 @@ public class FeeChargingRecordsHistorian implements AccountRecordsHistorian {
 		ids.forEach(id -> feeCharging.chargeParticipant(id, THRESHOLD_RECORD_FEE));
 	}
 
+	@SuppressWarnings("unchecked")
 	private Set<AccountID> getThreshXQualifiers(long recordFee) {
-		return ledger.netTransfersInTxn().getAccountAmountsList()
-				.stream()
-				.filter(aa -> qualifiesForRecord(aa, recordFee))
-				.map(AccountAmount::getAccountID)
-				.collect(toSet());
+		Set<AccountID> qualifiers = new HashSet<>();
+		for (AccountAmountOrBuilder adjustment : ledger.pendingNetTransfersInTxn().getAccountAmountsOrBuilderList()) {
+			if (qualifiesForRecord(adjustment, recordFee)) {
+				qualifiers.add(adjustment.getAccountID());
+			}
+		}
+		return qualifiers;
 	}
 
 	private void createHistorical(

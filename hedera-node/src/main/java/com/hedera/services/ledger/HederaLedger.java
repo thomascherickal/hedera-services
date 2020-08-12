@@ -125,7 +125,16 @@ public class HederaLedger {
 	}
 
 	public TransferList netTransfersInTxn() {
+		return pendingNetTransfersInTxn().build();
+	}
+
+	public TransferList.Builder pendingNetTransfersInTxn() {
 		ledger.throwIfNotInTxn();
+		purgeZeroAdjustments();
+		return netTransfers;
+	}
+
+	private void purgeZeroAdjustments() {
 		int lastZeroRemoved;
 		do {
 			lastZeroRemoved = -1;
@@ -137,7 +146,6 @@ public class HederaLedger {
 				}
 			}
 		} while (lastZeroRemoved != -1);
-		return netTransfers.build();
 	}
 
 	public String currentChangeSet() {
@@ -341,7 +349,7 @@ public class HederaLedger {
 	}
 
 	private void throwIfPendingStateIsInconsistent() {
-		if (!isNetZeroAdjustment(netTransfersInTxn())) {
+		if (!isNetZeroAdjustment(pendingNetTransfersInTxn())) {
 			throw new InconsistentAdjustmentsException();
 		}
 	}

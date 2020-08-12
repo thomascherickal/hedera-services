@@ -328,6 +328,7 @@ public class HederaLedgerTest {
 		System.out.println(ledger.changeSetSoFar());
 
 		// then:
+		assertEquals(2L, subject.pendingNetTransfersInTxn().getAccountAmountsList().size());
 		assertEquals(2L, subject.netTransfersInTxn().getAccountAmountsList().size());
 	}
 

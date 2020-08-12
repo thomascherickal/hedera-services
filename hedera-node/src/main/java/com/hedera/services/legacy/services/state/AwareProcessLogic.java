@@ -334,8 +334,8 @@ public class AwareProcessLogic implements ProcessLogic {
 		}
 	}
 	private boolean shouldUpdateMidnightRatesAt(Instant dataDrivenNow) {
-		return ctx.consensusTimeOfLastHandledTxn() != null &&
-				!inSameUtcDay(ctx.consensusTimeOfLastHandledTxn(), dataDrivenNow);
+		var lastHandledAt = ctx.consensusTimeOfLastHandledTxn();
+		return lastHandledAt != null && !inSameUtcDay(lastHandledAt, dataDrivenNow);
 	}
 
 	private void mapLegacyRecordToTxnCtx(TransactionRecord legacyRecord) {

@@ -55,6 +55,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	public static EnumSet<TxnFeeType> THRESHOLD_RECORD_FEE = EnumSet.of(THRESHOLD_RECORD);
 
 	private long totalDeferred;
+	private long totalNonThreshPayerFees;
 	private boolean deferFundingTransfers;
 	private HederaLedger ledger;
 	private final AccountID funding;
@@ -81,7 +82,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	}
 
 	public long totalNonThresholdFeesChargedToPayer() {
-		return payerFeesCharged.values().stream().mapToLong(Long::longValue).sum();
+		return totalNonThreshPayerFees;
 	}
 
 	public long chargedToPayer(TxnFeeType fee) {
@@ -102,6 +103,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 		node = accessor.getTxn().getNodeAccountID();
 		this.submittingNode = submittingNode;
 
+		totalNonThreshPayerFees = 0L;
 		payerFeesCharged.clear();
 		thresholdFeePayers.clear();
 		submittingNodeFeesCharged.clear();
@@ -285,6 +287,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 			thresholdFeePayers.add(source);
 		} else {
 			if (source.equals(accessor.getPayer())) {
+				totalNonThreshPayerFees += amount;
 				payerFeesCharged.put(fee, amount);
 			}
 			if (source.equals(submittingNode)) {

@@ -321,7 +321,8 @@ public class FeeChargingRecordsHistorianTest {
 				payerRecord);
 		verify(ledger).doTransfer(a, funding, aBalance);
 		// and:
-		verify(ledger, times(2)).netTransfersInTxn();
+		verify(ledger, times(1)).netTransfersInTxn();
+		verify(ledger, times(1)).pendingNetTransfersInTxn();
 		verify(txnCtx).recordSoFar();
 		verify(txnCtx).updatedRecordGiven(any());
 		verify(fees).computeStorageFee(record);
@@ -426,6 +427,7 @@ public class FeeChargingRecordsHistorianTest {
 		given(accessor.getTxnId()).willReturn(txnIdA);
 		given(accessor.getPayer()).willReturn(a);
 		given(ledger.netTransfersInTxn()).willReturn(TransferList.getDefaultInstance());
+		given(ledger.pendingNetTransfersInTxn()).willReturn(TransferList.newBuilder());
 
 		given(txnCtx.accessor()).willReturn(accessor);
 
@@ -463,6 +465,7 @@ public class FeeChargingRecordsHistorianTest {
 
 		ledger = mock(HederaLedger.class);
 		given(ledger.netTransfersInTxn()).willReturn(initialTransfers);
+		given(ledger.pendingNetTransfersInTxn()).willReturn(initialTransfers.toBuilder());
 		given(ledger.addRecord(any(), any())).willReturn(expiry);
 		given(ledger.isPendingCreation(any())).willReturn(false);
 
