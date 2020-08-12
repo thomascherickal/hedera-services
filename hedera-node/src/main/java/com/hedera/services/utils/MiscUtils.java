@@ -158,7 +158,7 @@ public class MiscUtils {
 	}
 
 	public static ByteString sha384HashOf(PlatformTxnAccessor accessor, MessageDigest md) {
-		return ByteString.copyFrom(uncheckedSha384Hash(accessor.getTxnBytes(), md));
+		return ByteString.copyFrom(uncheckedSha384Hash(accessor.getSignedTxnBytes(), md));
 	}
 
 	public static ByteString sha384HashOf(PlatformTxnAccessor accessor) {

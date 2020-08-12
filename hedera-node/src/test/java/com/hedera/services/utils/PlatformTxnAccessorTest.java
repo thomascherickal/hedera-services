@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ContractCall;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.BDDMockito.*;
 
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusCreateTopic;
@@ -100,6 +101,7 @@ public class PlatformTxnAccessorTest {
 		var second = subject.getFunction();
 
 		// then:
+		assertArrayEquals(signedTxn.toByteArray(), subject.getSignedTxnBytes());
 		assertEquals(ConsensusCreateTopic, first);
 		assertEquals(second, first);
 		// and:

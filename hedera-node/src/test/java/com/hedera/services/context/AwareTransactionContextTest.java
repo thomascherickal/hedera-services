@@ -157,7 +157,7 @@ public class AwareTransactionContextTest {
 		signedTxn = mock(Transaction.class);
 		given(signedTxn.toByteArray()).willReturn(memo.getBytes());
 		accessor = mock(PlatformTxnAccessor.class);
-		given(accessor.getTxnBytes()).willReturn(memo.getBytes());
+		given(accessor.getSignedTxnBytes()).willReturn(memo.getBytes());
 		given(accessor.getTxnId()).willReturn(txnId);
 		given(accessor.getTxn()).willReturn(txn);
 		given(accessor.getSignedTxn()).willReturn(signedTxn);
