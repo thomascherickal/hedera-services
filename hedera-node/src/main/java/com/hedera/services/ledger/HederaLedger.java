@@ -29,26 +29,28 @@ import com.hedera.services.ledger.ids.EntityIdSource;
 import com.hedera.services.ledger.properties.AccountProperty;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.EntityCreator;
-import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TransferList;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.swirlds.fcqueue.FCQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import static com.hedera.services.ledger.properties.AccountProperty.*;
-import static com.hedera.services.utils.EntityIdUtils.readableId;
-import static java.lang.Math.min;
+import static com.hedera.services.ledger.properties.AccountProperty.BALANCE;
+import static com.hedera.services.ledger.properties.AccountProperty.EXPIRY;
+import static com.hedera.services.ledger.properties.AccountProperty.FUNDS_RECEIVED_RECORD_THRESHOLD;
+import static com.hedera.services.ledger.properties.AccountProperty.FUNDS_SENT_RECORD_THRESHOLD;
+import static com.hedera.services.ledger.properties.AccountProperty.HISTORY_RECORDS;
+import static com.hedera.services.ledger.properties.AccountProperty.IS_DELETED;
+import static com.hedera.services.ledger.properties.AccountProperty.IS_SMART_CONTRACT;
+import static com.hedera.services.ledger.properties.AccountProperty.PAYER_RECORDS;
 import static com.hedera.services.txns.validation.TransferListChecks.isNetZeroAdjustment;
+import static com.hedera.services.utils.EntityIdUtils.readableId;
 
 /**
  * Provides a ledger for Hedera Services crypto and smart contract
@@ -76,6 +78,7 @@ import static com.hedera.services.txns.validation.TransferListChecks.isNetZeroAd
 public class HederaLedger {
 	private static final Logger log = LogManager.getLogger(HederaLedger.class);
 	private static final Consumer<ExpirableTxnRecord> NOOP_CB = record -> {};
+	private static final long[] NO_NEW_BALANCES = new long[0];
 
 	static final String NO_ACTIVE_TXN_CHANGE_SET = "{*NO ACTIVE TXN*}";
 	public static final Comparator<AccountID> ACCOUNT_ID_COMPARATOR = Comparator
@@ -86,8 +89,6 @@ public class HederaLedger {
 	private final EntityIdSource ids;
 	private final AccountRecordsHistorian historian;
 	private final TransactionalLedger<AccountID, AccountProperty, MerkleAccount> ledger;
-
-	private final Map<AccountID, Long> priorBalances = new HashMap<>();
 
 	private final TransferList.Builder netTransfers = TransferList.newBuilder();
 
@@ -346,16 +347,20 @@ public class HederaLedger {
 	}
 
 	private long[] computeNewBalances(TransferList accountAmounts) {
-		return accountAmounts.getAccountAmountsList()
-				.stream()
-				.mapToLong(aa -> computeNewBalance(aa.getAccountID(), aa.getAmount()))
-				.toArray();
+		int n = accountAmounts.getAccountAmountsCount();
+		if (n == 0) {
+			return NO_NEW_BALANCES;
+		}
+
+		int i = 0;
+		long[] newBalances = new long[n];
+		for (AccountAmount adjustment : accountAmounts.getAccountAmountsList()) {
+			newBalances[i++] = computeNewBalance(adjustment.getAccountID(), adjustment.getAmount());
+		}
+		return newBalances;
 	}
 
 	private void setBalance(AccountID id, long newBalance) {
-		if (!priorBalances.containsKey(id)) {
-			priorBalances.put(id, isPendingCreation(id) ? 0L : getBalance(id));
-		}
 		ledger.set(id, BALANCE, newBalance);
 	}
 

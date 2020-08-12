@@ -9,9 +9,9 @@ package com.hedera.services.sigs.order;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,10 +48,10 @@ import static java.util.stream.Collectors.toList;
 /**
  * Encapsulates all policies related to:
  * <ol>
- *     <li>Which Hedera keys must have active signatures for a given gRPC transaction to be valid; and,</li>
- *     <li>The <i>order</i> in which Hedera {@link com.hederahashgraph.api.proto.java.Signature}
- *         instances must be supplied to test activation of these keys when the gRPC transaction has a
- *         {@link com.hederahashgraph.api.proto.java.SignatureList}.</li>
+ * <li>Which Hedera keys must have active signatures for a given gRPC transaction to be valid; and,</li>
+ * <li>The <i>order</i> in which Hedera {@link com.hederahashgraph.api.proto.java.Signature}
+ * instances must be supplied to test activation of these keys when the gRPC transaction has a
+ * {@link com.hederahashgraph.api.proto.java.SignatureList}.</li>
  * </ol>
  * The second item is really an implementation detail, as logically this class could just as well
  * return a {@code Set<JKey>} instead of a {@code List<JKey>}. However, until there are no clients
@@ -87,9 +87,12 @@ public class HederaSigningOrder {
 	 * Uses the provided factory to summarize an attempt to compute the canonical signing order
 	 * of the Hedera key(s) that must be active for the payer of the given gRPC transaction.
 	 *
-	 * @param txn the gRPC transaction of interest.
-	 * @param factory the result factory to use to summarize the listing attempt.
-	 * @param <T> the type of error report created by the factory.
+	 * @param txn
+	 * 		the gRPC transaction of interest.
+	 * @param factory
+	 * 		the result factory to use to summarize the listing attempt.
+	 * @param <T>
+	 * 		the type of error report created by the factory.
 	 * @return a {@link SigningOrderResult} summarizing the listing attempt.
 	 */
 	public <T> SigningOrderResult<T> keysForPayer(TransactionBody txn, SigningOrderResultFactory<T> factory) {
@@ -103,9 +106,12 @@ public class HederaSigningOrder {
 	 * of the Hedera key(s) that must be active for any Hedera entities involved in a non-payer
 	 * role in the given gRPC transaction. (Which could also include the payer crypto account.)
 	 *
-	 * @param txn the gRPC transaction of interest.
-	 * @param factory the result factory to use to summarize the listing attempt.
-	 * @param <T> the type of error report created by the factory.
+	 * @param txn
+	 * 		the gRPC transaction of interest.
+	 * @param factory
+	 * 		the result factory to use to summarize the listing attempt.
+	 * @param <T>
+	 * 		the type of error report created by the factory.
 	 * @return a {@link SigningOrderResult} summarizing the listing attempt.
 	 */
 	public <T> SigningOrderResult<T> keysForOtherParties(TransactionBody txn, SigningOrderResultFactory<T> factory) {
@@ -122,7 +128,7 @@ public class HederaSigningOrder {
 			return factory.forValidOrder(supplier.get());
 		} catch (SigningOrderException soe) {
 			@SuppressWarnings("unchecked")
-			SigningOrderResult<T> summary = (SigningOrderResult<T>)soe.getErrorReport();
+			SigningOrderResult<T> summary = (SigningOrderResult<T>) soe.getErrorReport();
 			return summary;
 		}
 	}
@@ -142,17 +148,25 @@ public class HederaSigningOrder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forOtherInvolvedParties(
 			TransactionBody txn,
 			SigningOrderResultFactory<?> factory
 	) throws SigningOrderException {
 		try {
-			return Stream.of(
-					forInvolvedFiles(txn),
-					forInvolvedAccounts(txn),
-					forInvolvedContracts(txn),
-					forInvolvedTopics(txn)
-			).flatMap(List::stream).collect(toList());
+			var cryptoKeys = forInvolvedAccounts(txn);
+			if (cryptoKeys != EMPTY_LIST) {
+				return cryptoKeys;
+			}
+			var topicKeys = forInvolvedTopics(txn);
+			if (topicKeys != EMPTY_LIST) {
+				return topicKeys;
+			}
+			var fileKeys = forInvolvedFiles(txn);
+			if (fileKeys != EMPTY_LIST) {
+				return fileKeys;
+			}
+			return forInvolvedContracts(txn);
 		} catch (InvalidFileIDException ife) {
 			throw new SigningOrderException(factory.forMissingFile(ife.getFileId(), txn.getTransactionID()));
 		} catch (InvalidAccountIDException iae) {
@@ -170,6 +184,7 @@ public class HederaSigningOrder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forInvolvedContracts(TransactionBody txn) throws Exception {
 		if (txn.hasContractCreateInstance()) {
 			return forContractCreate(txn.getContractCreateInstance());
@@ -182,6 +197,7 @@ public class HederaSigningOrder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forInvolvedAccounts(TransactionBody txn) throws Exception {
 		if (txn.hasCryptoCreateAccount()) {
 			return forCryptoCreate(txn.getCryptoCreateAccount());
@@ -191,53 +207,40 @@ public class HederaSigningOrder {
 			return forCryptoUpdate(txn.getCryptoUpdateAccount(), updateAccountSigns.test(txn));
 		} else if (txn.hasCryptoDelete()) {
 			return forCryptoDelete(txn.getCryptoDelete());
-	    } else {
+		} else {
 			return EMPTY_LIST;
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forInvolvedFiles(TransactionBody txn) throws Exception {
-		if (isFileTxn(txn)) {
+		if (txn.hasFileCreate()) {
+			return forFileCreate(txn.getFileCreate());
+		} else if (txn.hasFileAppend()) {
 			var isSuperuser = entityNums.accounts().isSuperuser(txn.getTransactionID().getAccountID().getAccountNum());
-			if (txn.hasFileCreate()) {
-				return forFileCreate(txn.getFileCreate());
-			} else if (txn.hasFileAppend()) {
-				var waclShouldSign = targetWaclSigns.test(txn, HederaFunctionality.FileAppend);
-				return forFileAppend(txn.getFileAppend(), waclShouldSign, isSuperuser);
-			} else if (txn.hasFileUpdate()) {
-				var waclShouldSign = targetWaclSigns.test(txn, HederaFunctionality.FileUpdate);
-				return forFileUpdate(txn.getFileUpdate(), waclShouldSign, isSuperuser);
-			} else if (txn.hasFileDelete()) {
-				return forFileDelete(txn.getFileDelete());
-			} else {
-				return EMPTY_LIST;
-			}
+			var waclShouldSign = targetWaclSigns.test(txn, HederaFunctionality.FileAppend);
+			return forFileAppend(txn.getFileAppend(), waclShouldSign, isSuperuser);
+		} else if (txn.hasFileUpdate()) {
+			var isSuperuser = entityNums.accounts().isSuperuser(txn.getTransactionID().getAccountID().getAccountNum());
+			var waclShouldSign = targetWaclSigns.test(txn, HederaFunctionality.FileUpdate);
+			return forFileUpdate(txn.getFileUpdate(), waclShouldSign, isSuperuser);
+		} else if (txn.hasFileDelete()) {
+			return forFileDelete(txn.getFileDelete());
+		} else {
+			return EMPTY_LIST;
 		}
-		return EMPTY_LIST;
 	}
 
-	private boolean isFileTxn(TransactionBody txn) {
-		return txn.hasFileCreate() || txn.hasFileAppend() || txn.hasFileUpdate() || txn.hasFileDelete();
-	}
-
-	private boolean isTopicTxn(TransactionBody txn) {
-		return txn.hasConsensusCreateTopic() || txn.hasConsensusSubmitMessage() || txn.hasConsensusUpdateTopic() ||
-				txn.hasConsensusDeleteTopic();
-	}
-
+	@SuppressWarnings("unchecked")
 	private List<JKey> forInvolvedTopics(TransactionBody txn) throws Exception {
-		if (isTopicTxn(txn)) {
-			if (txn.hasConsensusCreateTopic()) {
-				return forConsensusCreateTopic(txn.getConsensusCreateTopic());
-			} else if (txn.hasConsensusSubmitMessage()) {
-				return forConsensusSubmitMessage(txn.getConsensusSubmitMessage());
-			} else if (txn.hasConsensusUpdateTopic()) {
-				return forConsensusUpdateTopic(txn.getConsensusUpdateTopic());
-			} else if (txn.hasConsensusDeleteTopic()) {
-				return forConsensusDeleteTopic(txn.getConsensusDeleteTopic());
-			} else {
-				return EMPTY_LIST;
-			}
+		if (txn.hasConsensusCreateTopic()) {
+			return forConsensusCreateTopic(txn.getConsensusCreateTopic());
+		} else if (txn.hasConsensusSubmitMessage()) {
+			return forConsensusSubmitMessage(txn.getConsensusSubmitMessage());
+		} else if (txn.hasConsensusUpdateTopic()) {
+			return forConsensusUpdateTopic(txn.getConsensusUpdateTopic());
+		} else if (txn.hasConsensusDeleteTopic()) {
+			return forConsensusDeleteTopic(txn.getConsensusDeleteTopic());
 		} else {
 			return EMPTY_LIST;
 		}
@@ -257,6 +260,7 @@ public class HederaSigningOrder {
 			}
 		});
 	}
+
 	private boolean needsCurrentAdminSig(ContractUpdateTransactionBody op) {
 		return !op.hasExpirationTime()
 				|| hasNondeprecatedAdminKey(op)
@@ -265,10 +269,12 @@ public class HederaSigningOrder {
 				|| op.hasFileID()
 				|| op.getMemo().length() > 0;
 	}
+
 	private boolean hasNondeprecatedAdminKey(ContractUpdateTransactionBody op) {
 		return op.hasAdminKey() && !op.getAdminKey().hasContractID();
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forContractCreate(ContractCreateTransactionBody op) throws Exception {
 		return op.hasAdminKey() && !op.getAdminKey().hasContractID()
 				? List.of(JKey.mapKey(op.getAdminKey()))
@@ -312,6 +318,7 @@ public class HederaSigningOrder {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<JKey> forPossiblyImmutableFile(FileID fid) throws Exception {
 		var wacl = sigMetaLookup.lookup(fid).getWacl();
 		return wacl.isEmpty() ? EMPTY_LIST : List.of(wacl);
@@ -320,6 +327,7 @@ public class HederaSigningOrder {
 	private List<JKey> forFileCreate(FileCreateTransactionBody op) throws Exception {
 		return List.of(asJKey(op.getKeys()));
 	}
+
 	private JKey asJKey(KeyList keyList) throws Exception {
 		return JKey.mapKey(Key.newBuilder().setKeyList(keyList).build());
 	}
@@ -347,6 +355,7 @@ public class HederaSigningOrder {
 			}
 		});
 	}
+
 	private boolean hasNewAccountKey(CryptoUpdateTransactionBody op) {
 		return op.getKey().hasKeyList() || op.getKey().hasThresholdKey() || !op.getKey().getEd25519().isEmpty();
 	}
@@ -369,13 +378,15 @@ public class HederaSigningOrder {
 	/**
 	 * Verify that:
 	 * <ul>
-	 *   <li>if the ConsensusCreateTopic transaction specifies an adminKey - that key must sign the transaction</li>
-	 *   <li>if the ConsensusCreateTopic transaction specifies an autoRenewAccount - that account's key must sign the
-	 *   transaction</li>
+	 * <li>if the ConsensusCreateTopic transaction specifies an adminKey - that key must sign the transaction</li>
+	 * <li>if the ConsensusCreateTopic transaction specifies an autoRenewAccount - that account's key must sign the
+	 * transaction</li>
 	 * </ul>
+	 *
 	 * @param op
 	 * @return
-	 * @throws Exception if the autorenew account does not exist
+	 * @throws Exception
+	 * 		if the autorenew account does not exist
 	 */
 	private List<JKey> forConsensusCreateTopic(ConsensusCreateTopicTransactionBody op) throws Exception {
 		return accumulated(keys -> {
@@ -395,10 +406,13 @@ public class HederaSigningOrder {
 
 	/**
 	 * Verify that topic's submitKey is used (if there is one).
+	 *
 	 * @param op
 	 * @return
-	 * @throws Exception if the specified topic does not exist.
+	 * @throws Exception
+	 * 		if the specified topic does not exist.
 	 */
+	@SuppressWarnings("unchecked")
 	private List<JKey> forConsensusSubmitMessage(ConsensusSubmitMessageTransactionBody op) throws Exception {
 		TopicSigningMetadata sigMeta = sigMetaLookup.lookup(op.getTopicID());
 		return sigMeta.hasSubmitKey() ? List.of(sigMeta.getSubmitKey()) : EMPTY_LIST;
@@ -408,12 +422,14 @@ public class HederaSigningOrder {
 	 * Verify that topic's adminKey both before and after the update is validated, and the autoRenewAccount's
 	 * key is used if a new autoRenewAccount is set.
 	 * Unless the update is expirationTime only. Then no additional keys are used.
+	 *
 	 * @param op
 	 * @return
-	 * @throws Exception if the specified topic does not exist or autoRenewAccount does not exist.
+	 * @throws Exception
+	 * 		if the specified topic does not exist or autoRenewAccount does not exist.
 	 */
+	@SuppressWarnings("unchecked")
 	private List<JKey> forConsensusUpdateTopic(ConsensusUpdateTopicTransactionBody op) throws Exception {
-
 		// Updating a topic's expirationTime (only) is allowed for anyone.
 		if (op.hasExpirationTime() && !op.hasMemo() && !op.hasAdminKey() && !op.hasSubmitKey() &&
 				!op.hasAutoRenewPeriod() && !op.hasAutoRenewAccount()) {
@@ -436,7 +452,8 @@ public class HederaSigningOrder {
 		if (op.hasAutoRenewAccount()) {
 			AccountID autoRenewAccount = op.getAutoRenewAccount();
 			// If set to 0.0.0, it means autoRenewAccount should be cleared
-			if (autoRenewAccount.getShardNum() != 0 || autoRenewAccount.getRealmNum() != 0
+			if (autoRenewAccount.getShardNum() != 0
+					|| autoRenewAccount.getRealmNum() != 0
 					|| autoRenewAccount.getAccountNum() != 0) {
 				try {
 					keys.add(sigMetaLookup.lookup(op.getAutoRenewAccount()).getKey());
@@ -451,9 +468,11 @@ public class HederaSigningOrder {
 
 	/**
 	 * Verify that topic's adminKey is used (if there is one).
+	 *
 	 * @param op
 	 * @return
-	 * @throws Exception if the specified topic does not exist.
+	 * @throws Exception
+	 * 		if the specified topic does not exist.
 	 */
 	private List<JKey> forConsensusDeleteTopic(ConsensusDeleteTopicTransactionBody op) throws Exception {
 		TopicSigningMetadata sigMeta = sigMetaLookup.lookup(op.getTopicID());

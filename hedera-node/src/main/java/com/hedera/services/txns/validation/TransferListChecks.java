@@ -36,11 +36,11 @@ import static java.util.stream.Collectors.toSet;
  */
 public class TransferListChecks {
 	public static boolean isNetZeroAdjustment(TransferList wrapper) {
-		return wrapper.getAccountAmountsList()
-				.stream()
-				.map(aa -> BigInteger.valueOf(aa.getAmount()))
-				.reduce(ZERO, BigInteger::add)
-				.equals(ZERO);
+		var net = ZERO;
+		for (AccountAmount adjustment : wrapper.getAccountAmountsList()) {
+			net = net.add(BigInteger.valueOf(adjustment.getAmount()));
+		}
+		return net.equals(ZERO);
 	}
 
 	public static boolean hasRepeatedAccount(TransferList wrapper) {

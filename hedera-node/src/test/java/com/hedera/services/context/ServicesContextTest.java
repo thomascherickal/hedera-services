@@ -118,6 +118,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -127,6 +128,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -387,6 +389,7 @@ public class ServicesContextTest {
 		assertThat(ctx.ledgerValidator(), instanceOf(BasedLedgerValidator.class));
 		assertThat(ctx.systemOpPolicies(), instanceOf(SystemOpPolicies.class));
 		assertThat(ctx.exemptions(), instanceOf(StandardExemptions.class));
+		assertThat(ctx.handleSha384Digest(), instanceOf(MessageDigest.class));
 		// and expect legacy:
 		assertThat(ctx.exchange(), instanceOf(DefaultHbarCentExchange.class));
 		assertThat(ctx.txns(), instanceOf(TransactionHandler.class));

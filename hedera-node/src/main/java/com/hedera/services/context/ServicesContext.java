@@ -242,6 +242,8 @@ import org.ethereum.db.ServicesRepositoryRoot;
 import com.hedera.services.context.properties.PropertySource;
 
 import java.io.PrintStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -297,6 +299,7 @@ public class ServicesContext {
 	private ProcessLogic logic;
 	private RecordStream recordStream;
 	private QueryFeeCheck queryFeeCheck;
+	private MessageDigest handleSha384Digest;
 	private HederaNumbers hederaNums;
 	private ExpiryManager expiries;
 	private FeeCalculator fees;
@@ -459,6 +462,17 @@ public class ServicesContext {
 		return accountNums;
 	}
 
+	public MessageDigest handleSha384Digest() {
+		if (handleSha384Digest == null) {
+			try {
+				handleSha384Digest = MessageDigest.getInstance("SHA-384");
+			} catch (NoSuchAlgorithmException impossible) {
+				throw new IllegalStateException("Provider did not support SHA-384!");
+			}
+		}
+		return handleSha384Digest;
+	}
+
 	public TxnResponseHelper txnResponseHelper() {
 		if (txnResponseHelper == null) {
 			txnResponseHelper = new TxnResponseHelper(submissionFlow(), stats());
@@ -486,7 +500,7 @@ public class ServicesContext {
 
 	public ItemizableFeeCharging charging() {
 		if (itemizableFeeCharging == null) {
-			itemizableFeeCharging = new ItemizableFeeCharging(exemptions(), properties());
+			itemizableFeeCharging = new ItemizableFeeCharging(exemptions(), entityNums());
 		}
 		return itemizableFeeCharging;
 	}

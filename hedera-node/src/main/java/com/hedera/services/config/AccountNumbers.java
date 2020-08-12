@@ -27,6 +27,7 @@ import static com.hedera.services.config.EntityNumbers.UNKNOWN_NUMBER;
 public class AccountNumbers {
 	private final PropertySource properties;
 
+	private long funding = UNKNOWN_NUMBER;
 	private long treasury = UNKNOWN_NUMBER;
 	private long systemAdmin = UNKNOWN_NUMBER;
 	private long freezeAdmin = UNKNOWN_NUMBER;
@@ -40,6 +41,13 @@ public class AccountNumbers {
 
 	public AccountNumbers(PropertySource properties) {
 		this.properties = properties;
+	}
+
+	public long funding() {
+		if (funding == UNKNOWN_NUMBER) {
+			funding = properties.getLongProperty("accounts.funding");
+		}
+		return funding;
 	}
 
 	public long treasury() {

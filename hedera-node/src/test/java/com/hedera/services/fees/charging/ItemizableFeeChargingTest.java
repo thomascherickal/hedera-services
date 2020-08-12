@@ -20,6 +20,7 @@ package com.hedera.services.fees.charging;
  * ‍
  */
 
+import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.FeeExemptions;
 import com.hedera.services.ledger.HederaLedger;
@@ -81,7 +82,7 @@ class ItemizableFeeChargingTest {
 		given(accessor.getPayer()).willReturn(payer);
 		given(properties.getAccountProperty("ledger.funding.account")).willReturn(funding);
 
-		subject = new ItemizableFeeCharging(exemptions, properties);
+		subject = new ItemizableFeeCharging(exemptions, new MockEntityNumbers());
 		subject.setLedger(ledger);
 
 		subject.resetFor(accessor, submittingNode);
@@ -353,8 +354,7 @@ class ItemizableFeeChargingTest {
 		subject.chargePayer(EnumSet.of(NETWORK, NODE, SERVICE));
 
 		// then:
-		verify(ledger).doTransfer(payer, funding, network);
-		verify(ledger).doTransfer(payer, funding, service);
+		verify(ledger).doTransfer(payer, funding, network + service);
 		verify(ledger).doTransfer(payer, givenNode, node);
 		// and:
 		assertEquals(network, subject.payerFeesCharged.get(NETWORK).longValue());
@@ -388,7 +388,6 @@ class ItemizableFeeChargingTest {
 		EnumMap<TxnFeeType, Long> paidByNode = mock(EnumMap.class);
 
 		// given:
-		subject.funding = givenNode;
 		subject.submittingNodeFeesCharged = paidByNode;
 		subject.payerFeesCharged = paidByPayer;
 		subject.thresholdFeePayers = threshPayers;
@@ -400,7 +399,6 @@ class ItemizableFeeChargingTest {
 		verify(paidByNode).clear();
 		verify(paidByPayer).clear();
 		verify(threshPayers).clear();
-		assertEquals(funding, subject.funding);
 	}
 
 	private void givenKnownFeeAmounts() {

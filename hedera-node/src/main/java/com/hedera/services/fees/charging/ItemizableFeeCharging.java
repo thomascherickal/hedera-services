@@ -20,7 +20,7 @@ package com.hedera.services.fees.charging;
  * ‍
  */
 
-import com.hedera.services.context.properties.PropertySource;
+import com.hedera.services.config.EntityNumbers;
 import com.hedera.services.fees.FeeExemptions;
 import com.hedera.services.fees.TxnFeeType;
 import com.hedera.services.ledger.HederaLedger;
@@ -54,12 +54,13 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	public static EnumSet<TxnFeeType> CACHE_RECORD_FEE = EnumSet.of(CACHE_RECORD);
 	public static EnumSet<TxnFeeType> THRESHOLD_RECORD_FEE = EnumSet.of(THRESHOLD_RECORD);
 
+	private long totalDeferred;
+	private boolean deferFundingTransfers;
 	private HederaLedger ledger;
+	private final AccountID funding;
 	private final FeeExemptions exemptions;
-	private final PropertySource properties;
 
 	AccountID node;
-	AccountID funding;
 	AccountID submittingNode;
 	Set<AccountID> thresholdFeePayers = new HashSet<>();
 	EnumMap<TxnFeeType, Long> payerFeesCharged = new EnumMap<>(TxnFeeType.class);
@@ -67,11 +68,11 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 
 	public ItemizableFeeCharging(
 			FeeExemptions exemptions,
-			PropertySource properties
+			EntityNumbers entityNums
 	) {
 		super(exemptions);
+		this.funding = entityNums.accountWith(entityNums.accounts().funding());
 		this.exemptions = exemptions;
-		this.properties = properties;
 	}
 
 	public void setLedger(HederaLedger ledger) {
@@ -99,7 +100,6 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 		super.resetFor(accessor);
 
 		node = accessor.getTxn().getNodeAccountID();
-		funding = properties.getAccountProperty("ledger.funding.account");
 		this.submittingNode = submittingNode;
 
 		payerFeesCharged.clear();
@@ -198,7 +198,14 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 
 	@Override
 	public void chargePayer(EnumSet<TxnFeeType> fees) {
-		chargeParticipant(accessor.getPayer(), fees);
+		var payer = accessor.getPayer();
+		totalDeferred = 0L;
+		deferFundingTransfers = true;
+		chargeParticipant(payer, fees);
+		if (totalDeferred > 0) {
+			ledger.doTransfer(payer, funding, totalDeferred);
+		}
+		deferFundingTransfers = false;
 	}
 
 	@Override
@@ -252,7 +259,11 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 
 	private void completeNonVanishing(AccountID payer, AccountID payee, long amount, TxnFeeType fee) {
 		if (amount > 0)	 {
-			ledger.doTransfer(payer, payee, amount);
+			if (!deferFundingTransfers || (payee == node)) {
+				ledger.doTransfer(payer, payee, amount);
+			} else {
+				totalDeferred += amount;
+			}
 			updateRecords(payer, fee, amount);
 		}
 	}

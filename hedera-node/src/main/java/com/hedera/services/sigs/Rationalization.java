@@ -30,6 +30,7 @@ import com.hedera.services.sigs.sourcing.PubKeyToSigBytesProvider;
 import com.hedera.services.sigs.verification.SyncVerifier;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.SignaturePair;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hedera.services.legacy.crypto.SignatureStatus;
@@ -123,7 +124,12 @@ public class Rationalization {
     }
 
     private boolean allStatusesAreKnown(List<Signature> sigs) {
-        return sigs.stream().map(Signature::getSignatureStatus).noneMatch(VerificationStatus.UNKNOWN::equals);
+    	for (Signature sig : sigs) {
+    	    if (VerificationStatus.UNKNOWN.equals(sig.getSignatureStatus())) {
+    	        return false;
+            }
+        }
+    	return true;
     }
 
     private SignatureStatus expandIn(

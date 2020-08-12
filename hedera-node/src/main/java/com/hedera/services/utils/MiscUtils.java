@@ -157,8 +157,16 @@ public class MiscUtils {
 		}
 	}
 
+	public static ByteString sha384HashOf(PlatformTxnAccessor accessor, MessageDigest md) {
+		return ByteString.copyFrom(uncheckedSha384Hash(accessor.getTxnBytes(), md));
+	}
+
 	public static ByteString sha384HashOf(PlatformTxnAccessor accessor) {
-		return ByteString.copyFrom(uncheckedSha384Hash(accessor.getSignedTxn().toByteArray()));
+		try {
+			return sha384HashOf(accessor, MessageDigest.getInstance("SHA-384"));
+		} catch (NoSuchAlgorithmException impossible) {
+			throw new IllegalStateException("Provider did not support SHA-384!");
+		}
 	}
 
 	public static Timestamp asTimestamp(Instant when) {
@@ -317,12 +325,8 @@ public class MiscUtils {
 		return Hex.decodeHex(literal);
 	}
 
-	public static byte[] uncheckedSha384Hash(byte[] data) {
-		try {
-			return MessageDigest.getInstance("SHA-384").digest(data);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e);
-		}
+	public static byte[] uncheckedSha384Hash(byte[] data, MessageDigest md) {
+		return md.digest(data);
 	}
 
 	public static String describe(JKey k) {

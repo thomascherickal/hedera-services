@@ -52,6 +52,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 
 import static com.hedera.services.context.AwareTransactionContext.EMPTY_HEDERA_KEY;
@@ -107,7 +109,7 @@ public class AwareTransactionContextTest {
 	private TransactionBody txn;
 	private TransactionRecord record;
 	private String memo = "Hi!";
-	private ByteString hash = ByteString.copyFrom(uncheckedSha384Hash(memo.getBytes()));
+	private ByteString hash;
 	private TransactionID txnId = TransactionID.newBuilder()
 					.setTransactionValidStart(Timestamp.newBuilder().setSeconds(txnValidStart))
 					.setAccountID(payer)
@@ -116,7 +118,9 @@ public class AwareTransactionContextTest {
 	JKey payerKey;
 
 	@BeforeEach
-	private void setup() {
+	private void setup() throws NoSuchAlgorithmException {
+		var md = MessageDigest.getInstance("SHA-384");
+		hash = ByteString.copyFrom(uncheckedSha384Hash(memo.getBytes(), md));
 		address = mock(Address.class);
 		given(address.getMemo()).willReturn(asAccountString(nodeAccount));
 		anotherAddress = mock(Address.class);
@@ -140,6 +144,7 @@ public class AwareTransactionContextTest {
 		given(accounts.get(MerkleEntityId.fromAccountId(payer))).willReturn(payerAccount);
 
 		ctx = mock(ServicesContext.class);
+		given(ctx.handleSha384Digest()).willReturn(md);
 		given(ctx.exchange()).willReturn(exchange);
 		given(ctx.ledger()).willReturn(ledger);
 		given(ctx.accounts()).willReturn(accounts);
@@ -152,6 +157,7 @@ public class AwareTransactionContextTest {
 		signedTxn = mock(Transaction.class);
 		given(signedTxn.toByteArray()).willReturn(memo.getBytes());
 		accessor = mock(PlatformTxnAccessor.class);
+		given(accessor.getTxnBytes()).willReturn(memo.getBytes());
 		given(accessor.getTxnId()).willReturn(txnId);
 		given(accessor.getTxn()).willReturn(txn);
 		given(accessor.getSignedTxn()).willReturn(signedTxn);

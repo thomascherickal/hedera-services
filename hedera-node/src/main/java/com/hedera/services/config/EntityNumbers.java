@@ -67,4 +67,12 @@ public class EntityNumbers {
 	public AccountNumbers accounts() {
 		return accountNumbers;
 	}
+
+	public AccountID accountWith(long num) {
+		return AccountID.newBuilder()
+				.setShardNum(hederaNumbers.shard())
+				.setRealmNum(hederaNumbers.realm())
+				.setAccountNum(num)
+				.build();
+	}
 }

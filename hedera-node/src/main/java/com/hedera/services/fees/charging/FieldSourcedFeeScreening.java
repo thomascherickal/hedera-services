@@ -91,6 +91,10 @@ public class FieldSourcedFeeScreening implements TxnScopedFeeScreening {
 	}
 
 	protected long totalAmountOf(EnumSet<TxnFeeType> fees) {
-		return fees.stream().mapToLong(feeAmounts::get).sum();
+		long total = 0L;
+		for (TxnFeeType fee : fees) {
+			total += feeAmounts.get(fee);
+		}
+		return total;
 	}
 }

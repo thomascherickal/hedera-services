@@ -111,10 +111,12 @@ public class ContextOptionValidator implements OptionValidator {
 
 	@Override
 	public boolean hasOnlyCryptoAccounts(TransferList accountAmounts) {
-		return accountAmounts.getAccountAmountsList()
-				.stream()
-				.map(AccountAmount::getAccountID)
-				.noneMatch(ledger::isSmartContract);
+		for (AccountAmount adjustment : accountAmounts.getAccountAmountsList()) {
+			if (ledger.isSmartContract(adjustment.getAccountID())) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

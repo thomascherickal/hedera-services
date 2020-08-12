@@ -52,29 +52,26 @@ public class SigMapPubKeyToSigBytes implements PubKeyToSigBytes {
 
 	@Override
 	public byte[] sigBytesFor(byte[] pubKey) throws KeyPrefixMismatchException {
-		List<byte[]> matchingSigs = sigMap.getSigPairList()
-				.stream()
-				.filter(sp -> beginsWith(pubKey, sp.getPubKeyPrefix().toByteArray()))
-				.map(this::sigBytesFor)
-				.collect(toList());
-		if (matchingSigs.size() > 1) {
-			throw new KeyPrefixMismatchException("Source signature map is ambiguous for given public key!");
+		var toMatch = ByteString.copyFrom(pubKey);
+		byte[] matchingSig = EMPTY_SIG;
+		for (SignaturePair sigPair : sigMap.getSigPairList()) {
+			if (toMatch.startsWith(sigPair.getPubKeyPrefix())) {
+				if (matchingSig != EMPTY_SIG) {
+					throw new KeyPrefixMismatchException("Source signature map is ambiguous for given public key!");
+				}
+				matchingSig = sigBytesFor(sigPair);
+			}
 		}
-		return matchingSigs.isEmpty() ? EMPTY_SIG : matchingSigs.get(0);
+		return matchingSig;
 	}
 
 	private byte[] sigBytesFor(SignaturePair sp) {
-		if (sp.getRSA3072() != ByteString.EMPTY) {
-			return sp.getRSA3072().toByteArray();
-		} else if (sp.getECDSA384() != ByteString.EMPTY) {
-			return sp.getECDSA384().toByteArray();
-		} else {
+		if (sp.getEd25519() != ByteString.EMPTY) {
 			return sp.getEd25519().toByteArray();
+		} else if (sp.getRSA3072() != ByteString.EMPTY) {
+			return sp.getRSA3072().toByteArray();
+		} else  {
+			return sp.getECDSA384().toByteArray();
 		}
-	}
-
-	private boolean beginsWith(byte[] pubKey, byte[] prefix) {
-		int n = prefix.length;
-		return Arrays.equals(prefix, 0, n, pubKey, 0, n);
 	}
 }

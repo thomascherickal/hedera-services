@@ -79,4 +79,10 @@ class EntityNumbersTest {
 		assertFalse(subject.isSystemFile(nonsenseFile));
 		assertFalse(subject.isSystemContract(nonsenseContract));
 	}
+
+	@Test
+	public void constructsExpectedAccount() {
+		// expect:
+		assertEquals(IdUtils.asAccount("0.0.75231"), subject.accountWith(75231));
+	}
 }

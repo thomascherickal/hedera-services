@@ -23,6 +23,7 @@ package com.hedera.services.context;
 import com.google.protobuf.ByteString;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.*;
@@ -36,11 +37,14 @@ import static com.hedera.services.utils.MiscUtils.asTimestamp;
 import static com.hedera.services.utils.MiscUtils.canonicalDiffRepr;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 import static com.hedera.services.utils.MiscUtils.readableTransferList;
+import static com.hedera.services.utils.MiscUtils.sha384HashOf;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -65,7 +69,7 @@ public class AwareTransactionContext implements TransactionContext {
 	}
 
 	private final ServicesContext ctx;
-
+	private final Map<String, AccountID> memberAccounts = new HashMap<>();
 	private final Consumer<TransactionRecord.Builder> noopRecordConfig = ignore -> {};
 	private final Consumer<TransactionReceipt.Builder> noopReceiptConfig = ignore -> {};
 
@@ -94,7 +98,7 @@ public class AwareTransactionContext implements TransactionContext {
 		this.submittingMember = submittingMember;
 
 		otherNonThresholdFees = 0L;
-		hash = MiscUtils.sha384HashOf(accessor);
+		hash = sha384HashOf(accessor, ctx.handleSha384Digest());
 		statusSoFar = UNKNOWN;
 		consensusTimestamp = asTimestamp(consensusTime);
 		recordConfig = noopRecordConfig;
@@ -126,7 +130,7 @@ public class AwareTransactionContext implements TransactionContext {
 		try {
 			Address member = ctx.addressBook().getAddress(submittingMember);
 			String memo = member.getMemo();
-			return accountParsedFromString(memo);
+			return memberAccounts.computeIfAbsent(memo, EntityIdUtils::accountParsedFromString);
 		} catch (Exception e) {
 			log.warn("No available Hedera account for member {}!", submittingMember, e);
 			throw new IllegalStateException(String.format("Member %d must have a Hedera account!", submittingMember));

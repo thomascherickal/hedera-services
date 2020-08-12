@@ -26,6 +26,11 @@ public class MockAccountNumbers extends AccountNumbers {
 	}
 
 	@Override
+	public long funding() {
+		return 98;
+	}
+
+	@Override
 	public long treasury() {
 		return 2;
 	}

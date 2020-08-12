@@ -20,6 +20,7 @@ package com.hedera.services.records;
  * ‍
  */
 
+import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.FeeCalculator;
@@ -332,7 +333,6 @@ public class FeeChargingRecordsHistorianTest {
 		verify(ledger).getBalance(d);
 		verify(ledger).fundsSentRecordThreshold(d);
 		// and:
-		verify(properties, times(1)).getAccountProperty("ledger.funding.account");
 		verify(ledger).doTransfer(b, funding, recordFee);
 		verify(ledger, never()).doTransfer(c, funding, recordFee);
 		verify(ledger).doTransfer(d, funding, recordFee);
@@ -502,7 +502,7 @@ public class FeeChargingRecordsHistorianTest {
 		dValue = add(d, dBalance, dSendThresh, dReceiveThresh, dExps, EMPTY_LIST, EMPTY_LIST);
 		snValue = add(sn, snBalance, dSendThresh, dReceiveThresh, EMPTY_LIST, EMPTY_LIST, EMPTY_LIST);
 
-		itemizableFeeCharging = new ItemizableFeeCharging(exemptions, properties);
+		itemizableFeeCharging = new ItemizableFeeCharging(exemptions, new MockEntityNumbers());
 		itemizableFeeCharging.resetFor(accessor, sn);
 
 		expirations = mock(BlockingQueue.class);
@@ -528,7 +528,7 @@ public class FeeChargingRecordsHistorianTest {
 
 		ledger = mock(HederaLedger.class);
 
-		itemizableFeeCharging = new ItemizableFeeCharging(exemptions, properties);
+		itemizableFeeCharging = new ItemizableFeeCharging(exemptions, new MockEntityNumbers());
 
 		subject = new FeeChargingRecordsHistorian(
 				recordCache,

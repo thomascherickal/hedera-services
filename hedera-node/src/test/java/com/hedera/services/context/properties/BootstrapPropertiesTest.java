@@ -66,6 +66,7 @@ class BootstrapPropertiesTest {
 			entry("accounts.exchangeRatesAdmin", 57L),
 			entry("accounts.feeSchedulesAdmin", 56L),
 			entry("accounts.freezeAdmin", 58L),
+			entry("accounts.funding", 98L),
 			entry("accounts.systemAdmin", 50L),
 			entry("accounts.systemAdmin.firstManaged", 51L),
 			entry("accounts.systemAdmin.lastManaged", 80L),
