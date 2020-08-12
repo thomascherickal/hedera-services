@@ -41,16 +41,13 @@ public class RandomContents implements OpProvider {
 	private final ResponseCodeEnum[] permissibleCostAnswerPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
 			INSUFFICIENT_TX_FEE,
-			INVALID_FILE_ID,
-			FAIL_INVALID
-
+			INVALID_FILE_ID
 	);
 
 	private final ResponseCodeEnum[] permissibleAnswerOnlyPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
 			INSUFFICIENT_TX_FEE,
-			INVALID_TOPIC_ID,
-			FAIL_INVALID
+			INVALID_TOPIC_ID
 	);
 
 	private final EntityNameProvider<FileID> files;

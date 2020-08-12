@@ -46,7 +46,7 @@ public class RandomFileInfo implements OpProvider {
 	private final ResponseCodeEnum[] permissibleAnswerOnlyPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
 			INSUFFICIENT_TX_FEE,
-			INVALID_TOPIC_ID
+			INVALID_FILE_ID
 	);
 
 	private final EntityNameProvider<FileID> files;

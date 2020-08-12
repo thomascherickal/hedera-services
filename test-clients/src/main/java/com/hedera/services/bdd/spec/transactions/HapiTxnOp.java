@@ -373,14 +373,14 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 			ResponseCodeEnum statusNow = lastReceipt.getStatus();
 
 
-//			if( actualStatus == OK) {
-//				// Debug: Since the txn is supposed to resolved here, we should either get SUCCESS or other error code,
-//				// Shouldn't be OK. Dump the query and the transaction here to see exactly what happens
-//				log.info(spec.logPrefix() + " Getting OK for txn resolvedStatus. Why? ");
-//				log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txn));
-//				log.info(spec.logPrefix() + "receiptQuery: " + receiptQuery.toString());
-//			}
-//
+			if( actualStatus == OK) {
+				// Debug: Since the txn is supposed to resolved here, we should either get SUCCESS or other error code,
+				// Shouldn't be OK. Dump the query and the transaction here to see exactly what happens
+				log.info(spec.logPrefix() + " Getting OK for txn resolvedStatus. Why? ");
+				log.info(spec.logPrefix() + " resolved " + this + " transaction: " + txnToString(txn));
+				log.info(spec.logPrefix() + "receiptQuery: " + receiptQuery.toString());
+			}
+
 
 			if (acceptAnyStatus) {
 				expectedStatus = Optional.of(statusNow);
@@ -398,9 +398,9 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 		// Temp change to verify whether the UNKNOWN status code was caused by consensus timeout.
 		log.info(spec.logPrefix() + " TIMEOUT waiting to get receipt for submitted txn to resolveStatus:");
 		log.info(spec.logPrefix() + " The transaction is: " + txnSubmitted.toString());
-		log.info(spec.logPrefix() + " and my for this receiptQuery: " + receiptQuery.toString());
+		log.info(spec.logPrefix() + " and this receiptQuery: " + receiptQuery.toString());
 
-		return RECEIPT_NOT_FOUND;
+		return UNKNOWN;
 	}
 
 	private Response statusResponse(HapiApiSpec spec, Query receiptQuery) throws Throwable {
