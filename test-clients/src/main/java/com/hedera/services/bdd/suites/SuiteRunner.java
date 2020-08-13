@@ -49,6 +49,7 @@ import com.hedera.services.bdd.suites.meta.VersionInfoSpec;
 import com.hedera.services.bdd.suites.perf.ContractCallLoadTest;
 import com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest;
 import com.hedera.services.bdd.suites.perf.FileUpdateLoadTest;
+import com.hedera.services.bdd.suites.perf.HCSChunkingRealisticPerfSuite;
 import com.hedera.services.bdd.suites.perf.MixedTransferAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.MixedTransferCallAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest;
@@ -58,13 +59,12 @@ import com.hedera.services.bdd.suites.records.FileRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.ThresholdRecordCreationSuite;
 import com.hedera.services.bdd.suites.regression.UmbrellaRedux;
 import com.hedera.services.bdd.suites.streaming.RecordStreamValidation;
-import com.hedera.services.bdd.suites.throttling.LegacyToBucketTransitionSpec;
+import com.hedera.services.bdd.suites.throttling.BucketThrottlingSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,7 +110,7 @@ public class SuiteRunner {
 				new ChunkingSuite(),
 				new TopicGetInfoSuite(),
 				new ConsensusThrottlesSuite(),
-				new LegacyToBucketTransitionSpec(),
+				new BucketThrottlingSpec(),
 				new SpecialAccountsAreExempted(),
 				new CryptoCreateSuite(),
 				new CryptoTransferSuite(),
@@ -139,6 +139,7 @@ public class SuiteRunner {
 		put("CryptoTransferLoadTest", aof(new CryptoTransferLoadTest()));
 		put("MixedTransferAndSubmitLoadTest", aof(new MixedTransferAndSubmitLoadTest()));
 		put("MixedTransferCallAndSubmitLoadTest", aof(new MixedTransferCallAndSubmitLoadTest()));
+		put("HCSChunkingRealisticPerfSuite", aof(new HCSChunkingRealisticPerfSuite()));
 		/* Functional tests - CONSENSUS */
 		put("TopicCreateSpecs", aof(new TopicCreateSuite()));
 		put("TopicDeleteSpecs", aof(new TopicDeleteSuite()));
@@ -171,7 +172,7 @@ public class SuiteRunner {
 		/* System files. */
 		put("FetchSystemFiles", aof(new FetchSystemFiles()));
 		/* Throttling */
-		put("BucketAndLegacyThrottlingSpec", aof(new LegacyToBucketTransitionSpec()));
+		put("BucketThrottlingSpec", aof(new BucketThrottlingSpec()));
 		/* Network metadata. */
 		put("VersionInfoSpec", aof(new VersionInfoSpec()));
 		put("FreezeSuite", aof(new FreezeSuite()));
