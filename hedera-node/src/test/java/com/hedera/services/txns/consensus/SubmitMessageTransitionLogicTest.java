@@ -22,16 +22,17 @@ package com.hedera.services.txns.consensus;
 
 import com.google.protobuf.ByteString;
 import com.hedera.services.context.TransactionContext;
-import com.hedera.services.context.domain.topic.Topic;
+import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountID;
+import com.hederahashgraph.api.proto.java.ConsensusMessageChunkInfo;
 import com.hederahashgraph.api.proto.java.ConsensusSubmitMessageTransactionBody;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
-import com.hedera.services.legacy.core.MapKey;
+import com.hedera.services.state.merkle.MerkleEntityId;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,8 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 @RunWith(JUnitPlatform.class)
 class SubmitMessageTransitionLogicTest {
-	final private String TOPIC_ID = "8.6.75";
+	private static final String TOPIC_ID = "8.6.75";
+	private static final long EPOCH_SECOND = 1546304461;
 
 	private Instant consensusTime;
 	private TransactionBody transactionBody;
@@ -56,12 +58,12 @@ class SubmitMessageTransitionLogicTest {
 	private PlatformTxnAccessor accessor;
 	private OptionValidator validator;
 	private SubmitMessageTransitionLogic subject;
-	private FCMap<MapKey, Topic> topics = new FCMap<>(MapKey::deserialize, Topic::deserialize);;
+	private FCMap<MerkleEntityId, MerkleTopic> topics = new FCMap<>(new MerkleEntityId.Provider(), new MerkleTopic.Provider());
 	final private AccountID payer = AccountID.newBuilder().setAccountNum(1_234L).build();
 
 	@BeforeEach
 	private void setup() {
-		consensusTime = Instant.ofEpochSecond(1546304461);
+		consensusTime = Instant.ofEpochSecond(EPOCH_SECOND);
 
 		transactionContext = mock(TransactionContext.class);
 		given(transactionContext.consensusTime()).willReturn(consensusTime);
@@ -69,7 +71,7 @@ class SubmitMessageTransitionLogicTest {
 		validator = mock(OptionValidator.class);
 		topics.clear();
 
-		subject = new SubmitMessageTransitionLogic(topics, validator, transactionContext);
+		subject = new SubmitMessageTransitionLogic(() -> topics, validator, transactionContext);
 	}
 
 	@Test
@@ -97,13 +99,13 @@ class SubmitMessageTransitionLogicTest {
 		subject.doStateTransition();
 
 		// then:
-		var topic = topics.get(MapKey.getMapKey(asTopic(TOPIC_ID)));
+		var topic = topics.get(MerkleEntityId.fromTopicId(asTopic(TOPIC_ID)));
 		assertNotNull(topic);
 		assertEquals(1L, topic.getSequenceNumber()); // Starts at 0.
 
 		// Hash depends on prior state of topic (default topic object has 0s for runningHash and 0L for seqNum),
 		// consensus timestamp, message.
-		assertEquals("bd9ec4df57667d55b922c3b1ad7dee2566bb018efe13d68cd0696fb4181694cc4d7aa2186cd8dff6e22849d663f94bf1",
+		assertEquals("c44860f057eca2ea865821f5211420afe231dc2a485c277405d14f8421bb97f4a34ddd53db84bcf064045d10e7fca822",
 				MiscUtils.commonsBytesToHex(topic.getRunningHash()));
 
 		verify(transactionContext).setStatus(SUCCESS);
@@ -135,8 +137,72 @@ class SubmitMessageTransitionLogicTest {
 		verify(transactionContext).setStatus(INVALID_TOPIC_ID);
 	}
 
+	@Test
+	public void failsForInvalidChunkNumber() {
+		// given:
+		givenChunkMessage(2, 3, defaultTxnId());
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(transactionContext).setStatus(INVALID_CHUNK_NUMBER);
+	}
+
+	@Test
+	public void failsForDifferentPayers() {
+		// given:
+		AccountID initialTransactionPayer = AccountID
+				.newBuilder()
+				.setAccountNum(payer.getAccountNum() + 1)
+				.build();
+		givenChunkMessage(3, 2, txnId(initialTransactionPayer, EPOCH_SECOND));
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(transactionContext).setStatus(INVALID_CHUNK_TRANSACTION_ID);
+	}
+
+	@Test
+	public void acceptsChunkNumberDifferentThan1HavingTheSamePayerEvenWhenNotMatchingValidStart() {
+		// given:
+		givenChunkMessage(5, 5, txnId(payer, EPOCH_SECOND - 30));
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(transactionContext).setStatus(SUCCESS);
+	}
+
+	@Test
+	public void failsForTransactionIDOfChunkNumber1NotMatchingTheEntireInitialTransactionID() {
+		// given:
+		givenChunkMessage(4, 1, txnId(payer, EPOCH_SECOND - 30));
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(transactionContext).setStatus(INVALID_CHUNK_TRANSACTION_ID);
+	}
+
+	@Test
+	public void acceptsChunkNumber1WhenItsTransactionIDMatchesTheEntireInitialTransactionID() {
+		// given:
+		givenChunkMessage(1, 1, defaultTxnId());
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(transactionContext).setStatus(SUCCESS);
+	}
+
 	private void assertUnchangedTopics() {
-		var topic = topics.get(MapKey.getMapKey(asTopic(TOPIC_ID)));
+		var topic = topics.get(MerkleEntityId.fromTopicId(asTopic(TOPIC_ID)));
 		assertEquals(0L, topic.getSequenceNumber());
 		assertArrayEquals(new byte[48], topic.getRunningHash());
 	}
@@ -149,7 +215,7 @@ class SubmitMessageTransitionLogicTest {
 
 	private void givenTransaction(ConsensusSubmitMessageTransactionBody.Builder body) {
 		transactionBody = TransactionBody.newBuilder()
-				.setTransactionID(ourTxnId())
+				.setTransactionID(defaultTxnId())
 				.setConsensusSubmitMessage(body.build())
 				.build();
 		given(accessor.getTxn()).willReturn(transactionBody);
@@ -159,14 +225,14 @@ class SubmitMessageTransitionLogicTest {
 	private void givenValidTransactionContext() {
 		givenTransaction(getBasicValidTransactionBodyBuilder());
 		given(validator.queryableTopicStatus(asTopic(TOPIC_ID), topics)).willReturn(OK);
-		topics.put(MapKey.getMapKey(asTopic(TOPIC_ID)), new Topic());
+		topics.put(MerkleEntityId.fromTopicId(asTopic(TOPIC_ID)), new MerkleTopic());
 	}
 
 	private void givenTransactionContextNoMessage() {
 		givenTransaction(ConsensusSubmitMessageTransactionBody.newBuilder()
 				.setTopicID(asTopic(TOPIC_ID)).setTopicID(asTopic(TOPIC_ID)));
 		given(validator.queryableTopicStatus(asTopic(TOPIC_ID), topics)).willReturn(OK);
-		topics.put(MapKey.getMapKey(asTopic(TOPIC_ID)), new Topic());
+		topics.put(MerkleEntityId.fromTopicId(asTopic(TOPIC_ID)), new MerkleTopic());
 	}
 
 	private void givenTransactionContextInvalidTopic() {
@@ -174,11 +240,28 @@ class SubmitMessageTransitionLogicTest {
 		given(validator.queryableTopicStatus(asTopic(TOPIC_ID), topics)).willReturn(INVALID_TOPIC_ID);
 	}
 
-	private TransactionID ourTxnId() {
+	private void givenChunkMessage(int totalChunks, int chunkNumber, TransactionID initialTransactionID) {
+		ConsensusMessageChunkInfo chunkInfo = ConsensusMessageChunkInfo
+				.newBuilder()
+				.setInitialTransactionID(initialTransactionID)
+				.setTotal(totalChunks)
+				.setNumber(chunkNumber)
+				.build();
+		givenTransaction(getBasicValidTransactionBodyBuilder()
+				.setChunkInfo(chunkInfo));
+		given(validator.queryableTopicStatus(asTopic(TOPIC_ID), topics)).willReturn(OK);
+		topics.put(MerkleEntityId.fromTopicId(asTopic(TOPIC_ID)), new MerkleTopic());
+	}
+
+	private TransactionID txnId(AccountID payer, long epochSecond) {
 		return TransactionID.newBuilder()
 				.setAccountID(payer)
 				.setTransactionValidStart(
-						Timestamp.newBuilder().setSeconds(consensusTime.getEpochSecond()))
+						Timestamp.newBuilder().setSeconds(epochSecond))
 				.build();
+	}
+
+	private TransactionID defaultTxnId() {
+		return txnId(payer, EPOCH_SECOND);
 	}
 }

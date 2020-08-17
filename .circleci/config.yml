@@ -35,6 +35,38 @@ commands:
                 -t /repo/diagnostics/slack_msg.txt \
                 -s << parameters.status >>
 
+
+  validate-feature-update-test-report:
+    description: Validate feature update test result
+    parameters:
+      slack-channel:
+        description: slack channel to publish to
+        type: string
+        default: 'hedera-cicd'
+      status:
+        description: test finishing status
+        type: string
+        default: 'Passed'
+      workflow-name:
+        description: test finishing status
+        type: string
+        default: 'none-workflow'
+
+    steps:
+      - run:
+          name: Final summary of workflow
+          command: |
+            /repo/.circleci/scripts/final-summary.sh \
+                << parameters.workflow-name >>
+
+      - run:
+          name: 'send feature update test result to slack'
+          command: |
+            /repo/.circleci/scripts/call-svcs-app-slack.sh \
+                -c << parameters.slack-channel >> \
+                -t /repo/client-logs/feature-update-regression-report.txt \
+                -s << parameters.status >>
+
   validate-record-streams:
     description: Download and validate the record streaming data
     parameters:
@@ -81,19 +113,25 @@ commands:
         description: publish to slack channel
         type: boolean
         default: true
+      workflow-name:
+        type: string
+        description: which workflow results to report
+        default: 'nightly-regression'
+
     steps:
       - run:
           name: Fetch stats from spot nodes
           command: |
-            /repo/.circleci/scripts/collect-node-stats.sh \
-              '<< parameters.append-to-last-stats >>'
+              /repo/.circleci/scripts/collect-node-stats.sh \
+                '<< parameters.append-to-last-stats >>'
       - when:
           condition: << parameters.publish-to-slack >>
           steps:
             - run:
                 name: Final summary of workflow
                 command: |
-                  /repo/.circleci/scripts/final-summary.sh
+                  /repo/.circleci/scripts/final-summary.sh \
+                      << parameters.workflow-name >>
             - run:
                 name: Generate the insight.py PDF
                 command: |
@@ -102,8 +140,8 @@ commands:
             - run:
                 name: 'Upload the PDF to Slack #hedera-regression channel'
                 command: |
-                    /repo/.circleci/scripts/publish-stats-pdf-to-slack.sh \
-                       "<< parameters.source-desc >>"
+                  /repo/.circleci/scripts/publish-stats-pdf-to-slack.sh \
+                     "<< parameters.source-desc >>"
   svc-app-slack-msg:
     description: Send a message to Slack via the Services Regression app
     parameters:
@@ -113,11 +151,11 @@ commands:
       github-user:
         description: A GitHub user to mention
         type: string
-        default: nobody-in-particular
+        default: 'nobody-in-particular'
       channel:
         description: A channel ID to target.
         type: string
-        default: CKWHL8R9A
+        default: hedera-regression
       readable:
         description: Human-readable channel description.
         type: string
@@ -158,25 +196,30 @@ commands:
   cleanup-client-log-storage:
     description: Cleanup test client log storage
     parameters:
-      client-log-folder:
-        description: Top level directory hold all test clients logs.
+      workflow-name:
+        description: The current workflow tag
         type: string
-        default: 'regression-testclient-logs'
+        default: 'none-workflow'
     steps:
       - run:
           name: Cleanup old test client log storage
           command: |
             /repo/.circleci/scripts/cleanup-testclient-logs.sh \
-               << parameters.client-log-folder >>
+               << parameters.workflow-name >>
 
   save-this-job-client-logs:
     description: Save this client side log files for this job
+    parameters:
+      workflow-name:
+        description: The current workflow name
+        type: string
+        default: 'none-workflow'
     steps:
       - run:
           name: Save the client side log files for this job
           command: |
             /repo/.circleci/scripts/save-default-client-logs.sh \
-               "regression-testclient-logs"
+               << parameters.workflow-name >>
 
   fetch-testnet-control-assets:
     description: Add SSH keys, HCL scripts, Ansible playbooks to start testnet
@@ -185,6 +228,10 @@ commands:
         description: Which branch of infrastructure repo to use
         type: string
         default: 'master'
+      infra-sha1:
+        description: Which commit sha1 of infrastructure repo to use
+        type: string
+        default: 'HEAD'
     steps:
       - attach_workspace:
           at: /
@@ -197,7 +244,8 @@ commands:
           name: Checkout infrastructure repo
           command: |
             /repo/.circleci/scripts/trap-failure-report.sh \
-              '/repo/.circleci/scripts/clone-infra-repo.sh << parameters.infra-branch >>'
+              '/repo/.circleci/scripts/clone-infra-repo.sh << parameters.infra-branch >> \
+                  << parameters.infra-sha1 >>'
   provision-testnet-hosts:
     description: Provision hosts using Terraform
     parameters:
@@ -299,21 +347,25 @@ commands:
         description: Terraform vars to use
         type: string
         default: "ci.tfvars"
+      infra-branch:
+        description: Infrastructure branch to use
+        type: string
+        default: "hashgraph-hedera-services"
       use-hugepage:
         description: Tell ansible to use hugepage mode when deploying
         type: boolean
         default: false
     steps:
       - fetch-testnet-control-assets:
-          infra-branch: "hashgraph-hedera-services"
+          infra-branch: << parameters.infra-branch >>
       - unless:
           condition: << parameters.use-existing-network >>
           steps:
             - run: echo "Need to create new spot test net"
             - provision-testnet-hosts:
-                 liveness-timeout-secs: 120
-                 var-file: '<< parameters.var-file >>'
-                 var-region: "us-west-2"
+                liveness-timeout-secs: 120
+                var-file: '<< parameters.var-file >>'
+                var-region: "us-west-2"
       - when:
           condition: << parameters.use-existing-network >>
           steps:
@@ -700,9 +752,9 @@ commands:
           timeout-secs: << parameters.active-status-timeout-secs >>
           sleep-secs: 7
       - wait-til-logs-contain:
-          log: swirlds.log
+          log: hgcaa*.log
           pattern-sh: /repo/.circleci/scripts/get-signed-state-pattern.sh
-          pattern-desc: valid signed state hash pattern
+          pattern-desc: merkle state restored
           times: << parameters.signed-state-pattern-count >>
           timeout-secs: << parameters.valid-ss-timeout-secs >>
           sleep-secs: 7
@@ -736,55 +788,55 @@ commands:
       - run-eet-suites:
           dsl-args: "CryptoTransferSuite"
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractBitcarbon
+          fqcn: com.hedera.services.legacy.regression.SmartContractBitcarbon
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractCallLocal
+          fqcn: com.hedera.services.legacy.regression.SmartContractCallLocal
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractCreateContract
+          fqcn: com.hedera.services.legacy.regression.SmartContractCreateContract
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractCRUD
+          fqcn: com.hedera.services.legacy.regression.SmartContractCRUD
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractDeletePayable
+          fqcn: com.hedera.services.legacy.regression.SmartContractDeletePayable
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractInlineAssembly
+          fqcn: com.hedera.services.legacy.regression.SmartContractInlineAssembly
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractNegativeCalls
+          fqcn: com.hedera.services.legacy.regression.SmartContractNegativeCalls
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractNegativeCreates
+          fqcn: com.hedera.services.legacy.regression.SmartContractNegativeCreates
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractPay
+          fqcn: com.hedera.services.legacy.regression.SmartContractPay
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractPayReceivable
+          fqcn: com.hedera.services.legacy.regression.SmartContractPayReceivable
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractPayReceivableAmount
+          fqcn: com.hedera.services.legacy.regression.SmartContractPayReceivableAmount
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractSimpleStorage
+          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorage
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractSimpleStorageWithEvents
+          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorageWithEvents
           args: '1'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.smartcontract.OCTokenIT
+          fqcn: com.hedera.services.legacy.smartcontract.OCTokenIT
       - run-scenario-test:
-          fqcn: com.opencrowd.smartcontract.BigArray
+          fqcn: com.hedera.services.legacy.smartcontract.BigArray
           other-args: '1 32'
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.CI.SmartContractFailFirst
+          fqcn: com.hedera.services.legacy.CI.SmartContractFailFirst
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.CI.SmartContractSelfDestruct
+          fqcn: com.hedera.services.legacy.CI.SmartContractSelfDestruct
       - run-property-driven-scenario-test:
-          fqcn: com.opencrowd.regression.SmartContractSimpleStorageLinked
+          fqcn: com.hedera.services.legacy.regression.SmartContractSimpleStorageLinked
       - run:
           name: Set log level to INFO
           command: /repo/.circleci/scripts/config-log4j-4normal.sh
@@ -792,7 +844,7 @@ commands:
 executors:
   build-executor:
     parameters:
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     docker:
@@ -806,7 +858,7 @@ executors:
       MAVEN_OPTS: -Xmx3200m
       IN_CIRCLE_CI: true
       REPO: /repo
-      WORKFLOW_NAME: << parameters.workflow_name >>
+      WORKFLOW-NAME: << parameters.workflow-name >>
     working_directory: /repo
 
   ci-test-executor:
@@ -820,7 +872,7 @@ executors:
       use_existing_network:
         type: string
         default: ""
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     docker:
@@ -832,10 +884,48 @@ executors:
       TF_WORKSPACE: << parameters.tf_workspace >>
       REPO: /repo
       INFRASTRUCTURE_REPO: /infrastructure
-      WORKFLOW_NAME: << parameters.workflow_name >>
+      WORKFLOW-NAME: << parameters.workflow-name >>
     working_directory: /repo
 
 workflows:
+  nightly-services-regression:
+    triggers:
+      - schedule:
+          cron: "0 4,8,12 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services:
+          context: Slack
+          workflow-name: "nightly-services-regression"
+
+  custom-migration:
+    triggers:
+      - schedule:
+          cron: "0 20 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - fast-build-artifact:
+          context: Slack
+      - regression-target-testnet:
+          context: Slack
+          requires:
+            - fast-build-artifact
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - start-testnet:
+                use-existing-network: true
+                use-hugepage: true
+      - run-custom-migration:
+          context: Slack
+          requires:
+            - regression-target-testnet
   nightly-simulate-network-outage:
     triggers:
         - schedule:
@@ -846,12 +936,16 @@ workflows:
                   - master
     jobs:
       - fast-build-artifact:
-          workflow_name: "Simulate network outage"
+          context: Slack
+          workflow-name: "nightly-simulate-network-outage"
       - start-singlejob-testnet:
+          context: Slack
           requires:
             - fast-build-artifact
-          workflow_name: "Simulate network outage"
+          workflow-name: "nightly-simulate-network-outage"
+          infra-branch: services-with-platform070
       - run-accessory-tests:
+          context: Slack
           requires:
             - start-singlejob-testnet
           pre-steps:
@@ -861,8 +955,9 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Simulate network outage"
+          workflow-name: "nightly-simulate-network-outage"
       - run-network-sim:
+          context: Slack
           requires:
             - run-accessory-tests
           pre-steps:
@@ -872,8 +967,9 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Simulate network outage"
+          workflow-name: "nightly-simulate-network-outage"
       - rerun-accessory-tests:
+          context: Slack
           requires:
             - run-network-sim
           pre-steps:
@@ -884,15 +980,16 @@ workflows:
           post-steps:
             - send-report-to-slack:
                 workflow-name: simulate network outage
+                status: Passed
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Simulate network outage"
+          workflow-name: "nightly-simulate-network-outage"
       - cleanup-singlejob-testnet:
+          context: Slack
           requires:
-            - rerun-accessory-tests 
+            - rerun-accessory-tests
           pre-steps:
             - attach_workspace:
                 at: /
-
   feature-update-regression:
     triggers:
         - schedule:
@@ -903,57 +1000,62 @@ workflows:
                   - master
     jobs:
       - fast-build-artifact:
-          workflow_name: "Feature update"
+          context: Slack
+          post-steps:
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
+          workflow-name: "feature-update-regression"
       - start-singlejob-testnet:
+          context: Slack
           requires:
             - fast-build-artifact
-          workflow_name: "Feature update"
+          workflow-name: "feature-update-regression"
+          infra-branch: services-with-platform070
+          post-steps:
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
       - run-accessory-tests:
+          context: Slack
           requires:
             - start-singlejob-testnet
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - run: /repo/.circleci/scripts/echo-env.sh
-            - ensure-testnet-for-reruns
           post-steps:
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Feature update"
+          workflow-name: "feature-update-regression"
       - run-update-feature:
+          context: Slack
           requires:
             - run-accessory-tests
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
           post-steps:
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Feature update"
+          workflow-name: "feature-update-regression"
       - run-update-jar-files:
+          context: Slack
           requires:
             - run-update-feature
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
           post-steps:
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
             - cleanup-rerun-testnet-if-present
           new-marker : "new marker string"
-          workflow_name: "Feature update"
+          workflow-name: "feature-update-regression"
       - rerun-accessory-tests:
+          context: Slack
           requires:
             - run-update-jar-files
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - run: /repo/.circleci/scripts/echo-env.sh
-            - ensure-testnet-for-reruns
           post-steps:
-            - send-report-to-slack:
-                workflow-name: feature update
+            - save-this-job-client-logs:
+                workflow-name: "feature-update-regression"
+            - validate-feature-update-test-report:
+                status: "Passed"
+                workflow-name: "feature-update-regression"
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Feature update"
+          workflow-name: "feature-update-regression"
       - cleanup-singlejob-testnet:
+          context: Slack
           requires:
             - rerun-accessory-tests
           pre-steps:
@@ -962,7 +1064,7 @@ workflows:
 
   nightly-regression:
     triggers:
-        - schedule:
+      - schedule:
             cron: "0 5,9,13 * * *"
             filters:
               branches:
@@ -970,9 +1072,12 @@ workflows:
                   - master
     jobs:
       - fast-build-artifact:
+          context: Slack
           post-steps:
-            - save-this-job-client-logs
+            - save-this-job-client-logs:
+                workflow-name: "nightly-regression"
       - regression-target-testnet:
+          context: Slack
           requires:
             - fast-build-artifact
           pre-steps:
@@ -980,60 +1085,77 @@ workflows:
                 use-existing-network: true
                 use-hugepage: true
           post-steps:
-            - save-this-job-client-logs
+            - save-this-job-client-logs:
+                workflow-name: "nightly-regression"
       ##### W-BEGIN auto-generated by RegressionWorkflowShell #####
       - long-contract_txns6-0:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-0:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-1:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-2:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-3:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-4:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-5:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-6:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-7:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-8:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-9:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-crypto_txns300-10:
+          context: Slack
           requires:
             - regression-target-testnet
-      - long-crypto_txns300-11:
-          requires:
-            - regression-target-testnet
-      - long-crypto_txns300-12:
-          requires:
-            - regression-target-testnet
+      # - long-crypto_txns300-11:
+      #     requires:
+      #       - regression-target-testnet
+      # - long-crypto_txns300-12:
+      #     requires:
+      #       - regression-target-testnet
       - long-file_ops-0:
+          context: Slack
           requires:
             - regression-target-testnet
       - long-consensus_ops-0:
+          context: Slack
           requires:
             - regression-target-testnet
-      - long-umbrella:
-          requires:
+      - long-umbrella: 
+          context: Slack
+          requires: 
             - regression-target-testnet
       - regression-validate-freeze:
+          context: Slack
           requires:
             - long-contract_txns6-0
             - long-crypto_txns300-0
@@ -1047,64 +1169,86 @@ workflows:
             - long-crypto_txns300-8
             - long-crypto_txns300-9
             - long-crypto_txns300-10
-            - long-crypto_txns300-11
-            - long-crypto_txns300-12
+#            - long-crypto_txns300-11
+#            - long-crypto_txns300-12
             - long-file_ops-0
             - long-consensus_ops-0
           post-steps:
-            - save-this-job-client-logs
+            - save-this-job-client-logs:
+                workflow-name: "nightly-regression"
+
+#       - validate-server-stat-1:
+#           requires:
+#             - regression-validate-freeze
+
       - short-contract_txns6-0:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-0:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-1:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-2:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-3:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-4:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-5:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-6:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-7:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-8:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-9:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-crypto_txns300-10:
+          context: Slack
           requires:
             - regression-validate-freeze
-      - short-crypto_txns300-11:
-          requires:
-            - regression-validate-freeze
-      - short-crypto_txns300-12:
-          requires:
-            - regression-validate-freeze
+      # - short-crypto_txns300-11:
+      #     requires:
+      #       - regression-validate-freeze
+      # - short-crypto_txns300-12:
+      #     requires:
+      #       - regression-validate-freeze
       - short-file_ops-0:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-consensus_ops-0:
+          context: Slack
           requires:
             - regression-validate-freeze
       - short-umbrella:
+          context: Slack
           requires:
             - regression-validate-freeze
       - regression-run-accessory-tests:
+          context: Slack
           requires:
             - short-contract_txns6-0
             - short-crypto_txns300-0
@@ -1118,10 +1262,14 @@ workflows:
             - short-crypto_txns300-8
             - short-crypto_txns300-9
             - short-crypto_txns300-10
-            - short-crypto_txns300-11
-            - short-crypto_txns300-12
+#            - short-crypto_txns300-11
+#            - short-crypto_txns300-12
             - short-file_ops-0
             - short-consensus_ops-0
+#
+#      - validate-server-stat-2:
+#          requires:
+#            - regression-run-accessory-tests
 
       ##### END auto-generated by RegressionWorkflowShell #####
   nightly-freeze-restart:
@@ -1134,12 +1282,16 @@ workflows:
                 - master
     jobs:
       - fast-build-artifact:
-          workflow_name: freeze restart
+          context: Slack
+          workflow-name: freeze restart
       - start-singlejob-testnet:
+          context: Slack
           requires:
             - fast-build-artifact
-          workflow_name: freeze restart
+          workflow-name: freeze restart
+          infra-branch: services-with-platform070
       - run-umbrella-freeze-restart-test:
+          context: Slack
           name: freeze-restart-first-round
           requires:
             - start-singlejob-testnet
@@ -1153,8 +1305,9 @@ workflows:
           freeze-pattern-count: 1
           liveness-pattern-count: 3
           signed-state-pattern-count: 1
-          workflow_name: freeze restart
+          workflow-name: freeze restart
       - run-umbrella-freeze-restart-test:
+          context: Slack
           name: freeze-restart-second-round
           requires:
             - freeze-restart-first-round
@@ -1168,8 +1321,9 @@ workflows:
           freeze-pattern-count: 2
           liveness-pattern-count: 5
           signed-state-pattern-count: 2
-          workflow_name: freeze restart
+          workflow-name: freeze restart
       - run-umbrella-freeze-restart-test:
+          context: Slack
           name: freeze-restart-third-round
           requires:
             - freeze-restart-second-round
@@ -1185,8 +1339,9 @@ workflows:
           freeze-pattern-count: 3
           liveness-pattern-count: 7
           signed-state-pattern-count: 3
-          workflow_name: freeze restart
+          workflow-name: freeze restart
       - cleanup-singlejob-testnet:
+          context: Slack
           requires:
             - freeze-restart-third-round
           pre-steps:
@@ -1202,10 +1357,11 @@ workflows:
               only:
                 - master
     jobs:
-      - aws-summary
+      - aws-summary:
+          context: Slack
 
   continuous-integration:
-    jobs:
+    jobs: 
       - build-artifact:
           context: SonarCloud
           filters:
@@ -1213,14 +1369,28 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
-          workflow_name: "Continuous integration"
+          workflow-name: "Continuous integration"
       - start-singlejob-testnet:
+          context: Slack
           requires:
             - build-artifact
-          workflow_name: "Continuous integration"
-      - run-consensus-and-crypto-scenarios:
+          workflow-name: "Continuous integration"
+          infra-branch: services-with-platform070
+      - run-file-scenarios:
+          context: Slack
           requires:
             - start-singlejob-testnet
+          pre-steps:
+            - attach_workspace:
+                at: /
+            - ensure-testnet-for-reruns
+          post-steps:
+            - cleanup-rerun-testnet-if-present
+          workflow-name: "Continuous integration"
+      - run-consensus-and-crypto-scenarios:
+          context: Slack
+          requires:
+            - run-file-scenarios
           pre-steps:
             - attach_workspace:
                 at: /
@@ -1228,46 +1398,44 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Continuous integration"
-      - run-file-scenarios:
-          requires:
-            - start-singlejob-testnet
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
-          post-steps:
-            - cleanup-rerun-testnet-if-present
-          workflow_name: "Continuous integration"
+          workflow-name: "Continuous integration"
       - run-smart-contract-scenarios:
+          context: Slack
           requires:
-            - run-file-scenarios
+            - run-consensus-and-crypto-scenarios
           pre-steps:
             - attach_workspace:
                 at: /
             - ensure-testnet-for-reruns
           post-steps:
-            - send-report-to-slack
+            - send-report-to-slack:
+                workflow-name: "Continuous integration"
+                status: Passed
             - cleanup-rerun-testnet-if-present
-          workflow_name: "Continuous integration"
+          workflow-name: "Continuous integration"
       - cleanup-singlejob-testnet:
+          context: Slack
           requires:
             - run-smart-contract-scenarios
-            - run-consensus-and-crypto-scenarios
           pre-steps:
             - attach_workspace:
                 at: /
 jobs:
   start-singlejob-testnet:
     parameters:
-      workflow_name:
+      infra-branch:
+        description: Infrastructure branch to use
+        type: string
+        default: "hashgraph-hedera-services"
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
-      - start-testnet
+      - start-testnet:
+          infra-branch: << parameters.infra-branch >>
   cleanup-singlejob-testnet:
     executor: ci-test-executor
     steps:
@@ -1301,12 +1469,12 @@ jobs:
         type: string
         description: Args for mvn install
         default: ''
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: build-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - checkout
       - run:
@@ -1315,10 +1483,11 @@ jobs:
             mkdir -p /repo/test-clients/output
       - run:
           name: mvn install
+          # use double quote otherwise the backslash of line continuation will be treated as part of mvn parameter
           command: |
             /repo/.circleci/scripts/trap-failure-report.sh \
-              'mvn -Dsonar.branch.name=${CIRCLE_BRANCH} -Dsonar.login=${SONAR_TOKEN} clean install sonar:sonar \
-                 | tee /repo/test-clients/output/hapi-client.log'
+              "mvn --no-transfer-progress -Dsonar.branch.name=${CIRCLE_BRANCH} -Dsonar.login=${SONAR_TOKEN} clean install sonar:sonar \
+              | tee /repo/test-clients/output/hapi-client.log"
       - run:
           name: Upload codecov
           command: |
@@ -1352,15 +1521,16 @@ jobs:
             - repo/hedera-node
   fast-build-artifact:
     parameters:
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: build-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - checkout
-      - cleanup-client-log-storage
+      - cleanup-client-log-storage:
+          workflow-name: << parameters.workflow-name >>
       - run:
           name: prepare log dir
           command: |
@@ -1369,7 +1539,7 @@ jobs:
           name: mvn install
           command: |
             /repo/.circleci/scripts/trap-failure-report.sh \
-               'mvn clean install -DskipTests | tee /repo/test-clients/output/hapi-client.log'
+               'mvn --no-transfer-progress clean install -DskipTests | tee /repo/test-clients/output/hapi-client.log'
       - run:
           name: Upload built artifacts to S3 (for Ansible download)
           command: |
@@ -1396,6 +1566,102 @@ jobs:
             - repo/HapiApp2.0
             - root/.m2
             - repo/hedera-node
+
+  build-platform-and-services:
+    parameters:
+      workflow-name:
+        type: string
+        default: ""
+    executor:
+      name: build-executor
+      workflow-name:  << parameters.workflow-name >>
+    steps:
+      - attach_workspace:
+          at: /
+      - add_ssh_keys:
+          fingerprints:
+            - "96:47:c4:5c:e7:45:06:c5:26:a5:85:ef:41:22:2f:d6"
+            - "14:21:e9:81:1f:ae:df:ec:11:60:4a:49:e0:b9:bb:58"
+            - "e7:a6:3e:34:3e:d8:fe:64:2c:7f:b6:57:45:03:44:ac"
+      - checkout
+      - run:
+          name: Build hedera-services repo
+          command: |
+                mvn --no-transfer-progress clean install -DskipTests
+      - run:
+          name: Checkout swirlds-platform repos and build
+          command: |
+            cd /; GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
+              git clone  --recurse-submodule ssh://git@github.com/swirlds/swirlds-platform.git
+            cd /swirlds-platform; git submodule update --init --recursive --checkout
+            cd /swirlds-platform/regression;   git checkout 334-D-Add-services-config ;
+            cd /swirlds-platform; mvn --no-transfer-progress clean install -DskipTests;
+
+      - run:
+          name: Install necessary tools
+          command: |
+            sudo apt update -y;
+            sudo apt install net-tools;
+            sudo apt install -y curl;
+            sudo apt install -y python3.7;
+            sudo rm /usr/bin/python3;
+            sudo ln -s python3.7 /usr/bin/python3;
+            sudo apt install python3-pip;
+            pip3 -q install matplotlib;
+            sudo apt-get install -y python3-setuptools;
+            pip3 install awscli;
+
+      - run:
+          name: Save PEM file to keys folder
+          command: |
+            cp ~/.ssh/id_rsa_e7a63e343ed8fe642c7fb657450344ac /swirlds-platform/regression/keys/services-regression.pem
+
+      - run:
+          name: Run various suites in SuiteRunner
+          command: |
+            cd /swirlds-platform/regression; ./regression_services_circleci.sh AwsNightlyServicesRegressionCfg.json /repo
+
+      - run:
+          name: Sync results of SuiteRunner suites to AWS
+          command: |
+            aws s3 sync /swirlds-platform/regression/results/ s3://hedera-service-regression-jrs
+
+      - run:
+          name: Performance regression
+          command: |
+            cd /swirlds-platform/regression;
+            rm -rf /swirlds-platform/regression/results/;
+            ./regression_services_circleci.sh AwsServicesPerformanceRegressionCfg.json /repo
+
+      - run:
+          name: Sync results of performance regression to AWS
+          command: |
+            aws s3 sync /swirlds-platform/regression/results/ s3://hedera-service-regression-jrs
+
+      - run:
+          name: Run network error regression tests
+          command: |
+            cd /swirlds-platform/regression;
+            rm -rf /swirlds-platform/regression/results/;
+            ./regression_services_circleci.sh AwsSerivceRegressionNetworkError.json /repo
+
+      - run:
+          name: Sync results of network error regression to AWS
+          command: |
+            aws s3 sync /swirlds-platform/regression/results/ s3://hedera-service-regression-jrs
+
+      - run:
+          name: Run Zero stake regression tests
+          command: |
+            cd /swirlds-platform/regression;
+            rm -rf /swirlds-platform/regression/results/;
+            ./regression_services_circleci.sh AWSNightlyServicesZeroStakeRegressionCfg.json /repo
+
+      - run:
+          name: Sync results of zero stake regression to AWS
+          command: |
+            aws s3 sync /swirlds-platform/regression/results/ s3://hedera-service-regression-jrs
+
   aws-summary:
     executor: ci-test-executor
     steps:
@@ -1452,15 +1718,21 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - attach_workspace:
           at: /
+      - ensure-testnet-for-reruns
+      - run:
+          name:  Reset client log
+          command: |
+            cat /dev/null > /repo/test-clients/output/hapi-client.log
+      - run: /repo/.circleci/scripts/echo-env.sh
       - accessory-test-common-steps
 
   rerun-accessory-tests:
@@ -1468,15 +1740,21 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - attach_workspace:
           at: /
+      - ensure-testnet-for-reruns
+      - run:
+          name:  Reset client log
+          command: |
+            cat /dev/null > /repo/test-clients/output/hapi-client.log
+      - run: /repo/.circleci/scripts/echo-env.sh
       - accessory-test-common-steps
 
   ##### J-BEGIN auto-generated by RegressionWorkflowShell #####
@@ -1494,7 +1772,8 @@ jobs:
           command: /repo/.circleci/scripts/config-log4j-4reg.sh
       - run-umbrella-test:
           config-file: umbrella.properties.altHalfSizeOCRegPostFreeze
-      - save-this-job-client-logs
+      - save-this-job-client-logs:
+          workflow-name: "nightly-regression"
   long-umbrella:
     executor:
       name: ci-test-executor
@@ -1509,7 +1788,8 @@ jobs:
           command: /repo/.circleci/scripts/config-log4j-4reg.sh
       - run-umbrella-test:
           config-file: umbrella.properties.altHalfSizeOCRegPreFreeze
-      - save-this-job-client-logs
+      - save-this-job-client-logs:
+          workflow-name: "nightly-regression"
   short-file_ops-0:
     executor:
       name: ci-test-executor
@@ -1618,7 +1898,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1633,7 +1913,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1648,7 +1928,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1663,7 +1943,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1678,7 +1958,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1693,7 +1973,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1708,7 +1988,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1723,7 +2003,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1738,7 +2018,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1753,7 +2033,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1769,7 +2049,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1784,7 +2064,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1799,7 +2079,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=17,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1815,7 +2095,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1830,7 +2110,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1845,7 +2125,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1860,7 +2140,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1875,7 +2155,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1890,7 +2170,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1905,7 +2185,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1920,7 +2200,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1935,7 +2215,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 0
           node-account: 3
           perf-run: true
@@ -1950,7 +2230,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 1
           node-account: 4
           perf-run: true
@@ -1966,7 +2246,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -1981,7 +2261,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 3
           node-account: 6
           perf-run: true
@@ -1996,7 +2276,7 @@ jobs:
           at: /
       - run-eet-suites:
           dsl-args: "UmbrellaRedux"
-          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=315,maxPendingOps=1000,backoffSleepSecs=30"
+          ci-properties-map: "duration=85,unit=MINUTES,props=regression-crypto_txns300.properties,maxOpsPerSec=220,maxPendingOps=1000,backoffSleepSecs=30"
           node-terraform-index: 2
           node-account: 5
           perf-run: true
@@ -2045,7 +2325,8 @@ jobs:
             cat /dev/null > /repo/test-clients/output/hapi-client.log
       - accessory-test-common-steps
       - validate-record-streams
-      - save-this-job-client-logs
+      - save-this-job-client-logs:
+          workflow-name: "nightly-regression"
       - publish-platform-stats:
           source-desc: full regression
   run-oc-regression:
@@ -2171,12 +2452,12 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - run-scenario-test:
           fqcn: com.hedera.services.legacy.regression.FileBatchsignatureErrorTestCase
@@ -2206,12 +2487,12 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - run-eet-suites:
           dsl-args: "TopicCreateSpecs"
@@ -2224,11 +2505,13 @@ jobs:
       - run-eet-suites:
           dsl-args: "SubmitMessageSpecs"
       - run-eet-suites:
+          dsl-args: "HCSTopicFragmentationSuite -TLS=alternate -NODE=random"
+      - run-eet-suites:
           dsl-args: "TopicGetInfoSpecs"
       - run-eet-suites:
           dsl-args: "ConsensusThrottlesSpecs"
       - run-eet-suites:
-          dsl-args: "BucketAndLegacyThrottlingSpec"
+          dsl-args: "BucketThrottlingSpec"
       - run-eet-suites:
           dsl-args: "ControlAccountsExemptForUpdates"
       - run-scenario-test:
@@ -2242,6 +2525,8 @@ jobs:
       - run-eet-suites:
           dsl-args: "CryptoCreateSuite -TLS=on"
       - run-eet-suites:
+          dsl-args: "CryptoUpdateSuite"
+      - run-eet-suites:
           dsl-args: "CryptoTransferSuite"
       - run-eet-suites:
           dsl-args: "CryptoRecordSanityChecks"
@@ -2252,12 +2537,12 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - run-scenario-test:
           fqcn: com.hedera.services.legacy.regression.FileBatchsignatureErrorTestCase
@@ -2292,12 +2577,12 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
 
     steps:
       - run-eet-suites:
@@ -2348,12 +2633,12 @@ jobs:
         description: How many repetitions of the signed state pattern should occur
         type: integer
         default: 1
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
       - run:
           name: Set log level to WARN
@@ -2386,13 +2671,20 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name:  Reset client log
+          command: |
+            cat /dev/null > /repo/test-clients/output/hapi-client.log
+      - ensure-testnet-for-reruns
       - run:
           name: Set environmental variable
           command: |
@@ -2412,7 +2704,7 @@ jobs:
       - run-eet-suites:
           dsl-args: FreezeSuite
       - run:
-          name: Show swirlds logs before HGCApp restart
+          name: Show logs before HGCApp restart
           command: |
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/show_logs.sh'
@@ -2426,7 +2718,7 @@ jobs:
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/show_java_process.sh'
       - run:
-          name: Show swirlds logs after HGCApp restart
+          name: Show logs after HGCApp restart
           command: |
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/show_logs.sh'
@@ -2446,13 +2738,20 @@ jobs:
         type: string
         description: New string to indicate the chang of source code and jar
         default: 'new version jar'
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >>
+      workflow-name:  << parameters.workflow-name >>
     steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name:  Reset client log
+          command: |
+            cat /dev/null > /repo/test-clients/output/hapi-client.log
+      - ensure-testnet-for-reruns
       - run:
           name: Set environmental variable
           command: |
@@ -2477,15 +2776,16 @@ jobs:
           dsl-args: "UpdateServerFiles"
       - run:
           name: wait HGCApp restarted
+          no_output_timeout: 4m
           command: |
-            sleep 300
+            sleep 200
       - run:
           name: Show java process
           command: |
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/show_java_process.sh'
       - run:
-          name: Show swirlds logs after HGCApp restart
+          name: Show logs after HGCApp restart
           command: |
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/show_logs.sh'
@@ -2499,12 +2799,12 @@ jobs:
       runner:
         type: executor
         default: ci-test-executor
-      workflow_name:
+      workflow-name:
         type: string
         default: ""
     executor:
       name: ci-test-executor
-      workflow_name:  << parameters.workflow_name >> # "simulate network outage"
+      workflow-name:  << parameters.workflow-name >> # "simulate network outage"
     steps:
       - attach_workspace:
           at: /
@@ -2522,6 +2822,25 @@ jobs:
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
             '/repo/.circleci/scripts/firewall_flush_rules.sh'
       - run:
-          name: Show swirlds logs after HGCApp restart
+          name: Show logs after HGCApp restart
           command: |
             /repo/.circleci/scripts/show_logs.sh
+  run-custom-migration:
+    parameters:
+      custom-migration-params:
+        type: string
+        description: parameters for customMigration script
+        default: '/repo/.circleci/scripts/resources/customMigrationConfig.json'
+    executor:
+      name: ci-test-executor
+      tf_dir: "/infrastructure/terraform/deployments/aws-4-node-psql-swirlds"
+      tf_workspace: "net-new-regression"
+      use_existing_network: "1"
+    parallelism: 1
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Run Custom Migration Script
+          command: |
+            /repo/.circleci/scripts/run-custom-migration-script.sh

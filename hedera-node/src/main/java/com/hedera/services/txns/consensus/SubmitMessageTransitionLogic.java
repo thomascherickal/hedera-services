@@ -21,18 +21,19 @@ package com.hedera.services.txns.consensus;
  */
 
 import com.hedera.services.context.TransactionContext;
-import com.hedera.services.context.domain.topic.Topic;
+import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.txns.TransitionLogic;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
-import com.hedera.services.legacy.core.MapKey;
+import com.hedera.services.state.merkle.MerkleEntityId;
 import com.swirlds.fcmap.FCMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
@@ -41,12 +42,15 @@ public class SubmitMessageTransitionLogic implements TransitionLogic {
 
 	private static final Function<TransactionBody, ResponseCodeEnum> SYNTAX_RUBBER_STAMP = ignore -> OK;
 
-	private final FCMap<MapKey, Topic> topics;
 	private final OptionValidator validator;
 	private final TransactionContext transactionContext;
+	private final Supplier<FCMap<MerkleEntityId, MerkleTopic>> topics;
 
-	public SubmitMessageTransitionLogic(FCMap<MapKey, Topic> topics, OptionValidator validator,
-										TransactionContext transactionContext) {
+	public SubmitMessageTransitionLogic(
+			Supplier<FCMap<MerkleEntityId, MerkleTopic>> topics,
+			OptionValidator validator,
+			TransactionContext transactionContext
+	) {
 		this.topics = topics;
 		this.validator = validator;
 		this.transactionContext = transactionContext;
@@ -56,28 +60,46 @@ public class SubmitMessageTransitionLogic implements TransitionLogic {
 	public void doStateTransition() {
 		var transactionBody = transactionContext.accessor().getTxn();
 		var op = transactionBody.getConsensusSubmitMessage();
-		var topicId = op.getTopicID();
 
 		if (op.getMessage().isEmpty()) {
 			transactionContext.setStatus(INVALID_TOPIC_MESSAGE);
 			return;
 		}
 
-		var topicStatus = validator.queryableTopicStatus(topicId, topics);
+		var topicStatus = validator.queryableTopicStatus(op.getTopicID(), topics.get());
 		if (OK != topicStatus) {
 			transactionContext.setStatus(topicStatus);
 			return;
 		}
 
-		var topicMapKey = MapKey.getMapKey(topicId);
-		var topic = topics.get(topicMapKey);
-		try {
-			var updatedTopic = new Topic(topic);
-			updatedTopic.updateRunningHashAndSequenceNumber(op.getMessage().toByteArray(), topicId,
-					transactionContext.consensusTime());
+		if (op.hasChunkInfo()) {
+			var chunkInfo = op.getChunkInfo();
+			if (!(1 <= chunkInfo.getNumber() && chunkInfo.getNumber() <= chunkInfo.getTotal())) {
+				transactionContext.setStatus(INVALID_CHUNK_NUMBER);
+				return;
+			}
+			if (!chunkInfo.getInitialTransactionID().getAccountID().equals(
+					transactionBody.getTransactionID().getAccountID())) {
+				transactionContext.setStatus(INVALID_CHUNK_TRANSACTION_ID);
+				return;
+			}
+			if (1 == chunkInfo.getNumber() &&
+					!chunkInfo.getInitialTransactionID().equals(transactionBody.getTransactionID())) {
+				transactionContext.setStatus(INVALID_CHUNK_TRANSACTION_ID);
+				return;
+			}
+		}
 
-			topics.put(topicMapKey, updatedTopic);
-			transactionContext.setTopicRunningHash(updatedTopic.getRunningHash(), updatedTopic.getSequenceNumber());
+		var topicId = MerkleEntityId.fromTopicId(op.getTopicID());
+		var mutableTopic = topics.get().getForModify(topicId);
+		try {
+			mutableTopic.updateRunningHashAndSequenceNumber(
+					transactionBody.getTransactionID().getAccountID(),
+					op.getMessage().toByteArray(),
+					op.getTopicID(),
+					transactionContext.consensusTime());
+			topics.get().put(topicId, mutableTopic);
+			transactionContext.setTopicRunningHash(mutableTopic.getRunningHash(), mutableTopic.getSequenceNumber());
 			transactionContext.setStatus(SUCCESS);
 		} catch (Exception e) {
 			// Should not hit this - updateRunningHash should not throw due to NoSuchAlgorithmException (SHA384)

@@ -9,9 +9,9 @@ package com.hedera.services.bdd.suites;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,30 +22,36 @@ package com.hedera.services.bdd.suites;
 
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecSetup;
+import com.hedera.services.bdd.suites.compose.LocalNetworkCheck;
+import com.hedera.services.bdd.suites.consensus.ChunkingSuite;
+import com.hedera.services.bdd.suites.consensus.ConsensusThrottlesSuite;
+import com.hedera.services.bdd.suites.consensus.SubmitMessageSuite;
 import com.hedera.services.bdd.suites.consensus.TopicCreateSuite;
 import com.hedera.services.bdd.suites.consensus.TopicDeleteSuite;
-import com.hedera.services.bdd.suites.consensus.SubmitMessageSuite;
 import com.hedera.services.bdd.suites.consensus.TopicGetInfoSuite;
 import com.hedera.services.bdd.suites.consensus.TopicUpdateSuite;
-import com.hedera.services.bdd.suites.consensus.ConsensusThrottlesSuite;
 import com.hedera.services.bdd.suites.contract.ChildStorageSpec;
 import com.hedera.services.bdd.suites.contract.ContractCallSuite;
 import com.hedera.services.bdd.suites.contract.DeprecatedContractKeySuite;
 import com.hedera.services.bdd.suites.contract.NewOpInConstructorSuite;
 import com.hedera.services.bdd.suites.crypto.CryptoCreateSuite;
+import com.hedera.services.bdd.suites.crypto.CryptoTransferSuite;
+import com.hedera.services.bdd.suites.crypto.CryptoUpdateSuite;
 import com.hedera.services.bdd.suites.fees.SpecialAccountsAreExempted;
 import com.hedera.services.bdd.suites.file.FetchSystemFiles;
-import com.hedera.services.bdd.suites.freeze.FreezeSuite;
-import com.hedera.services.bdd.suites.file.ProtectedFilesUpdateSuite;
 import com.hedera.services.bdd.suites.file.PermissionSemanticsSpec;
+import com.hedera.services.bdd.suites.file.ProtectedFilesUpdateSuite;
 import com.hedera.services.bdd.suites.file.positive.SysDelSysUndelSpec;
+import com.hedera.services.bdd.suites.freeze.FreezeSuite;
 import com.hedera.services.bdd.suites.freeze.UpdateServerFiles;
 import com.hedera.services.bdd.suites.issues.Issue2144Spec;
 import com.hedera.services.bdd.suites.issues.IssueXXXXSpec;
 import com.hedera.services.bdd.suites.meta.VersionInfoSpec;
+import com.hedera.services.bdd.suites.misc.ZeroStakeNodeTest;
 import com.hedera.services.bdd.suites.perf.ContractCallLoadTest;
 import com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest;
 import com.hedera.services.bdd.suites.perf.FileUpdateLoadTest;
+import com.hedera.services.bdd.suites.perf.HCSChunkingRealisticPerfSuite;
 import com.hedera.services.bdd.suites.perf.MixedTransferAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.MixedTransferCallAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest;
@@ -53,17 +59,16 @@ import com.hedera.services.bdd.suites.records.ContractRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.CryptoRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.FileRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.ThresholdRecordCreationSuite;
-
 import com.hedera.services.bdd.suites.regression.UmbrellaRedux;
 import com.hedera.services.bdd.suites.streaming.RecordStreamValidation;
-import com.hedera.services.bdd.suites.throttling.LegacyToBucketTransitionSpec;
+import com.hedera.services.bdd.suites.throttling.BucketThrottlingSpec;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,12 +82,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.hedera.services.bdd.spec.HapiSpecSetup.NodeSelection.FIXED;
+import static com.hedera.services.bdd.spec.HapiSpecSetup.TlsConfig.OFF;
 import static com.hedera.services.bdd.suites.HapiApiSuite.FinalOutcome;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static com.hedera.services.bdd.spec.HapiSpecSetup.TlsConfig.*;
 import static java.util.stream.Collectors.toMap;
 
 public class SuiteRunner {
@@ -98,6 +103,35 @@ public class SuiteRunner {
 	public static int expectedNetworkSize = EXPECTED_DEV_NETWORK_SIZE;
 
 	static final Map<String, HapiApiSuite[]> CATEGORY_MAP = new HashMap<>() {{
+		/* CI jobs */
+		put("CiConsensusAndCryptoJob", aof(
+				new TopicCreateSuite(),
+				new TopicUpdateSuite(),
+				new TopicDeleteSuite(),
+				new SubmitMessageSuite(),
+				new ChunkingSuite(),
+				new TopicGetInfoSuite(),
+				new ConsensusThrottlesSuite(),
+				new BucketThrottlingSpec(),
+				new SpecialAccountsAreExempted(),
+				new CryptoCreateSuite(),
+				new CryptoTransferSuite(),
+				new CryptoRecordsSanityCheckSuite(),
+				new Issue2144Spec()));
+		put("CiFileJob", aof(
+				new FileRecordsSanityCheckSuite(),
+				new VersionInfoSpec(),
+				new ProtectedFilesUpdateSuite(),
+				new PermissionSemanticsSpec(),
+				new SysDelSysUndelSpec()));
+		put("CiSmartContractJob", aof(
+				new NewOpInConstructorSuite(),
+				new IssueXXXXSpec(),
+				new FetchSystemFiles(),
+				new ChildStorageSpec(),
+				new DeprecatedContractKeySuite(),
+				new ThresholdRecordCreationSuite(),
+				new ContractRecordsSanityCheckSuite()));
 		/* Umbrella Redux */
 		put("UmbrellaRedux", aof(new UmbrellaRedux()));
 		/* Load tests. */
@@ -107,17 +141,20 @@ public class SuiteRunner {
 		put("CryptoTransferLoadTest", aof(new CryptoTransferLoadTest()));
 		put("MixedTransferAndSubmitLoadTest", aof(new MixedTransferAndSubmitLoadTest()));
 		put("MixedTransferCallAndSubmitLoadTest", aof(new MixedTransferCallAndSubmitLoadTest()));
+		put("HCSChunkingRealisticPerfSuite", aof(new HCSChunkingRealisticPerfSuite()));
 		/* Functional tests - CONSENSUS */
 		put("TopicCreateSpecs", aof(new TopicCreateSuite()));
 		put("TopicDeleteSpecs", aof(new TopicDeleteSuite()));
 		put("TopicUpdateSpecs", aof(new TopicUpdateSuite()));
 		put("SubmitMessageSpecs", aof(new SubmitMessageSuite()));
+		put("HCSTopicFragmentationSuite", aof(new ChunkingSuite()));
 		put("TopicGetInfoSpecs", aof(new TopicGetInfoSuite()));
 		put("ConsensusThrottlesSpecs", aof(new ConsensusThrottlesSuite()));
 		/* Functional tests - FILE */
 		put("PermissionSemanticsSpec", aof(new PermissionSemanticsSpec()));
 		/* Functional tests - CRYPTO */
 		put("CryptoCreateSuite", aof(new CryptoCreateSuite()));
+		put("CryptoUpdateSuite", aof(new CryptoUpdateSuite()));
 		/* Functional tests - CONTRACTS */
 		put("NewOpInConstructorSpecs", aof(new NewOpInConstructorSuite()));
 		put("DeprecatedContractKeySpecs", aof(new DeprecatedContractKeySuite()));
@@ -137,7 +174,7 @@ public class SuiteRunner {
 		/* System files. */
 		put("FetchSystemFiles", aof(new FetchSystemFiles()));
 		/* Throttling */
-		put("BucketAndLegacyThrottlingSpec", aof(new LegacyToBucketTransitionSpec()));
+		put("BucketThrottlingSpec", aof(new BucketThrottlingSpec()));
 		/* Network metadata. */
 		put("VersionInfoSpec", aof(new VersionInfoSpec()));
 		put("FreezeSuite", aof(new FreezeSuite()));
@@ -146,6 +183,8 @@ public class SuiteRunner {
 		put("SysDelSysUndelSpec", aof(new SysDelSysUndelSpec()));
 		/* Freeze and update */
 		put("UpdateServerFiles", aof(new UpdateServerFiles()));
+		/* Zero Stake behaviour */
+		put("ZeroStakeTest", aof(new ZeroStakeNodeTest(System.getenv("FULLIPLIST"))));
 	}};
 
 	static boolean runAsync;
@@ -155,6 +194,8 @@ public class SuiteRunner {
 
 	private static final String TLS_ARG = "-TLS";
 	private static final String NODE_SELECTOR_ARG = "-NODE";
+	/* Specify the network size so that we can read the appropriate throttle settings for that network. */
+	private static final String NETWORK_SIZE_ARG = "-NETWORKSIZE";
 
 	public static void main(String... args) {
 		/* Has a static initializer whose behavior seems influenced by initialization of ForkJoinPool#commonPool. */
@@ -163,9 +204,11 @@ public class SuiteRunner {
 		String[] effArgs = trueArgs(args);
 		log.info("Effective args :: " + List.of(effArgs));
 		if (Stream.of(effArgs).anyMatch("-CI"::equals)) {
-			expectedNetworkSize = EXPECTED_CI_NETWORK_SIZE;
 			var tlsOverride = overrideOrDefault(effArgs, TLS_ARG, DEFAULT_TLS_CONFIG.toString());
 			var nodeSelectorOverride = overrideOrDefault(effArgs, NODE_SELECTOR_ARG, DEFAULT_NODE_SELECTOR.toString());
+			expectedNetworkSize =  Integer.parseInt(overrideOrDefault(effArgs,
+					NETWORK_SIZE_ARG,
+					""+ EXPECTED_CI_NETWORK_SIZE).split("=")[1]);
 			var otherOverrides = arbitraryOverrides(effArgs);
 			HapiApiSpec.runInCiMode(
 					System.getenv("NODES"),
@@ -202,7 +245,7 @@ public class SuiteRunner {
 	}
 
 	private static Map<String, String> arbitraryOverrides(String[] effArgs) {
-		var MISC_OVERRIDE_PATTERN = Pattern.compile("([^-].*)=(.*)");
+		var MISC_OVERRIDE_PATTERN = Pattern.compile("([^-].*?)=(.*)");
 		return Stream.of(effArgs)
 				.map(arg -> MISC_OVERRIDE_PATTERN.matcher(arg))
 				.filter(Matcher::matches)
@@ -212,11 +255,36 @@ public class SuiteRunner {
 	private static String[] trueArgs(String[] args) {
 		String ciArgs = Optional.ofNullable(System.getenv("DSL_SUITE_RUNNER_ARGS")).orElse("");
 		log.info("Args from CircleCI environment: |" + ciArgs + "|");
+
 		return StringUtils.isNotEmpty(ciArgs)
-			? Stream.of(args, new Object[] { "-CI" }, ciArgs.split("\\s+"))
+				? Stream.of(args, new Object[] { "-CI" }, getEffectiveDSLSuiteRunnerArgs(ciArgs))
 				.flatMap(Stream::of)
 				.toArray(n -> new String[n])
-			: args;
+				: args;
+	}
+
+	/**
+	 * Check if the DSL_SUITE_RUNNER_ARGS contain ALL_SUITES.
+	 * If so, add all test suites from CATEGORY_MAP to args that should be run.
+	 *
+	 * @param realArgs
+	 * 		DSL_SUITE_RUNNER_ARGS provided
+	 * @return effective args after examining DSL_SUITE_RUNNER_ARGS
+	 */
+	private static String[] getEffectiveDSLSuiteRunnerArgs(String realArgs) {
+		Set<String> effectiveArgs = new HashSet<>();
+		String[] ciArgs = realArgs.split("\\s+");
+
+		if (Stream.of(ciArgs).anyMatch("ALL_SUITES"::equals)) {
+			effectiveArgs.addAll(CATEGORY_MAP.keySet());
+			effectiveArgs.addAll(Stream.of(ciArgs).
+					filter(e -> !e.equals("ALL_SUITES")).
+					collect(Collectors.toList()));
+			log.info("Effective args when running ALL_SUITES : " + effectiveArgs.toString());
+			return effectiveArgs.toArray(new String[effectiveArgs.size()]);
+		}
+
+		return ciArgs;
 	}
 
 	private static List<CategoryResult> runCategories(List<String> args) {
@@ -275,16 +343,19 @@ public class SuiteRunner {
 				.collect(toList());
 		return summaryOf(category, suites, failed);
 	}
+
 	private static CategoryResult runSuitesSync(String category, HapiApiSuite[] suites) {
 		toggleStatsReporting(suites);
 		List<HapiApiSuite> failed = Stream.of(suites)
-					.filter(suite -> suite.runSuiteSync() != FinalOutcome.SUITE_PASSED)
-					.collect(toList());
+				.filter(suite -> suite.runSuiteSync() != FinalOutcome.SUITE_PASSED)
+				.collect(toList());
 		return summaryOf(category, suites, failed);
 	}
+
 	private static void toggleStatsReporting(HapiApiSuite[] suites) {
 		Stream.of(suites).forEach(suite -> suite.setReportStats(suite.hasInterestingStats()));
 	}
+
 	private static CategoryResult summaryOf(String category, HapiApiSuite[] suites, List<HapiApiSuite> failed) {
 		int numPassed = suites.length - failed.size();
 		String summary = category + " :: " + numPassed + "/" + suites.length + " suites ran OK";
@@ -293,7 +364,9 @@ public class SuiteRunner {
 
 	private static <T, R> List<R> accumulateAsync(T[] inputs, Function<T, R> f) {
 		final List<R> outputs = new ArrayList<>();
-		for (int i = 0; i < inputs.length; i++) { outputs.add(null); }
+		for (int i = 0; i < inputs.length; i++) {
+			outputs.add(null);
+		}
 		CompletableFuture<Void> future = CompletableFuture.allOf(
 				IntStream.range(0, inputs.length)
 						.mapToObj(i -> runAsync(() -> outputs.set(i, f.apply(inputs[i]))))

@@ -29,17 +29,20 @@ public class PerfTestLoadSettings {
 	public static final int DEFAULT_MINS = 5;
 	public static final int DEFAULT_ALLOWED_SECS_BELOW = 60;
 	public static final int DEFAULT_BURST_SIZE = 5;
+	public static final int DEFAULT_THREADS = 50;
 
 	private int tps = DEFAULT_TPS;
 	private int tolerancePercentage = DEFAULT_TOLERANCE_PERCENTAGE;
 	private int mins = DEFAULT_MINS;
 	private int allowedSecsBelow = DEFAULT_ALLOWED_SECS_BELOW;
 	private int burstSize = DEFAULT_BURST_SIZE;
+	private int threads = DEFAULT_THREADS;
+
+	private HapiPropertySource ciProps = null;
 
 	public int getTps() {
 		return tps;
 	}
-
 	public int getTolerancePercentage() {
 		return tolerancePercentage;
 	}
@@ -56,7 +59,26 @@ public class PerfTestLoadSettings {
 		return burstSize;
 	}
 
+	public int getThreads() {
+		return threads;
+	}
+
+	public int getIntProperty(String property, int defaultValue) {
+		if (null != ciProps && ciProps.has(property)) {
+			return ciProps.getInteger(property);
+		}
+		return defaultValue;
+	}
+
+	public boolean getBooleanProperty(String property, boolean defaultValue) {
+		if (null != ciProps && ciProps.has(property)) {
+			return ciProps.getBoolean(property);
+		}
+		return defaultValue;
+	}
+
 	public void setFrom(HapiPropertySource ciProps) {
+		this.ciProps = ciProps;
 		if (ciProps.has("tps")) {
 			tps = ciProps.getInteger("tps");
 		}
@@ -72,6 +94,9 @@ public class PerfTestLoadSettings {
 		if (ciProps.has("allowedSecsBelow")) {
 			allowedSecsBelow = ciProps.getInteger("allowedSecsBelow");
 		}
+		if (ciProps.has("threads")) {
+			threads = ciProps.getInteger("threads");
+		}
 	}
 
 	@Override
@@ -82,6 +107,7 @@ public class PerfTestLoadSettings {
 				.add("tolerance", tolerancePercentage)
 				.add("burstSize", burstSize)
 				.add("allowedSecsBelow", allowedSecsBelow)
+				.add("threads", threads)
 				.toString();
 	}
 }

@@ -24,8 +24,8 @@ import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hedera.services.bdd.suites.HapiApiSuite;
 import com.hedera.services.bdd.suites.perf.PerfTestLoadSettings;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.OptionalDouble;
@@ -43,7 +43,7 @@ public class LoadTest extends HapiApiSuite {
 	public static OptionalInt testDurationMinutes = OptionalInt.empty();
 	public static OptionalInt threadNumber = OptionalInt.empty();
 	/** initial balance of payer account used for paying for performance test transactions*/
-	public static OptionalLong initialBalance = OptionalLong.of(5_000_000_000L);
+	public static OptionalLong initialBalance = OptionalLong.of(5_000_000_000_000L);
 
 	public static int parseArgs(String... args) {
 		int usedArgs = 0;
@@ -87,7 +87,7 @@ public class LoadTest extends HapiApiSuite {
 				.tps(targetTPS.isPresent() ? LoadTest::getTargetTPS : settings::getTps)
 				.tolerance(settings::getTolerancePercentage)
 				.allowedSecsBelow(settings::getAllowedSecsBelow)
-				.setNumberOfThreads(threadNumber.isPresent() ? threadNumber.getAsInt() : 1)
+				.setNumberOfThreads(threadNumber.isPresent() ? threadNumber::getAsInt : settings::getThreads)
 				.lasting(
 						(testDurationMinutes.isPresent() ?
 								LoadTest::getTestDurationMinutes :

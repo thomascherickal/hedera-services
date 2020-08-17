@@ -21,6 +21,7 @@ package com.hedera.services.txns.submission;
  */
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.hedera.services.context.ServicesNodeType;
 import com.hedera.services.txns.SubmissionFlow;
 import com.hedera.services.txns.TransitionLogic;
 import com.hedera.services.txns.TransitionLogicLookup;
@@ -29,13 +30,13 @@ import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionResponse;
-import com.hedera.services.legacy.core.TxnValidityAndFeeReq;
-import com.hedera.services.legacy.exception.PlatformTransactionCreationException;
+import com.hedera.services.context.domain.process.TxnValidityAndFeeReq;
 import com.hedera.services.legacy.handler.TransactionHandler;
 import com.swirlds.common.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.hedera.services.context.ServicesNodeType.ZERO_STAKE_NODE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 import java.util.Optional;
@@ -47,21 +48,28 @@ public class TxnHandlerSubmissionFlow implements SubmissionFlow {
 	static final Function<TransactionBody, ResponseCodeEnum> FALLBACK_SYNTAX_CHECK = ignore -> NOT_SUPPORTED;
 
 	private final Platform platform;
+	private final ServicesNodeType nodeType;
 	private final TransactionHandler legacyTxnHandler;
 	private final TransitionLogicLookup transitionLogic;
 
 	public TxnHandlerSubmissionFlow(
 			Platform platform,
+			ServicesNodeType nodeType,
 			TransactionHandler legacyTxnHandler,
 			TransitionLogicLookup transitionLogic
 	) {
 		this.platform = platform;
+		this.nodeType = nodeType;
 		this.legacyTxnHandler = legacyTxnHandler;
 		this.transitionLogic = transitionLogic;
 	}
 
 	@Override
 	public TransactionResponse submit(Transaction signedTxn) {
+		if (nodeType == ZERO_STAKE_NODE) {
+			return responseWith(INVALID_NODE_ACCOUNT);
+		}
+
 		try {
 			SignedTxnAccessor accessor = new SignedTxnAccessor(signedTxn);
 
@@ -71,10 +79,10 @@ public class TxnHandlerSubmissionFlow implements SubmissionFlow {
 
 			TxnValidityAndFeeReq metaValidity = metaValidityOf(accessor);
 			if (metaValidity.getValidity() != OK) {
-				return responseWith(metaValidity.getValidity(), metaValidity.getFeeRequired());
+				return responseWith(metaValidity.getValidity(), metaValidity.getRequiredFee());
 			}
 
-			Optional<TransitionLogic> logic = transitionLogic.lookupFor(accessor.getTxn());
+			Optional<TransitionLogic> logic = transitionLogic.lookupFor(accessor.getFunction(), accessor.getTxn());
 			Function<TransactionBody, ResponseCodeEnum> syntaxCheck = logic
 					.map(TransitionLogic::syntaxCheck)
 					.orElse(FALLBACK_SYNTAX_CHECK);
@@ -92,12 +100,10 @@ public class TxnHandlerSubmissionFlow implements SubmissionFlow {
 	}
 
 	private TransactionResponse submitTransaction(SignedTxnAccessor accessor) {
-		try {
-			legacyTxnHandler.submitTransaction(platform, accessor.getSignedTxn(), accessor.getTxnId());
-			return responseWith(OK);
-		} catch (PlatformTransactionCreationException | InvalidProtocolBufferException ptce) {
+		if (!legacyTxnHandler.submitTransaction(platform, accessor.getSignedTxn(), accessor.getTxnId())) {
 			return responseWith(PLATFORM_TRANSACTION_NOT_CREATED);
 		}
+		return responseWith(OK);
 	}
 
 	private TxnValidityAndFeeReq metaValidityOf(SignedTxnAccessor accessor) {

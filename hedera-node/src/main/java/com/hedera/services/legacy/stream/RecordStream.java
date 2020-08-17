@@ -9,9 +9,9 @@ package com.hedera.services.legacy.stream;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ package com.hedera.services.legacy.stream;
  */
 
 import com.google.common.primitives.Ints;
+import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -77,7 +78,6 @@ public class RecordStream implements Runnable {
 	private File file;
 	private LinkedBlockingQueue<Triple<Transaction, TransactionRecord, Instant>> recordBuffer;
 	private Instant lastRecordConsensusTimeStamp = null;
-	private long recordLogPeriod;
 	private byte[] prevFileHash;
 	MessageDigest md;
 	MessageDigest mdForContent;
@@ -85,19 +85,21 @@ public class RecordStream implements Runnable {
 	HederaNodeStats stats;
 	boolean inFreeze;
 	String recordStreamsDirectory;
-  
+
+	private final PropertySource properties;
+
 	public RecordStream(
 			Platform platform,
 			HederaNodeStats stats,
 			AccountID nodeAccountID,
 			String directory,
-			long recordLogPeriod
+			PropertySource properties
 	) {
 		this.stats = stats;
 		this.platform = platform;
+		this.properties = properties;
 		this.logDirectory = directory;
 		this.nodeAccountID = EntityIdUtils.asLiteralString(nodeAccountID);
-		this.recordLogPeriod = recordLogPeriod;
 		this.recordBuffer = new LinkedBlockingQueue<>(PropertiesLoader.getRecordStreamQueueCapacity());
 
 		if (!directory.endsWith(File.separator)) {
@@ -164,9 +166,8 @@ public class RecordStream implements Runnable {
 				file = new File(fileName);
 
 				if (file.exists() && !file.isDirectory()) {
-					if (log.isDebugEnabled()) {
-						log.debug("Record file {} already exists ", fileName);
-					}
+					//should not exist already
+					log.error("ERROR: Record file {} already exists ", fileName);
 					return;
 				} else {
 					stream = new FileOutputStream(file, false);
@@ -285,7 +286,7 @@ public class RecordStream implements Runnable {
 			log.info("Hash of current record stream file after closing {}", Hex.encodeHexString(prevFileHash));
 
 			byte[] signature = platform.sign(prevFileHash);
-      
+
 			if (log.isDebugEnabled()) {
 				log.debug("Signature: " + Hex.encodeHexString(signature));
 			}
@@ -332,6 +333,7 @@ public class RecordStream implements Runnable {
 						TimeUnit.MILLISECONDS);
 				stats.updateRecordStreamQueueSize(getRecordStreamQueueSize());
 
+				long recordLogPeriod = properties.getLongProperty("hedera.recordStream.logPeriod");
 				if (record != null) {
 					Instant currentCensusesTimeStamp = record.getRight();
 
@@ -379,7 +381,7 @@ public class RecordStream implements Runnable {
 				//close existing file to protect data
 				close();
 			} catch (Exception e) {
-				log.error("Unexpected exception {}", ExceptionUtils.getStackTrace(e));
+				log.error("Unexpected exception {} {}", this.fileName, ExceptionUtils.getStackTrace(e));
 				//close existing file to protect data
 				close();
 			}

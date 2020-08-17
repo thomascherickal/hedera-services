@@ -2,6 +2,26 @@ syntax = "proto3";
 
 package proto;
 
+/*-
+ * ‌
+ * Hedera Network Services Protobuf
+ * ​
+ * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * ​
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ‍
+ */
+
 option java_package = "com.hederahashgraph.api.proto.java";
 option java_multiple_files = true;
 
@@ -32,7 +52,7 @@ enum ResponseCodeEnum {
   INVALID_SOLIDITY_ID = 20; //The solidity id is invalid or entity with this solidity id does not exist
 
 
-  UNKNOWN = 21; // Transaction hasn't yet reached consensus, or has already expired
+  UNKNOWN = 21; // The responding node has submitted the transaction to the network. Its final status is still unknown.
   SUCCESS = 22; // The transaction succeeded
   FAIL_INVALID = 23; // There was a system error and the transaction failed because of invalid request parameters.
   FAIL_FEE = 24; // There was a system error while performing fee calculation, reserved for future.
@@ -154,4 +174,6 @@ enum ResponseCodeEnum {
   // deleted unrecoverably. This error response code will not be returned until autoRenew functionality is supported
   // by HAPI.
   TOPIC_EXPIRED = 162;
+  INVALID_CHUNK_NUMBER = 163; // chunk number must be from 1 to total (chunks) inclusive.
+  INVALID_CHUNK_TRANSACTION_ID = 164; // For every chunk, the payer account that is part of initialTransactionID must match the Payer Account of this transaction. The entire initialTransactionID should match the transactionID of the first chunk, but this is not checked or enforced by Hedera except when the chunk number is 1.
 }
