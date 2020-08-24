@@ -362,6 +362,9 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 				if (acceptAnyKnownStatus) {
 					expectedStatus = Optional.of(statusNow);
 				}
+				if (statusNow == OK) {
+					log.info("Return resposne OK, response = " + response);
+				}
 				return statusNow;
 			}
 			pause(spec.setup().statusWaitSleepMs());
