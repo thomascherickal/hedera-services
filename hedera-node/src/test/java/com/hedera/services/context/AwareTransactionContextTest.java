@@ -56,7 +56,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 
-import static com.hedera.services.context.AwareTransactionContext.EMPTY_HEDERA_KEY;
+import static com.hedera.services.context.AwareTransactionContext.EMPTY_KEY;
 import static com.hedera.test.utils.IdUtils.asAccountString;
 import static com.hedera.test.utils.IdUtils.asContract;
 import static com.hedera.test.utils.IdUtils.asFile;
@@ -218,7 +218,7 @@ public class AwareTransactionContextTest {
 	@Test
 	public void returnsEmptyKeyIfNoPayerActive() {
 		// expect:
-		assertEquals(EMPTY_HEDERA_KEY, subject.activePayerKey());
+		assertEquals(EMPTY_KEY, subject.activePayerKey());
 	}
 
 	@Test

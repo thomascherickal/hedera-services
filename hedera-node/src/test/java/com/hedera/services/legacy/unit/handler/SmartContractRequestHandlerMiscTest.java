@@ -35,6 +35,7 @@ import com.hedera.services.legacy.handler.SmartContractRequestHandler;
 import com.hedera.services.legacy.util.SCEncoding;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.expiry.ExpiringCreations;
+import com.hedera.services.tokens.TokenLedger;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.test.mocks.SolidityLifecycleFactory;
@@ -68,7 +69,6 @@ import com.hedera.services.state.merkle.MerkleBlobMeta;
 import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.hedera.services.legacy.core.jproto.JContractIDKey;
 import com.hedera.services.legacy.exception.NegativeAccountBalanceException;
-import com.hedera.services.legacy.exception.NoFeeScheduleExistsException;
 import com.hedera.services.legacy.exception.StorageKeyNotFoundException;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.contracts.sources.LedgerAccountsSource;
@@ -170,6 +170,7 @@ public class SmartContractRequestHandlerMiscTest {
             new FCMapBackingAccounts(() -> fcMap),
             new ChangeSummaryManager<>());
     ledger = new HederaLedger(
+            mock(TokenLedger.class),
             mock(EntityIdSource.class),
             mock(ExpiringCreations.class),
             mock(AccountRecordsHistorian.class),
@@ -688,7 +689,7 @@ public class SmartContractRequestHandlerMiscTest {
 
   @Test
   @DisplayName("cc Create with invalid initial value: fails")
-  public void cc_InvalidInitialBalance() throws NoFeeScheduleExistsException {
+  public void cc_InvalidInitialBalance() {
     long payerBefore = getBalance(payerAccountId);
     long totalBefore = getTotalBalance();
 
@@ -714,7 +715,7 @@ public class SmartContractRequestHandlerMiscTest {
 
   @Test
   @DisplayName("cd Create with valid initial value: succeeds")
-  public void cd_ValidInitialBalance() throws NoFeeScheduleExistsException {
+  public void cd_ValidInitialBalance() {
     long payerBefore = getBalance(payerAccountId);
     long totalBefore = getTotalBalance();
 

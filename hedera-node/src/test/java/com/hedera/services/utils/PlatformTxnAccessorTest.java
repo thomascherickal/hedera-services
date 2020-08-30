@@ -68,6 +68,20 @@ public class PlatformTxnAccessorTest {
 	}
 
 	@Test
+	public void hasExpectedSignedBytes() throws InvalidProtocolBufferException {
+		// given:
+		Transaction signedTxnWithBody = Transaction.newBuilder()
+				.setBodyBytes(someTxn.toByteString())
+				.build();
+
+		// when:
+		SignedTxnAccessor subject = new SignedTxnAccessor(signedTxnWithBody);
+
+		// then:
+		assertArrayEquals(signedTxnWithBody.toByteArray(), subject.getSignedTxnBytes());
+	}
+
+	@Test
 	public void extractorReturnsExpectedFunction() {
 		// given:
 		someTxn = someTxn.toBuilder()

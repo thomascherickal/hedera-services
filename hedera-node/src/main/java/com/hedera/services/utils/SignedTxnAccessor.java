@@ -41,10 +41,10 @@ import static com.hederahashgraph.api.proto.java.HederaFunctionality.NONE;
  * @author Michael Tinker
  */
 public class SignedTxnAccessor {
-	private Transaction signedTxn4Log;
 	private byte[] txnBytes;
 	private byte[] signedTxnBytes;
 	private Transaction signedTxn;
+	private Transaction signedTxn4Log;
 	private TransactionID txnId;
 	private TransactionBody txn;
 	private HederaFunctionality function;
@@ -91,11 +91,11 @@ public class SignedTxnAccessor {
 	public Transaction getSignedTxn4Log() {
 		if (signedTxn4Log == null) {
 			try {
-				signedTxn4Log = signedTxn.toBuilder()
+				signedTxn4Log = signedTxn.hasBody() ? signedTxn : signedTxn.toBuilder()
 						.setBody(TransactionBody.parseFrom(signedTxn.getBodyBytes()))
 						.clearBodyBytes()
 						.build();
-			} catch (InvalidProtocolBufferException ignore) {}
+			} catch (InvalidProtocolBufferException ignore) { }
 		}
 		return signedTxn4Log;
 	}

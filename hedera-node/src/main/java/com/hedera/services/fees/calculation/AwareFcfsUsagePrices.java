@@ -31,18 +31,15 @@ import com.hederahashgraph.api.proto.java.FeeSchedule;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TimestampSeconds;
-import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionFeeSchedule;
-import com.hedera.services.legacy.exception.NoFeeScheduleExistsException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
 
-import static com.hedera.services.utils.EntityIdUtils.readableId;
-import static com.hedera.services.utils.MiscUtils.functionOf;
 import static com.hedera.services.legacy.logic.ApplicationConstants.DEFAULT_FEE;
+import static com.hedera.services.utils.EntityIdUtils.readableId;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -84,18 +81,17 @@ public class AwareFcfsUsagePrices implements UsagePricesProvider {
 	}
 
 	@Override
-	public void loadPriceSchedules() throws NoFeeScheduleExistsException {
+	public void loadPriceSchedules() {
 		var feeSchedules_fileID = fileNumbers.toFid(fileNumbers.feeSchedules());
 		if (!hfs.exists(feeSchedules_fileID)) {
-			throw new NoFeeScheduleExistsException(
+			throw new IllegalStateException(
 					String.format( "No fee schedule available at %s!", readableId(feeSchedules)));
 		}
 		try {
 			setFeeSchedules(CurrentAndNextFeeSchedule.parseFrom(hfs.cat(feeSchedules_fileID)));
 		} catch (InvalidProtocolBufferException e) {
-			log.warn("Corrupt fee schedules file at {}, may require remediation!", readableId(feeSchedules));
-			log.warn(e.getMessage());
-			throw new NoFeeScheduleExistsException(
+			log.warn("Corrupt fee schedules file at {}, may require remediation!", readableId(feeSchedules), e);
+			throw new IllegalStateException(
 					String.format( "Fee schedule %s is corrupt!", readableId(feeSchedules)));
 		}
 	}
@@ -103,10 +99,8 @@ public class AwareFcfsUsagePrices implements UsagePricesProvider {
 	@Override
 	public FeeData activePrices() {
 		try {
-			TransactionBody txn = txnCtx.accessor().getTxn();
-			HederaFunctionality function = functionOf(txn);
-			Timestamp at = txn.getTransactionID().getTransactionValidStart();
-			return pricesGiven(function, at);
+			var accessor = txnCtx.accessor();
+			return pricesGiven(accessor.getFunction(), accessor.getTxnId().getTransactionValidStart());
 		} catch (Exception e) {
 			log.warn("Using default usage prices to calculate fees for {}!", txnCtx.accessor().getSignedTxn4Log(), e);
 		}

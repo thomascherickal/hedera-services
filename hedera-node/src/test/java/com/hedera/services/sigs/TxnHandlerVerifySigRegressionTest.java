@@ -25,6 +25,7 @@ import com.hedera.services.config.MockAccountNumbers;
 import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.fees.StandardExemptions;
+import com.hedera.services.legacy.services.context.ContextPlatformStatus;
 import com.hedera.services.queries.validation.QueryFeeCheck;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.order.HederaSigningOrder;
@@ -51,6 +52,7 @@ import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureCountMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureTypeMismatchException;
 import com.hedera.services.legacy.handler.TransactionHandler;
+import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.crypto.engine.CryptoEngine;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.Test;
@@ -103,6 +105,8 @@ public class TxnHandlerVerifySigRegressionTest {
 		Transaction invalidSignedTxn = Transaction.newBuilder()
 				.setBodyBytes(ByteString.copyFrom("NONSENSE".getBytes())).build();
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
+		var platformStatus = new ContextPlatformStatus();
+		platformStatus.set(PlatformStatus.ACTIVE);
 		subject = new TransactionHandler(
 				null,
 				() -> accounts,
@@ -116,7 +120,8 @@ public class TxnHandlerVerifySigRegressionTest {
 				new QueryFeeCheck(() -> accounts),
 				new MockAccountNumbers(),
 				policies,
-				new StandardExemptions(new MockAccountNumbers(), policies));
+				new StandardExemptions(new MockAccountNumbers(), policies),
+				platformStatus);
 
 		// expect:
 		assertFalse(subject.verifySignature(invalidSignedTxn));
@@ -336,13 +341,15 @@ public class TxnHandlerVerifySigRegressionTest {
 		stats = mock(HederaNodeStats.class);
 		keyOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(null, () -> accounts, () -> null),
+				defaultLookupsFor(null, () -> accounts, () -> null, () -> null),
 				updateAccountSigns,
 				targetWaclSigns);
 		retryingKeyOrder =
 				new HederaSigningOrder(
 						new MockEntityNumbers(),
-						defaultLookupsPlusAccountRetriesFor( null, () -> accounts, () -> null, MN, MN, stats),
+						defaultLookupsPlusAccountRetriesFor(
+								null, () -> accounts, () -> null, () -> null,
+								MN, MN, stats),
 						updateAccountSigns,
 						targetWaclSigns);
 		isQueryPayment = PrecheckUtils.queryPaymentTestFor(DEFAULT_NODE);
@@ -351,6 +358,8 @@ public class TxnHandlerVerifySigRegressionTest {
 		precheckVerifier = new PrecheckVerifier(syncVerifier, precheckKeyReqs, DefaultSigBytesProvider.DEFAULT_SIG_BYTES);
 
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
+		var platformStatus = new ContextPlatformStatus();
+		platformStatus.set(PlatformStatus.ACTIVE);
 		subject = new TransactionHandler(
 				null,
 				precheckVerifier,
@@ -358,7 +367,8 @@ public class TxnHandlerVerifySigRegressionTest {
 				DEFAULT_NODE,
 				new MockAccountNumbers(),
 				policies,
-				new StandardExemptions(new MockAccountNumbers(), policies));
+				new StandardExemptions(new MockAccountNumbers(), policies),
+				platformStatus);
 	}
 }
 

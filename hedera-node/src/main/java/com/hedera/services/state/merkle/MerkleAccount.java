@@ -26,11 +26,11 @@ import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.legacy.exception.NegativeAccountBalanceException;
-import com.swirlds.common.FCMElement;
+import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.common.FCMValue;
 import com.swirlds.common.FastCopyable;
 import com.swirlds.common.io.SerializableDataInputStream;
-import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.common.merkle.MerkleInternal;
 import com.swirlds.common.merkle.MerkleNode;
@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.hedera.services.legacy.logic.ApplicationConstants.P;
+import static com.hedera.services.state.merkle.MerkleAccountState.NO_TOKEN_BALANCES;
 
 public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, MerkleInternal {
 	private static final Logger log = LogManager.getLogger(MerkleAccount.class);
@@ -103,13 +104,19 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 
 	@Override
 	public MerkleAccount copy() {
-		var records = records();
-		var payerRecords = payerRecords();
+		if (isImmutable()) {
+			var msg = String.format("Copy called on an immutable MerkleAccount by thread '%s'! " +
+							"(Records mutable? %s. Payer records mutable? %s.)",
+					Thread.currentThread().getName(),
+					records().isImmutable() ? "NO" : "YES",
+					payerRecords().isImmutable() ? "NO" : "YES");
+			log.warn(msg);
+			/* Ensure we get this stack trace in case a caller incorrectly suppresses the exception. */
+			Thread.dumpStack();
+			throw new IllegalStateException("Tried to make a copy of an immutable MerkleAccount!");
+		}
 
-		return new MerkleAccount(List.of(
-				state().copy(),
-				records.isImmutable() ? records : records.copy(),
-				payerRecords.isImmutable() ? payerRecords : payerRecords.copy()));
+		return new MerkleAccount(List.of(state().copy(), records().copy(), payerRecords().copy()));
 	}
 
 	@Override
@@ -183,7 +190,6 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 	}
 
 	/* ----  Bean  ---- */
-
 	public String getMemo() {
 		return state().memo();
 	}
@@ -208,7 +214,27 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 		if (balance < 0) {
 			throw new NegativeAccountBalanceException(String.format("Illegal balance: %d!", balance));
 		}
-		state().setBalance(balance);
+		state().setHbarBalance(balance);
+	}
+
+	public long getTokenBalance(TokenID token) {
+		return state().getTokenBalance(token);
+	}
+
+	public void setTokenBalance(TokenID id, MerkleToken token, long balance) {
+		state().setTokenBalance(id, token, balance);
+	}
+
+	public ResponseCodeEnum validityOfSettingTokenBalance(TokenID id, MerkleToken token, long balance) {
+		return state().validityOfSettingTokenBalance(id, token, balance);
+	}
+
+	public void freeze(TokenID id, MerkleToken token) {
+		state().freeze(id, token);
+	}
+
+	public void unfreeze(TokenID id, MerkleToken token) {
+		state().unfreeze(id, token);
 	}
 
 	public long getReceiverThreshold() {
@@ -318,7 +344,8 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 					expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 					memo,
 					deleted, smartContract, receiverSigRequired,
-					proxy);
+					proxy,
+					NO_TOKEN_BALANCES);
 
 			var records = new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER);
 			serdes.deserializeIntoRecords(in, records);

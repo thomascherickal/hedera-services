@@ -25,9 +25,12 @@ import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.legacy.exception.NegativeAccountBalanceException;
+import com.hedera.services.tokens.TokenScope;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.fcqueue.FCQueue;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -73,12 +76,18 @@ public enum AccountProperty implements BeanProperty<MerkleAccount> {
 	},
 	BALANCE {
 		@Override
+		@SuppressWarnings("unchecked")
 		public BiConsumer<MerkleAccount, Object> setter() {
 			return (a, v) -> {
-				try {
-					a.setBalance((long)v);
-				} catch (NegativeAccountBalanceException nabe) {
-					throw new IllegalArgumentException("Account balances must be nonnegative!");
+				if (v instanceof TokenScopedPropertyValue) {
+					var scopedV = (TokenScopedPropertyValue)v;
+					a.setTokenBalance(scopedV.id(), scopedV.token(), (long)scopedV.value());
+				} else {
+					try {
+						a.setBalance((long)v);
+					} catch (NegativeAccountBalanceException nabe) {
+						throw new IllegalArgumentException("Account balances must be nonnegative!");
+					}
 				}
 			};
 		}
@@ -86,6 +95,11 @@ public enum AccountProperty implements BeanProperty<MerkleAccount> {
 		@Override
 		public Function<MerkleAccount, Object> getter() {
 			return MerkleAccount::getBalance;
+		}
+
+		@Override
+		public BiFunction<MerkleAccount, TokenScope, Object> scopedGetter() {
+			return (a, s) -> a.getTokenBalance(s.id());
 		}
 	},
 	FUNDS_RECEIVED_RECORD_THRESHOLD {

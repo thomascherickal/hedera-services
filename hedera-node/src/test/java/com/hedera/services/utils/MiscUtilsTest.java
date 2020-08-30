@@ -62,6 +62,7 @@ import com.hederahashgraph.api.proto.java.GetByKeyQuery;
 import com.hederahashgraph.api.proto.java.GetBySolidityIDQuery;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
+import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.NetworkGetVersionInfoQuery;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
@@ -78,6 +79,7 @@ import com.hedera.services.legacy.core.AccountKeyListObj;
 import com.hedera.services.legacy.core.KeyPairObj;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
+import com.hederahashgraph.api.proto.java.UncheckedSubmitBody;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
 import org.apache.commons.codec.binary.Hex;
@@ -118,7 +120,38 @@ public class MiscUtilsTest {
 	@Test
 	public void asFcKeyUncheckedTranslatesExceptions() {
 		// expect:
-		assertThrows(IllegalArgumentException.class, () -> MiscUtils.asFcKeyUnchecked(null));
+		assertThrows(IllegalArgumentException.class,
+				() -> MiscUtils.asFcKeyUnchecked(Key.getDefaultInstance()));
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnUnparseableKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.getDefaultInstance()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnEmptyKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.newBuilder().setKeyList(KeyList.getDefaultInstance()).build()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnInvalidKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.newBuilder().setEd25519(ByteString.copyFrom("1".getBytes())).build()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsExpected() {
+		// given:
+		var key = Key.newBuilder().setEd25519(ByteString.copyFrom(
+				"01234567890123456789012345678901".getBytes())).build();
+
+		// expect:
+		assertTrue(JKey.equalUpToDecodability(
+				asUsableFcKey(key).get(),
+				MiscUtils.asFcKeyUnchecked(key)));
 	}
 
 	@Test
@@ -508,6 +541,7 @@ public class MiscUtilsTest {
 			put(ConsensusUpdateTopic, new BodySetter<>(ConsensusUpdateTopicTransactionBody.class));
 			put(ConsensusDeleteTopic, new BodySetter<>(ConsensusDeleteTopicTransactionBody.class));
 			put(ConsensusSubmitMessage, new BodySetter<>(ConsensusSubmitMessageTransactionBody.class));
+			put(UncheckedSubmit, new BodySetter<>(UncheckedSubmitBody.class));
 		}};
 
 		// expect:

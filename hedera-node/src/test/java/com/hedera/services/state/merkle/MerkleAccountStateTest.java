@@ -20,13 +20,15 @@ package com.hedera.services.state.merkle;
  * ‍
  */
 
+import com.hedera.services.legacy.core.jproto.JEd25519Key;
+import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.serdes.IoReadingFunction;
 import com.hedera.services.state.serdes.IoWritingConsumer;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.legacy.core.jproto.JEd25519Key;
-import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.utils.MiscUtils;
+import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.junit.jupiter.api.AfterEach;
@@ -37,14 +39,29 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.io.IOException;
+import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static com.hedera.services.state.merkle.MerkleAccountState.FREEZE_MASK;
+import static com.hedera.services.state.merkle.MerkleAccountState.MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE;
+import static com.hedera.services.state.merkle.MerkleAccountState.NO_TOKEN_BALANCES;
+import static com.hedera.test.factories.scenarios.TxnHandlingScenario.TOKEN_ADMIN_KT;
+import static com.hedera.test.factories.scenarios.TxnHandlingScenario.TOKEN_FREEZE_KT;
+import static com.hedera.test.utils.IdUtils.tokenWith;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SETTING_NEGATIVE_ACCOUNT_BALANCE;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.anyInt;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.times;
 import static org.mockito.Mockito.inOrder;
 
 @RunWith(JUnitPlatform.class)
@@ -60,6 +77,14 @@ class MerkleAccountStateTest {
 	boolean smartContract = true;
 	boolean receiverSigRequired = true;
 	EntityId proxy;
+	long firstToken = 555, secondToken = 666, thirdToken = 777;
+	long firstBalance = 123, secondBalance = 234, thirdBalance = 345;
+	long firstFlag = 0, secondFlag = 0, thirdFlag = 0 | MerkleAccountState.FREEZE_MASK;
+	long[] tokenRels = new long[] {
+		firstToken, firstBalance, firstFlag,
+			secondToken, secondBalance, secondFlag,
+			thirdToken, thirdBalance, thirdFlag
+	};
 
 	JKey otherKey;
 	long otherExpiry = 7_234_567L;
@@ -72,26 +97,63 @@ class MerkleAccountStateTest {
 	boolean otherSmartContract = false;
 	boolean otherReceiverSigRequired = false;
 	EntityId otherProxy;
+	long otherFirstBalance = 321, otherSecondBalance = 432, otherThirdBalance = 543;
+	long otherFirstFlag = 0, otherSecondFlag = 0, otherThirdFlag = 0;
+	long[] otherTokenRels = new long[] {
+			firstToken, otherFirstBalance, otherFirstFlag,
+			secondToken, otherSecondBalance, otherSecondFlag,
+			thirdToken, otherThirdBalance, otherThirdFlag
+	};
+	JKey adminKey = TOKEN_ADMIN_KT.asJKeyUnchecked();
+	JKey optionalFreezeKey = TOKEN_FREEZE_KT.asJKeyUnchecked();
+
+	MerkleToken unfrozenToken = new MerkleToken(
+			100, 1,
+			adminKey,
+			"UnfrozenToken", false,
+			new EntityId(1, 2, 3));
+	MerkleToken frozenToken = new MerkleToken(
+			100, 1,
+			adminKey,
+			"FrozenToken", true,
+			new EntityId(1, 2, 4));
+	MerkleToken freezeableToken = new MerkleToken(
+			100, 1,
+			adminKey,
+			"FrozenToken", false,
+			new EntityId(1, 2, 4));
 
 	DomainSerdes serdes;
 
 	MerkleAccountState subject;
+	MerkleAccountState release070Subject;
 	MerkleAccountState otherSubject;
 
 	@BeforeEach
 	public void setup() {
+		frozenToken.setFreezeKey(optionalFreezeKey);
+		freezeableToken.setFreezeKey(optionalFreezeKey);
+
 		key = new JEd25519Key("abcdefghijklmnopqrstuvwxyz012345".getBytes());
 		proxy = new EntityId(1L, 2L, 3L);
 		// and:
 		otherKey = new JEd25519Key("aBcDeFgHiJkLmNoPqRsTuVwXyZ012345".getBytes());
 		otherProxy = new EntityId(3L, 2L, 1L);
 
+		release070Subject = new MerkleAccountState(
+				key,
+				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
+				memo,
+				deleted, smartContract, receiverSigRequired,
+				proxy,
+				NO_TOKEN_BALANCES);
 		subject = new MerkleAccountState(
 				key,
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		serdes = mock(DomainSerdes.class);
 		MerkleAccountState.serdes = serdes;
@@ -100,6 +162,234 @@ class MerkleAccountStateTest {
 	@AfterEach
 	public void cleanup() {
 		MerkleAccountState.serdes = new DomainSerdes();
+	}
+
+	@Test
+	public void rejectsMisalignedRelationships() {
+		// expect:
+		assertThrows(IllegalArgumentException.class, () ->
+				new MerkleAccountState(
+						key,
+						expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
+						memo,
+						deleted, smartContract, receiverSigRequired,
+						proxy,
+						new long[] { 1L, 2L }));
+	}
+
+	@Test
+	public void understandsNum() {
+		// expect:
+		assertEquals(3, subject.numTokenRelationships());
+	}
+
+	@Test
+	public void getsTokenBalanceIfPresent()	 {
+		// expect:
+		assertEquals(firstBalance, subject.getTokenBalance(tokenWith(firstToken)));
+		assertEquals(secondBalance, subject.getTokenBalance(tokenWith(secondToken)));
+		assertEquals(thirdBalance, subject.getTokenBalance(tokenWith(thirdToken)));
+	}
+
+	@Test
+	public void willNotSetNewBalanceIfTokenFreezesByDefault() {
+		// given:
+		var result = subject.validityOfSettingTokenBalance(
+				tokenWith(firstToken - 1), frozenToken, firstBalance + 1);
+
+		// expect:
+		assertEquals(ResponseCodeEnum.ACCOUNT_FROZEN_FOR_TOKEN, result);
+
+		// and:
+		assertThrows(
+				IllegalStateException.class,
+				() -> subject.setTokenBalance(tokenWith(firstToken - 1), frozenToken, firstBalance + 1));
+		assertEquals(0, subject.getTokenBalance(tokenWith(firstToken - 1)));
+	}
+
+	@Test
+	public void freezesAsRequested() {
+		// when:
+		subject.freeze(tokenWith(firstToken), frozenToken);
+
+		// expect:
+		assertEquals(FREEZE_MASK, tokenRels[2] & FREEZE_MASK);
+	}
+
+	@Test
+	public void unfreezesAsRequested() {
+		// when:
+		subject.unfreeze(tokenWith(thirdToken), frozenToken);
+
+		// expect:
+		assertEquals(0, tokenRels[8] & FREEZE_MASK);
+	}
+
+	@Test
+	public void freezeIsNoopIfTokenCannotFreeze() {
+		// when:
+		subject.freeze(tokenWith(firstToken), unfrozenToken);
+
+		// expect:
+		assertEquals(0, tokenRels[2] & FREEZE_MASK);
+	}
+
+	@Test
+	public void unfreezeIsNoopIfTokenCannotFreeze() {
+		// when:
+		subject.unfreeze(tokenWith(thirdToken), unfrozenToken);
+
+		// expect:
+		assertEquals(FREEZE_MASK, tokenRels[8]);
+	}
+
+	@Test
+	public void freezeIsNoopIfNoExistingRelationshipAndTokenFreezesByDefault() {
+		// given:
+		var oldTokenRels = Arrays.copyOf(subject.tokenRels, 9);
+
+		// when:
+		subject.freeze(tokenWith(firstToken - 1), frozenToken);
+
+		// expect:
+		assertArrayEquals(oldTokenRels, subject.tokenRels);
+	}
+
+	@Test
+	public void unfreezeCreatesRelationshipIfTokenFreezesByDefault() {
+		// when:
+		subject.unfreeze(tokenWith(firstToken - 1), frozenToken);
+
+		// expect:
+		assertEquals(12, subject.tokenRels.length);
+		assertEquals(firstToken - 1, subject.tokenRels[0]);
+		assertEquals(0, subject.tokenRels[2] & FREEZE_MASK);
+	}
+
+	@Test
+	public void unfreezeIsNoopRelationshipIfTokenDoesntFreezeByDefault() {
+		// given:
+		var oldTokenRels = Arrays.copyOf(subject.tokenRels, 9);
+
+		// when:
+		subject.unfreeze(tokenWith(firstToken - 1), freezeableToken);
+
+		// expect:
+		assertArrayEquals(oldTokenRels, subject.tokenRels);
+	}
+
+	@Test
+	public void freezeCreatesRelationshipIfTokenDoesntFreezeByDefault() {
+		// when:
+		subject.freeze(tokenWith(firstToken - 1), freezeableToken);
+
+		// expect:
+		assertEquals(12, subject.tokenRels.length);
+		assertEquals(firstToken - 1, subject.tokenRels[0]);
+		assertEquals(FREEZE_MASK, subject.tokenRels[2]);
+	}
+
+	@Test
+	public void recognizesFreezeStatus() {
+		// expect:
+		assertTrue(subject.isFrozen(tokenWith(thirdToken), frozenToken));
+		assertTrue(subject.isFrozen(tokenWith(thirdToken - 1), frozenToken));
+		// and:
+		assertFalse(subject.isFrozen(tokenWith(secondToken), frozenToken));
+		assertFalse(subject.isFrozen(tokenWith(thirdToken), unfrozenToken));
+		assertFalse(subject.isFrozen(tokenWith(thirdToken - 1), freezeableToken));
+	}
+
+	@Test
+	public void willNotSetBalanceIfTokenFrozen() {
+		// given:
+		var result = subject.validityOfSettingTokenBalance(
+				tokenWith(thirdToken), frozenToken, 0);
+
+		// expect:
+		assertEquals(thirdBalance, subject.getTokenBalance(tokenWith(thirdToken)));
+		// and:
+		assertEquals(ResponseCodeEnum.ACCOUNT_FROZEN_FOR_TOKEN, result);
+		// and:
+		assertThrows(
+				IllegalStateException.class,
+				() -> subject.setTokenBalance(tokenWith(thirdToken), frozenToken, 0));
+	}
+
+	@Test
+	public void updatesUnfrozenTokenBalanceIfPresent()	 {
+		// given:
+		assertEquals(OK, subject.validityOfSettingTokenBalance(
+				tokenWith(firstToken), unfrozenToken, firstBalance + 1));
+
+		// when:
+		subject.setTokenBalance(tokenWith(firstToken), unfrozenToken, firstBalance + 1);
+
+		// expect:
+		assertEquals(firstBalance + 1, subject.getTokenBalance(tokenWith(firstToken)));
+	}
+
+	@Test
+	public void createsFirstUnfrozenTokenIfMissing() {
+		// given:
+		subject.setTokenBalance(tokenWith(firstToken - 1), unfrozenToken, firstBalance + 1);
+
+		// expect:
+		assertEquals(firstBalance + 1, subject.getTokenBalance(tokenWith(firstToken - 1)));
+	}
+
+	@Test
+	public void createsSecondUnfrozenTokenIfMissing() {
+		// given:
+		subject.setTokenBalance(tokenWith(secondToken - 1), unfrozenToken, secondBalance + 1);
+
+		// expect:
+		assertEquals(secondBalance + 1, subject.getTokenBalance(tokenWith(secondToken - 1)));
+	}
+
+	@Test
+	public void createsThirdUnfrozenTokenIfMissing() {
+		// given:
+		subject.setTokenBalance(tokenWith(thirdToken - 1), unfrozenToken, thirdBalance + 1);
+
+		// expect:
+		assertEquals(thirdBalance + 1, subject.getTokenBalance(tokenWith(thirdToken - 1)));
+	}
+
+	@Test
+	public void createsFourthUnfrozenTokenIfMissing() {
+		// given:
+		subject.setTokenBalance(tokenWith(thirdToken + 1), unfrozenToken, thirdBalance + 2);
+
+		// expect:
+		assertEquals(thirdBalance + 2, subject.getTokenBalance(tokenWith(thirdToken + 1)));
+	}
+
+	@Test
+	public void returnsZeroBalanceIfTokenNotRelated() {
+		// expect:
+		assertEquals(0, subject.getTokenBalance(TokenID.getDefaultInstance()));
+	}
+
+	@Test
+	public void refusesToSetNegativeBalance() {
+		// expect:
+		assertEquals(
+				SETTING_NEGATIVE_ACCOUNT_BALANCE,
+				subject.validityOfSettingTokenBalance(tokenWith(firstToken), unfrozenToken, -1));
+		// and:
+		assertThrows(
+				IllegalArgumentException.class,
+				() -> subject.setTokenBalance(tokenWith(firstToken), unfrozenToken, -1));
+	}
+
+	@Test
+	public void getsLogicalInsertIndexIfMissing()	 {
+		// expect:
+		assertEquals(-1, subject.logicalIndexOf(tokenWith(firstToken - 1)));
+		assertEquals(-2, subject.logicalIndexOf(tokenWith(secondToken - 1)));
+		assertEquals(-3, subject.logicalIndexOf(tokenWith(thirdToken - 1)));
+		assertEquals(-4, subject.logicalIndexOf(tokenWith(thirdToken + 1)));
 	}
 
 	@Test
@@ -116,12 +406,15 @@ class MerkleAccountStateTest {
 						"deleted=" + deleted + ", " +
 						"smartContract=" + smartContract + ", " +
 						"receiverSigRequired=" + receiverSigRequired + ", " +
-						"proxy=" + proxy + "}",
+						"proxy=" + proxy + ", " +
+						"tokenRels=[555, 123, " + firstFlag + ", " +
+							"666, 234, " + secondFlag + ", " +
+							"777, 345, " + thirdFlag + "]" + "}",
 				subject.toString());
 	}
 
 	@Test
-	public void deserializeWorks() throws IOException {
+	public void release070DeserializeWorks() throws IOException {
 		// setup:
 		var in = mock(SerializableDataInputStream.class);
 		// and:
@@ -134,6 +427,8 @@ class MerkleAccountStateTest {
 				.willReturn(autoRenewSecs)
 				.willReturn(senderThreshold)
 				.willReturn(receiverThreshold);
+		given(in.readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE))
+				.willThrow(IllegalStateException.class);
 		given(in.readNormalisedString(anyInt())).willReturn(memo);
 		given(in.readBoolean())
 				.willReturn(deleted)
@@ -142,7 +437,37 @@ class MerkleAccountStateTest {
 		given(serdes.readNullableSerializable(in)).willReturn(proxy);
 
 		// when:
-		newSubject.deserialize(in, MerkleAccountState.MERKLE_VERSION);
+		newSubject.deserialize(in, MerkleAccountState.RELEASE_070_VERSION);
+
+		// then:
+		assertEquals(release070Subject, newSubject);
+	}
+
+	@Test
+	public void release090DeserializeWorks() throws IOException {
+		// setup:
+		var in = mock(SerializableDataInputStream.class);
+		// and:
+		var newSubject = new MerkleAccountState();
+
+		given(serdes.readNullable(argThat(in::equals), any(IoReadingFunction.class))).willReturn(key);
+		given(in.readLong())
+				.willReturn(expiry)
+				.willReturn(balance)
+				.willReturn(autoRenewSecs)
+				.willReturn(senderThreshold)
+				.willReturn(receiverThreshold);
+		given(in.readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE))
+				.willReturn(tokenRels);
+		given(in.readNormalisedString(anyInt())).willReturn(memo);
+		given(in.readBoolean())
+				.willReturn(deleted)
+				.willReturn(smartContract)
+				.willReturn(receiverSigRequired);
+		given(serdes.readNullableSerializable(in)).willReturn(proxy);
+
+		// when:
+		newSubject.deserialize(in, MerkleAccountState.RELEASE_080_VERSION);
 
 		// then:
 		assertEquals(subject, newSubject);
@@ -168,6 +493,7 @@ class MerkleAccountStateTest {
 		inOrder.verify(out).writeNormalisedString(memo);
 		inOrder.verify(out, times(3)).writeBoolean(true);
 		inOrder.verify(serdes).writeNullableSerializable(proxy, out);
+		inOrder.verify(out).writeLongArray(tokenRels);
 	}
 
 	@Test
@@ -176,7 +502,8 @@ class MerkleAccountStateTest {
 		var copySubject = subject.copy();
 
 		// expect:
-		assertFalse(copySubject == subject);
+		assertNotSame(copySubject, subject);
+		assertNotSame(subject.tokenRels, copySubject.tokenRels);
 		assertEquals(subject, copySubject);
 	}
 
@@ -196,7 +523,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -210,7 +538,8 @@ class MerkleAccountStateTest {
 				otherExpiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -224,7 +553,8 @@ class MerkleAccountStateTest {
 				expiry, otherBalance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -238,7 +568,8 @@ class MerkleAccountStateTest {
 				expiry, balance, otherAutoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -252,7 +583,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, otherSenderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -266,7 +598,23 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, otherReceiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
+
+		// expect:
+		assertNotEquals(subject, otherSubject);
+	}
+
+	@Test
+	public void equalsWorksForTokenBalances() {
+		// given:
+		otherSubject = new MerkleAccountState(
+				key,
+				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
+				memo,
+				deleted, smartContract, receiverSigRequired,
+				proxy,
+				otherTokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -280,7 +628,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				otherMemo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -294,7 +643,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				otherDeleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -308,7 +658,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, otherSmartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -322,7 +673,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, otherReceiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -336,7 +688,8 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				otherProxy);
+				otherProxy,
+				tokenRels);
 
 		// expect:
 		assertNotEquals(subject, otherSubject);
@@ -345,7 +698,7 @@ class MerkleAccountStateTest {
 	@Test
 	public void merkleMethodsWork() {
 		// expect;
-		assertEquals(MerkleAccountState.MERKLE_VERSION, subject.getVersion());
+		assertEquals(MerkleAccountState.RELEASE_080_VERSION, subject.getVersion());
 		assertEquals(MerkleAccountState.RUNTIME_CONSTRUCTABLE_ID, subject.getClassId());
 		assertTrue(subject.isLeaf());
 	}
@@ -360,14 +713,16 @@ class MerkleAccountStateTest {
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
 				memo,
 				deleted, smartContract, receiverSigRequired,
-				proxy);
+				proxy,
+				tokenRels);
 		// and:
 		otherSubject = new MerkleAccountState(
 				otherKey,
 				otherExpiry, otherBalance, otherAutoRenewSecs, otherSenderThreshold, otherReceiverThreshold,
 				otherMemo,
 				otherDeleted, otherSmartContract, otherReceiverSigRequired,
-				otherProxy);
+				otherProxy,
+				otherTokenRels);
 
 		// expect:
 		assertNotEquals(subject.hashCode(), defaultSubject.hashCode());

@@ -23,12 +23,21 @@ package com.hedera.test.utils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hedera.services.state.merkle.MerkleEntityId;
 
 import java.util.stream.Stream;
 
 public class IdUtils {
+	public static TokenID tokenWith(long num) {
+		return TokenID.newBuilder()
+				.setShardNum(0)
+				.setRealmNum(0)
+				.setTokenNum(num)
+				.build();
+	}
+
 	public static TopicID asTopic(String v) {
 		long[] nativeParts = asDotDelimitedLongArray(v);
 		return TopicID.newBuilder()
@@ -66,6 +75,15 @@ public class IdUtils {
 				.setShardNum(nativeParts[0])
 				.setRealmNum(nativeParts[1])
 				.setFileNum(nativeParts[2])
+				.build();
+	}
+
+	public static TokenID asToken(String v) {
+		long[] nativeParts = asDotDelimitedLongArray(v);
+		return TokenID.newBuilder()
+				.setShardNum(nativeParts[0])
+				.setRealmNum(nativeParts[1])
+				.setTokenNum(nativeParts[2])
 				.build();
 	}
 
