@@ -31,34 +31,34 @@ option java_multiple_files = true;
 
   Everything is partitioned into realms so that each Solidity smart contract can  access everything in just a single realm, locking all those entities while it's  running, but other smart contracts could potentially run in other realms in  parallel. So realms allow Solidity to be parallelized somewhat, even though the  language itself assumes everything is serial. */
 message ShardID {
-    int64 shardNum = 1; //the shard number (nonnegative)
+    int64 shardNum = 1; // The shard number (nonnegative)
 }
 
 /* The ID for a realm. Within a given shard, every realm has a unique ID. Each account, file, and contract instance belongs to exactly one realm. */
 message RealmID {
-    int64 shardNum = 1; //The shard number (nonnegative)
-    int64 realmNum = 2; //The realm number (nonnegative)
+    int64 shardNum = 1; // The shard number (nonnegative)
+    int64 realmNum = 2; // The realm number (nonnegative)
 }
 
 /* The ID for an a cryptocurrency account  */
 message AccountID {
-    int64 shardNum = 1; //The shard number (nonnegative)
-    int64 realmNum = 2; //The realm number (nonnegative)
-    int64 accountNum = 3; //A nonnegative account number unique within its realm
+    int64 shardNum = 1; // The shard number (nonnegative)
+    int64 realmNum = 2; // The realm number (nonnegative)
+    int64 accountNum = 3; // A nonnegative account number unique within its realm
 }
 
 /* The ID for a file  */
 message FileID {
-    int64 shardNum = 1; //The shard number (nonnegative)
-    int64 realmNum = 2; //The realm number (nonnegative)
-    int64 fileNum = 3; //A nonnegative File number unique within its realm
+    int64 shardNum = 1; // The shard number (nonnegative)
+    int64 realmNum = 2; // The realm number (nonnegative)
+    int64 fileNum = 3; // A nonnegative File number unique within its realm
 }
 
 /* The ID for a smart contract instance  */
 message ContractID {
-    int64 shardNum = 1; //The shard number (nonnegative)
-    int64 realmNum = 2; //The realm number (nonnegative)
-    int64 contractNum = 3; //A nonnegative number unique within its realm
+    int64 shardNum = 1; // The shard number (nonnegative)
+    int64 realmNum = 2; // The realm number (nonnegative)
+    int64 contractNum = 3; // A nonnegative number unique within its realm
 }
 
 /* The ID for a transaction. This is used for retrieving receipts and records for a transaction, for appending to a file right after creating it, for instantiating a smart contract with bytecode in a file just created, and internally by the network for detecting when duplicate transactions are submitted. A user might get a transaction processed faster by submitting it to N nodes, each with a different node account, but all with the same TransactionID. Then, the transaction will take effect when the first of all those nodes submits the transaction and it reaches consensus. The other transactions will not take effect. So this could make the transaction take effect faster, if any given node might be slow. However, the full transaction fee is charged for each transaction, so the total fee is N times as much if the transaction is sent to N nodes. */
@@ -90,8 +90,8 @@ message Key {
     oneof key {
         ContractID contractID = 1; // smart contract instance that is authorized as if it had signed with a key
         bytes ed25519 = 2; // ed25519 public key bytes
-        bytes RSA_3072 = 3; //RSA-3072 public key bytes
-        bytes ECDSA_384 = 4; //ECDSA with the p-384 curve public key bytes
+        bytes RSA_3072 = 3; // RSA-3072 public key bytes
+        bytes ECDSA_384 = 4; // ECDSA with the p-384 curve public key bytes
         ThresholdKey thresholdKey = 5; // a threshold N followed by a list of M keys, any N of which are required to form a valid signature
         KeyList keyList = 6; // A list of Keys of the Key type.
     }
@@ -117,8 +117,8 @@ message Signature {
     oneof signature {
         bytes contract = 1; // smart contract virtual signature (always length zero)
         bytes ed25519 = 2; // ed25519 signature bytes
-        bytes RSA_3072 = 3; //RSA-3072 signature bytes
-        bytes ECDSA_384 = 4; //ECDSA p-384 signature bytes
+        bytes RSA_3072 = 3; // RSA-3072 signature bytes
+        bytes ECDSA_384 = 4; // ECDSA p-384 signature bytes
         ThresholdSignature thresholdSignature = 5; // A list of signatures for a single N-of-M threshold Key. This must be a list of exactly M signatures, at least N of which are non-null.
         SignatureList signatureList = 6; // A list of M signatures, each corresponding to a Key in a KeyList of the same length.
     }
@@ -130,7 +130,7 @@ This message is deprecated and succeeded by SignaturePair and SignatureMap messa
 */
 message ThresholdSignature {
     option deprecated = true;
-    SignatureList sigs = 2; // for an N-of-M threshold key, this is a list of M signatures, at least N of which must be non-null
+    SignatureList sigs = 2; // For an N-of-M threshold key, this is a list of M signatures, at least N of which must be non-null
 }
 
 /*
@@ -139,7 +139,7 @@ This message is deprecated and succeeded by SignaturePair and SignatureMap messa
 */
 message SignatureList {
     option deprecated = true;
-    repeated Signature sigs = 2; // each signature corresponds to a Key in the KeyList
+    repeated Signature sigs = 2; // Each signature corresponds to a Key in the KeyList
 }
 
 /*
@@ -151,8 +151,8 @@ message SignaturePair {
     oneof signature {
         bytes contract = 2; // smart contract virtual signature (always length zero)
         bytes ed25519 = 3; // ed25519 signature
-        bytes RSA_3072 = 4; //RSA-3072 signature
-        bytes ECDSA_384 = 5; //ECDSA p-384 signature
+        bytes RSA_3072 = 4; // RSA-3072 signature
+        bytes ECDSA_384 = 5; // ECDSA p-384 signature
     }
 }
 
@@ -171,10 +171,8 @@ enum HederaFunctionality {
     CryptoTransfer = 1; // crypto transfer
     CryptoUpdate = 2; // crypto update account
     CryptoDelete = 3; // crypto delete account
-    // Add a livehash to a crypto account
-    CryptoAddLiveHash = 4;
-    // Delete a livehash from a crypto account
-    CryptoDeleteLiveHash = 5;
+    CryptoAddLiveHash = 4; // Add a livehash to a crypto account
+    CryptoDeleteLiveHash = 5; // Delete a livehash from a crypto account
     ContractCall = 6; // Smart Contract Call
     ContractCreate = 7; // Smart Contract Create Contract
     ContractUpdate = 8; // Smart Contract update contract
@@ -182,36 +180,35 @@ enum HederaFunctionality {
     FileAppend = 10; // File Operation append file
     FileUpdate = 11; // File Operation update file
     FileDelete = 12; // File Operation delete file
-    CryptoGetAccountBalance = 13; // crypto get account balance
-    CryptoGetAccountRecords = 14; // crypto get account record
+    CryptoGetAccountBalance = 13; // Crypto get account balance
+    CryptoGetAccountRecords = 14; // Crypto get account record
     CryptoGetInfo = 15; // Crypto get info
     ContractCallLocal = 16; // Smart Contract Call
     ContractGetInfo = 17; // Smart Contract get info
     ContractGetBytecode = 18; // Smart Contract, get the byte code
     GetBySolidityID = 19; // Smart Contract, get by solidity ID
     GetByKey = 20; // Smart Contract, get by key
-    // Get a live hash from a crypto account
-    CryptoGetLiveHash = 21;
+    CryptoGetLiveHash = 21;// Get a live hash from a crypto account
     CryptoGetStakers = 22; // Crypto, get the stakers for the node
     FileGetContents = 23; // File Operations get file contents
     FileGetInfo = 24; // File Operations get the info of the file
     TransactionGetRecord = 25; // Crypto get the transaction records
     ContractGetRecords = 26; // Contract get the transaction records
-    CryptoCreate = 27; // crypto create account
-    SystemDelete = 28; // system delete file
-    SystemUndelete = 29; // system undelete file
-    ContractDelete = 30; // delete contract
-    Freeze = 31; // freeze
+    CryptoCreate = 27; // Crypto create account
+    SystemDelete = 28; // System delete file
+    SystemUndelete = 29; // System undelete file
+    ContractDelete = 30; // Delete contract
+    Freeze = 31; // Freeze
     CreateTransactionRecord = 32; // Create Tx Record
     CryptoAccountAutoRenew = 33; // Crypto Auto Renew
     ContractAutoRenew = 34; // Contract Auto Renew
-    GetVersionInfo = 35; //Get Version
+    GetVersionInfo = 35; //G et Version
     TransactionGetReceipt = 36; // Transaction Get Receipt
-    ConsensusCreateTopic = 50;
-    ConsensusUpdateTopic = 51;
-    ConsensusDeleteTopic = 52;
-    ConsensusGetTopicInfo = 53;
-    ConsensusSubmitMessage = 54;
+    ConsensusCreateTopic = 50; // Create a new topic
+    ConsensusUpdateTopic = 51; // Update a topic
+    ConsensusDeleteTopic = 52; // Delete a topic
+    ConsensusGetTopicInfo = 53; // Get topic info
+    ConsensusSubmitMessage = 54; // Submit a message to a topic
     UncheckedSubmit = 55;
 }
 
