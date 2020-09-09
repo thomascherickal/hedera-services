@@ -32,7 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @RunWith(JUnitPlatform.class)
-class ParseEventTeset {
+class ParseEventTest {
 
 	private static final String eventFileName = "src/test/resources/testfiles/event/2020-09-04T14_04_00.002272Z.evts";
 	@Test
