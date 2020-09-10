@@ -44,7 +44,13 @@ if [ ! -f "$CLIENT_RESOURCES_REBUILD_FINGERPRINT" ]; then
   mvn -q clean package
   touch $CLIENT_RESOURCES_REBUILD_FINGERPRINT
 fi
+
+ci_echo "Final application.properites file: "
+cat $TEST_CLIENTS_DIR/src/main/resource/application.properties
+ci_echo "end of application.properties"
+
 ci_echo "Running legacy scenario $FCQN vs $ALL_NODES (suggested ${NODE}:0.0.${NODE_ACCOUNT})..."
+
 
 NODES=$ALL_NODES \
   mvn -e -q exec:java \
