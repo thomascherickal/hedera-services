@@ -131,7 +131,7 @@ public class HederaNodeStats {
 	private StatsSpeedometer platformTxnNotCreatedPerSecond;
 
 	/** size of the queue from which we take records and write to RecordStream file */
-	private int recordStreamQueueSize = 0;
+	private final StatsRunningAverage recordStreamQueueSize = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 
 	private void initializeOneCountStat(String request, String requestSuffix, String descriptionSuffix,
 			Platform platform) {
@@ -290,10 +290,13 @@ public class HederaNodeStats {
 				"recordStreamQueueSize",//
 				"size of the queue from which we take records and write to RecordStream file",
 				"%d",//
-				null,//
-				null,//
-				null,//
-				() -> getRecordStreamQueueSize())
+				recordStreamQueueSize,//
+				(h) -> {
+					recordStreamQueueSize.reset(h);
+					return recordStreamQueueSize;
+				},//
+				recordStreamQueueSize::reset,//
+				recordStreamQueueSize::getWeightedMean)
 		);
 
 		platformTxnNotCreatedPerSecond = new StatsSpeedometer(DEFAULT_HALF_LIFE);
@@ -499,11 +502,11 @@ public class HederaNodeStats {
 	}
 
 	public void updateRecordStreamQueueSize(int size) {
-		recordStreamQueueSize = size;
+		recordStreamQueueSize.recordValue(size);
 	}
 
-	public int getRecordStreamQueueSize() {
-		return recordStreamQueueSize;
+	public double getRecordStreamQueueSize() {
+		return recordStreamQueueSize.getWeightedMean();
 	}
 
 	public double getAvgHdlSubMsgSize() {

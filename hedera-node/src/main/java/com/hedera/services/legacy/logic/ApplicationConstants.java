@@ -40,7 +40,7 @@ public class ApplicationConstants {
 	//Default Values for Configuration Properties
 	public static int RECORD_LOG_PERIOD = 2;
 	public static String RECORD_LOG_DIR = "data/recordstreams/";
-	public static int RECORD_STREAM_QU_CAP = 500;
+	public static int RECORD_STREAM_QU_CAP = 5_000;
 
 	public static int KEY_EXPANSION_DEPTH = 100;
 	// Tx record & receipt ttl setting in seconds
