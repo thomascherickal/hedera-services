@@ -97,8 +97,8 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		static final int NUM_080_CHILDREN = 6;
 		static final int TOKEN_ASSOCIATIONS = 6;
 		static final int NUM_090_CHILDREN = 7;
-		static final int RECORD_STREAM_RUNNING_HASH = 8;
-		static final int NUM_RECORD_STREAM_RECONNECT_CHILDREN = 9;
+		static final int RECORD_STREAM_RUNNING_HASH = 7;
+		static final int NUM_RECORD_STREAM_RECONNECT_CHILDREN = 8;
 	}
 
 	ServicesContext ctx;

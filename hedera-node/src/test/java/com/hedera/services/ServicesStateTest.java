@@ -21,17 +21,25 @@ package com.hedera.services;
  */
 
 import com.google.protobuf.ByteString;
-import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
-import com.hedera.services.state.merkle.MerkleEntityAssociation;
-import com.hedera.services.state.merkle.MerkleNetworkContext;
 import com.hedera.services.context.ServicesContext;
+import com.hedera.services.context.properties.PropertySources;
+import com.hedera.services.legacy.core.jproto.JEd25519Key;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.legacy.crypto.SignatureStatus;
+import com.hedera.services.sigs.order.HederaSigningOrder;
+import com.hedera.services.sigs.order.SigningOrderResult;
 import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleNetworkContext;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
-import com.hedera.services.context.properties.PropertySources;
-import com.hedera.services.sigs.order.HederaSigningOrder;
-import com.hedera.services.sigs.order.SigningOrderResult;
+import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.stream.RunningHashLeaf;
 import com.hedera.services.txns.ProcessLogic;
 import com.hedera.services.utils.SystemExits;
 import com.hedera.test.factories.txns.PlatformTxnFactory;
@@ -39,14 +47,6 @@ import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.SignatureMap;
 import com.hederahashgraph.api.proto.java.SignaturePair;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleBlobMeta;
-import com.hedera.services.state.merkle.MerkleOptionalBlob;
-import com.hedera.services.legacy.core.jproto.JEd25519Key;
-import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.crypto.SignatureStatus;
-import com.hedera.services.state.submerkle.ExchangeRates;
-import com.hedera.services.state.submerkle.SequenceNumber;
 import com.swirlds.common.Address;
 import com.swirlds.common.AddressBook;
 import com.swirlds.common.NodeId;
@@ -67,23 +67,27 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
-import static java.util.Collections.EMPTY_LIST;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.hedera.services.context.SingletonContextsManager.CONTEXTS;
+import static java.util.Collections.EMPTY_LIST;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.*;
-import static com.hedera.services.context.SingletonContextsManager.CONTEXTS;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.inOrder;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
 @RunWith(JUnitPlatform.class)
 class ServicesStateTest {
@@ -107,6 +111,8 @@ class ServicesStateTest {
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociationsCopy;
 	FCMap<MerkleEntityId, MerkleToken> tokensCopy;
+	RunningHashLeaf runningHashLeaf;
+	RunningHashLeaf runningHashLeafCopy;
 	ExchangeRates midnightRates;
 	SequenceNumber seqNo;
 	MerkleNetworkContext networkCtx;
@@ -121,7 +127,7 @@ class ServicesStateTest {
 	@BeforeEach
 	private void setup() {
 		CONTEXTS.clear();
-		mockDigest = (Consumer<MerkleNode>)mock(Consumer.class);
+		mockDigest = (Consumer<MerkleNode>) mock(Consumer.class);
 		ServicesState.merkleDigest = mockDigest;
 
 		out = mock(SerializableDataOutputStream.class);
@@ -150,11 +156,14 @@ class ServicesStateTest {
 		topicsCopy = mock(FCMap.class);
 		storageCopy = mock(FCMap.class);
 		accountsCopy = mock(FCMap.class);
+		runningHashLeaf = mock(RunningHashLeaf.class);
+		runningHashLeafCopy = mock(RunningHashLeaf.class);
 		given(topics.copy()).willReturn(topicsCopy);
 		given(storage.copy()).willReturn(storageCopy);
 		given(accounts.copy()).willReturn(accountsCopy);
 		given(tokens.copy()).willReturn(tokensCopy);
 		given(tokenAssociations.copy()).willReturn(tokenAssociationsCopy);
+		given(runningHashLeaf.copy()).willReturn(runningHashLeafCopy);
 
 		seqNo = mock(SequenceNumber.class);
 		midnightRates = mock(ExchangeRates.class);
@@ -292,6 +301,7 @@ class ServicesStateTest {
 		Hash storageRootHash = new Hash("fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa".getBytes());
 		Hash accountsRootHash = new Hash("asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf".getBytes());
 		Hash tokenRelsRootHash = new Hash("asdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdh".getBytes());
+		Hash runningHashLeafHash = new Hash("qasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasd".getBytes());
 		// and:
 		Hash overallHash = new Hash("a!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!df".getBytes());
 		// and:
@@ -302,16 +312,18 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.ADDRESS_BOOK, book);
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		// and:
 		var expected = String.format("[SwirldState Hashes]\n" +
-				"  Overall           :: %s\n" +
-				"  Accounts          :: %s\n" +
-				"  Storage           :: %s\n" +
-				"  Topics            :: %s\n" +
-				"  Tokens            :: %s\n" +
-				"  TokenAssociations :: %s\n" +
-				"  NetworkContext    :: %s\n" +
-				"  AddressBook       :: %s",
+						"  Overall           :: %s\n" +
+						"  Accounts          :: %s\n" +
+						"  Storage           :: %s\n" +
+						"  Topics            :: %s\n" +
+						"  Tokens            :: %s\n" +
+						"  TokenAssociations :: %s\n" +
+						"  NetworkContext    :: %s\n" +
+						"  AddressBook       :: %s\n" +
+						"  RecordStreamRunningHash 	:: %s\n",
 				overallHash,
 				accountsRootHash,
 				storageRootHash,
@@ -319,7 +331,8 @@ class ServicesStateTest {
 				tokensRootHash,
 				tokenRelsRootHash,
 				ctxHash,
-				bookHash);
+				bookHash,
+				runningHashLeafHash);
 		subject.setHash(overallHash);
 
 		given(topics.getHash()).willReturn(topicRootHash);
@@ -329,7 +342,7 @@ class ServicesStateTest {
 		given(tokenAssociations.getHash()).willReturn(tokenRelsRootHash);
 		given(networkCtx.getHash()).willReturn(ctxHash);
 		given(book.getHash()).willReturn(bookHash);
-
+		given(runningHashLeaf.getHash()).willReturn(runningHashLeafHash);
 		// when:
 		subject.printHashes();
 
@@ -350,6 +363,7 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		subject.nodeId = self;
 		subject.ctx = ctx;
 
