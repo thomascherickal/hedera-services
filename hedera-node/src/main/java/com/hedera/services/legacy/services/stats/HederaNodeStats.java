@@ -294,7 +294,7 @@ public class HederaNodeStats {
 				"app",//
 				"recordStreamQueueSize",//
 				"size of the queue from which we take records and write to RecordStream file",
-				"%d",//
+				"%,13.6f",//
 				recordStreamQueueSize,//
 				(h) -> {
 					recordStreamQueueSize.reset(h);
