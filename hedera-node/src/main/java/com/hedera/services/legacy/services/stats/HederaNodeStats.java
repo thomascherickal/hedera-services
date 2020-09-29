@@ -132,6 +132,7 @@ public class HederaNodeStats {
 
 	/** size of the queue from which we take records and write to RecordStream file */
 	private final StatsRunningAverage recordStreamQueueSize = new StatsRunningAverage(DEFAULT_HALF_LIFE);
+	private final StatsRunningAverage avgEntityExpiryNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 
 	private void initializeOneCountStat(String request, String requestSuffix, String descriptionSuffix,
 			Platform platform) {
@@ -297,6 +298,20 @@ public class HederaNodeStats {
 				},//
 				recordStreamQueueSize::reset,//
 				recordStreamQueueSize::getWeightedMean)
+		);
+
+		platform.addAppStatEntry(new StatEntry(
+				"app",
+				"avgEntityExpiryNanos",
+				"average nanoseconds spent purging expired entities in handleTransaction",
+				"%,13.6f",
+				avgEntityExpiryNanos,
+				(h) -> {
+					avgEntityExpiryNanos.reset(h);
+					return avgEntityExpiryNanos;
+				},
+				avgEntityExpiryNanos::reset,
+				avgEntityExpiryNanos::getWeightedMean)
 		);
 
 		platformTxnNotCreatedPerSecond = new StatsSpeedometer(DEFAULT_HALF_LIFE);
@@ -503,6 +518,14 @@ public class HederaNodeStats {
 
 	public void updateRecordStreamQueueSize(int size) {
 		recordStreamQueueSize.recordValue(size);
+	}
+
+	public void updateAvgEntityExpiryNanos(long nanos) {
+		avgEntityExpiryNanos.recordValue(nanos);
+	}
+
+	public double getAvgEntityExpiryNanos() {
+		return avgEntityExpiryNanos.getWeightedMean();
 	}
 
 	public double getRecordStreamQueueSize() {
