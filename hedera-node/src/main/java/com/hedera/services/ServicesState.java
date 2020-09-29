@@ -35,6 +35,7 @@ import com.hedera.services.state.merkle.MerkleBlobMeta;
 import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.stream.RunningHashLeaf;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.swirlds.common.Address;
@@ -44,6 +45,8 @@ import com.swirlds.common.Platform;
 import com.swirlds.common.SwirldState;
 import com.swirlds.common.Transaction;
 import com.swirlds.common.crypto.CryptoFactory;
+import com.swirlds.common.crypto.DigestType;
+import com.swirlds.common.crypto.ImmutableHash;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.merkle.MerkleInternal;
 import com.swirlds.common.merkle.MerkleNode;
@@ -72,7 +75,9 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 	static final int RELEASE_070_VERSION = 1;
 	static final int RELEASE_080_VERSION = 2;
 	static final int RELEASE_090_VERSION = 3;
-	static final int MERKLE_VERSION = RELEASE_090_VERSION;
+	// add a RunningHash for making recordStream continue working after reconnect
+	static final int RECORD_STREAM_RECONNECT_VERSION = 4;
+	static final int MERKLE_VERSION = RECORD_STREAM_RECONNECT_VERSION;
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0x8e300b0dfdafbb1aL;
 
 	static Consumer<MerkleNode> merkleDigest = CryptoFactory.getInstance()::digestTreeSync;
@@ -92,6 +97,8 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		static final int NUM_080_CHILDREN = 6;
 		static final int TOKEN_ASSOCIATIONS = 6;
 		static final int NUM_090_CHILDREN = 7;
+		static final int RECORD_STREAM_RUNNING_HASH = 8;
+		static final int NUM_RECORD_STREAM_RECONNECT_CHILDREN = 9;
 	}
 
 	ServicesContext ctx;
@@ -101,7 +108,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 	}
 
 	public ServicesState(List<MerkleNode> children) {
-		super(ChildIndices.NUM_090_CHILDREN);
+		super(ChildIndices.RECORD_STREAM_RUNNING_HASH);
 		addDeserializedChildren(children, MERKLE_VERSION);
 		setImmutable(true);
 	}
@@ -130,12 +137,15 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 
 	@Override
 	public int getMinimumChildCount(int version) {
-		if (version == RELEASE_070_VERSION) {
-			return ChildIndices.NUM_070_CHILDREN;
-		} else {
-			return (version == RELEASE_080_VERSION)
-					? ChildIndices.NUM_080_CHILDREN
-					: ChildIndices.NUM_090_CHILDREN;
+		switch (version) {
+			case RELEASE_070_VERSION:
+				return ChildIndices.NUM_070_CHILDREN;
+			case RELEASE_080_VERSION:
+				return ChildIndices.NUM_080_CHILDREN;
+			case RELEASE_090_VERSION:
+				return ChildIndices.NUM_090_CHILDREN;
+			default:
+				return ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN;
 		}
 	}
 
@@ -150,6 +160,11 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 			setChild(ChildIndices.TOKEN_ASSOCIATIONS,
 					new FCMap<>(MerkleEntityAssociation.LEGACY_PROVIDER, MerkleTokenRelStatus.LEGACY_PROVIDER));
 			log.info("Created token associations FCMap after <=0.8.0 state restoration");
+		}
+		if (recordStreamRunningHash() == null) {
+			setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
+					new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
+			log.info("Created initial RecordStream RunningHash after < RECORD_STREAM_RECONNECT_VERSION state restoration");
 		}
 	}
 
@@ -183,6 +198,11 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 					new FCMap<>(MerkleEntityAssociation.LEGACY_PROVIDER, MerkleTokenRelStatus.LEGACY_PROVIDER));
 			log.info("Init called on Services node {} WITHOUT Merkle saved state", nodeId);
 		} else {
+			if (getNumberOfChildren() < ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN){
+				setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
+						new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
+
+			}
 			log.info("Init called on Services node {} WITH Merkle saved state", nodeId);
 			merkleDigest.accept(this);
 			printHashes();
@@ -237,7 +257,9 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 				storage().copy(),
 				accounts().copy(),
 				tokens().copy(),
-				tokenAssociations().copy()));
+				tokenAssociations().copy(),
+				recordStreamRunningHash().copy()
+				));
 	}
 
 	@Override
@@ -287,7 +309,8 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 						"  Tokens            :: %s\n" +
 						"  TokenAssociations :: %s\n" +
 						"  NetworkContext    :: %s\n" +
-						"  AddressBook       :: %s",
+						"  AddressBook       :: %s\n" +
+						"  RecordStreamRunningHash 	:: %s\n",
 				getHash(),
 				accounts().getHash(),
 				storage().getHash(),
@@ -295,7 +318,8 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 				tokens().getHash(),
 				tokenAssociations().getHash(),
 				networkCtx().getHash(),
-				addressBook().getHash()));
+				addressBook().getHash(),
+				recordStreamRunningHash().getHash()));
 	}
 
 	public FCMap<MerkleEntityId, MerkleAccount> accounts() {
@@ -324,5 +348,9 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 
 	public AddressBook addressBook() {
 		return getChild(ChildIndices.ADDRESS_BOOK);
+	}
+
+	public RunningHashLeaf recordStreamRunningHash() {
+		return getChild(ChildIndices.RECORD_STREAM_RUNNING_HASH);
 	}
 }

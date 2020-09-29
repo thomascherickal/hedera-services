@@ -12,31 +12,33 @@ import java.util.Objects;
 /**
  * Contains a runningHash of all {@link RecordStreamObject}
  */
-public class HashLeaf extends AbstractMerkleLeaf {
+public class RunningHashLeaf extends AbstractMerkleLeaf {
 	public static final long CLASS_ID = 0xe370929ba5429d9bL;
 	public static final int CLASS_VERSION = 1;
+	/**
+	 * a runningHash of all RecordStreamObject
+	 */
+	private Hash runningRecordStreamHash;
 
-	private Hash runningRecordsHash;
-
-	public HashLeaf(final Hash runningRecordsHash) {
-		this.runningRecordsHash = runningRecordsHash;
+	public RunningHashLeaf(final Hash runningRecordStreamHash) {
+		this.runningRecordStreamHash = runningRecordStreamHash;
 	}
 
-	private HashLeaf(final HashLeaf hashLeaf) {
-		this.runningRecordsHash = hashLeaf.runningRecordsHash;
+	private RunningHashLeaf(final RunningHashLeaf runningHashLeaf) {
+		this.runningRecordStreamHash = runningHashLeaf.runningRecordStreamHash;
 		setImmutable(false);
-		hashLeaf.setImmutable(true);
-		setHash(hashLeaf.getHash());
+		runningHashLeaf.setImmutable(true);
+		setHash(runningHashLeaf.getHash());
 	}
 
 	@Override
 	public void serialize(SerializableDataOutputStream out) throws IOException {
-		out.writeSerializable(runningRecordsHash, true);
+		out.writeSerializable(runningRecordStreamHash, true);
 	}
 
 	@Override
 	public void deserialize(SerializableDataInputStream in, int version) throws IOException {
-		runningRecordsHash = in.readSerializable();
+		runningRecordStreamHash = in.readSerializable();
 	}
 
 	/**
@@ -54,8 +56,8 @@ public class HashLeaf extends AbstractMerkleLeaf {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		HashLeaf that = (HashLeaf) o;
-		return new EqualsBuilder().append(this.runningRecordsHash, that.runningRecordsHash).isEquals();
+		RunningHashLeaf that = (RunningHashLeaf) o;
+		return new EqualsBuilder().append(this.runningRecordStreamHash, that.runningRecordStreamHash).isEquals();
 	}
 
 	/**
@@ -63,12 +65,12 @@ public class HashLeaf extends AbstractMerkleLeaf {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(runningRecordsHash);
+		return Objects.hash(runningRecordStreamHash);
 	}
 
-	public HashLeaf copy() {
+	public RunningHashLeaf copy() {
 		// throwIfImmutable();
-		return new HashLeaf(this);
+		return new RunningHashLeaf(this);
 	}
 
 	/**
