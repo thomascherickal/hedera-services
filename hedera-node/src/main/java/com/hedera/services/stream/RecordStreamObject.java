@@ -6,6 +6,10 @@ import com.swirlds.common.crypto.AbstractSerializableHashable;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.stream.Timestamped;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -24,6 +28,9 @@ public class RecordStreamObject extends AbstractSerializableHashable implements 
 	private TransactionRecord transactionRecord;
 	private Transaction transaction;
 	private Instant consensusTimestamp;
+
+	public RecordStreamObject() {
+	}
 
 	public RecordStreamObject(final TransactionRecord transactionRecord,
 			final Transaction transaction, final Instant consensusTimestamp) {
@@ -63,5 +70,40 @@ public class RecordStreamObject extends AbstractSerializableHashable implements 
 	}
 
 	@Override
-	public Instant getTimestamp() {return consensusTimestamp; }
+	public Instant getTimestamp() {
+		return consensusTimestamp;
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+				.append("TransactionRecord", transactionRecord)
+				.append("Transaction", transaction)
+				.append("ConsensusTimestamp", consensusTimestamp).toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj.getClass() != getClass()) {
+			return false;
+		}
+		if (this == obj) {
+			return true;
+		}
+		RecordStreamObject that = (RecordStreamObject) obj;
+		return new EqualsBuilder().
+				append(this.transactionRecord, that.transactionRecord).
+				append(this.transaction, that.transaction).
+				append(this.consensusTimestamp, that.consensusTimestamp).
+				isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().
+				append(transactionRecord).
+				append(transaction).
+				append(consensusTimestamp).
+				toHashCode();
+	}
 }
