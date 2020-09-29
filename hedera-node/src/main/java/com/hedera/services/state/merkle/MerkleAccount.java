@@ -21,20 +21,20 @@ package com.hedera.services.state.merkle;
  */
 
 import com.google.common.base.MoreObjects;
+import com.hedera.services.ServicesState;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.exceptions.NegativeAccountBalanceException;
 import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
-import com.hedera.services.legacy.exception.NegativeAccountBalanceException;
-import com.swirlds.common.FCMElement;
 import com.swirlds.common.FCMValue;
 import com.swirlds.common.FastCopyable;
 import com.swirlds.common.io.SerializableDataInputStream;
-import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.common.merkle.MerkleInternal;
 import com.swirlds.common.merkle.MerkleNode;
 import com.swirlds.common.merkle.utility.AbstractMerkleInternal;
+import com.swirlds.fcmap.FCMap;
 import com.swirlds.fcqueue.FCQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +51,14 @@ import static com.hedera.services.legacy.logic.ApplicationConstants.P;
 public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, MerkleInternal {
 	private static final Logger log = LogManager.getLogger(MerkleAccount.class);
 
-	static final int MERKLE_VERSION = 1;
+	static final FCQueue<ExpirableTxnRecord> IMMUTABLE_EMPTY_FCQ = new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER);
+	static {
+		IMMUTABLE_EMPTY_FCQ.copy();
+	}
+
+	static final int RELEASE_080_VERSION = 1;
+	static final int RELEASE_090_VERSION = 2;
+	static final int MERKLE_VERSION = RELEASE_090_VERSION;
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0x950bcf7255691908L;
 
 	static DomainSerdes serdes = new DomainSerdes();
@@ -59,14 +66,18 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 	@Deprecated
 	public static final Provider LEGACY_PROVIDER = new Provider();
 
-	/* Order of v1 Merkle node children */
-	static final int STATE_CHILD_INDEX = 0;
-	static final int RECORDS_CHILD_INDEX = 1;
-	static final int PAYER_RECORDS_CHILD_INDEX = 2;
-	static final int NUM_V1_CHILDREN = 3;
+	/* Order of Merkle node children */
+	static class ChildIndices {
+		static final int STATE = 0;
+		static final int RECORDS = 1;
+		static final int PAYER_RECORDS = 2;
+		static final int NUM_V1_CHILDREN = 3;
+		static final int ASSOCIATED_TOKENS = 3;
+		static final int NUM_V2_CHILDREN = 4;
+	}
 
 	public MerkleAccount(List<MerkleNode> children) {
-		super(NUM_V1_CHILDREN);
+		super(ChildIndices.NUM_V2_CHILDREN);
 		addDeserializedChildren(children, MERKLE_VERSION);
 	}
 
@@ -74,11 +85,11 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 		this(List.of(
 				new MerkleAccountState(),
 				new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER),
-				new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER)));
+				new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER),
+				new MerkleAccountTokens()));
 	}
 
 	/* --- MerkleInternal --- */
-
 	@Override
 	public long getClassId() {
 		return RUNTIME_CONSTRUCTABLE_ID;
@@ -91,11 +102,19 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 
 	@Override
 	public int getMinimumChildCount(int version) {
-		return NUM_V1_CHILDREN;
+		return version == RELEASE_090_VERSION
+				? ChildIndices.NUM_V2_CHILDREN
+				: ChildIndices.NUM_V1_CHILDREN;
+	}
+
+	@Override
+	public void initialize(MerkleInternal previous) {
+		if (tokens() == null) {
+			setChild(ChildIndices.ASSOCIATED_TOKENS, new MerkleAccountTokens());
+		}
 	}
 
 	/* --- FastCopyable --- */
-
 	@Override
 	public boolean isImmutable() {
 		return records().isImmutable() || payerRecords().isImmutable();
@@ -103,13 +122,23 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 
 	@Override
 	public MerkleAccount copy() {
-		var records = records();
-		var payerRecords = payerRecords();
+		if (isImmutable()) {
+			var msg = String.format("Copy called on an immutable MerkleAccount by thread '%s'! " +
+							"(Records mutable? %s. Payer records mutable? %s.)",
+					Thread.currentThread().getName(),
+					records().isImmutable() ? "NO" : "YES",
+					payerRecords().isImmutable() ? "NO" : "YES");
+			log.warn(msg);
+			/* Ensure we get this stack trace in case a caller incorrectly suppresses the exception. */
+			Thread.dumpStack();
+			throw new IllegalStateException("Tried to make a copy of an immutable MerkleAccount!");
+		}
 
 		return new MerkleAccount(List.of(
 				state().copy(),
-				records.isImmutable() ? records : records.copy(),
-				payerRecords.isImmutable() ? payerRecords : payerRecords.copy()));
+				records().copy(),
+				payerRecords().copy(),
+				tokens().copy()));
 	}
 
 	@Override
@@ -131,7 +160,6 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 	}
 
 	/* ---- Object ---- */
-
 	@Override
 	public boolean equals(Object o) {
 		if (o == this) {
@@ -143,12 +171,13 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 		var that = (MerkleAccount) o;
 		return this.state().equals(that.state()) &&
 				this.records().equals(that.records()) &&
-				this.payerRecords().equals(that.payerRecords());
+				this.payerRecords().equals(that.payerRecords()) &&
+				this.tokens().equals(that.tokens());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(state(), records(), payerRecords());
+		return Objects.hash(state(), records(), payerRecords(), tokens());
 	}
 
 	@Override
@@ -157,33 +186,40 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 				.add("state", state())
 				.add("# records", records().size())
 				.add("# payer records", payerRecords().size())
+				.add("tokens", tokens().readableTokenIds())
 				.toString();
 	}
 
 	/* ----  Merkle children  ---- */
-
 	public MerkleAccountState state() {
-		return getChild(STATE_CHILD_INDEX);
+		return getChild(ChildIndices.STATE);
 	}
 
 	public FCQueue<ExpirableTxnRecord> records() {
-		return getChild(RECORDS_CHILD_INDEX);
+		return getChild(ChildIndices.RECORDS);
 	}
 
 	public FCQueue<ExpirableTxnRecord> payerRecords() {
-		return getChild(PAYER_RECORDS_CHILD_INDEX);
+		return getChild(ChildIndices.PAYER_RECORDS);
 	}
 
 	public void setRecords(FCQueue<ExpirableTxnRecord> records) {
-		setChild(RECORDS_CHILD_INDEX, records);
+		setChild(ChildIndices.RECORDS, records);
 	}
 
 	public void setPayerRecords(FCQueue<ExpirableTxnRecord> payerRecords) {
-		setChild(PAYER_RECORDS_CHILD_INDEX, payerRecords);
+		setChild(ChildIndices.PAYER_RECORDS, payerRecords);
+	}
+
+	public MerkleAccountTokens tokens() {
+		return getChild(ChildIndices.ASSOCIATED_TOKENS);
+	}
+
+	public void setTokens(MerkleAccountTokens tokens) {
+		setChild(ChildIndices.ASSOCIATED_TOKENS, tokens);
 	}
 
 	/* ----  Bean  ---- */
-
 	public String getMemo() {
 		return state().memo();
 	}
@@ -208,7 +244,7 @@ public class MerkleAccount extends AbstractMerkleInternal implements FCMValue, M
 		if (balance < 0) {
 			throw new NegativeAccountBalanceException(String.format("Illegal balance: %d!", balance));
 		}
-		state().setBalance(balance);
+		state().setHbarBalance(balance);
 	}
 
 	public long getReceiverThreshold() {

@@ -119,12 +119,10 @@ public class BiasedDelegatingProvider implements OpProvider {
 			((HapiTxnOp)op).deferStatusResolution();
 		}
 		if (!shouldLogNormalFlow) {
-//			log.info(String.format("configs: shouldAlwaysDefer = %b, shouldLogNormalFlow = %b", shouldAlwaysDefer, shouldLogNormalFlow));
-
 			if (isTxnOp) {
 				((HapiTxnOp)op).noLogging().payingWith(UNIQUE_PAYER_ACCOUNT).fee(TRANSACTION_FEE);
 
-			} else {
+			} else if (isQueryOp(op)) {
 				((HapiQueryOp)op).noLogging().payingWith(UNIQUE_PAYER_ACCOUNT);
 			}
 		}
@@ -132,5 +130,9 @@ public class BiasedDelegatingProvider implements OpProvider {
 
 	boolean isTxnOp(HapiSpecOperation op) {
 		return (op instanceof HapiTxnOp);
+	}
+
+	boolean isQueryOp(HapiSpecOperation op) {
+		return (op instanceof HapiQueryOp);
 	}
 }

@@ -24,7 +24,9 @@ import com.google.protobuf.ByteString;
 import com.hedera.services.config.MockAccountNumbers;
 import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.StandardExemptions;
+import com.hedera.services.context.ContextPlatformStatus;
 import com.hedera.services.queries.validation.QueryFeeCheck;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.order.HederaSigningOrder;
@@ -51,6 +53,7 @@ import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureCountMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureTypeMismatchException;
 import com.hedera.services.legacy.handler.TransactionHandler;
+import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.crypto.engine.CryptoEngine;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.Test;
@@ -72,7 +75,6 @@ import static com.hedera.test.factories.scenarios.SystemDeleteScenarios.*;
 import static com.hedera.test.factories.scenarios.CryptoTransferScenarios.*;
 import static com.hedera.test.factories.scenarios.BadPayerScenarios.*;
 import static org.mockito.BDDMockito.*;
-import static com.hedera.test.factories.scenarios.PrecheckSigListFailScenarios.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static com.hedera.test.CiConditions.isInCircleCi;
 
@@ -103,6 +105,9 @@ public class TxnHandlerVerifySigRegressionTest {
 		Transaction invalidSignedTxn = Transaction.newBuilder()
 				.setBodyBytes(ByteString.copyFrom("NONSENSE".getBytes())).build();
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
+		var platformStatus = new ContextPlatformStatus();
+		platformStatus.set(PlatformStatus.ACTIVE);
+		PropertySource propertySource = mock(PropertySource.class);
 		subject = new TransactionHandler(
 				null,
 				() -> accounts,
@@ -111,86 +116,16 @@ public class TxnHandlerVerifySigRegressionTest {
 				TEST_USAGE_PRICES,
 				TestExchangeRates.TEST_EXCHANGE,
 				TestFeesFactory.FEES_FACTORY.get(),
-				() -> new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts),
+				() -> new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource),
 				new BasicPrecheck(TestProperties.TEST_PROPERTIES, TestContextValidator.TEST_VALIDATOR),
 				new QueryFeeCheck(() -> accounts),
 				new MockAccountNumbers(),
 				policies,
-				new StandardExemptions(new MockAccountNumbers(), policies));
+				new StandardExemptions(new MockAccountNumbers(), policies),
+				platformStatus);
 
 		// expect:
 		assertFalse(subject.verifySignature(invalidSignedTxn));
-	}
-
-	@Test
-	public void shortCircuitsOnMissingSigList() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(MISSING_SIG_LIST_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureCountMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void shortCircuitsOnSimpleKeyComplexSig() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(SIMPLE_KEY_COMPLEX_SIG_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureTypeMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void shortCircuitsOnKeyListSimpleSig() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(KEY_LIST_SIMPLE_SIG_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureTypeMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void shortCircuitsOnKeyListTooLong() throws Throwable {
-		assumeFalse(isInCircleCi);
-		// given:
-		setupFor(KEY_LIST_TOO_LONG_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureCountMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void shortCircuitsOnThresholdKeySimpleSig() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(THRESHOLD_KEY_SIMPLE_SIG_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureTypeMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void shortCircuitsOnThresholdSigTooLong() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(THRESHOLD_SIG_TOO_LONG_SCENARIO);
-
-		// expect:
-		assertThrows(KeySignatureCountMismatchException.class, () ->
-				subject.verifySignature(platformTxn.getSignedTxn()));
 	}
 
 	@Test
@@ -205,33 +140,11 @@ public class TxnHandlerVerifySigRegressionTest {
 	}
 
 	@Test
-	public void acceptsValidNonCryptoTransferPayerSigList() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(FULL_PAYER_SIGS_VIA_LIST_SCENARIO);
-
-		// expect:
-		assertTrue(subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
 	public void rejectsIncompleteNonCryptoTransferPayerSig() throws Throwable {
 		assumeFalse(isInCircleCi);
 
 		// given:
 		setupFor(MISSING_PAYER_SIGS_VIA_MAP_SCENARIO);
-
-		// expect:
-		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void rejectsIncompleteNonCryptoTransferPayerSigList() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(MISSING_PAYER_SIGS_VIA_LIST_SCENARIO);
 
 		// expect:
 		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
@@ -268,18 +181,6 @@ public class TxnHandlerVerifySigRegressionTest {
 
 		// expect:
 		assertTrue(subject.verifySignature(platformTxn.getSignedTxn()));
-	}
-
-	@Test
-	public void throwsOnQueryPaymentTransferWithMissingSigsList() throws Throwable {
-		assumeFalse(isInCircleCi);
-
-		// given:
-		setupFor(QUERY_PAYMENT_MISSING_SIGS_SCENARIO_LIST);
-
-		// expect:
-		assertThrows(KeySignatureCountMismatchException.class,
-				() -> subject.verifySignature(platformTxn.getSignedTxn()));
 	}
 
 	@Test
@@ -336,13 +237,15 @@ public class TxnHandlerVerifySigRegressionTest {
 		stats = mock(HederaNodeStats.class);
 		keyOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(null, () -> accounts, () -> null),
+				defaultLookupsFor(null, () -> accounts, () -> null, ref -> null),
 				updateAccountSigns,
 				targetWaclSigns);
 		retryingKeyOrder =
 				new HederaSigningOrder(
 						new MockEntityNumbers(),
-						defaultLookupsPlusAccountRetriesFor( null, () -> accounts, () -> null, MN, MN, stats),
+						defaultLookupsPlusAccountRetriesFor(
+								null, () -> accounts, () -> null, ref -> null,
+								MN, MN, stats),
 						updateAccountSigns,
 						targetWaclSigns);
 		isQueryPayment = PrecheckUtils.queryPaymentTestFor(DEFAULT_NODE);
@@ -351,6 +254,8 @@ public class TxnHandlerVerifySigRegressionTest {
 		precheckVerifier = new PrecheckVerifier(syncVerifier, precheckKeyReqs, DefaultSigBytesProvider.DEFAULT_SIG_BYTES);
 
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
+		var platformStatus = new ContextPlatformStatus();
+		platformStatus.set(PlatformStatus.ACTIVE);
 		subject = new TransactionHandler(
 				null,
 				precheckVerifier,
@@ -358,7 +263,8 @@ public class TxnHandlerVerifySigRegressionTest {
 				DEFAULT_NODE,
 				new MockAccountNumbers(),
 				policies,
-				new StandardExemptions(new MockAccountNumbers(), policies));
+				new StandardExemptions(new MockAccountNumbers(), policies),
+				platformStatus);
 	}
 }
 

@@ -22,7 +22,6 @@ package com.hedera.services.sigs;
 
 import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.files.HederaFs;
-import com.hedera.services.security.ops.SystemOpAuthorization;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.factories.BodySigningSigFactory;
 import com.hedera.services.sigs.metadata.SigMetadataLookup;
@@ -113,32 +112,6 @@ public class SigOpsRegressionTest {
 	}
 
 	@Test
-	public void setsExpectedPlatformSigsForListSignedFileUpdate() throws Throwable {
-		// given:
-		setupFor(LIST_SIGNED_FILE_UPDATE_NEW_WACL_SCENARIO);
-
-		// when:
-		actualStatus = invokeExpansionScenario();
-
-		// then:
-		statusMatches(successStatus);
-		assertEquals(expectedSigs, platformTxn.getPlatformTxn().getSignatures());
-	}
-
-	@Test
-	public void setsExpectedPlatformSigsIgnoresMissingOtherPartySigsForListSignedTxn() throws Throwable {
-		// given:
-		setupFor(PAYER_ONLY_LIST_SIGNED_FILE_UPDATE_NEW_WACL_SCENARIO);
-
-		// when:
-		actualStatus = invokeExpansionScenario();
-
-		// then:
-		statusMatches(successStatus);
-		assertEquals(expectedSigs, platformTxn.getPlatformTxn().getSignatures());
-	}
-
-	@Test
 	public void setsExpectedErrorForBadPayer() throws Throwable {
 		// given:
 		setupFor(INVALID_PAYER_ID_SCENARIO);
@@ -197,18 +170,6 @@ public class SigOpsRegressionTest {
 		assertEquals(expectedSigs, platformTxn.getPlatformTxn().getSignatures());
 		// and:
 		allVerificationStatusesAre(vs -> VerificationStatus.VALID.equals(vs));
-	}
-
-	@Test
-	public void rejectsFailedSigCreationResult() throws Throwable {
-		// given:
-		setupFor(PAYER_ONLY_LIST_SIGNED_FILE_UPDATE_NEW_WACL_SCENARIO);
-
-		// when:
-		actualStatus = invokeRationalizationScenario();
-
-		// then:
-		statusMatches(sigCreationFailureStatus);
 	}
 
 	@Test
@@ -368,7 +329,7 @@ public class SigOpsRegressionTest {
 		platformTxn.getPlatformTxn().addAll(knownSigs.toArray(new Signature[0]));
 		HederaSigningOrder keysOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(null, () -> accounts, () -> null),
+				defaultLookupsFor(null, () -> accounts, () -> null, ref -> null),
 				updateAccountSigns,
 				targetWaclSigns);
 
@@ -380,7 +341,7 @@ public class SigOpsRegressionTest {
 		platformTxn.getPlatformTxn().addAll(knownSigs.toArray(new Signature[0]));
 		HederaSigningOrder keysOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(hfs, () -> accounts, null),
+				defaultLookupsFor(hfs, () -> accounts, null, ref -> null),
 				updateAccountSigns,
 				targetWaclSigns);
 
@@ -391,7 +352,7 @@ public class SigOpsRegressionTest {
 		int MAGIC_NUMBER = 10;
 		SigMetadataLookup sigMetaLookups =
 				defaultLookupsPlusAccountRetriesFor(
-						hfs, () -> accounts, () -> null, MAGIC_NUMBER, MAGIC_NUMBER, stats);
+						hfs, () -> accounts, () -> null, ref -> null, MAGIC_NUMBER, MAGIC_NUMBER, stats);
 		HederaSigningOrder keyOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
 				sigMetaLookups,
@@ -403,7 +364,7 @@ public class SigOpsRegressionTest {
 
 	private SignatureStatus invokeRationalizationScenario() throws Exception {
 		SyncVerifier syncVerifier = new CryptoEngine()::verifySync;
-		SigMetadataLookup sigMetaLookups = defaultLookupsFor(hfs, () -> accounts, () -> null);
+		SigMetadataLookup sigMetaLookups = defaultLookupsFor(hfs, () -> accounts, () -> null, ref -> null);
 		HederaSigningOrder keyOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
 				sigMetaLookups,
@@ -423,7 +384,7 @@ public class SigOpsRegressionTest {
 
 		signingOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(hfs, () -> accounts, () -> null),
+				defaultLookupsFor(hfs, () -> accounts, () -> null, ref -> null),
 				updateAccountSigns,
 				targetWaclSigns);
 		SigningOrderResult<SignatureStatus> payerKeys =

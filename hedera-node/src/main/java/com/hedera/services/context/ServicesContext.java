@@ -29,22 +29,52 @@ import com.hedera.services.config.FileNumbers;
 import com.hedera.services.config.HederaNumbers;
 import com.hedera.services.context.domain.trackers.ConsensusStatusCounts;
 import com.hedera.services.context.domain.trackers.IssEventInfo;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
+import com.hedera.services.context.properties.NodeLocalProperties;
+import com.hedera.services.fees.AwareHbarCentExchange;
 import com.hedera.services.fees.StandardExemptions;
 import com.hedera.services.fees.calculation.TxnResourceUsageEstimator;
+import com.hedera.services.fees.calculation.contract.queries.GetBytecodeResourceUsage;
+import com.hedera.services.fees.calculation.contract.queries.GetContractInfoResourceUsage;
+import com.hedera.services.fees.calculation.token.queries.GetTokenInfoResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenAssociateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenBurnResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenCreateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenDeleteResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenDissociateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenFreezeResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenGrantKycResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenMintResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenRevokeKycResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenTransactResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenUnfreezeResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenUpdateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenWipeResourceUsage;
 import com.hedera.services.files.EntityExpiryMapFactory;
+import com.hedera.services.grpc.controllers.TokenController;
 import com.hedera.services.keys.LegacyEd25519KeyReader;
-import com.hedera.services.ledger.accounts.BackingAccounts;
+import com.hedera.services.ledger.accounts.BackingStore;
+import com.hedera.services.ledger.accounts.BackingTokenRels;
 import com.hedera.services.ledger.accounts.PureFCMapBackingAccounts;
+import com.hedera.services.ledger.properties.TokenRelProperty;
 import com.hedera.services.queries.answering.ZeroStakeAnswerFlow;
+import com.hedera.services.queries.contract.ContractAnswers;
+import com.hedera.services.queries.contract.GetBytecodeAnswer;
+import com.hedera.services.queries.contract.GetContractInfoAnswer;
+import com.hedera.services.queries.token.GetTokenInfoAnswer;
+import com.hedera.services.queries.token.TokenAnswers;
 import com.hedera.services.records.TxnIdRecentHistory;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.metadata.DelegatingSigMetadataLookup;
 import com.hedera.services.state.expiry.ExpiringCreations;
 import com.hedera.services.state.expiry.ExpiryManager;
+import com.hedera.services.state.exports.SignedStateBalancesExporter;
 import com.hedera.services.state.initialization.BackedSystemAccountsCreator;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.context.primitives.StateView;
-import com.hedera.services.context.properties.PropertySanitizer;
 import com.hedera.services.context.properties.StandardizedPropertySources;
 import com.hedera.services.contracts.execution.SolidityLifecycle;
 import com.hedera.services.contracts.execution.SoliditySigsVerifier;
@@ -126,12 +156,17 @@ import com.hedera.services.throttling.TransactionThrottling;
 
 import static com.hedera.services.context.ServicesNodeType.STAKED_NODE;
 import static com.hedera.services.context.ServicesNodeType.ZERO_STAKE_NODE;
+import static com.hedera.services.ledger.HederaLedger.ACCOUNT_ID_COMPARATOR;
+import static com.hedera.services.ledger.accounts.BackingTokenRels.RELATIONSHIP_COMPARATOR;
 import static com.hedera.services.security.ops.SystemOpAuthorization.AUTHORIZED;
 import static com.hedera.services.sigs.metadata.DelegatingSigMetadataLookup.backedLookupsFor;
+import static com.hedera.services.sigs.metadata.SigMetadataLookup.REF_LOOKUP_FACTORY;
 import static com.hedera.services.state.expiry.NoopExpiringCreations.NOOP_EXPIRING_CREATIONS;
 import static com.hedera.services.throttling.bucket.BucketConfig.bucketsIn;
 import static com.hedera.services.throttling.bucket.BucketConfig.namedIn;
 
+import com.hedera.services.tokens.HederaTokenStore;
+import com.hedera.services.tokens.TokenStore;
 import com.hedera.services.txns.ProcessLogic;
 import com.hedera.services.txns.SubmissionFlow;
 import com.hedera.services.txns.TransitionLogic;
@@ -150,8 +185,23 @@ import com.hedera.services.txns.file.FileDeleteTransitionLogic;
 import com.hedera.services.txns.file.FileSysDelTransitionLogic;
 import com.hedera.services.txns.file.FileSysUndelTransitionLogic;
 import com.hedera.services.txns.file.FileUpdateTransitionLogic;
+import com.hedera.services.txns.network.UncheckedSubmitTransitionLogic;
+import com.hedera.services.txns.submission.PlatformSubmissionManager;
 import com.hedera.services.txns.submission.TxnHandlerSubmissionFlow;
 import com.hedera.services.txns.submission.TxnResponseHelper;
+import com.hedera.services.txns.token.TokenAssociateTransitionLogic;
+import com.hedera.services.txns.token.TokenBurnTransitionLogic;
+import com.hedera.services.txns.token.TokenCreateTransitionLogic;
+import com.hedera.services.txns.token.TokenDeleteTransitionLogic;
+import com.hedera.services.txns.token.TokenDissociateTransitionLogic;
+import com.hedera.services.txns.token.TokenFreezeTransitionLogic;
+import com.hedera.services.txns.token.TokenGrantKycTransitionLogic;
+import com.hedera.services.txns.token.TokenMintTransitionLogic;
+import com.hedera.services.txns.token.TokenRevokeKycTransitionLogic;
+import com.hedera.services.txns.token.TokenTransferTransitionLogic;
+import com.hedera.services.txns.token.TokenUnfreezeTransitionLogic;
+import com.hedera.services.txns.token.TokenUpdateTransitionLogic;
+import com.hedera.services.txns.token.TokenWipeTransitionLogic;
 import com.hedera.services.txns.validation.ContextOptionValidator;
 import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.txns.validation.OptionValidator;
@@ -181,12 +231,13 @@ import com.hedera.services.state.exports.BalancesExporter;
 import com.hedera.services.state.initialization.SystemAccountsCreator;
 import com.hedera.services.state.validation.LedgerValidator;
 import com.hedera.services.state.exports.AccountsExporter;
-import com.hedera.services.utils.EntityIdUtils;
 
 import static com.hedera.services.contracts.sources.AddressKeyedMapFactory.bytecodeMapFrom;
 import static com.hedera.services.contracts.sources.AddressKeyedMapFactory.storageMapFrom;
 import static com.hedera.services.ledger.ids.ExceptionalEntityIdSource.NOOP_ID_SOURCE;
 import static com.hedera.services.records.NoopRecordsHistorian.NOOP_RECORDS_HISTORIAN;
+import static com.hedera.services.tokens.ExceptionalTokenStore.NOOP_TOKEN_STORE;
+import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 import static com.hedera.services.utils.MiscUtils.lookupInCustomStore;
 
 import com.hedera.services.utils.Pause;
@@ -194,6 +245,7 @@ import com.hederahashgraph.api.proto.java.HederaFunctionality;
 
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.*;
 
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.fee.CryptoFeeBuilder;
@@ -203,22 +255,16 @@ import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.legacy.handler.FreezeHandler;
 import com.hedera.services.legacy.handler.SmartContractRequestHandler;
 import com.hedera.services.legacy.handler.TransactionHandler;
-import com.hedera.services.legacy.netty.CryptoServiceInterceptor;
 import com.hedera.services.legacy.netty.NettyServerManager;
 import com.hedera.services.contracts.sources.LedgerAccountsSource;
 import com.hedera.services.contracts.sources.BlobStorageSource;
 import com.hedera.services.legacy.service.FreezeServiceImpl;
-import com.hedera.services.legacy.service.GlobalFlag;
 import com.hedera.services.legacy.service.SmartContractServiceImpl;
-import com.hedera.services.legacy.services.context.DefaultCurrentPlatformStatus;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.context.properties.PropertySources;
-import com.hedera.services.state.migration.DefaultStateMigrations;
-import com.hedera.services.legacy.services.context.properties.DefaultPropertySanitizer;
-import com.hedera.services.legacy.services.fees.DefaultHbarCentExchange;
+import com.hedera.services.state.migration.StdStateMigrations;
 import com.hedera.services.legacy.services.state.AwareProcessLogic;
-import com.hedera.services.legacy.services.state.export.DefaultBalancesExporter;
 import com.hedera.services.state.migration.StateMigrations;
 import com.hedera.services.utils.SleepingPause;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -243,6 +289,7 @@ import com.hedera.services.context.properties.PropertySource;
 
 import java.io.PrintStream;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -259,7 +306,6 @@ import static com.hedera.services.sigs.metadata.DelegatingSigMetadataLookup.defa
 import static com.hedera.services.sigs.utils.PrecheckUtils.queryPaymentTestFor;
 import static com.hedera.services.legacy.config.PropertiesLoader.populateAPIPropertiesWithProto;
 import static com.hedera.services.legacy.config.PropertiesLoader.populateApplicationPropertiesWithProto;
-import static io.grpc.ServerInterceptors.intercept;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toMap;
 
@@ -291,6 +337,8 @@ public class ServicesContext {
 	private FileAnswers fileAnswers;
 	private MetaAnswers metaAnswers;
 	private RecordCache recordCache;
+	private TokenStore tokenStore;
+	private TokenAnswers tokenAnswers;
 	private HederaLedger ledger;
 	private SyncVerifier syncVerifier;
 	private IssEventInfo issEventInfo;
@@ -310,15 +358,18 @@ public class ServicesContext {
 	private EntityIdSource ids;
 	private FileController fileGrpc;
 	private AnswerFunctions answerFunctions;
+	private ContractAnswers contractAnswers;
 	private OptionValidator validator;
 	private LedgerValidator ledgerValidator;
 	private HederaNodeStats stats;
+	private TokenController tokenGrpc;
 	private ServicesNodeType nodeType;
 	private SystemOpPolicies systemOpPolicies;
 	private CryptoController cryptoGrpc;
 	private BucketThrottling bucketThrottling;
 	private HbarCentExchange exchange;
 	private PrecheckVerifier precheckVerifier;
+	private BackingTokenRels backingTokenRels;
 	private BalancesExporter balancesExporter;
 	private SolidityLifecycle solidityLifecycle;
 	private ExpiringCreations creator;
@@ -340,6 +391,7 @@ public class ServicesContext {
 	private FeeSchedulesManager feeSchedulesManager;
 	private Map<String, byte[]> blobStore;
 	private Map<EntityId, Long> entityExpiries;
+	private NodeLocalProperties nodeLocalProperties;
 	private TxnFeeChargingPolicy txnChargingPolicy;
 	private TxnAwareRatesManager exchangeRatesManager;
 	private LedgerAccountsSource accountSource;
@@ -348,11 +400,14 @@ public class ServicesContext {
 	private TransactionThrottling txnThrottling;
 	private ConsensusStatusCounts statusCounts;
 	private HfsSystemFilesManager systemFilesManager;
+	private CurrentPlatformStatus platformStatus;
 	private SystemAccountsCreator systemAccountsCreator;
 	private ItemizableFeeCharging itemizableFeeCharging;
 	private ServicesRepositoryRoot repository;
 	private AccountRecordsHistorian recordsHistorian;
+	private GlobalDynamicProperties globalDynamicProperties;
 	private SmartContractServiceImpl contractsGrpc;
+	private PlatformSubmissionManager submissionManager;
 	private SmartContractRequestHandler contracts;
 	private TxnAwareSoliditySigsVerifier soliditySigsVerifier;
 	private ValidatingCallbackInterceptor apiPermissionsReloading;
@@ -360,24 +415,22 @@ public class ServicesContext {
 	private Supplier<ServicesRepositoryRoot> newPureRepo;
 	private Map<TransactionID, TxnIdRecentHistory> txnHistories;
 	private AtomicReference<FCMap<MerkleEntityId, MerkleTopic>> queryableTopics;
+	private AtomicReference<FCMap<MerkleEntityId, MerkleToken>> queryableTokens;
 	private AtomicReference<FCMap<MerkleEntityId, MerkleAccount>> queryableAccounts;
 	private AtomicReference<FCMap<MerkleBlobMeta, MerkleOptionalBlob>> queryableStorage;
+	private AtomicReference<FCMap<MerkleEntityAssociation, MerkleTokenRelStatus>> queryableTokenAssociations;
 
 	/* Context-free infrastructure. */
 	private static Pause pause;
 	private static StateMigrations stateMigrations;
 	private static AccountsExporter accountsExporter;
-	private static PropertySanitizer propertySanitizer;
-	private static CurrentPlatformStatus platformStatus;
 	private static LegacyEd25519KeyReader b64KeyReader;
 
 	static {
 		pause = SleepingPause.INSTANCE;
 		b64KeyReader = new LegacyEd25519KeyReader();
-		platformStatus = new DefaultCurrentPlatformStatus();
-		stateMigrations = new DefaultStateMigrations(SleepingPause.INSTANCE);
+		stateMigrations = new StdStateMigrations(SleepingPause.INSTANCE);
 		accountsExporter = new DefaultAccountsExporter();
-		propertySanitizer = new DefaultPropertySanitizer();
 	}
 
 	public ServicesContext(
@@ -398,11 +451,20 @@ public class ServicesContext {
 		queryableAccounts().set(accounts());
 		queryableTopics().set(topics());
 		queryableStorage().set(storage());
+		queryableTokens().set(tokens());
+		queryableTokenAssociations().set(tokenAssociations());
+	}
+
+	public CurrentPlatformStatus platformStatus() {
+		if (platformStatus == null) {
+			platformStatus = new ContextPlatformStatus();
+		}
+		return platformStatus;
 	}
 
 	public LedgerValidator ledgerValidator() {
 		if (ledgerValidator == null) {
-			ledgerValidator = new BasedLedgerValidator(hederaNums(), properties());
+			ledgerValidator = new BasedLedgerValidator(hederaNums(), properties(), globalDynamicProperties());
 		}
 		return ledgerValidator;
 	}
@@ -424,16 +486,25 @@ public class ServicesContext {
 	public Supplier<StateView> stateViews() {
 		if (stateViews == null) {
 			stateViews = () -> new StateView(
+					tokenStore(),
 					() -> queryableTopics().get(),
 					() -> queryableAccounts().get(),
-					() -> queryableStorage().get());
+					() -> queryableStorage().get(),
+					() -> queryableTokenAssociations().get(),
+					properties());
 		}
 		return stateViews;
 	}
 
 	public StateView currentView() {
 		if (currentView == null) {
-			currentView = new StateView(this::topics, this::accounts, this::storage);
+			currentView = new StateView(
+					tokenStore(),
+					this::topics,
+					this::accounts,
+					this::storage,
+					this::tokenAssociations,
+					properties());
 		}
 		return currentView;
 	}
@@ -486,14 +557,18 @@ public class ServicesContext {
 
 	public ItemizableFeeCharging charging() {
 		if (itemizableFeeCharging == null) {
-			itemizableFeeCharging = new ItemizableFeeCharging(exemptions(), properties());
+			itemizableFeeCharging = new ItemizableFeeCharging(exemptions(), globalDynamicProperties());
 		}
 		return itemizableFeeCharging;
 	}
 
 	public SubmissionFlow submissionFlow() {
 		if (submissionFlow == null) {
-			submissionFlow = new TxnHandlerSubmissionFlow(platform(), nodeType(), txns(), transitionLogic());
+			submissionFlow = new TxnHandlerSubmissionFlow(
+					nodeType(),
+					txns(),
+					transitionLogic(),
+					submissionManager());
 		}
 		return submissionFlow;
 	}
@@ -515,6 +590,16 @@ public class ServicesContext {
 		return fileAnswers;
 	}
 
+	public ContractAnswers contractAnswers() {
+		if (contractAnswers == null) {
+			contractAnswers = new ContractAnswers(
+					new GetBytecodeAnswer(validator()),
+					new GetContractInfoAnswer(validator())
+			);
+		}
+		return contractAnswers;
+	}
+
 	public HcsAnswers hcsAnswers() {
 		if (hcsAnswers == null) {
 			hcsAnswers = new HcsAnswers(
@@ -529,7 +614,7 @@ public class ServicesContext {
 			metaAnswers = new MetaAnswers(
 					new GetTxnRecordAnswer(recordCache(), validator(), answerFunctions()),
 					new GetTxnReceiptAnswer(recordCache()),
-					new GetVersionInfoAnswer(properties()),
+					new GetVersionInfoAnswer(),
 					new GetFastTxnRecordAnswer()
 			);
 		}
@@ -541,6 +626,15 @@ public class ServicesContext {
 			entityNums = new EntityNumbers(fileNums(), hederaNums(), accountNums());
 		}
 		return entityNums;
+	}
+
+	public TokenAnswers tokenAnswers() {
+		if (tokenAnswers == null) {
+			tokenAnswers = new TokenAnswers(
+					new GetTokenInfoAnswer()
+			);
+		}
+		return tokenAnswers;
 	}
 
 	public CryptoAnswers cryptoAnswers() {
@@ -580,6 +674,7 @@ public class ServicesContext {
 					properties(),
 					exchange(),
 					usagePrices(),
+					globalDynamicProperties(),
 					List.of(
 							/* Meta */
 							new GetVersionInfoResourceUsage(),
@@ -591,7 +686,12 @@ public class ServicesContext {
 							new GetFileInfoResourceUsage(fileFees),
 							new GetFileContentsResourceUsage(fileFees),
 							/* Consensus */
-							new GetTopicInfoResourceUsage()
+							new GetTopicInfoResourceUsage(),
+							/* Smart Contract */
+							new GetBytecodeResourceUsage(contractFees),
+							new GetContractInfoResourceUsage(contractFees),
+							/* Token */
+							new GetTokenInfoResourceUsage()
 					),
 					txnUsageEstimators(fileFees, cryptoFees, contractFees)
 			);
@@ -625,6 +725,20 @@ public class ServicesContext {
 				entry(ConsensusUpdateTopic, List.of(new UpdateTopicResourceUsage())),
 				entry(ConsensusDeleteTopic, List.of(new DeleteTopicResourceUsage())),
 				entry(ConsensusSubmitMessage, List.of(new SubmitMessageResourceUsage())),
+				/* Token */
+				entry(TokenCreate, List.of(new TokenCreateResourceUsage())),
+				entry(TokenUpdate, List.of(new TokenUpdateResourceUsage())),
+				entry(TokenTransact, List.of(new TokenTransactResourceUsage())),
+				entry(TokenFreezeAccount, List.of(new TokenFreezeResourceUsage())),
+				entry(TokenUnfreezeAccount, List.of(new TokenUnfreezeResourceUsage())),
+				entry(TokenGrantKycToAccount, List.of(new TokenGrantKycResourceUsage())),
+				entry(TokenRevokeKycFromAccount, List.of(new TokenRevokeKycResourceUsage())),
+				entry(TokenDelete, List.of(new TokenDeleteResourceUsage())),
+				entry(TokenMint, List.of(new TokenMintResourceUsage())),
+				entry(TokenBurn, List.of(new TokenBurnResourceUsage())),
+				entry(TokenAccountWipe, List.of(new TokenWipeResourceUsage())),
+				entry(TokenAssociateToAccount, List.of(new TokenAssociateResourceUsage())),
+				entry(TokenDissociateFromAccount, List.of(new TokenDissociateResourceUsage())),
 				/* System */
 				entry(Freeze, List.of(new FreezeResourceUsage())),
 				entry(SystemDelete, List.of(new SystemDeleteFileResourceUsage(fileFees))),
@@ -637,12 +751,12 @@ public class ServicesContext {
 		if (answerFlow == null) {
 			if (nodeType() == STAKED_NODE) {
 				answerFlow = new StakedAnswerFlow(
-						platform(),
 						fees(),
 						txns(),
 						stateViews(),
 						usagePrices(),
-						bucketThrottling());
+						bucketThrottling(),
+						submissionManager());
 			} else {
 				answerFlow = new ZeroStakeAnswerFlow(txns(), stateViews(), bucketThrottling());
 			}
@@ -652,7 +766,8 @@ public class ServicesContext {
 
 	public HederaSigningOrder keyOrder() {
 		if (keyOrder == null) {
-			var lookups = defaultLookupsFor(hfs(), this::accounts, this::topics);
+			var lookups = defaultLookupsFor(hfs(), this::accounts, this::topics,
+					REF_LOOKUP_FACTORY.apply(tokenStore()));
 			keyOrder = keyOrderWith(lookups);
 		}
 		return keyOrder;
@@ -660,7 +775,12 @@ public class ServicesContext {
 
 	public HederaSigningOrder backedKeyOrder() {
 		if (backedKeyOrder == null) {
-			var lookups = backedLookupsFor(hfs(), backingAccounts(), this::topics, this::accounts);
+			var lookups = backedLookupsFor(
+					hfs(),
+					backingAccounts(),
+					this::topics,
+					this::accounts,
+					REF_LOOKUP_FACTORY.apply(tokenStore()));
 			backedKeyOrder = keyOrderWith(lookups);
 		}
 		return backedKeyOrder;
@@ -668,7 +788,13 @@ public class ServicesContext {
 
 	public HederaSigningOrder lookupRetryingKeyOrder() {
 		if (lookupRetryingKeyOrder == null) {
-			var lookups = defaultAccountRetryingLookupsFor(hfs(), properties(), stats(), this::accounts, this::topics);
+			var lookups = defaultAccountRetryingLookupsFor(
+					hfs(),
+					nodeLocalProperties(),
+					stats(),
+					this::accounts,
+					this::topics,
+					REF_LOOKUP_FACTORY.apply(tokenStore()));
 			lookupRetryingKeyOrder = keyOrderWith(lookups);
 		}
 		return lookupRetryingKeyOrder;
@@ -717,13 +843,12 @@ public class ServicesContext {
 		return Optional.ofNullable(console()).map(c -> c.out).orElse(null);
 	}
 
-	public CurrentPlatformStatus platformStatus() {
-		return platformStatus;
-	}
-
 	public BalancesExporter balancesExporter() {
 		if (balancesExporter == null) {
-			balancesExporter = new DefaultBalancesExporter(platform, addressBook());
+			balancesExporter = new SignedStateBalancesExporter(
+					properties(),
+					platform()::sign,
+					globalDynamicProperties());
 		}
 		return balancesExporter;
 	}
@@ -739,7 +864,7 @@ public class ServicesContext {
 		if (hfs == null) {
 			hfs = new TieredHederaFs(
 					ids(),
-					properties(),
+					globalDynamicProperties(),
 					txnCtx()::consensusTime,
 					DataMapFactory.dataMapFrom(blobStore()),
 					MetadataMapFactory.metaMapFrom(blobStore()));
@@ -770,7 +895,8 @@ public class ServicesContext {
 					properties(),
 					contents -> {
 						var config = uncheckedParse(contents);
-						((StandardizedPropertySources) propertySources()).updateThrottlePropsFrom(config);
+						((StandardizedPropertySources) propertySources()).reloadFrom(config);
+						globalDynamicProperties().reload();
 						populateApplicationPropertiesWithProto(config);
 					},
 					ConfigListUtils::isConfigList
@@ -832,11 +958,45 @@ public class ServicesContext {
 				entry(ConsensusSubmitMessage,
 						List.of(new SubmitMessageTransitionLogic(
 								this::topics, validator(), txnCtx()))),
+				/* Token */
+				entry(TokenCreate,
+						List.of(new TokenCreateTransitionLogic(tokenStore(), ledger(), txnCtx()))),
+				entry(TokenUpdate,
+						List.of(new TokenUpdateTransitionLogic(
+								tokenStore(),
+								ledger(),
+								txnCtx(),
+								HederaTokenStore::affectsExpiryAtMost))),
+				entry(TokenTransact,
+						List.of(new TokenTransferTransitionLogic(ledger(), txnCtx()))),
+				entry(TokenFreezeAccount,
+						List.of(new TokenFreezeTransitionLogic(tokenStore(), ledger(), txnCtx()))),
+				entry(TokenUnfreezeAccount,
+						List.of(new TokenUnfreezeTransitionLogic(tokenStore(), ledger(), txnCtx()))),
+				entry(TokenGrantKycToAccount,
+						List.of(new TokenGrantKycTransitionLogic(tokenStore(), ledger(), txnCtx()))),
+				entry(TokenRevokeKycFromAccount,
+						List.of(new TokenRevokeKycTransitionLogic(tokenStore(), ledger(), txnCtx()))),
+				entry(TokenDelete,
+						List.of(new TokenDeleteTransitionLogic(tokenStore(), txnCtx()))),
+				entry(TokenMint,
+						List.of(new TokenMintTransitionLogic(tokenStore(), txnCtx()))),
+				entry(TokenBurn,
+						List.of(new TokenBurnTransitionLogic(tokenStore(), txnCtx()))),
+				entry(TokenAccountWipe,
+						List.of(new TokenWipeTransitionLogic(tokenStore(), txnCtx()))),
+				entry(TokenAssociateToAccount,
+						List.of(new TokenAssociateTransitionLogic(tokenStore(), txnCtx()))),
+				entry(TokenDissociateFromAccount,
+						List.of(new TokenDissociateTransitionLogic(tokenStore(), txnCtx()))),
 				/* System */
 				entry(SystemDelete,
 						List.of(new FileSysDelTransitionLogic(hfs(), entityExpiries(), txnCtx()))),
 				entry(SystemUndelete,
-						List.of(new FileSysUndelTransitionLogic(hfs(), entityExpiries(), txnCtx())))
+						List.of(new FileSysUndelTransitionLogic(hfs(), entityExpiries(), txnCtx()))),
+				/* Network */
+				entry(UncheckedSubmit,
+						List.of(new UncheckedSubmitTransitionLogic()))
 		);
 		return transitionsMap::get;
 	}
@@ -880,7 +1040,8 @@ public class ServicesContext {
 					txnCtx(),
 					charging(),
 					this::accounts,
-					expiries());
+					expiries(),
+					globalDynamicProperties());
 		}
 		return recordsHistorian;
 	}
@@ -894,27 +1055,74 @@ public class ServicesContext {
 
 	public HbarCentExchange exchange() {
 		if (exchange == null) {
-			exchange = new DefaultHbarCentExchange(txnCtx());
+			exchange = new AwareHbarCentExchange(txnCtx());
 		}
 		return exchange;
 	}
 
-	public BackingAccounts<AccountID, MerkleAccount> backingAccounts() {
+	public BackingStore<Map.Entry<AccountID, TokenID>, MerkleTokenRelStatus> backingTokenRels() {
+		if (backingTokenRels == null) {
+			backingTokenRels = new BackingTokenRels(this::tokenAssociations);
+		}
+		return backingTokenRels;
+	}
+
+	public BackingStore<AccountID, MerkleAccount> backingAccounts() {
 		if (backingAccounts == null) {
 			backingAccounts = new FCMapBackingAccounts(this::accounts);
 		}
 		return backingAccounts;
 	}
 
+	public NodeLocalProperties nodeLocalProperties() {
+		if (nodeLocalProperties == null) {
+			nodeLocalProperties = new NodeLocalProperties(properties());
+		}
+		return nodeLocalProperties;
+	}
+
+	public GlobalDynamicProperties globalDynamicProperties() {
+		if (globalDynamicProperties == null) {
+			globalDynamicProperties = new GlobalDynamicProperties(hederaNums(), properties());
+		}
+		return globalDynamicProperties;
+	}
+
+	public TokenStore tokenStore() {
+		if (tokenStore == null) {
+			TransactionalLedger<Map.Entry<AccountID, TokenID>, TokenRelProperty, MerkleTokenRelStatus> tokenRelsLedger =
+					new TransactionalLedger<>(
+							TokenRelProperty.class,
+							MerkleTokenRelStatus::new,
+							backingTokenRels(),
+							new ChangeSummaryManager<>());
+			tokenRelsLedger.setKeyComparator(RELATIONSHIP_COMPARATOR);
+			tokenRelsLedger.setKeyToString(BackingTokenRels::readableTokenRel);
+			tokenStore = new HederaTokenStore(
+					ids(),
+					validator(),
+					globalDynamicProperties(),
+					this::tokens,
+					tokenRelsLedger);
+		}
+		return tokenStore;
+	}
+
 	public HederaLedger ledger() {
 		if (ledger == null) {
-			TransactionalLedger<AccountID, AccountProperty, MerkleAccount> delegate = new TransactionalLedger<>(
-					AccountProperty.class,
-					MerkleAccount::new,
-					backingAccounts(),
-					new ChangeSummaryManager<>());
-			delegate.setKeyComparator(HederaLedger.ACCOUNT_ID_COMPARATOR);
-			ledger = new HederaLedger(ids(), creator(), recordsHistorian(), delegate);
+			TransactionalLedger<AccountID, AccountProperty, MerkleAccount> accountsLedger =
+					new TransactionalLedger<>(
+							AccountProperty.class,
+							MerkleAccount::new,
+							backingAccounts(),
+							new ChangeSummaryManager<>());
+			accountsLedger.setKeyComparator(ACCOUNT_ID_COMPARATOR);
+			ledger = new HederaLedger(
+					tokenStore(),
+					ids(),
+					creator(),
+					recordsHistorian(),
+					accountsLedger);
 		}
 		return ledger;
 	}
@@ -928,14 +1136,14 @@ public class ServicesContext {
 
 	public ExpiringCreations creator() {
 		if (creator == null) {
-			creator = new ExpiringCreations(expiries(), properties());
+			creator = new ExpiringCreations(expiries(), properties(), globalDynamicProperties());
 		}
 		return creator;
 	}
 
 	public OptionValidator validator() {
 		if (validator == null) {
-			validator = new ContextOptionValidator(ledger(), properties(), txnCtx());
+			validator = new ContextOptionValidator(properties(), txnCtx());
 		}
 		return validator;
 	}
@@ -949,7 +1157,7 @@ public class ServicesContext {
 
 	public FreezeHandler freeze() {
 		if (freeze == null) {
-			freeze = new FreezeHandler(hfs(), platform);
+			freeze = new FreezeHandler(hfs(), platform(), exchange());
 		}
 		return freeze;
 	}
@@ -992,10 +1200,10 @@ public class ServicesContext {
 			exchangeRatesManager = new TxnAwareRatesManager(
 					fileNums(),
 					accountNums(),
-					properties(),
+					globalDynamicProperties(),
 					txnCtx(),
 					this::midnightRates,
-					GlobalFlag.getInstance()::setExchangeRateSet,
+					exchange()::updateRates,
 					limitPercent -> (base, proposed) -> isNormalIntradayChange(base, proposed, limitPercent));
 		}
 		return exchangeRatesManager;
@@ -1010,14 +1218,14 @@ public class ServicesContext {
 
 	public FreezeServiceImpl freezeGrpc() {
 		if (freezeGrpc == null) {
-			freezeGrpc = new FreezeServiceImpl(platform, txns());
+			freezeGrpc = new FreezeServiceImpl(txns(), submissionManager());
 		}
 		return freezeGrpc;
 	}
 
 	public NetworkController networkGrpc() {
 		if (networkGrpc == null) {
-			networkGrpc = new NetworkController(metaAnswers(), queryResponseHelper());
+			networkGrpc = new NetworkController(metaAnswers(), txnResponseHelper(), queryResponseHelper());
 		}
 		return networkGrpc;
 	}
@@ -1036,6 +1244,13 @@ public class ServicesContext {
 		return systemOpPolicies;
 	}
 
+	public TokenController tokenGrpc() {
+		if (tokenGrpc == null) {
+			tokenGrpc = new TokenController(tokenAnswers(), txnResponseHelper(), queryResponseHelper());
+		}
+		return tokenGrpc;
+	}
+
 	public CryptoController cryptoGrpc() {
 		if (cryptoGrpc == null) {
 			cryptoGrpc = new CryptoController(
@@ -1050,15 +1265,24 @@ public class ServicesContext {
 	public SmartContractServiceImpl contractsGrpc() {
 		if (contractsGrpc == null) {
 			contractsGrpc = new SmartContractServiceImpl(
-					platform,
 					txns(),
 					contracts(),
 					stats(),
 					usagePrices(),
 					exchange(),
-					nodeType());
+					nodeType(),
+					submissionManager(),
+					contractAnswers(),
+					queryResponseHelper());
 		}
 		return contractsGrpc;
+	}
+
+	public PlatformSubmissionManager submissionManager() {
+		if (submissionManager == null) {
+			submissionManager = new PlatformSubmissionManager(platform(), recordCache(), stats());
+		}
+		return submissionManager;
 	}
 
 	public ConsensusController consensusGrpc() {
@@ -1073,8 +1297,15 @@ public class ServicesContext {
 			grpc = new NettyGrpcServerManager(
 					Runtime.getRuntime()::addShutdownHook,
 					new NettyServerManager(),
-					List.of(filesGrpc(), freezeGrpc(), contractsGrpc(), consensusGrpc(), networkGrpc()),
-					List.of(intercept(cryptoGrpc(), new CryptoServiceInterceptor())));
+					List.of(
+							cryptoGrpc(),
+							filesGrpc(),
+							freezeGrpc(),
+							contractsGrpc(),
+							consensusGrpc(),
+							networkGrpc(),
+							tokenGrpc()),
+					Collections.emptyList());
 		}
 		return grpc;
 	}
@@ -1083,7 +1314,7 @@ public class ServicesContext {
 		if (contracts == null) {
 			contracts = new SmartContractRequestHandler(
 					repository(),
-					fundingAccount(),
+					globalDynamicProperties().fundingAccount(),
 					ledger(),
 					this::accounts,
 					this::storage,
@@ -1102,7 +1333,7 @@ public class ServicesContext {
 
 	public SolidityLifecycle solidityLifecycle() {
 		if (solidityLifecycle == null) {
-			solidityLifecycle = new SolidityLifecycle(properties());
+			solidityLifecycle = new SolidityLifecycle(globalDynamicProperties());
 		}
 		return solidityLifecycle;
 	}
@@ -1126,13 +1357,14 @@ public class ServicesContext {
 							properties.getStringProperty("bootstrap.genesisB64Keystore.path"),
 							properties.getStringProperty("bootstrap.genesisB64Keystore.keyName")),
 					rates -> {
-						GlobalFlag.getInstance().setExchangeRateSet(rates);
+						exchange().updateRates(rates);
 						if (!midnightRates().isInitialized()) {
 							midnightRates().replaceWith(rates);
 						}
 					},
 					config -> {
-						((StandardizedPropertySources) propertySources()).updateThrottlePropsFrom(config);
+						((StandardizedPropertySources) propertySources()).reloadFrom(config);
+						globalDynamicProperties().reload();
 						PropertiesLoader.populateApplicationPropertiesWithProto(config);
 					},
 					PropertiesLoader::populateAPIPropertiesWithProto);
@@ -1162,11 +1394,14 @@ public class ServicesContext {
 					new PureFCMapBackingAccounts(this::accounts),
 					new ChangeSummaryManager<>());
 			HederaLedger pureLedger = new HederaLedger(
+					NOOP_TOKEN_STORE,
 					NOOP_ID_SOURCE,
 					NOOP_EXPIRING_CREATIONS,
 					NOOP_RECORDS_HISTORIAN,
 					pureDelegate);
-			Source<byte[], AccountState> pureAccountSource = new LedgerAccountsSource(pureLedger, properties());
+			Source<byte[], AccountState> pureAccountSource = new LedgerAccountsSource(
+					pureLedger,
+					globalDynamicProperties());
 			newPureRepo = () -> {
 				var pureRepository = new ServicesRepositoryRoot(pureAccountSource, bytecodeDb());
 				pureRepository.setStoragePersistence(storagePersistence());
@@ -1185,7 +1420,7 @@ public class ServicesContext {
 
 	public LedgerAccountsSource accountSource() {
 		if (accountSource == null) {
-			accountSource = new LedgerAccountsSource(ledger(), properties());
+			accountSource = new LedgerAccountsSource(ledger(), globalDynamicProperties());
 		}
 		return accountSource;
 	}
@@ -1215,7 +1450,8 @@ public class ServicesContext {
 					accountNums(),
 					stats(),
 					systemOpPolicies(),
-					exemptions());
+					exemptions(),
+					platformStatus());
 		}
 		return txns;
 	}
@@ -1238,19 +1474,11 @@ public class ServicesContext {
 		if (accountId == null) {
 			try {
 				String memoOfAccountId = address().getMemo();
-				accountId = EntityIdUtils.accountParsedFromString(memoOfAccountId);
+				accountId = accountParsedFromString(memoOfAccountId);
 			} catch (Exception ignore) {
 			}
 		}
 		return accountId;
-	}
-
-	public AccountID fundingAccount() {
-		try {
-			return EntityIdUtils.accountParsedFromString(properties().getStringProperty("ledger.funding.account"));
-		} catch (Exception ignore) {
-		}
-		return null;
 	}
 
 	public Address address() {
@@ -1279,6 +1507,20 @@ public class ServicesContext {
 			queryableTopics = new AtomicReference<>(topics());
 		}
 		return queryableTopics;
+	}
+
+	public AtomicReference<FCMap<MerkleEntityId, MerkleToken>> queryableTokens() {
+		if (queryableTokens == null) {
+			queryableTokens = new AtomicReference<>(tokens());
+		}
+		return queryableTokens;
+	}
+
+	public AtomicReference<FCMap<MerkleEntityAssociation, MerkleTokenRelStatus>> queryableTokenAssociations() {
+		if (queryableTokenAssociations == null) {
+			queryableTokenAssociations = new AtomicReference<>(tokenAssociations());
+		}
+		return queryableTokenAssociations;
 	}
 
 	public UsagePricesProvider usagePrices() {
@@ -1321,10 +1563,6 @@ public class ServicesContext {
 
 	public AccountsExporter accountsExporter() {
 		return accountsExporter;
-	}
-
-	public PropertySanitizer propertySanitizer() {
-		return propertySanitizer;
 	}
 
 	/* Injected dependencies. */
@@ -1370,5 +1608,13 @@ public class ServicesContext {
 
 	public FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage() {
 		return state.storage();
+	}
+
+	public FCMap<MerkleEntityId, MerkleToken> tokens() {
+		return state.tokens();
+	}
+
+	public FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations() {
+		return state.tokenAssociations();
 	}
 }

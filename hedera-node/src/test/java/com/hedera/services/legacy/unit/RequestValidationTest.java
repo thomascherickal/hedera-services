@@ -26,6 +26,7 @@ import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.fees.StandardExemptions;
 import com.hedera.services.legacy.handler.TransactionHandler;
+import com.hedera.services.context.ContextPlatformStatus;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.utils.MiscUtils;
@@ -37,8 +38,6 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -51,6 +50,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.swirlds.common.PlatformStatus;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
 import org.junit.Test;
@@ -78,6 +79,8 @@ public class RequestValidationTest {
         .setAccountNum(nodeAccnNum).build();
 
     var policies = new SystemOpPolicies(new MockEntityNumbers());
+    var platformStatus = new ContextPlatformStatus();
+    platformStatus.set(PlatformStatus.ACTIVE);
     TransactionHandler trHandler =
         new TransactionHandler(
                 null,
@@ -95,7 +98,8 @@ public class RequestValidationTest {
                 new MockAccountNumbers(),
                 null,
                 policies,
-                new StandardExemptions(new MockAccountNumbers(), policies));
+                new StandardExemptions(new MockAccountNumbers(), policies),
+                platformStatus);
     Timestamp timestamp =
         RequestBuilder.getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(10));
 
@@ -124,18 +128,12 @@ public class RequestValidationTest {
         RequestBuilder.getCreateAccountBuilder(nodeAccnNum, nodeAccRealm, nodeAccShard, nodeAccnNum,
             nodeAccRealm, nodeAccShard, transactionFee, timestamp, transactionDuration,
             generateRecord, memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().addSigs(
-                Signature.newBuilder().setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
     Transaction nonMatchingTransaction =
         RequestBuilder.getCreateAccountBuilder(nodeAccnNum, nodeAccRealm, nodeAccShard, nodeAccnNum,
             nodeAccRealm + 1, nodeAccShard + 1, transactionFee, timestamp, transactionDuration,
             generateRecord, memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().addSigs(
-                Signature.newBuilder().setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
     TransactionBody matchingBody = CommonUtils.extractTransactionBody(matchingNodeAccTransaction);
     TransactionBody nonMatchingBody = CommonUtils.extractTransactionBody(nonMatchingTransaction);
     ResponseCodeEnum matchingPreCheckReturn = trHandler.validateNodeAccount(matchingBody);

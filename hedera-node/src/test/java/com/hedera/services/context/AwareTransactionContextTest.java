@@ -36,6 +36,8 @@ import com.hederahashgraph.api.proto.java.ExchangeRateSet;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.Timestamp;
+import com.hederahashgraph.api.proto.java.TokenID;
+import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -53,11 +55,13 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.List;
 
-import static com.hedera.services.context.AwareTransactionContext.EMPTY_HEDERA_KEY;
+import static com.hedera.services.context.AwareTransactionContext.EMPTY_KEY;
 import static com.hedera.test.utils.IdUtils.asAccountString;
 import static com.hedera.test.utils.IdUtils.asContract;
 import static com.hedera.test.utils.IdUtils.asFile;
+import static com.hedera.test.utils.IdUtils.asToken;
 import static com.hedera.test.utils.IdUtils.asTopic;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,7 +72,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.*;
 import static com.hedera.test.utils.IdUtils.asAccount;
 import static com.hedera.test.utils.TxnUtils.withAdjustments;
-import static com.hedera.services.utils.MiscUtils.uncheckedSha384Hash;
 
 @RunWith(JUnitPlatform.class)
 public class AwareTransactionContextTest {
@@ -89,6 +92,11 @@ public class AwareTransactionContextTest {
 	private AccountID created = asAccount("1.0.2");
 	private AccountID another = asAccount("1.0.300");
 	private TransferList transfers = withAdjustments(payer, -2L, created, 1L, another, 1L);
+	private TokenID tokenCreated = asToken("3.0.2");
+	private TokenTransferList tokenTransfers = TokenTransferList.newBuilder()
+			.setToken(tokenCreated)
+			.addAllTransfers(withAdjustments(payer, -2L, created, 1L, another, 1L).getAccountAmountsList())
+			.build();
 	private FileID fileCreated = asFile("2.0.1");
 	private ContractID contractCreated = asContract("0.1.2");
 	private TopicID topicCreated = asTopic("5.4.3");
@@ -107,7 +115,7 @@ public class AwareTransactionContextTest {
 	private TransactionBody txn;
 	private TransactionRecord record;
 	private String memo = "Hi!";
-	private ByteString hash = ByteString.copyFrom(uncheckedSha384Hash(memo.getBytes()));
+	private ByteString hash = ByteString.copyFrom("fake hash".getBytes());
 	private TransactionID txnId = TransactionID.newBuilder()
 					.setTransactionValidStart(Timestamp.newBuilder().setSeconds(txnValidStart))
 					.setAccountID(payer)
@@ -127,6 +135,7 @@ public class AwareTransactionContextTest {
 
 		ledger = mock(HederaLedger.class);
 		given(ledger.netTransfersInTxn()).willReturn(transfers);
+		given(ledger.netTokenTransfersInTxn()).willReturn(List.of(tokenTransfers));
 
 		exchange = mock(HbarCentExchange.class);
 		given(exchange.activeRates()).willReturn(ratesNow);
@@ -156,6 +165,7 @@ public class AwareTransactionContextTest {
 		given(accessor.getTxn()).willReturn(txn);
 		given(accessor.getSignedTxn()).willReturn(signedTxn);
 		given(accessor.getPayer()).willReturn(payer);
+		given(accessor.getHash()).willReturn(hash);
 
 		subject = new AwareTransactionContext(ctx);
 		subject.resetFor(accessor, now, memberId);
@@ -212,7 +222,7 @@ public class AwareTransactionContextTest {
 	@Test
 	public void returnsEmptyKeyIfNoPayerActive() {
 		// expect:
-		assertEquals(EMPTY_HEDERA_KEY, subject.activePayerKey());
+		assertEquals(EMPTY_KEY, subject.activePayerKey());
 	}
 
 	@Test
@@ -336,6 +346,15 @@ public class AwareTransactionContextTest {
 	}
 
 	@Test
+	public void usesTokenTransfersToSetApropos() {
+		// when:
+		record = subject.recordSoFar();
+
+		// then:
+		assertEquals(tokenTransfers, record.getTokenTransferLists(0));
+	}
+
+	@Test
 	public void configuresCallResult() {
 		// when:
 		subject.setCallResult(result);
@@ -409,6 +428,17 @@ public class AwareTransactionContextTest {
 		// then:
 		assertEquals(ratesNow, record.getReceipt().getExchangeRate());
 		assertEquals(created, record.getReceipt().getAccountID());
+	}
+
+	@Test
+	public void getsExpectedReceiptForTokenCreation() {
+		// when:
+		subject.setCreated(tokenCreated);
+		record = subject.recordSoFar();
+
+		// then:
+		assertEquals(ratesNow, record.getReceipt().getExchangeRate());
+		assertEquals(tokenCreated, record.getReceipt().getTokenId());
 	}
 
 	@Test

@@ -49,6 +49,7 @@ public class HapiSpecSetup {
 
 	private Random r = new Random();
 
+	private HapiPropertySource ciPropertiesMap = null;
 	private static HapiPropertySource DEFAULT_PROPERTY_SOURCE = null;
 	private static final HapiPropertySource BASE_DEFAULT_PROPERTY_SOURCE = JutilPropertySource.getDefaultInstance();
 	public static final HapiPropertySource getDefaultPropertySource() {
@@ -77,6 +78,7 @@ public class HapiSpecSetup {
 
 	public enum NodeSelection { FIXED, RANDOM }
 	public enum TlsConfig { ON, OFF, ALTERNATE }
+	public enum TxnConfig { NEW, OLD, ALTERNATE }
 
 	public HapiSpecSetup(HapiPropertySource props) {
 		this.props = props;
@@ -127,10 +129,13 @@ public class HapiSpecSetup {
 	public String costSnapshotDir() { return props.get("cost.snapshot.dir"); }
 	public CostSnapshotMode costSnapshotMode() { return props.getCostSnapshotMode("cost.snapshot.mode"); }
 	public HapiPropertySource ciPropertiesMap() {
-		return new MapPropertySource(Stream.of(props.get("ci.properties.map").split(","))
-				.map(s -> List.of(s.split("=")))
-				.filter(l -> l.size() > 1)
-				.collect(toMap(l -> l.get(0), l -> l.get(1))));
+		if (null == ciPropertiesMap) {
+			ciPropertiesMap = new MapPropertySource(Stream.of(props.get("ci.properties.map").split(","))
+					.map(s -> List.of(s.split("=")))
+					.filter(l -> l.size() > 1)
+					.collect(toMap(l -> l.get(0), l -> l.get(1))));
+		}
+		return ciPropertiesMap;
 	}
 	public Duration defaultAutoRenewPeriod() {
 		return props.getDurationFromSecs("default.autorenew.secs");
@@ -224,6 +229,10 @@ public class HapiSpecSetup {
 	}
 	public long defaultThroughputObsExpiryMs() { return props.getLong("default.throughputObs.expiry.ms"); }
 	public long defaultThroughputObsSleepMs() { return props.getLong("default.throughputObs.sleep.ms"); }
+	public String defaultTokenSymbol() { return props.get("default.token.symbol"); }
+	public String defaultTokenName() { return props.get("default.token.name"); }
+	public long defaultTokenInitialSupply() { return props.getLong("default.token.initialSupply"); }
+	public int defaultTokenDecimals() { return props.getInteger("default.token.decimals"); }
 	public int defaultTopicRunningHashVersion() { return props.getInteger("default.topic.runningHash.version"); }
 	public AccountID defaultTransfer() {
 		return props.getAccount("default.transfer");
@@ -272,11 +281,12 @@ public class HapiSpecSetup {
 
 	public AccountID fundingAccount() { return props.getAccount("funding.account"); }
 	public String fundingAccountName() { return props.get("funding.account.name"); }
+	public AccountID genesisAccount() { return props.getAccount("genesis.account"); }
 	public String genesisAccountName() {
-		return props.get("genesisAccount.name");
+		return props.get("genesis.account.name");
 	}
 	public String genesisStartupKey() {
-		return props.get("genesisAccount.startupKey");
+		return props.get("genesis.account.startupKey");
 	}
 	public long hbarFloat() {
 		return props.getLong("hbar.float");
@@ -344,6 +354,17 @@ public class HapiSpecSetup {
 		return useTls;
 	}
 
+	public TxnConfig txnConfig() {
+		TxnConfig config = props.getTxnConfig("txn");
+		if (TxnConfig.ALTERNATE == config) {
+			if (r.nextBoolean()) {
+				return TxnConfig.NEW;
+			} else {
+				return TxnConfig.OLD;
+			}
+		}
+		return config;
+	}
 	public long txnStartOffsetSecs() {
 		return props.getLong("txn.start.offset.secs");
 	}

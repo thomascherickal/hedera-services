@@ -22,6 +22,7 @@ package com.hedera.services.bdd.spec.transactions.crypto;
 
 import com.google.common.base.MoreObjects;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.CryptoTransferTransactionBody;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.asId;
 import static java.util.stream.Collectors.*;
 
 import java.util.stream.Collector;
@@ -56,7 +59,7 @@ public class HapiCryptoTransfer extends HapiTxnOp<HapiCryptoTransfer> {
 		return HederaFunctionality.CryptoTransfer;
 	}
 
-	private static Collector<TransferList, ? , TransferList> transferCollector(
+	private static Collector<TransferList, ?, TransferList> transferCollector(
 			BinaryOperator<List<AccountAmount>> reducer) {
 		return collectingAndThen(
 				reducing(Collections.EMPTY_LIST, TransferList::getAccountAmountsList, reducer),
@@ -78,6 +81,7 @@ public class HapiCryptoTransfer extends HapiTxnOp<HapiCryptoTransfer> {
 	private final static Collector<TransferList, ?, TransferList> mergingAccounts = transferCollector(accountMerge);
 	private final static Collector<TransferList, ?, TransferList> appendingAccounts = transferCollector(accountAppend);
 
+	@SafeVarargs
 	public HapiCryptoTransfer(Function<HapiApiSpec, TransferList>... providers) {
 		numLogicalTransfers = providers.length;
 		if (providers.length == 0) {
@@ -113,8 +117,8 @@ public class HapiCryptoTransfer extends HapiTxnOp<HapiCryptoTransfer> {
 			String from, String to, Function<HapiApiSpec, Long> amountFn) {
 		return spec -> {
 			long amount = amountFn.apply(spec);
-			AccountID toAccount = spec.registry().getAccountID(to);
-			AccountID fromAccount = spec.registry().getAccountID(from);
+			AccountID toAccount = asId(to, spec);
+			AccountID fromAccount = asId(from, spec);
 			return TransferList.newBuilder()
 					.addAllAccountAmounts(Arrays.asList(
 						AccountAmount.newBuilder().setAccountID(toAccount).setAmount(amount).build(),
@@ -156,7 +160,7 @@ public class HapiCryptoTransfer extends HapiTxnOp<HapiCryptoTransfer> {
 		MoreObjects.ToStringHelper helper = super.toStringHelper();
 		if (txnSubmitted != null) {
 			try {
-				TransactionBody txn = TransactionBody.parseFrom(txnSubmitted.getBodyBytes());
+				TransactionBody txn = CommonUtils.extractTransactionBody(txnSubmitted);
 				helper.add(
 						"transfers",
 						TxnUtils.readableTransferList(txn.getCryptoTransfer().getTransfers()));

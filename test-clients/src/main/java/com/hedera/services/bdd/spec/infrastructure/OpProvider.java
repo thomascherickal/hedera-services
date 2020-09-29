@@ -52,6 +52,7 @@ public interface OpProvider {
 			LIVE_HASH_NOT_FOUND,
 			INVALID_SIGNATURE,
 			INSUFFICIENT_PAYER_BALANCE,
+			UNKNOWN,
 	};
 
 	List<HapiSpecOperation> suggestedInitializers();
@@ -80,7 +81,7 @@ public interface OpProvider {
 	}
 
 	String UNIQUE_PAYER_ACCOUNT = "uniquePayerAccount";
-	long UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE = 5_000_000_000_000L;
+	long UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE = 500_000_000_000L;
 	long TRANSACTION_FEE = 50_000_000_000L;
 
 }

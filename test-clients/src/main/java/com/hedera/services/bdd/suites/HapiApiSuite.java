@@ -40,7 +40,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -58,6 +60,16 @@ import static java.util.stream.Collectors.toList;
 public abstract class HapiApiSuite {
 	protected abstract Logger getResultsLogger();
 	protected abstract List<HapiApiSpec> getSpecsInSuite();
+
+	private static final Random r = new Random();
+
+	public static String salted(String str) {
+		return str + r.nextInt(1_234_567);
+	}
+
+	public static final long ONE_HBAR = 100_000_000L;
+	public static final long A_HUNDRED_HBARS = 100 * ONE_HBAR;
+	public static String TOKEN_TREASURY = "treasury";
 
 	private List<HapiApiSpec> finalSpecs = Collections.EMPTY_LIST;
 
@@ -81,6 +93,7 @@ public abstract class HapiApiSuite {
 	public static final String MASTER = HapiSpecSetup.getDefaultInstance().strongControlName();
 	public static final String FUNDING = HapiSpecSetup.getDefaultInstance().fundingAccountName();
 	public static final String GENESIS = HapiSpecSetup.getDefaultInstance().genesisAccountName();
+	public static final String DEFAULT_PAYER = HapiSpecSetup.getDefaultInstance().defaultPayerName();
 
 	public static final String ADDRESS_BOOK_CONTROL = HapiSpecSetup.getDefaultInstance().addressBookControlName();
 	public static final String FEE_SCHEDULE_CONTROL = HapiSpecSetup.getDefaultInstance().feeScheduleControlName();

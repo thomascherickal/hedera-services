@@ -113,9 +113,6 @@ public class SmartContractSimpleStorageWithEvents {
     localCallGas = Long.parseLong(properties.getProperty("LOCAL_CALL_GAS"));
 
     int numberOfReps = 1;
-//    if ((args.length) > 0) {
-//      numberOfReps = Integer.parseInt(args[0]);
-//    }
     for (int i = 0; i < numberOfReps; i++) {
       SmartContractSimpleStorageWithEvents scSs = new SmartContractSimpleStorageWithEvents();
       scSs.demo();
@@ -279,7 +276,6 @@ public class SmartContractSimpleStorageWithEvents {
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
     Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);
@@ -294,7 +290,6 @@ public class SmartContractSimpleStorageWithEvents {
     System.out.println(
         " createContract Pre Check Response :: " + response.getNodeTransactionPrecheckCode()
             .name());
-    //Thread.sleep(1000);
     TransactionBody callContractBody = TransactionBody.parseFrom(callContractRequest.getBodyBytes());
     TransactionGetReceiptResponse contractCallReceipt = getReceipt(
         callContractBody.getTransactionID());
@@ -512,7 +507,6 @@ public class SmartContractSimpleStorageWithEvents {
               currValueToSet);
 
           validateSetRecord(sampleStorageContractId, currValueToSet, setRecord);
-          //Thread.sleep(10000);
           int actualStoredValue = getValueFromContract(crAccount, sampleStorageContractId);
           Assert.assertEquals(currValueToSet, actualStoredValue);
           log.info("Contract get/set iteration " + i + " completed successfully==>");
@@ -559,7 +553,6 @@ public class SmartContractSimpleStorageWithEvents {
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
     Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);
@@ -574,7 +567,6 @@ public class SmartContractSimpleStorageWithEvents {
     System.out.println(
         " createContract Pre Check Response :: " + response.getNodeTransactionPrecheckCode()
             .name());
-    //Thread.sleep(1000);
     TransactionBody callContractBody = TransactionBody.parseFrom(callContractRequest.getBodyBytes());
     TransactionGetReceiptResponse contractCallReceipt = getReceipt(
     		callContractBody.getTransactionID());

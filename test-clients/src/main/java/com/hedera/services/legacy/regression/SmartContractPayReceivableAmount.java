@@ -277,7 +277,6 @@ public class SmartContractPayReceivableAmount {
 	    Timestamp timestamp = RequestBuilder
 	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
 	    Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-	    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 	    ByteString dataBstr = ByteString.EMPTY;
 	    if (data != null) {
 	      dataBstr = ByteString.copyFrom(data);
@@ -361,7 +360,6 @@ public class SmartContractPayReceivableAmount {
 	    Timestamp timestamp = RequestBuilder
 	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
 	    Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-	    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 	    ByteString dataBstr = ByteString.EMPTY;
 	    if (data != null) {
 	      dataBstr = ByteString.copyFrom(data);
@@ -416,7 +414,6 @@ public class SmartContractPayReceivableAmount {
 		    Timestamp timestamp = RequestBuilder
 		        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
 		    Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-		    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 		    ByteString dataBstr = ByteString.EMPTY;
 		    if (data != null) {
 		      dataBstr = ByteString.copyFrom(data);
@@ -664,8 +661,6 @@ public class SmartContractPayReceivableAmount {
 		        AccountID contractAccountId = AccountID.newBuilder().setAccountNum(payTestContractId.getContractNum())
 		        		.setRealmNum(payTestContractId.getRealmNum()).setShardNum(payTestContractId.getShardNum()).build();
 		        List<AccountAmount> expectedTransfers = new ArrayList<>(3);
-/*		        AccountAmount payerDebit = AccountAmount.newBuilder().setAccountID(crAccount).setAmount(currValueToDeposit *-1).build();
-		        expectedTransfers.add(payerDebit);*/
 		        AccountAmount receiverTransfer = AccountAmount.newBuilder().setAccountID(receiverAccount).setAmount(receiverValue).build();
 		        expectedTransfers.add(receiverTransfer);
 		        AccountAmount contractTransfer = AccountAmount.newBuilder().setAccountID(contractAccountId).setAmount(remainToContract).build();

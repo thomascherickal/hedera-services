@@ -21,10 +21,9 @@ package com.hedera.services.state.merkle;
  */
 
 import com.google.common.base.MoreObjects;
+import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.utils.MiscUtils;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.merkle.MerkleLeaf;
@@ -38,11 +37,17 @@ import java.util.Optional;
 
 import static com.hedera.services.context.properties.StandardizedPropertySources.MAX_MEMO_UTF8_BYTES;
 import static com.hedera.services.legacy.core.jproto.JKey.equalUpToDecodability;
+import static com.hedera.services.utils.MiscUtils.describe;
 
 public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf {
 	private static final Logger log = LogManager.getLogger(MerkleAccountState.class);
 
-	static final int MERKLE_VERSION = 1;
+	static final int MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE = 4_096;
+
+	static final int RELEASE_070_VERSION = 1;
+	static final int RELEASE_080_VERSION = 2;
+	static final int RELEASE_090_VERSION = 3;
+	static final int MERKLE_VERSION = RELEASE_090_VERSION;
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0x354cfc55834e7f12L;
 
 	static DomainSerdes serdes = new DomainSerdes();
@@ -51,7 +56,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 
 	private JKey key;
 	private long expiry;
-	private long balance;
+	private long hbarBalance;
 	private long autoRenewSecs;
 	private long senderThreshold;
 	private long receiverThreshold;
@@ -66,7 +71,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 	public MerkleAccountState(
 			JKey key,
 			long expiry,
-			long balance,
+			long hbarBalance,
 			long autoRenewSecs,
 			long senderThreshold,
 			long receiverThreshold,
@@ -78,7 +83,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 	) {
 		this.key = key;
 		this.expiry = expiry;
-		this.balance = balance;
+		this.hbarBalance = hbarBalance;
 		this.autoRenewSecs = autoRenewSecs;
 		this.senderThreshold = senderThreshold;
 		this.receiverThreshold = receiverThreshold;
@@ -104,7 +109,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 	public void deserialize(SerializableDataInputStream in, int version) throws IOException {
 		key = serdes.readNullable(in, serdes::deserializeKey);
 		expiry = in.readLong();
-		balance = in.readLong();
+		hbarBalance = in.readLong();
 		autoRenewSecs = in.readLong();
 		senderThreshold = in.readLong();
 		receiverThreshold = in.readLong();
@@ -113,13 +118,16 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		smartContract = in.readBoolean();
 		receiverSigRequired = in.readBoolean();
 		proxy = serdes.readNullableSerializable(in);
+		if (version == RELEASE_080_VERSION) {
+			long[] unused = in.readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE);
+		}
 	}
 
 	@Override
 	public void serialize(SerializableDataOutputStream out) throws IOException {
 		serdes.writeNullable(key, out, serdes::serializeKey);
 		out.writeLong(expiry);
-		out.writeLong(balance);
+		out.writeLong(hbarBalance);
 		out.writeLong(autoRenewSecs);
 		out.writeLong(senderThreshold);
 		out.writeLong(receiverThreshold);
@@ -135,7 +143,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		return new MerkleAccountState(
 				key,
 				expiry,
-				balance,
+				hbarBalance,
 				autoRenewSecs,
 				senderThreshold,
 				receiverThreshold,
@@ -158,7 +166,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		var that = (MerkleAccountState) o;
 
 		return this.expiry == that.expiry &&
-				this.balance == that.balance &&
+				this.hbarBalance == that.hbarBalance &&
 				this.autoRenewSecs == that.autoRenewSecs &&
 				this.senderThreshold == that.senderThreshold &&
 				this.receiverThreshold == that.receiverThreshold &&
@@ -175,7 +183,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		return Objects.hash(
 				key,
 				expiry,
-				balance,
+				hbarBalance,
 				autoRenewSecs,
 				senderThreshold,
 				receiverThreshold,
@@ -190,9 +198,9 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
-				.add("key", MiscUtils.describe(key))
+				.add("key", describe(key))
 				.add("expiry", expiry)
-				.add("balance", balance)
+				.add("balance", hbarBalance)
 				.add("autoRenewSecs", autoRenewSecs)
 				.add("senderThreshold", senderThreshold)
 				.add("receiverThreshold", receiverThreshold)
@@ -213,7 +221,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 	}
 
 	public long balance() {
-		return balance;
+		return hbarBalance;
 	}
 
 	public long autoRenewSecs() {
@@ -256,8 +264,8 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		this.expiry = expiry;
 	}
 
-	public void setBalance(long balance) {
-		this.balance = balance;
+	public void setHbarBalance(long hbarBalance) {
+		this.hbarBalance = hbarBalance;
 	}
 
 	public void setAutoRenewSecs(long autoRenewSecs) {

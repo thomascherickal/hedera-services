@@ -21,7 +21,6 @@ package com.hedera.services.bdd.spec.transactions;
  */
 
 import com.hedera.services.bdd.spec.HapiPropertySource;
-import com.hedera.services.bdd.spec.keys.SigStyle;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
@@ -117,6 +116,14 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 	abstract protected Consumer<TransactionBody.Builder> opBodyDef(HapiApiSpec spec) throws Throwable;
 
 	abstract protected Function<Transaction, TransactionResponse> callToUse(HapiApiSpec spec);
+
+	public byte[] serializeSignedTxnFor(HapiApiSpec spec) throws Throwable {
+		return finalizedTxn(spec, opBodyDef(spec)).toByteArray();
+	}
+
+	public Transaction signedTxnFor(HapiApiSpec spec) throws Throwable {
+		return finalizedTxn(spec, opBodyDef(spec));
+	}
 
 	@Override
 	protected boolean submitOp(HapiApiSpec spec) throws Throwable {
@@ -436,7 +443,7 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 
 	public T via(String name) {
 		txnName = name;
-		shouldRegisterTxnId = true;
+		shouldRegisterTxn = true;
 		return self();
 	}
 
@@ -505,11 +512,6 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 		return self();
 	}
 
-	public T sigStyle(SigStyle style) {
-		useLegacySignature = (style == SigStyle.LIST);
-		return self();
-	}
-
 	public T hasAnyKnownStatus() {
 		acceptAnyKnownStatus = true;
 		return self();
@@ -550,6 +552,11 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 		return self();
 	}
 
+	public T logging() {
+		loggingOff = false;
+		return self();
+	}
+
 	public T validDurationSecs(long secs) {
 		validDurationSecs = Optional.of(secs);
 		return self();
@@ -577,6 +584,21 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 
 	public T usePresetTimestamp() {
 		usePresetTimestamp = true;
+		return self();
+	}
+
+	public T asTxnWithOnlySigMap() {
+		asTxnWithOnlySigMap = true;
+		return self();
+	}
+
+	public T asTxnWithSignedTxnBytesAndSigMap() {
+		asTxnWithSignedTxnBytesAndSigMap = true;
+		return self();
+	}
+
+	public T asTxnWithSignedTxnBytesAndBodyBytes() {
+		asTxnWithSignedTxnBytesAndBodyBytes = true;
 		return self();
 	}
 }

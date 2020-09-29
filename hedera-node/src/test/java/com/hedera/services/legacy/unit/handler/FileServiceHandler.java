@@ -25,7 +25,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 import com.hedera.services.fees.calculation.FeeCalcUtilsTest;
 import com.hedera.services.legacy.unit.FCStorageWrapper;
-import com.hedera.services.legacy.service.GlobalFlag;
+import com.hedera.services.legacy.unit.GlobalFlag;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.state.submerkle.ExchangeRates;
@@ -47,11 +47,10 @@ import com.hederahashgraph.builder.RequestBuilder;
 import com.hedera.services.legacy.core.jproto.JFileInfo;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.exception.DeserializationException;
-import com.hedera.services.legacy.exception.InvalidFileIDException;
+import com.hedera.services.legacy.unit.InvalidFileIDException;
 import com.hedera.services.legacy.exception.InvalidFileWACLException;
 import com.hedera.services.legacy.exception.SerializationException;
 import com.hedera.services.legacy.logic.ApplicationConstants;
-import com.hedera.services.legacy.config.PropertiesLoader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -145,12 +144,12 @@ public class FileServiceHandler {
       if((entity instanceof AccountID) &&
           isMasterAccount((AccountID) entity)) { // master account cannot update itself
         return false;
+      } else if (seq >= 50 && seq <= 80) {
+        rv = true;
+      } else if(seq == 101 || seq == 102 || seq == 111 || seq == 112
+    		  || seq == 121 || seq == 122 ) {
+        rv = true;
       }
-      else if (seq >= 50 && seq <= 80)
-        rv = true;
-      else if(seq == 101 || seq == 102 || seq == 111 || seq == 112
-    		  || seq == 121 || seq == 122 )
-        rv = true;
     } else if(account.equals(entity)) { // protected accounts can update themselves (excluding master account)
       return true;
     } else if (account.equals(genAccountID(ADDRESS_ACC_NUM))) {
@@ -252,10 +251,10 @@ public class FileServiceHandler {
 	  	fileSize = fileData.length;
 	  }
 	  // compare size to allowable size
-	  if (PropertiesLoader.getMaxFileSize() * 1024L < fileSize) {
+	  if (1024 * 1024L < fileSize) {
 	  	throw new MaxFileSizeExceeded(
 				String.format("The file size %d (bytes) is greater than allowed %d (bytes) ", fileSize,
-	  					PropertiesLoader.getMaxFileSize() * 1024L));
+	  					1024 * 1024L));
 	  }
       String fileDataPath = FeeCalcUtilsTest.pathOf(fid);
       long expireTimeSec =
@@ -310,8 +309,9 @@ public class FileServiceHandler {
     ResponseCodeEnum returnCode = ResponseCodeEnum.OK;
 
     // we're only concerned about system files, which are protected entities
-    if (!isProtectedEntity(fid))
+    if (!isProtectedEntity(fid)) {
       return returnCode;
+    }
     
     if (hasAuthorityToUpdate(gtx.getTransactionID().getAccountID(), fid)) {
       if (fid.getFileNum() == 111) {
@@ -428,8 +428,10 @@ public class FileServiceHandler {
   	      //compare size to allowable size
           long fileSize = 	fileData.toByteArray().length;
           System.out.println("Going to update with " + fileSize + " bytes");
-  	      if(PropertiesLoader.getMaxFileSize()*1024L < fileSize) {
-  	        throw new MaxFileSizeExceeded(String.format("The file size %d (bytes) is greater than allowed %d (bytes) ", fileSize,PropertiesLoader.getMaxFileSize()*1024L));
+  	      if(1024*1024L < fileSize) {
+  	        throw new MaxFileSizeExceeded(String.format("The file size %d (bytes) is greater than allowed %d (bytes) ",
+                    fileSize,
+                    1024*1024L));
   	      }	
           validateCode = validateSystemFile(fid, gtx, fileData.toByteArray(), false);
   	      System.out.println("ValidateCode = " + validateCode);
@@ -496,6 +498,7 @@ public class FileServiceHandler {
       if (log.isDebugEnabled()) {
         log.debug("updateFile exception: invalid wacl! tx=" + tx, e);
       }
+
     } catch (InvalidFileIDException e) {
       receipt = RequestBuilder.getTransactionReceipt(ResponseCodeEnum.INVALID_FILE_ID,
           globalFlag.getExchangeRateSet());
@@ -611,11 +614,11 @@ public class FileServiceHandler {
    * Return true only when there is small change in both currentRate and nextRate
    */
   public boolean isSmallChange(ExchangeRateSet exchangeRateSet) {
-    return isSmallChange(PropertiesLoader.getExchangeRateAllowedPercentage(),
+    return isSmallChange(5,
         midnightRateSet.getCurrCentEquiv(), midnightRateSet.getCurrHbarEquiv(),
         exchangeRateSet.getCurrentRate().getCentEquiv(),
         exchangeRateSet.getCurrentRate().getHbarEquiv()) && isSmallChange(
-        PropertiesLoader.getExchangeRateAllowedPercentage(),
+        5,
         midnightRateSet.getNextCentEquiv(), midnightRateSet.getNextHbarEquiv(),
         exchangeRateSet.getNextRate().getCentEquiv(), exchangeRateSet.getNextRate().getHbarEquiv());
   }

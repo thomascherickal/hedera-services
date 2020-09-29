@@ -28,6 +28,7 @@ import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.hedera.services.legacy.utils.TransactionValidationUtils;
+import com.hedera.services.state.logic.ServicesTxnManager;
 import com.hedera.services.txns.ProcessLogic;
 import com.hedera.services.txns.diligence.DuplicateClassification;
 import com.hedera.services.utils.PlatformTxnAccessor;
@@ -37,7 +38,6 @@ import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionReceipt;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import com.hederahashgraph.fee.FeeObject;
-import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.Transaction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,8 +68,10 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_NODE_A
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_PAYER_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE_COUNT_MISMATCHING_KEY;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_DURATION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.KEY_PREFIX_MISMATCH;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MODIFYING_IMMUTABLE_CONTRACT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
@@ -77,17 +79,24 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class AwareProcessLogic implements ProcessLogic {
+
+	private static final int MEMO_SIZE_LIMIT = 100;
+
 	static Logger log = LogManager.getLogger(AwareProcessLogic.class);
 
 	private static final EnumSet<ResponseCodeEnum> SIG_RATIONALIZATION_ERRORS = EnumSet.of(
 			INVALID_FILE_ID,
+			INVALID_TOKEN_ID,
 			INVALID_ACCOUNT_ID,
 			INVALID_SIGNATURE,
 			KEY_PREFIX_MISMATCH,
 			INVALID_SIGNATURE_COUNT_MISMATCHING_KEY,
 			MODIFYING_IMMUTABLE_CONTRACT,
 			INVALID_CONTRACT_ID);
-
+	private final ServicesTxnManager txnManager = new ServicesTxnManager(
+			this::processTxnInCtx,
+			this::addRecordToStream,
+			this::warnOf);
 	private final ServicesContext ctx;
 
 	public AwareProcessLogic(ServicesContext ctx) {
@@ -105,7 +114,7 @@ public class AwareProcessLogic implements ProcessLogic {
 			if (!txnSanityChecks(accessor, consensusTime, submittingMember)) {
 				return;
 			}
-			processInLedgerTxn(accessor, consensusTime, submittingMember);
+			txnManager.process(accessor, consensusTime, submittingMember, ctx);
 		} catch (InvalidProtocolBufferException e) {
 			log.warn("Consensus platform txn was not gRPC!", e);
 		}
@@ -132,40 +141,6 @@ public class AwareProcessLogic implements ProcessLogic {
 			return false;
 		}
 		return true;
-	}
-
-	private void processInLedgerTxn(PlatformTxnAccessor accessor, Instant consensusTime, long submittingMember) {
-		boolean wasCommitted = false;
-
-		try {
-			ctx.ledger().begin();
-			ctx.txnCtx().resetFor(accessor, consensusTime, submittingMember);
-			processTxnInCtx();
-		} catch (Exception unhandled) {
-			warnOf(unhandled, "txn processing");
-			ctx.txnCtx().setStatus(FAIL_INVALID);
-		} finally {
-			try {
-				ctx.ledger().commit();
-				wasCommitted = true;
-			} catch (Exception unrecoverable) {
-				warnOf(unrecoverable, "txn commit");
-				ctx.recordCache().setFailInvalid(
-						ctx.txnCtx().effectivePayer(),
-						accessor,
-						consensusTime,
-						submittingMember);
-				ctx.ledger().rollback();
-			} finally {
-				if (wasCommitted) {
-					try {
-						addRecordToStream();
-					} catch (Exception unknown) {
-						warnOf(unknown, "record streaming");
-					}
-				}
-			}
-		}
 	}
 
 	private void processTxnInCtx() {
@@ -396,6 +371,8 @@ public class AwareProcessLogic implements ProcessLogic {
 			try {
 				if (!ctx.hfs().exists(fid)) {
 					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, INVALID_FILE_ID);
+				} else if(isMemoTooLong(txn.getContractCreateInstance().getMemo())) {
+					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, MEMO_TOO_LONG);
 				} else {
 					byte[] contractByteCode = ctx.hfs().cat(fid);
 					if (contractByteCode.length > 0) {
@@ -416,7 +393,11 @@ public class AwareProcessLogic implements ProcessLogic {
 			}
 		} else if (txn.hasContractUpdateInstance()) {
 			try {
-				record = ctx.contracts().updateContract(txn, consensusTime);
+				if (isMemoTooLong(txn.getContractUpdateInstance().getMemo())) {
+					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, MEMO_TOO_LONG);
+				} else {
+					record = ctx.contracts().updateContract(txn, consensusTime);
+				}
 			} catch (Exception e) {
 				log.error("Error during update contract", e);
 			}
@@ -447,5 +428,9 @@ public class AwareProcessLogic implements ProcessLogic {
 			}
 		}
 		return record;
+	}
+
+	private boolean isMemoTooLong(String memo) {
+		return memo.length() > MEMO_SIZE_LIMIT;
 	}
 }

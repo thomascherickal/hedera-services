@@ -72,10 +72,9 @@ public class ContractCallLocalBalanceCheck extends ClientBaseThread {
 
   private FileID contractFileId;
 
-  public ContractCallLocalBalanceCheck(String host, int port, long nodeAccountNumber, boolean useSigMap, String [] args, int index)
+  public ContractCallLocalBalanceCheck(String host, int port, long nodeAccountNumber, String [] args, int index)
   {
-    super(host, port, nodeAccountNumber, useSigMap, args, index);
-    this.useSigMap = useSigMap;
+    super(host, port, nodeAccountNumber, args, index);
     this.nodeAccountNumber = nodeAccountNumber;
     this.host = host;
     this.port = port;
@@ -108,7 +107,9 @@ public class ContractCallLocalBalanceCheck extends ClientBaseThread {
     // extra payer account
     KeyPair payerKeyPair = new KeyPairGenerator().generateKeyPair();
     TransactionID createTxID = callCreateAccount(genesisAccount, payerKeyPair, 500000L);
-    if (isBackupTxIDRecord) submittedTxID.add(createTxID); // used by parent thread for checking event files & record files
+    if (isBackupTxIDRecord) {
+		submittedTxID.add(createTxID); // used by parent thread for checking event files & record files
+	}
     AccountID payerAccount = Common.getAccountIDfromReceipt(stub, createTxID);
     Common.addKeyMap(payerKeyPair, pubKey2privKeyMap);
     accountKeys.put(payerAccount, Collections.singletonList(payerKeyPair.getPrivate()));
@@ -185,7 +186,6 @@ public class ContractCallLocalBalanceCheck extends ClientBaseThread {
           if (response != null){
             bytes = response.getFunctionResult().getContractCallResult().toByteArray();
             long readValue = new BigInteger(bytes).longValue();
-            //log.info("readValue " + readValue);
             Assert.assertEquals(readValue, currValueToSet);
             long gasUsed = response.getFunctionResult().getGasUsed();
             Assert.assertTrue(gasUsed > 0L);
@@ -193,7 +193,9 @@ public class ContractCallLocalBalanceCheck extends ClientBaseThread {
 
           }
         } catch (StatusRuntimeException e) {
-          if(!tryReconnect(e)) return;
+          if(!tryReconnect(e)) {
+			  return;
+		  }
         }
 
         accumulatedTransferCount++;

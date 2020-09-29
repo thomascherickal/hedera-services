@@ -24,8 +24,23 @@ import com.hedera.services.bdd.spec.transactions.consensus.HapiMessageSubmit;
 import com.hedera.services.bdd.spec.transactions.consensus.HapiTopicCreate;
 import com.hedera.services.bdd.spec.transactions.consensus.HapiTopicDelete;
 import com.hedera.services.bdd.spec.transactions.consensus.HapiTopicUpdate;
+import com.hedera.services.bdd.spec.transactions.network.HapiUncheckedSubmit;
 import com.hedera.services.bdd.spec.transactions.system.HapiSysDelete;
 import com.hedera.services.bdd.spec.transactions.system.HapiSysUndelete;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenAssociate;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenBurn;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenDissociate;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenFreeze;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenCreate;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenDelete;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenKycGrant;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenKycRevoke;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenMint;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenTransact;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenUnfreeze;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenUpdate;
+import com.hedera.services.bdd.spec.transactions.token.HapiTokenWipe;
+import com.hedera.services.bdd.suites.HapiApiSuite;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.hedera.services.bdd.spec.HapiApiSpec;
@@ -45,14 +60,9 @@ import com.hedera.services.bdd.spec.transactions.file.HapiFileUpdate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class TxnVerbs {
-	/* All supported non-system, non-claim txn types as of 09/17/19:
-	* 	[CRYPTO,#=4] cryptoCreateAccount, cryptoDelete, cryptoTransfer, cryptoUpdateAccount
-	* 	[FILE,#=4] fileAppend, fileCreate, fileDelete, fileUpdate
-	* 	[SC,#=4] contractCall, contractCreateInstance, contractUpdateInstance, contractDeleteInstance
-	*   [CONS,#=4] topicCreate, topicDelete, topicUpdate, messageSubmit
-	* */
+import static com.hedera.services.bdd.suites.HapiApiSuite.salted;
 
+public class TxnVerbs {
 	/* CRYPTO */
 	public static HapiCryptoCreate cryptoCreate(String account) {
 		return new HapiCryptoCreate(account);
@@ -105,6 +115,47 @@ public class TxnVerbs {
 		return new HapiFileDelete(fileNameSupplier);
 	}
 
+	/* TOKEN */
+	public static HapiTokenDissociate tokenDissociate(String account, String... tokens) {
+		return new HapiTokenDissociate(account, tokens);
+	}
+	public static HapiTokenAssociate tokenAssociate(String account, String... tokens) {
+		return new HapiTokenAssociate(account, tokens);
+	}
+	public static HapiTokenCreate tokenCreate(String token) {
+		return new HapiTokenCreate(token).name(salted(token));
+	}
+	public static HapiTokenUpdate tokenUpdate(String token) {
+		return new HapiTokenUpdate(token);
+	}
+	public static HapiTokenDelete tokenDelete(String token) {
+		return new HapiTokenDelete(token);
+	}
+	public static HapiTokenTransact tokenTransact(HapiTokenTransact.TokenMovement... sources) {
+		return new HapiTokenTransact(sources);
+	}
+	public static HapiTokenFreeze tokenFreeze(String token, String account) {
+		return new HapiTokenFreeze(token, account);
+	}
+	public static HapiTokenUnfreeze tokenUnfreeze(String token, String account) {
+		return new HapiTokenUnfreeze(token, account);
+	}
+	public static HapiTokenKycGrant grantTokenKyc(String token, String account) {
+		return new HapiTokenKycGrant(token, account);
+	}
+	public static HapiTokenKycRevoke revokeTokenKyc(String token, String account) {
+		return new HapiTokenKycRevoke(token, account);
+	}
+	public static HapiTokenWipe wipeTokenAccount(String token, String account, long amount) {
+		return new HapiTokenWipe(token, account, amount);
+	}
+	public static HapiTokenMint mintToken(String token, long amount) {
+		return new HapiTokenMint(token, amount);
+	}
+	public static HapiTokenBurn burnToken(String token, long amount) {
+		return new HapiTokenBurn(token, amount);
+	}
+
 	/* SYSTEM */
 	public static HapiSysDelete systemFileDelete(String target) {
 		return new HapiSysDelete().file(target);
@@ -113,7 +164,12 @@ public class TxnVerbs {
 		return new HapiSysUndelete().file(target);
 	}
 
-	/* SC */
+	/* NETWORK */
+	public static <T extends HapiTxnOp<T>> HapiUncheckedSubmit<T> uncheckedSubmit(HapiTxnOp<T> subOp) {
+		return new HapiUncheckedSubmit<>(subOp);
+	}
+
+	/* SMART CONTRACT */
 	public static HapiContractCall contractCallFrom(String details) {
 		return HapiContractCall.fromDetails(details);
 	}

@@ -33,7 +33,6 @@ import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -114,8 +113,6 @@ public class FileUploader {
 
 		resultTxList.add(transaction);
 
-		//getFileInfo(fileStub, payerAccount, payerPrivateKey, nodeAccountNumber, fileID);
-
 		//append the rest of the parts
 		int i = 1;
 		while (remainder > 0) {
@@ -124,10 +121,7 @@ public class FileUploader {
 			transaction = appendFile(fileStub, payerAccount, payerPrivateKey, accessKeys,
 					fileID, partBytes, nodeAccountNumber, transactionFee, pubKey2PrivateKeyMap);
 			log.info("@@@ append file count = " + i);
-			//getFileInfo(fileStub, payerAccount, payerPrivateKey, nodeAccountNumber, fileID);
 			resultTxList.add(transaction);
-
-			//log.info("last append result {}", getReceiptByTransactionId(stub, TransactionBody.parseFrom(transaction.getBodyBytes()).getTransactionID()));
 
 			i++;
 			remainder = remainder - FILE_PART_SIZE;
@@ -164,7 +158,6 @@ public class FileUploader {
 		Transaction transferTx = Common.createTransfer(payer, payerKey,
 				nodeAccount, payer,
 				payerKey, nodeAccount, transferAmt, memo);
-		//transferTx = TransactionSigner.signTransaction(transferTx, accountKeys.get(payer));
 		return transferTx;
 
 	}
@@ -222,8 +215,6 @@ public class FileUploader {
 				.getTimestamp(Instant.now(Clock.systemUTC()));
 		Duration transactionDuration = RequestBuilder.getDuration(30);
 		ByteString fileData = ByteString.copyFrom(bytes);
-		SignatureList signatures = SignatureList.newBuilder()
-				.getDefaultInstanceForType();
 
 		//Extract private key and public key
 		List<PrivateKey> waclPrivKeyList = new ArrayList<>();
@@ -247,8 +238,8 @@ public class FileUploader {
 				Transaction fileAppendRequest = RequestBuilder
 						.getFileAppendBuilder(payerAccount.getAccountNum(), 0l, 0l,
 								nodeAccountNumber, 0l, 0l, transactionFee,
-								timestamp, transactionDuration, true, "FileAppend", signatures, fileData, fid);
-				Transaction fileSigned = TransactionSigner.signTransactionComplex(fileAppendRequest, sigMapKeyList,
+								timestamp, transactionDuration, true, "FileAppend", fileData, fid);
+				Transaction fileSigned = TransactionSigner.signTransactionComplexWithSigMap(fileAppendRequest, sigMapKeyList,
 						pubKey2PrivateKeyMap);
 				return fileSigned;
 			} catch (Exception e) {
@@ -314,11 +305,9 @@ public class FileUploader {
 			final Map<String, PrivateKey> pubKey2PrivateKeyMap,
 			FileID fileID)
 	{
-		//log.info("@@@ upload file at: " + localPath + "; file size in byte = " + fileData.size());
 		Timestamp timestamp = RequestBuilder
 				.getTimestamp(Instant.now(Clock.systemUTC()));
 		Timestamp fileExp = ProtoCommonUtils.addSecondsToTimestamp(timestamp, fileDuration);
-		SignatureList signatures = SignatureList.newBuilder().getDefaultInstanceForType();
 
 		Duration transactionDuration = RequestBuilder.getDuration(30);
 		ByteString fileData = ByteString.copyFrom(bytes);
@@ -349,9 +338,9 @@ public class FileUploader {
 							.getFileCreateBuilder(payerAccount.getAccountNum(), 0L, 0L,
 									nodeAccountNumber, 0L, 0L, transactionFee,
 									timestamp, transactionDuration, true, "FileCreate",
-									signatures, fileData, fileExp,
+									fileData, fileExp,
 									waclPubKeyList);
-					Transaction fileSigned = TransactionSigner.signTransactionComplex(FileCreateRequest, sigMapKeyList,
+					Transaction fileSigned = TransactionSigner.signTransactionComplexWithSigMap(FileCreateRequest, sigMapKeyList,
 							pubKey2PrivateKeyMap);
 					return fileSigned;
 				} catch (Exception e) {
@@ -366,8 +355,8 @@ public class FileUploader {
 							.getFileUpdateBuilder(payerAccount.getAccountNum(), 0L, 0L,
 									nodeAccountNumber, 0L, 0L, transactionFee,
 									timestamp, fileExp, transactionDuration, true, "FileUpdate",
-									signatures, fileData, fileID);
-					Transaction fileSigned = TransactionSigner.signTransactionComplex(FileUpdateRequest, sigMapKeyList,
+									fileData, fileID);
+					Transaction fileSigned = TransactionSigner.signTransactionComplexWithSigMap(FileUpdateRequest, sigMapKeyList,
 							pubKey2PrivateKeyMap);
 					return fileSigned;
 				} catch (Exception e) {

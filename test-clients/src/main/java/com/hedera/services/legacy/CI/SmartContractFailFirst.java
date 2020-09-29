@@ -111,9 +111,6 @@ public class SmartContractFailFirst {
     localCallGas = Long.parseLong(properties.getProperty("LOCAL_CALL_GAS"));
 
     int numberOfReps = 1;
-//    if ((args.length) > 0) {
-//      numberOfReps = Integer.parseInt(args[0]);
-//    }
     for (int i = 0; i < numberOfReps; i++) {
       SmartContractFailFirst scFf = new SmartContractFailFirst();
       scFf.demo();
@@ -266,7 +263,6 @@ public class SmartContractFailFirst {
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
     Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);
@@ -378,9 +374,6 @@ public class SmartContractFailFirst {
       callDataSize = callData.size();
     }
     long fee = TestHelper.getContractMaxFee();
-//    Response callResp = executeContractCall(payerAccount, contractToCall, stub, callData, fee,
-//        ResponseType.COST_ANSWER);
-//    fee = callResp.getContractCallLocal().getHeader().getCost() + localCallGas;
     log.warn("===> Fee offered: " + fee);
     Response callResp = executeContractCall(payerAccount, contractToCall, stub, callData, fee,
         ResponseType.ANSWER_ONLY);
@@ -494,7 +487,6 @@ public class SmartContractFailFirst {
       // Assure that none of the specified initial balance was consumed, that
       // only fees and gas were charged to the account.
       expectedCost = txRecord.getTransactionFee();
-//          (fUtil.getCreatePriceInTinybars() * txRecord.getContractCreateResult().getGasUsed());
       Assert.assertEquals("Failed create cost", expectedCost, (beforeBalance - creatingAccountBalance));
       beforeBalance = creatingAccountBalance;
 

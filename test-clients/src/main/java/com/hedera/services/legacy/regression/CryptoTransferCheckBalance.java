@@ -26,7 +26,6 @@ import com.hederahashgraph.api.proto.java.CryptoGetInfoResponse;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -211,9 +210,6 @@ public class CryptoTransferCheckBalance extends Thread {
           Assert.assertEquals(ResponseCodeEnum.OK, response.getNodeTransactionPrecheckCode());
         }
       }
-      // log.info("Pre Check Response transfer :: " +
-      // transferRes.getNodeTransactionPrecheckCode().name());
-
     }
 
     if (fetchReceipt == 1) { // ask for receipt
@@ -280,11 +276,8 @@ public class CryptoTransferCheckBalance extends Thread {
     CryptoGetInfoResponse.AccountInfo accountInfo1 = accountInfoResponse.getCryptoGetInfo()
         .getAccountInfo();
     log.info("Check balance of Account ID " + accountID.getAccountNum());
-    // log.info(accountInfo1);
     Assert.assertNotNull(accountInfo1);
     Assert.assertEquals(accountID, accountInfo1.getAccountID());
-    // Assert.assertEquals(firstPair.getPublic().toString(),
-    // accountInfo1.getKey().getKeyList().getKeys(0).getEd25519().toStringUtf8());
     Assert.assertEquals(TestHelper.DEFAULT_SEND_RECV_RECORD_THRESHOLD,
         accountInfo1.getGenerateReceiveRecordThreshold());
     Assert.assertEquals(TestHelper.DEFAULT_SEND_RECV_RECORD_THRESHOLD,
@@ -303,24 +296,18 @@ public class CryptoTransferCheckBalance extends Thread {
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
     Duration transactionDuration = RequestBuilder.getDuration(30);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), MAX_TX_FEE, timestamp,
         transactionDuration,
-        generateRecord, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+        generateRecord, "Test Transfer", fromAccount.getAccountNum(), -amount,
         toAccount.getAccountNum(), amount);
     // sign the tx
-    List<List<PrivateKey>> privKeysList = new ArrayList<>();
-    List<PrivateKey> payerPrivKeyList = new ArrayList<>();
-    payerPrivKeyList.add(payerAccountKey);
-    privKeysList.add(payerPrivKeyList);
+    List<PrivateKey> privKeysList = new ArrayList<>();
+    privKeysList.add(payerAccountKey);
+    privKeysList.add(fromKey);
 
-    List<PrivateKey> fromPrivKeyList = new ArrayList<>();
-    fromPrivKeyList.add(fromKey);
-    privKeysList.add(fromPrivKeyList);
-
-    Transaction signedTx = TransactionSigner.signTransactionNew(transferTx, privKeysList);
+    Transaction signedTx = TransactionSigner.signTransaction(transferTx, privKeysList);
 
     return signedTx;
   }

@@ -22,7 +22,7 @@ package com.hedera.services;
 
 import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.properties.Profile;
-import com.hedera.services.legacy.exception.InvalidTotalAccountBalanceException;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hedera.services.state.forensics.IssListener;
 import com.hedera.services.utils.JvmSystemExits;
 import com.hedera.services.utils.SystemExits;
@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -80,6 +81,12 @@ public class ServicesMain implements SwirldMain {
 			systemExits.fail(1);
 		}
 		try {
+			CommonUtils.getSha384Hash();
+		} catch (NoSuchAlgorithmException nsae) {
+			log.error(nsae);
+			systemExits.fail(1);
+		}
+		try {
 			Locale.setDefault(Locale.US);
 			ctx = CONTEXTS.lookup(nodeId.getId());
 			logInfoWithConsoleEcho(String.format(START_INIT_MSG_PATTERN, ctx.id().getId()));
@@ -115,12 +122,11 @@ public class ServicesMain implements SwirldMain {
 		if (ctx.platformStatus().get() == MAINTENANCE) {
 			((ServicesState)signedState).printHashes();
 		}
-		if (ctx.properties().getBooleanProperty("hedera.exportBalancesOnNewSignedState") &&
-				ctx.balancesExporter().isTimeToExport(when)) {
+		if (ctx.globalDynamicProperties().shouldExportBalances() && ctx.balancesExporter().isTimeToExport(when)) {
 			try {
 				ctx.balancesExporter().toCsvFile((ServicesState) signedState, when);
-			} catch (InvalidTotalAccountBalanceException itabe) {
-				log.error("HederaNode#{} has invalid total balance in signed state, exiting!", ctx.id(), itabe);
+			} catch (IllegalStateException ise) {
+				log.error("HederaNode#{} has invalid total balance in signed state, exiting!", ctx.id(), ise);
 				systemExits.fail(1);
 			}
 		}
@@ -162,7 +168,7 @@ public class ServicesMain implements SwirldMain {
 		log.info("Record expiration reviewed.");
 		loadFeeSchedule();
 		log.info("Fee schedule loaded.");
-		sanitizeProperties();
+
 		log.info("Completed initialization of {} #{}", ctx.nodeType(), ctx.id());
 
 		startTimerTasksIfNeeded();
@@ -211,11 +217,11 @@ public class ServicesMain implements SwirldMain {
 	}
 
 	private void startNettyIfAppropriate() {
-		int port = ctx.properties().getIntProperty("grpc.port");
+		int port = ctx.nodeLocalProperties().port();
 		final int PORT_MODULUS = 1000;
-		int tlsPort = ctx.properties().getIntProperty("grpc.tlsPort");
+		int tlsPort = ctx.nodeLocalProperties().tlsPort();
 		log.info("TLS is turned on by default on node {}", ctx.id());
-		Profile activeProfile = ctx.properties().getProfileProperty("hedera.profiles.active");
+		Profile activeProfile = ctx.nodeLocalProperties().activeProfile();
 		log.info("Active profile: {}", activeProfile);
 		if (activeProfile == DEV) {
 			if (onlyDefaultNodeListens()) {
@@ -243,10 +249,6 @@ public class ServicesMain implements SwirldMain {
 		String myNodeAccount = ctx.addressBook().getAddress(ctx.id().getId()).getMemo();
 		String blessedNodeAccount = ctx.properties().getStringProperty("dev.defaultListeningNodeAccount");
 		return myNodeAccount.equals(blessedNodeAccount);
-	}
-
-	private void sanitizeProperties() {
-		ctx.propertySanitizer().sanitize(ctx.propertySources());
 	}
 
 	private void loadFeeSchedule() {

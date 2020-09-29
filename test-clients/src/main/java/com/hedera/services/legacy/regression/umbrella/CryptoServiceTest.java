@@ -42,7 +42,6 @@ import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.ThresholdKey;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -140,7 +139,6 @@ public class CryptoServiceTest extends TestHelperComplex {
     single, keylist, thresholdKey
   }
 
-//protected static long DEFAULT_INITIAL_ACCOUNT_BALANCE = 2000_00_000_000L; //working
   protected static long DEFAULT_INITIAL_ACCOUNT_BALANCE = getUmbrellaProperties().getLong("initialAccountBalance", 2000_00_000_000L);
   protected static long SMALL_ACCOUNT_BALANCE_FACTOR = getUmbrellaProperties().getLong("smallAccountBalanceFactor", 2000L);
   public static long TX_DURATION_SEC = 2 * 60; // 2 minutes for tx dedup
@@ -175,8 +173,6 @@ public class CryptoServiceTest extends TestHelperComplex {
 
   protected static Duration transactionDuration = Duration.newBuilder().setSeconds(TX_DURATION_SEC)
       .build();
-  protected static SignatureList signatures = SignatureList.newBuilder()
-      .getDefaultInstanceForType();
   public static Map<String, List<AccountKeyListObj>> hederaAccounts = null;
   protected static List<AccountKeyListObj> genesisAccountList;
   protected static AccountID genesisAccountID;
@@ -264,7 +260,6 @@ public class CryptoServiceTest extends TestHelperComplex {
     nodeID2Stub.put(defaultListeningNodeAccountID, stub);
     nodeAccounts = new AccountID[1];
     nodeAccounts[0] = defaultListeningNodeAccountID;
-//    getNodeAccountsFromLedger();
   }
 
   public static CustomProperties getUmbrellaProperties() {
@@ -296,8 +291,6 @@ public class CryptoServiceTest extends TestHelperComplex {
     accountKeyTypes = testProps.getString("accountKeyType", "single")
         .split(CONFIG_LIST_SEPARATOR);
     changeGenesisKey = Boolean.parseBoolean(testProps.getString("changeGenesisKey", "false"));
-    TransactionSigner.SIGNATURE_FORMAT = testProps.getString("signatureFormat", "SignatureMap");
-    TransactionSigner.TX_BODY_FORMAT = testProps.getString("transactionBodyFormat", "BodyBytes");
     NUM_WACL_KEYS = testProps.getInt("numWaclKeys", 1);
 
     getReceipt = Boolean.parseBoolean(testProps.getString("getReceipt", "true"));
@@ -384,7 +377,7 @@ public class CryptoServiceTest extends TestHelperComplex {
     Transaction updateTx = TestHelperComplex.updateAccount(accountID, payerAccountID,
         nodeAccountID, autoRenew);
     Transaction signUpdate = TransactionSigner
-        .signTransactionComplex(updateTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(updateTx, keys, pubKey2privKeyMap);
 
     log.info("\n-----------------------------------\nupdateAccount: request = " + signUpdate);
     TransactionResponse response = retryLoopTransaction(signUpdate, "updateAccount");
@@ -538,7 +531,6 @@ public class CryptoServiceTest extends TestHelperComplex {
     log.info("Account created: account num :: " + accountID.getAccountNum());
 
     // get account info
-    //		CommonUtils.nap(WAIT_IN_SEC);
     AccountInfo accInfo = getAccountInfo(accountID);
     log.info("Created account info = " + accInfo);
     Assert.assertEquals(body.getCryptoCreateAccount().getInitialBalance(),
@@ -647,26 +639,12 @@ public class CryptoServiceTest extends TestHelperComplex {
   protected void readGenesisInfo() throws Exception {
     KeyPairObj genesisKeyPair;
     String payerAccountNumStr = getApplicationProperties().getProperty("payerAccountForTests");
-    long payerAccountNum;
-    try {
-      payerAccountNum = Long.parseLong(payerAccountNumStr);
-    }catch (Exception e) { payerAccountNum = 2L; }
-//    if (payerAccountNum > 2 ) {
-//      String pemFilePath = getApplicationProperties().getProperty("payerAccountPEMKeyFile");
-//      if(pemFilePath.isEmpty() || payerAccountNumStr.isEmpty()) {
-//        throw new Exception("payerAccountForTests is missing in application.properties ");
-//      }
-//      // Get Payer Account Key Pair
-//      AccountKeyListObj genKeyListObj = SetupAccount.getAccountKeyListObj(pemFilePath,payerAccountNum);
-//      genesisKeyPair = genKeyListObj.getKeyPairList().get(0);
-//    } else {
-      // Get Genesis Account key Pair
-      Path path = Paths.get(INITIAL_ACCOUNTS_FILE);
-      Map<String, List<AccountKeyListObj>> keyFromFile = TestHelper.getKeyFromFile(INITIAL_ACCOUNTS_FILE);
-      genesisAccountList = keyFromFile.get("START_ACCOUNT");
-      genesisAccountID = genesisAccountList.get(0).getAccountId();
-      genesisKeyPair = genesisAccountList.get(0).getKeyPairList().get(0);
-//  }
+    // Get Genesis Account key Pair
+    Path path = Paths.get(INITIAL_ACCOUNTS_FILE);
+    Map<String, List<AccountKeyListObj>> keyFromFile = TestHelper.getKeyFromFile(INITIAL_ACCOUNTS_FILE);
+    genesisAccountList = keyFromFile.get("START_ACCOUNT");
+    genesisAccountID = genesisAccountList.get(0).getAccountId();
+    genesisKeyPair = genesisAccountList.get(0).getKeyPairList().get(0);
     String pubKeyHex = genesisKeyPair.getPublicKeyAbyteStr();
     Key akey;
     if (KeyExpansion.USE_HEX_ENCODED_KEY) {
@@ -1047,7 +1025,7 @@ public class CryptoServiceTest extends TestHelperComplex {
     Transaction deletetx = Transaction.newBuilder().setBodyBytes(bodyBytes).build();
 
     Transaction signDelete = TransactionSigner
-            .signTransactionComplex(deletetx, keys, pubKey2privKeyMap);
+            .signTransactionComplexWithSigMap(deletetx, keys, pubKey2privKeyMap);
     log.info("\n-----------------------------------\ncryptoDelete: request = "
             + com.hedera.services.legacy.proto.utils.CommonUtils.toReadableString(signDelete));
     TransactionResponse response = retryLoopTransaction(signDelete, "cryptoDelete");
@@ -1089,7 +1067,7 @@ public class CryptoServiceTest extends TestHelperComplex {
     Transaction updateTx = TestHelperComplex
         .updateAccount(accountID, payerAccountID, nodeAccountID, cryptoUpdate);
     Transaction signUpdate = TransactionSigner
-        .signTransactionComplex(updateTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(updateTx, keys, pubKey2privKeyMap);
 
     log.info("\n-----------------------------------\nupdateAccount: request = " + signUpdate);
     Key oldGenesisKey = acc2ComplexKeyMap.remove(accountID);
@@ -1320,7 +1298,7 @@ public class CryptoServiceTest extends TestHelperComplex {
       keys.add(toKey);
     }
     Transaction paymentTxSigned = TransactionSigner
-        .signTransactionComplex(paymentTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(paymentTx, keys, pubKey2privKeyMap);
     return paymentTxSigned;
   }
 
@@ -1337,7 +1315,7 @@ public class CryptoServiceTest extends TestHelperComplex {
         payerAccountID.getRealmNum(), payerAccountID.getShardNum(), nodeAccountID.getAccountNum(),
         nodeAccountID.getRealmNum(), nodeAccountID.getShardNum(), transactionFee, timestamp,
         transactionDuration, true,
-        memo, signatures, fromAccountID.getAccountNum(), -amount, toAccountID.getAccountNum(),
+        memo, fromAccountID.getAccountNum(), -amount, toAccountID.getAccountNum(),
         amount);
 
     Key payerKey = acc2ComplexKeyMap.get(payerAccountID);
@@ -1350,7 +1328,7 @@ public class CryptoServiceTest extends TestHelperComplex {
       keys.add(toKey);
     }
     Transaction paymentTxSigned = TransactionSigner
-        .signTransactionComplex(paymentTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(paymentTx, keys, pubKey2privKeyMap);
     return paymentTxSigned;
   }
 
@@ -1443,7 +1421,7 @@ public class CryptoServiceTest extends TestHelperComplex {
       String msg =
           "transactionMaxBytes (" + transactionMaxBytes + ") exceeded! requestSize=" + requestSize
               + ", txShortInfo=" + com.hedera.services.legacy.proto.utils.CommonUtils
-              .toReadableStringShort(txSigned);
+              .toReadableTransactionID(txSigned);
       log.warn(msg);
       throw new Exception(msg);
     } else {
@@ -1501,7 +1479,7 @@ public class CryptoServiceTest extends TestHelperComplex {
         .updateAccount(accountID, payerAccountID, nodeAccountID, cryptoUpdate.build());
 
     Transaction signUpdate = TransactionSigner
-        .signTransactionComplex(updateTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(updateTx, keys, pubKey2privKeyMap);
 
     log.info("\n-----------------------------------\nupdateAccount: request = " + signUpdate);
     Key oldGenesisKey = acc2ComplexKeyMap.remove(accountID);
@@ -1605,7 +1583,7 @@ public class CryptoServiceTest extends TestHelperComplex {
         .updateAccount(accountID, payerAccountID, nodeAccountID, cryptoUpdate.build());
 
     Transaction signUpdate = TransactionSigner
-        .signTransactionComplex(updateTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(updateTx, keys, pubKey2privKeyMap);
 
     log.info("\n-----------------------------------\nupdateAccount: request = " + signUpdate);
     Key oldGenesisKey = acc2ComplexKeyMap.remove(accountID);
@@ -1699,7 +1677,7 @@ public class CryptoServiceTest extends TestHelperComplex {
     }
 
     Transaction paymentTxSigned = TransactionSigner
-        .signTransactionComplex(unSignedTransferTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(unSignedTransferTx, keys, pubKey2privKeyMap);
     return paymentTxSigned;
   }
 
@@ -1715,7 +1693,7 @@ public class CryptoServiceTest extends TestHelperComplex {
         payerAccountID.getRealmNum(), payerAccountID.getShardNum(), nodeAccountID.getAccountNum(),
         nodeAccountID.getRealmNum(), nodeAccountID.getShardNum(), TestHelper.getCryptoMaxFee(), timestamp,
         transactionDuration, true,
-        memo, signatures, fromAccountID.getAccountNum(), -amount, toAccountID.getAccountNum(),
+        memo, fromAccountID.getAccountNum(), -amount, toAccountID.getAccountNum(),
         amount);
     return transferTx;
   }
@@ -1920,8 +1898,6 @@ public class CryptoServiceTest extends TestHelperComplex {
     long stTime = System.nanoTime();
     if (channel == null || channel.getState(false) != ConnectivityState.READY) {
       createStubs();
-     /* log.info("Connectivity is not READY reConnectChannel " + channelConnects);
-      channelConnects++;*/
       long endTime = System.nanoTime() - stTime;
       log.error("Reconnect took NS " + endTime);
     }

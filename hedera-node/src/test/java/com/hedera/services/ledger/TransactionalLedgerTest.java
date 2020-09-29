@@ -20,46 +20,64 @@ package com.hedera.services.ledger;
  * ‍
  */
 
-import com.hedera.services.ledger.accounts.BackingAccounts;
+import com.hedera.services.exceptions.MissingAccountException;
+import com.hedera.services.ledger.accounts.BackingStore;
 import com.hedera.services.ledger.accounts.TestAccount;
 import com.hedera.services.ledger.properties.ChangeSummaryManager;
 import com.hedera.services.ledger.properties.TestAccountProperty;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.test.utils.IdUtils;
+import com.hederahashgraph.api.proto.java.TokenID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
 
+import static com.hedera.services.ledger.properties.TestAccountProperty.FLAG;
+import static com.hedera.services.ledger.properties.TestAccountProperty.LONG;
+import static com.hedera.services.ledger.properties.TestAccountProperty.OBJ;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.*;
-import static com.hedera.services.ledger.properties.TestAccountProperty.*;
-import com.hedera.services.exceptions.MissingAccountException;
-import org.mockito.InOrder;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.inOrder;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.times;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.verifyNoMoreInteractions;
+import static org.mockito.BDDMockito.willThrow;
 
 @RunWith(JUnitPlatform.class)
 public class TransactionalLedgerTest {
 	Supplier<TestAccount> newAccountFactory;
-	BackingAccounts<Long, TestAccount> backingAccounts;
+	BackingStore<Long, TestAccount> backingAccounts;
 	ChangeSummaryManager<TestAccount, TestAccountProperty> changeManager = new ChangeSummaryManager<>();
 	TransactionalLedger<Long, TestAccountProperty, TestAccount> subject;
 
+	TokenID tid = IdUtils.tokenWith(666L);
 	Object[] things = { "a", "b", "c", "d" };
-	TestAccount account1 = new TestAccount(1L, things[1], false);
+	MerkleToken token;
+	TestAccount account1 = new TestAccount(1L, things[1], false, 667L);
+	TestAccount account1TokenCopy = new TestAccount(1L, things[1], false, 667L);
 
 	@BeforeEach
 	private void setup() {
-		backingAccounts = mock(BackingAccounts.class);
+		token = mock(MerkleToken.class);
+
+		backingAccounts = mock(BackingStore.class);
 		given(backingAccounts.getRef(1L)).willReturn(account1);
 		given(backingAccounts.contains(1L)).willReturn(true);
-
 		newAccountFactory = () -> new TestAccount();
 
 		subject = new TransactionalLedger<>(TestAccountProperty.class, newAccountFactory, backingAccounts, changeManager);
@@ -71,7 +89,7 @@ public class TransactionalLedgerTest {
 		subject.begin();
 
 		// when:
-		var obj = subject.get(1L, OBJ);
+		subject.get(1L, OBJ);
 		// and:
 		subject.rollback();
 
@@ -82,7 +100,7 @@ public class TransactionalLedgerTest {
 	@Test
 	public void getUsesMutableRefIfPendingChanges() {
 		// given:
-		var newAccount1 = new TestAccount(account1.value, account1.thing, !account1.flag);
+		var newAccount1 = new TestAccount(account1.value, account1.thing, !account1.flag, account1.tokenThing);
 		// and:
 		subject.begin();
 		subject.set(1L, FLAG, !account1.flag);
@@ -321,7 +339,7 @@ public class TransactionalLedgerTest {
 		subject.set(1L, OBJ, things[0]);
 
 		// expect:
-		assertEquals(new TestAccount(account1.value, things[0], account1.flag), subject.get(1L));
+		assertEquals(new TestAccount(account1.value, things[0], account1.flag, 667L), subject.get(1L));
 	}
 
 	@Test
@@ -365,6 +383,9 @@ public class TransactionalLedgerTest {
 
 	@Test
 	public void persistsPendingChangesAndDestroysDeadAccountsAfterCommit() {
+		// setup:
+		var expected2 = new TestAccount(2L, things[2], false);
+
 		// given:
 		subject.begin();
 
@@ -383,25 +404,10 @@ public class TransactionalLedgerTest {
 		assertFalse(subject.isInTransaction());
 		assertEquals("{}", subject.changeSetSoFar());
 		// and:
-		verify(backingAccounts).put(2L, new TestAccount(2L, things[2], false));
-		verify(backingAccounts).put(1L, new TestAccount(1L, things[0], false));
+		verify(backingAccounts).put(2L, expected2);
+		verify(backingAccounts).put(1L, new TestAccount(1L, things[0], false, 667L));
 		verify(backingAccounts, never()).put(3L, new TestAccount(0L, things[3], false));
 		verify(backingAccounts).remove(3L);
-	}
-
-	@Test
-	public void describesChangesAsExpected() {
-		// given:
-		subject.begin();
-		subject.set(1L, OBJ, things[0]);
-		subject.create(2L);
-		subject.set(2L, OBJ, things[2]);
-		subject.set(2L, LONG, 2L);
-		// and:
-		String expectedDescription = "{1: [OBJ -> a], *NEW* 2: [LONG -> 2, OBJ -> c]}";
-
-		// expect:
-		assertEquals(expectedDescription, subject.changeSetSoFar());
 	}
 
 	@Test

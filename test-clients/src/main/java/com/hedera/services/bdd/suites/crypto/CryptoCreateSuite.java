@@ -32,28 +32,29 @@ import com.hederahashgraph.api.proto.java.ThresholdKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.List;
 
+import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
+import static com.hedera.services.bdd.spec.keys.ControlForKey.forKey;
+import static com.hedera.services.bdd.spec.keys.KeyShape.SIMPLE;
+import static com.hedera.services.bdd.spec.keys.KeyShape.listOf;
+import static com.hedera.services.bdd.spec.keys.KeyShape.sigs;
+import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
+import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
+import static com.hedera.services.bdd.spec.keys.SigControl.ON;
+import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUtf8Bytes;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.contractCreate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
+import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BAD_ENCODING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
-import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
-import static com.hedera.services.bdd.spec.keys.KeyShape.SIMPLE;
-import static com.hedera.services.bdd.spec.keys.KeyShape.listOf;
-import static com.hedera.services.bdd.spec.keys.KeyShape.sigs;
-import static com.hedera.services.bdd.spec.keys.SigControl.OFF;
-import static com.hedera.services.bdd.spec.keys.SigControl.ON;
-import static com.hedera.services.bdd.spec.keys.KeyShape.threshOf;
-import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
-import static com.hedera.services.bdd.spec.transactions.TxnVerbs.*;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.*;
-import static com.hedera.services.bdd.spec.keys.ControlForKey.forKey;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.KEY_REQUIRED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNKNOWN;
 
 public class CryptoCreateSuite extends HapiApiSuite {
 	private static final Logger log = LogManager.getLogger(CryptoCreateSuite.class);
@@ -65,16 +66,7 @@ public class CryptoCreateSuite extends HapiApiSuite {
 	@Override
 	protected List<HapiApiSpec> getSpecsInSuite() {
 		return allOf(
-				positiveTests(),
 				negativeTests()
-		);
-	}
-
-	private List<HapiApiSpec> positiveTests() {
-		return Arrays.asList(
-				invalidPayerSigNotQueryable()
-//				vanillaCreateSucceeds()
-//				requiresNewKeyToSign()
 		);
 	}
 
@@ -115,7 +107,7 @@ public class CryptoCreateSuite extends HapiApiSuite {
 				);
 	}
 
-	public static HapiApiSpec invalidDurationGetsMeaningfulResponse() {
+	public HapiApiSpec invalidDurationGetsMeaningfulResponse() {
 		return defaultHapiSpec("InvalidDurationGetsMeaningfulResponse")
 				.given().when().then(
 						cryptoCreate("broken")
@@ -124,33 +116,11 @@ public class CryptoCreateSuite extends HapiApiSuite {
 				);
 	}
 
-	private HapiApiSpec invalidPayerSigNotQueryable() {
-		KeyShape origShape = listOf(3);
-		KeyShape newShape = SIMPLE;
-
-		return defaultHapiSpec("InvalidPayerSigNotQueryable")
-				.given(
-						UtilVerbs.newKeyNamed("newKey").shape(newShape),
-						UtilVerbs.newKeyNamed("origKey").shape(origShape),
-						cryptoCreate("payer").key("origKey").via("txn")
-				).when(
-						cryptoUpdate("payer")
-								.key("newKey")
-								.deferStatusResolution(),
-						cryptoTransfer(tinyBarsFromTo(GENESIS, FUNDING, 100L))
-								.via("impossibleTxn")
-								.fee(2_000_000L)
-								.signedBy("origKey", GENESIS)
-								.payingWith("payer")
-								.hasKnownStatus(UNKNOWN)
-				).then(
-				);
-	}
-
 	private HapiApiSpec vanillaCreateSucceeds() {
 		return defaultHapiSpec("VanillaCreateSucceeds")
 				.given(
-						cryptoCreate("testAccount").via("txn")
+						cryptoCreate("testAccount").via("txn"),
+						UtilVerbs.sleepFor(2000)
 				).when().then(
 						getTxnRecord("txn").logged()
 				);

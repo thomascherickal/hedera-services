@@ -117,9 +117,8 @@ public class CryptoUpdateKeysOrderTests extends BaseClient {
     Key toKey = acc2ComplexKeyMap.get(toID);
     keys.add(toKey);
     Transaction transferTxSigned = TransactionSigner
-        .signTransactionComplex(paymentTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(paymentTx, keys, pubKey2privKeyMap);
     TransactionReceipt receipt = transfer(transferTxSigned);
-    // TransactionReceipt receipt = transfer(payerID, nodeID, accID, toID, amount);
 
     Assert.assertEquals(ResponseCodeEnum.SUCCESS.name(), receipt.getStatus().name());
     long fromBal2 = getAccountBalance(accID, payerID, nodeID);
@@ -198,9 +197,8 @@ public class CryptoUpdateKeysOrderTests extends BaseClient {
     Key toKey = acc2ComplexKeyMap.get(toID);
     keys.add(toKey);
     Transaction transferTxSigned = TransactionSigner
-        .signTransactionComplex(paymentTx, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(paymentTx, keys, pubKey2privKeyMap);
     TransactionReceipt receipt = transfer(transferTxSigned);
-    // TransactionReceipt receipt = transfer(payerID, nodeID, accID, toID, amount);
 
     Assert.assertEquals(ResponseCodeEnum.INVALID_SIGNATURE_COUNT_MISMATCHING_KEY.name(),
         receipt.getStatus().name());

@@ -21,6 +21,7 @@ package com.hedera.services.fees.calculation;
  */
 
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.FeeCalculator;
 import com.hedera.services.fees.HbarCentExchange;
@@ -38,16 +39,15 @@ import com.hederahashgraph.fee.FeeBuilder;
 import com.hederahashgraph.fee.FeeObject;
 import com.hederahashgraph.fee.SigValueObj;
 import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.exception.NoFeeScheduleExistsException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import static com.hedera.services.fees.calculation.AwareFcfsUsagePrices.DEFAULT_USAGE_PRICES;
-import static com.hedera.services.utils.MiscUtils.functionOf;
 import static com.hederahashgraph.fee.FeeBuilder.getTinybarsFromTinyCents;
 import static com.hederahashgraph.fee.FeeBuilder.getTransactionRecordFeeInTinyCents;
 
@@ -64,6 +64,7 @@ public class UsageBasedFeeCalculator implements FeeCalculator {
 	private final PropertySource properties;
 	private final HbarCentExchange exchange;
 	private final UsagePricesProvider usagePrices;
+	private final GlobalDynamicProperties dynamicProperties;
 	private final List<QueryResourceUsageEstimator> queryUsageEstimators;
 	private final Function<HederaFunctionality, List<TxnResourceUsageEstimator>> txnUsageEstimators;
 
@@ -71,28 +72,26 @@ public class UsageBasedFeeCalculator implements FeeCalculator {
 			PropertySource properties,
 			HbarCentExchange exchange,
 			UsagePricesProvider usagePrices,
+			GlobalDynamicProperties dynamicProperties,
 			List<QueryResourceUsageEstimator> queryUsageEstimators,
 			Function<HederaFunctionality, List<TxnResourceUsageEstimator>> txnUsageEstimators
 	) {
 		this.exchange = exchange;
 		this.properties = properties;
 		this.usagePrices = usagePrices;
+		this.dynamicProperties = dynamicProperties;
 		this.queryUsageEstimators = queryUsageEstimators;
 		this.txnUsageEstimators = txnUsageEstimators;
 	}
 
 	@Override
 	public void init() {
-		try {
-			usagePrices.loadPriceSchedules();
-		} catch (NoFeeScheduleExistsException nfse) {
-			throw new IllegalStateException(nfse);
-		}
+		usagePrices.loadPriceSchedules();
 	}
 
 	@Override
 	public long computeCachingFee(TransactionRecord record) {
-		return priceForStorage(record, properties.getIntProperty("cache.records.ttl"));
+		return priceForStorage(record, dynamicProperties.cacheRecordsTtl());
 	}
 
 	@Override
@@ -107,8 +106,14 @@ public class UsageBasedFeeCalculator implements FeeCalculator {
 	}
 
 	@Override
-	public FeeObject computePayment(Query query, FeeData usagePrices, StateView view, Timestamp at) {
-		return compute(query, usagePrices, at, estimator -> estimator.usageGiven(query, view));
+	public FeeObject computePayment(
+			Query query,
+			FeeData usagePrices,
+			StateView view,
+			Timestamp at,
+			Map<String, Object> queryCtx
+	) {
+		return compute(query, usagePrices, at, estimator -> estimator.usageGiven(query, view, queryCtx));
 	}
 
 	@Override
@@ -152,7 +157,7 @@ public class UsageBasedFeeCalculator implements FeeCalculator {
 
 	private FeeData uncheckedPricesGiven(SignedTxnAccessor accessor, Timestamp at) {
 		try {
-			return usagePrices.pricesGiven(functionOf(accessor.getTxn()), at);
+			return usagePrices.pricesGiven(accessor.getFunction(), at);
 		} catch (Exception e) {
 			log.warn("Using default usage prices to calculate fees for {}!", accessor.getSignedTxn4Log(), e);
 		}

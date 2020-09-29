@@ -42,8 +42,6 @@ import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.SystemDeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -86,6 +84,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -103,6 +102,9 @@ public class TestHelper {
   public static long DEFAULT_WIND_SEC = -30; // seconds to wind back the UTC clock
   public static long TX_DURATION = 180;
   private static volatile long lastNano = 0;
+  protected static Map<AccountID, Key> acc2ComplexKeyMap = new LinkedHashMap<>();
+  protected static Map<ContractID, Key> contract2ComplexKeyMap = new LinkedHashMap<>();
+  protected static Map<String, PrivateKey> pubKey2privKeyMap = new HashMap<>();
   protected static int MAX_RECEIPT_RETRIES = 108000;
   protected static long RETRY_FREQ_MILLIS = 50;
   protected static long MAX_RETRY_FREQ_MILLIS = 200;
@@ -117,7 +119,9 @@ public class TestHelper {
     if(tempFile==null || !tempFile.exists()) {
       try {
         int index = strPath.lastIndexOf("\\");
-        if (index <= 0) index =  strPath.lastIndexOf("/");
+        if (index <= 0) {
+			index =  strPath.lastIndexOf("/");
+		}
         String localStartUpFile = strPath.substring(index+1);
         path = Paths.get(TestHelper.class.getClassLoader().getResource(localStartUpFile).toURI());
       }catch (Exception e) {
@@ -206,8 +210,6 @@ public class TestHelper {
   }
 
   public static List<AccountKeyListObj> getGenAccountKey() throws URISyntaxException, IOException {
-//    Path path = Paths
-//        .get(Thread.currentThread().getContextClassLoader().getResource(fileName).toURI());
     Map<String, List<AccountKeyListObj>> keyFromFile = getKeyFromFile(fileName);
 
     return keyFromFile.get("START_ACCOUNT");
@@ -220,18 +222,10 @@ public class TestHelper {
 
   public static Transaction createAccountWithFee(AccountID payerAccount, AccountID nodeAccount,
       KeyPair pair, long initialBalance, List<PrivateKey> privKey) throws Exception {
-
     Transaction transaction = TestHelper
-        .createAccount(payerAccount, nodeAccount, pair, initialBalance, 0,
-            DEFAULT_SEND_RECV_RECORD_THRESHOLD, DEFAULT_SEND_RECV_RECORD_THRESHOLD);
-    Transaction signTransaction = TransactionSigner.signTransaction(transaction, privKey);
-//    long createAccountFee = FeeClient.getCreateAccountFee(signTransaction, privKey.size());
-//    System.out.println("createAccountFee ===> " + createAccountFee);
-    transaction = TestHelper
         .createAccount(payerAccount, nodeAccount, pair, initialBalance, TestHelper.getCryptoMaxFee(),
             DEFAULT_SEND_RECV_RECORD_THRESHOLD, DEFAULT_SEND_RECV_RECORD_THRESHOLD);
-    signTransaction = TransactionSigner.signTransaction(transaction, privKey);
-    return signTransaction;
+    return TransactionSigner.signTransaction(transaction, privKey);
   }
   public static Transaction createAccountWithSigMap(AccountID payerAccount, AccountID nodeAccount,
       KeyPair pair, long initialBalance, KeyPair payerKeyPair) throws Exception {
@@ -244,7 +238,6 @@ public class TestHelper {
     Common.addKeyMap(payerKeyPair, pubKey2privKeyMap);
     Transaction signTransaction = TransactionSigner
         .signTransactionComplexWithSigMap(transaction, keyList, pubKey2privKeyMap);
-    //  Transaction signTransaction = TransactionSigner.signTransaction(transaction, privKey);
     long createAccountFee = FeeClient.getCreateAccountFee(signTransaction, 1);
     System.out.println("createAccountFee ===> " + createAccountFee);
     return signTransaction;
@@ -334,8 +327,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, defaultSendRecordThreshold,
-            defaultRecvRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            defaultRecvRecordThreshold, receiverSigRequired, autoRenewPeriod);
 
 
   }
@@ -346,8 +338,6 @@ public class TestHelper {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
     byte[] pubKey = ((EdDSAPublicKey) pair.getPublic()).getAbyte();
-//		  String pubKeyStr = Hex.encodeHexString(pubKey);
-//		  Key key = Key.newBuilder().setEd25519(ByteString.copyFromUtf8(pubKeyStr)).build();
     Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
     List<Key> keyList = Collections.singletonList(key);
 
@@ -364,8 +354,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
 
 
   }
@@ -376,8 +365,6 @@ public class TestHelper {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(30);
     byte[] pubKey = ((EdDSAPublicKey) pair.getPublic()).getAbyte();
-//		  String pubKeyStr = Hex.encodeHexString(pubKey);
-//		  Key key = Key.newBuilder().setEd25519(ByteString.copyFromUtf8(pubKeyStr)).build();
     Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
     List<Key> keyList = Collections.singletonList(key);
 
@@ -394,8 +381,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
 
 
   }
@@ -404,9 +390,6 @@ public class TestHelper {
       String pubKeyStr, long initialBalance) throws DecoderException {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
-    //		byte[] pubKey = ((EdDSAPublicKey) pair.getPublic()).getAbyte();
-//		String pubKeyStr = Hex.encodeHexString(pubKey);
-//		  Key key = Key.newBuilder().setEd25519(ByteString.copyFromUtf8(pubKeyStr)).build();
     byte[] bytes = HexUtils.hexToBytes(pubKeyStr);
     Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(bytes)).build();
     List<Key> keyList = Collections.singletonList(key);
@@ -426,8 +409,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
   }
 
   /**
@@ -561,7 +543,6 @@ public class TestHelper {
       AccountID accountId, AccountID payerAccount, KeyPair payerAccountKey,
       AccountID nodeAccount) throws Exception {
 
-//    long costForQuery = FeeClient.getFeeByID(HederaFunctionality.CryptoGetAccountRecords);
     long costForQuery = TestHelper.getCryptoMaxFee();
     System.out.println(costForQuery + " :: is the cost for query");
     Response response = executeGetAccountRecords(stub, accountId, payerAccount, payerAccountKey,
@@ -626,8 +607,7 @@ public class TestHelper {
         0l, nodeAccountNum, 0l,
         0l, TestHelper.getCryptoMaxFee(), startTime,
         transactionDuration, true, "Update Account",
-        100l, 100l,
-        autoRenew, SignatureList.newBuilder().getDefaultInstanceForType());
+        autoRenew);
 
 
   }
@@ -643,8 +623,7 @@ public class TestHelper {
     return RequestBuilder.getAccountDeleteRequest(accountID, trasferAccountID, payerAccountNum, 0l,
         0l, nodeAccountNum, 0l,
         0l, TestHelper.getCryptoMaxFee(), startTime,
-        transactionDuration, true, "Delete Account",
-        SignatureList.newBuilder().getDefaultInstanceForType());
+        transactionDuration, true, "Delete Account");
   }
 
   public static Transaction createFile(long payerAccountNum,
@@ -662,7 +641,7 @@ public class TestHelper {
 
     return RequestBuilder.getFileCreateBuilder(payerAccountNum, 0l, 0l, nodeAccountNum, 0l, 0l,
         transactionFee, startTime, transactionDuration, generateRecord, memo,
-        SignatureList.newBuilder().getDefaultInstanceForType(), fileData,
+        fileData,
         fileExpirationTime, waclKeyList);
   }
 
@@ -677,8 +656,6 @@ public class TestHelper {
     int i = listKeyPairs.size();
     for (int j = 0; j < i; j++) {
       byte[] pubKey = ((EdDSAPublicKey) listKeyPairs.get(j).getPublic()).getAbyte();
-//			String pubKeyStr = Hex.encodeHexString(pubKey);
-//			Key key = Key.newBuilder().setEd25519(ByteString.copyFromUtf8(pubKeyStr)).build();
       Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
       keyList.add(j, key);
     }
@@ -696,8 +673,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
     transaction = TransactionSigner
         .signTransaction(transaction, Collections.singletonList(genesisPrivateKey));
 // Since Single Genesis Key is used
@@ -709,8 +685,7 @@ public class TestHelper {
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
             transactionFee, timestamp, transactionDuration, generateRecord,
             memo, keyList.size(), keyList, initialBalance, sendRecordThreshold,
-            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod,
-            SignatureList.newBuilder().getDefaultInstanceForType());
+            receiveRecordThreshold, receiverSigRequired, autoRenewPeriod);
     return TransactionSigner
         .signTransaction(transaction, Collections.singletonList(genesisPrivateKey));
 
@@ -828,23 +803,17 @@ public class TestHelper {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), 0, timestamp, transactionDuration,
-        false, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+        false, "Test Transfer", fromAccount.getAccountNum(), -amount,
         toAccount.getAccountNum(), amount);
     // sign the tx
-    List<List<PrivateKey>> privKeysList = new ArrayList<>();
-    List<PrivateKey> payerPrivKeyList = new ArrayList<>();
-    payerPrivKeyList.add(payerAccountKey);
-    privKeysList.add(payerPrivKeyList);
+    List<PrivateKey> privKeysList = new ArrayList<>();
+    privKeysList.add(payerAccountKey);
+    privKeysList.add(fromKey);
 
-    List<PrivateKey> fromPrivKeyList = new ArrayList<>();
-    fromPrivKeyList.add(fromKey);
-    privKeysList.add(fromPrivKeyList);
-
-    Transaction signedTx = TransactionSigner.signTransactionNew(transferTx, privKeysList);
+    Transaction signedTx = TransactionSigner.signTransaction(transferTx, privKeysList);
 
     long transferFee = 0;
     try {
@@ -856,10 +825,10 @@ public class TestHelper {
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), transferFee, timestamp,
         transactionDuration, false,
-        "Test Transfer", sigList, fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
+        "Test Transfer", fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
         amount);
 
-    signedTx = TransactionSigner.signTransactionNew(transferTx, privKeysList);
+    signedTx = TransactionSigner.signTransaction(transferTx, privKeysList);
     return signedTx;
   }
 
@@ -869,11 +838,10 @@ public class TestHelper {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), 0, timestamp, transactionDuration,
-        false, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+        false, "Test Transfer", fromAccount.getAccountNum(), -amount,
         toAccount.getAccountNum(), amount);
     // sign the tx
     List<Key> keyList = new ArrayList<>();
@@ -893,7 +861,7 @@ public class TestHelper {
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), transferFee, timestamp,
         transactionDuration, false,
-        "Test Transfer", sigList, fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
+        "Test Transfer", fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
         amount);
 
     signedTx = TransactionSigner.signTransactionComplexWithSigMap(
@@ -909,11 +877,10 @@ public class TestHelper {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), FeeClient.getMaxFee(), timestamp,
-        transactionDuration, false, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+        transactionDuration, false, "Test Transfer", fromAccount.getAccountNum(), -amount,
         toAccount.getAccountNum(), amount);
     // sign the tx
     List<Key> keyList = new ArrayList<>();
@@ -937,11 +904,10 @@ public class TestHelper {
     Timestamp timestamp = ProtoCommonUtils.getCurrentTimestampUTC(-1200);
     Duration transactionDuration = RequestBuilder.getDuration(TX_DURATION);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), 0, timestamp, transactionDuration,
-        false, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+        false, "Test Transfer", fromAccount.getAccountNum(), -amount,
         toAccount.getAccountNum(), amount);
     // sign the tx
     List<Key> keyList = new ArrayList<>();
@@ -966,7 +932,7 @@ public class TestHelper {
         payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
         nodeAccount.getRealmNum(), nodeAccount.getShardNum(), transferFee, timestamp,
         transactionDuration, false,
-        "Test Transfer", sigList, fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
+        "Test Transfer", fromAccount.getAccountNum(), -amount, toAccount.getAccountNum(),
         amount);
 
     signedTx = TransactionSigner.signTransactionComplexWithSigMap(
@@ -1103,10 +1069,7 @@ public class TestHelper {
     Transaction transaction = RequestBuilder
         .getContractCallRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
-            txDuration, gas, contractId, functionData, value,
-            SignatureList.newBuilder().
-                addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build());
+            txDuration, gas, contractId, functionData, value);
 
     transaction = TransactionSigner.signTransaction(transaction, keys);
 
@@ -1115,10 +1078,7 @@ public class TestHelper {
     transaction = RequestBuilder
         .getContractCallRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
-            txDuration, gas, contractId, functionData, value,
-            SignatureList.newBuilder().
-                addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build());
+            txDuration, gas, contractId, functionData, value);
 
     return TransactionSigner.signTransaction(transaction, keys);
 
@@ -1139,10 +1099,7 @@ public class TestHelper {
     Transaction transaction = RequestBuilder
         .getContractCallRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
-            txDuration, gas, contractId, functionData, value,
-            SignatureList.newBuilder().
-                addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build());
+            txDuration, gas, contractId, functionData, value);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1152,10 +1109,7 @@ public class TestHelper {
     transaction = RequestBuilder
         .getContractCallRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
-            txDuration, gas, contractId, functionData, value,
-            SignatureList.newBuilder().
-                addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build());
+            txDuration, gas, contractId, functionData, value);
 
     return TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1190,10 +1144,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminKey);
+            autoRenewalPeriod, contractMemo, adminKey);
 
     transaction = TransactionSigner.signTransaction(transaction, keys);
 
@@ -1203,10 +1154,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminKey);
+            autoRenewalPeriod, contractMemo, adminKey);
 
     transaction = TransactionSigner.signTransaction(transaction, keys);
     return transaction;
@@ -1229,10 +1177,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminPubKey);
+            autoRenewalPeriod, contractMemo, adminPubKey);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1243,10 +1188,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminPubKey);
+            autoRenewalPeriod, contractMemo, adminPubKey);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1273,10 +1215,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminPubKey);
+            autoRenewalPeriod, contractMemo, adminPubKey);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1287,10 +1226,7 @@ public class TestHelper {
         .getCreateContractRequest(payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum,
             nodeRealmNum, nodeShardNum, transactionFee, timestamp,
             txDuration, generateRecord, txMemo, gas, fileId, constructorParameters, initialBalance,
-            autoRenewalPeriod, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), contractMemo, adminPubKey);
+            autoRenewalPeriod, contractMemo, adminPubKey);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(
         transaction, keyList, pubKey2privKeyMap);
@@ -1299,15 +1235,12 @@ public class TestHelper {
 
   public static long getFileMaxFee() {
     return CryptoServiceTest.getUmbrellaProperties().getLong("fileMaxFee", 800_000_000L);
-  //  return 800_000_000L;
   }
   public static long getContractMaxFee() {
     return CryptoServiceTest.getUmbrellaProperties().getLong("contractMaxFee", 60_00_000_000L);
- //   return 6000_000_000L;
   }
   public static long getCryptoMaxFee() {
     return CryptoServiceTest.getUmbrellaProperties().getLong("cryptoMaxFee", 5_00_000_000L);
-//    return 500_000_000L;
   }
 
   public static int getErrorReturnCode() {
@@ -1332,8 +1265,7 @@ public class TestHelper {
     ByteString bodyBytes = ByteString.copyFrom(body.build().toByteArray());
 
     // step 1 : create tx
-    Transaction transaction = Transaction.newBuilder().setBodyBytes(bodyBytes)
-        .setSigs(SignatureList.getDefaultInstance()).build();
+    Transaction transaction = Transaction.newBuilder().setBodyBytes(bodyBytes).build();
     // step 2 : sign tx by payer account's private key
     Transaction signTransaction = TransactionSigner.signTransaction(transaction,
         Collections.singletonList(payerPrivateKey));
@@ -1345,7 +1277,7 @@ public class TestHelper {
     // step 5  sign again after fee calculation
     transaction = Transaction.newBuilder()
         .setBodyBytes(ByteString.copyFrom(body.build().toByteArray()))
-        .setSigs(SignatureList.getDefaultInstance()).build();
+        .build();
     signTransaction = TransactionSigner.signTransaction(transaction,
         Collections.singletonList(payerPrivateKey));
     return signTransaction;
@@ -1384,10 +1316,7 @@ public class TestHelper {
 
     Transaction transaction = RequestBuilder
         .getDeleteContractRequest(payer, node, transactionFee, timestamp, txDuration, contractId,
-            transferAccount, transferContract, generateRecord, txMemo, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build());
+            transferAccount, transferContract, generateRecord, txMemo);
 
     transaction = TransactionSigner.signTransaction(transaction, keys);
     return transaction;
@@ -1407,10 +1336,7 @@ public class TestHelper {
 
     Transaction transaction = RequestBuilder
         .getDeleteContractRequest(payer, node, transactionFee, timestamp, txDuration, contractId,
-            transferAccount, transferContract, generateRecord, txMemo, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build());
+            transferAccount, transferContract, generateRecord, txMemo);
 
     transaction = TransactionSigner.signTransactionComplexWithSigMap(transaction, keyList,
         pubKey2privKeyMap);
@@ -1434,8 +1360,7 @@ public class TestHelper {
         .newBuilder().setLiveHash(claim).build();
     txBodyBuilder.setCryptoAddLiveHash(addLiveHashTransactionBody);
     ByteString bodyBytes = ByteString.copyFrom(txBodyBuilder.build().toByteArray());
-    Transaction addLiveHashTx = Transaction.newBuilder().setBodyBytes(bodyBytes)
-        .setSigs(SignatureList.newBuilder().getDefaultInstanceForType()).build();
+    Transaction addLiveHashTx = Transaction.newBuilder().setBodyBytes(bodyBytes).build();
     Transaction signedAddLiveHashTx = TransactionSigner
         .signTransaction(addLiveHashTx, genesisPrivateKey);
     return stub.addLiveHash(signedAddLiveHashTx);

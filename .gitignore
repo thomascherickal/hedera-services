@@ -1,5 +1,6 @@
 # Key files
 *.pem
+!hedera-node/data/onboard/devGenesisKeypair.pem
 
 # VIM
 *.sw*
@@ -60,13 +61,18 @@ evm-adapter/target/
 test-clients/logs/
 test-clients/*.bin
 test-clients/output/
-test-clients/devops-utils/validation-scenarios/logs/
+test-clients/devops-utils/validation-scenarios/fees/
 test-clients/devops-utils/validation-scenarios/output/
+test-clients/devops-utils/validation-scenarios/cost-snapshots/
 test-clients/devops-utils/sysfiles-update/svctools.tar.gz
 test-clients/devops-utils/sysfiles-update/certs/*.crt
 test-clients/devops-utils/sysfiles-update/run/SysFilesUpdate.jar
+test-clients/devops-utils/validation-scenarios/ValidationScenarios.jar
 test-clients/devops-utils/sysfiles-update/b64GenesisKeyPair.txt
 test-clients/src/main/resource/TestnetStartupAccount.txt
+test-clients/src/main/resource/MainnetStartupAccount.txt
+test-clients/src/main/resource/StableTestnetStartupAccount.txt
+test-clients/src/main/resource/StableTestnetAccount50StartupAccount.txt
 test-clients/saved/
 test-clients/target/
 test-clients/record-snapshots/

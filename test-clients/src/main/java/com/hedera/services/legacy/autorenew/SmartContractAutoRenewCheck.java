@@ -36,8 +36,6 @@ import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -81,7 +79,6 @@ public class SmartContractAutoRenewCheck {
   private static long DAY_SEC_ACTUAL = 24 * 60 * 60; // secs in a day
   private static long DAY_SEC = 24 * 365 * 10 * 60 * 60 * 5;
   private static long INITIAL_BALANCE = TestHelper.getCryptoMaxFee() * 5;
-  //  private final static String CONTRACT_MEMO_STRING_1 = "This is a memo string with non-ascii characters: ȀĊ.";
   private final static String CONTRACT_MEMO_STRING_1 = "This is a memo string with non-Ascii characters: ȀĊ";
   private final static String CONTRACT_MEMO_STRING_2 = "This is an updated memo string.";
   private final static String CONTRACT_MEMO_STRING_3 = "Yet another memo.";
@@ -115,9 +112,7 @@ public class SmartContractAutoRenewCheck {
         .setRealmNum(node_shard_number).setShardNum(node_realm_number).build();
 
     int numberOfReps = 1;
-//    if ((args.length) > 0) {
-//      numberOfReps = Integer.parseInt(args[0]);
-//    }
+
     for (int i = 0; i < numberOfReps; i++) {
       SmartContractAutoRenewCheck scc = new SmartContractAutoRenewCheck();
       scc.demo();
@@ -334,8 +329,8 @@ public class SmartContractAutoRenewCheck {
         .parseFrom(callContractRequest.getBodyBytes());
     TransactionGetReceiptResponse contractCallReceipt = getReceipt(
         callContractBody.getTransactionID());
-    if (contractCallReceipt != null && contractCallReceipt.getReceipt().getStatus().name()
-        .equalsIgnoreCase(ResponseCodeEnum.SUCCESS.name())) {
+    if (contractCallReceipt != null && contractCallReceipt.getReceipt().getStatus()
+            .equals(ResponseCodeEnum.SUCCESS)) {
       TransactionRecord trRecord = getTransactionRecord(payerAccount,
           callContractBody.getTransactionID());
       if (trRecord != null && trRecord.hasContractCallResult()) {
@@ -500,8 +495,7 @@ public class SmartContractAutoRenewCheck {
     Transaction updateContractRequest = RequestBuilder
         .getContractUpdateRequest(payerAccount, nodeAccount, MAX_TX_FEE, timestamp,
             transactionDuration, true, "", contractToUpdate, autoRenewPeriod, null, null,
-            expirationTime, SignatureList.newBuilder().addSigs(Signature.newBuilder()
-                .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build(),
+            expirationTime,
             contractMemo);
     updateContractRequest = TransactionSigner
         .signTransactionComplexWithSigMap(updateContractRequest, keyList, pubKey2privKeyMap);

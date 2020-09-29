@@ -33,16 +33,19 @@ import java.util.Optional;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FILE_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
 
 public class RandomFileInfo implements OpProvider {
 	private final ResponseCodeEnum[] permissibleCostAnswerPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
-			INSUFFICIENT_TX_FEE
+			INSUFFICIENT_TX_FEE,
+			INVALID_FILE_ID
 	);
 
 	private final ResponseCodeEnum[] permissibleAnswerOnlyPrechecks = standardQueryPrechecksAnd(
 			FILE_DELETED,
-			INSUFFICIENT_TX_FEE
+			INSUFFICIENT_TX_FEE,
+			INVALID_FILE_ID
 	);
 
 	private final EntityNameProvider<FileID> files;
@@ -66,8 +69,6 @@ public class RandomFileInfo implements OpProvider {
 		var op = QueryVerbs.getFileInfo(target.get())
 				.hasCostAnswerPrecheckFrom(permissibleCostAnswerPrechecks)
 				.hasAnswerOnlyPrecheckFrom(permissibleAnswerOnlyPrechecks);
-
-//		System.out.println(String.format("Cost-answer precheck: %s", permissibleCostAnswerPrechecks.toString()));
 
 		return Optional.of(op);
 	}

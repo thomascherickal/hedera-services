@@ -58,8 +58,5 @@ public enum TestAccountProperty implements BeanProperty<TestAccount> {
 		public Function<TestAccount, Object> getter() {
 			return TestAccount::getThing;
 		}
-	};
-
-	@Override
-	abstract public BiConsumer<TestAccount, Object> setter();
+	},
 }

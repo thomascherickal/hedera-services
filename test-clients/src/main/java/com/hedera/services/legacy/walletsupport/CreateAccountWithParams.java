@@ -26,7 +26,6 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -91,7 +90,6 @@ public class CreateAccountWithParams {
     public static void main(String args[]) throws InterruptedException, IOException, URISyntaxException, InvalidNodeTransactionPrecheckCode, DecoderException {
         Properties properties = TestHelper.getApplicationProperties();
         String host = "localhost" ;//properties.getProperty("host");
-        // String host ="dummy";
         int port = 50211;//Integer.parseInt(properties.getProperty("port"));
 
         if ((args.length) > 0) {
@@ -177,6 +175,6 @@ public class CreateAccountWithParams {
 				nodeAccount.getRealmNum(), nodeAccount.getShardNum(), transactionFee, startTime,
 				transactionDuration, generateRecord, memo, keys,
 				initialBalance, sendRecordThreshold, receiveRecordThreshold, receiverSigRequired,
-				autoRenewPeriod, SignatureList.newBuilder().getDefaultInstanceForType());
+				autoRenewPeriod);
 	}
 }

@@ -25,7 +25,7 @@ import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
-import com.hedera.services.legacy.exception.NegativeAccountBalanceException;
+import com.hedera.services.exceptions.NegativeAccountBalanceException;
 import com.hedera.services.legacy.logic.ApplicationConstants;
 import com.swirlds.fcqueue.FCQueue;
 import org.junit.jupiter.api.AfterEach;
@@ -40,13 +40,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.hedera.services.state.merkle.MerkleAccount.IMMUTABLE_EMPTY_FCQ;
 import static com.hedera.services.state.serdes.DomainSerdesTest.recordOne;
 import static com.hedera.services.state.serdes.DomainSerdesTest.recordTwo;
 import static com.hedera.services.legacy.core.jproto.JKey.equalUpToDecodability;
+import static com.hedera.test.factories.scenarios.TxnHandlingScenario.TOKEN_ADMIN_KT;
 import static java.util.Comparator.comparingLong;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.any;
@@ -66,6 +70,21 @@ public class MerkleAccountTest {
 	boolean smartContract = true;
 	boolean receiverSigRequired = true;
 	EntityId proxy = new EntityId(1L, 2L, 3L);
+	long firstToken = 555, secondToken = 666, thirdToken = 777;
+	long firstBalance = 123, secondBalance = 234, thirdBalance = 345;
+	long firstFlags = 0, secondFlags = 0, thirdFlags = 0;
+	long[] tokenRels = new long[] {
+			firstToken, firstBalance, firstFlags,
+			secondToken, secondBalance, secondFlags,
+			thirdToken, thirdBalance, thirdFlags
+	};
+	long otherFirstBalance = 321, otherSecondBalance = 432, otherThirdBalance = 543;
+	long otherFirstFlags = 0, otherSecondFlags = 0, otherThirdFlags = 0;
+	long[] otherTokenRels = new long[] {
+			firstToken, otherFirstBalance, otherFirstFlags,
+			secondToken, otherSecondBalance, otherSecondFlags,
+			thirdToken, otherThirdBalance, otherThirdFlags
+	};
 
 	JKey otherKey = new JEd25519Key("aBcDeFgHiJkLmNoPqRsTuVwXyZ012345".getBytes());
 	long otherExpiry = 7_234_567L;
@@ -78,14 +97,21 @@ public class MerkleAccountTest {
 	boolean otherSmartContract = false;
 	boolean otherReceiverSigRequired = false;
 	EntityId otherProxy = new EntityId(3L, 2L, 1L);
+	JKey adminKey = TOKEN_ADMIN_KT.asJKeyUnchecked();
+	MerkleToken unfrozenToken = new MerkleToken(
+			Long.MAX_VALUE, 100, 1,
+			"UnfrozenToken", "UnfrozenTokenName", false, false,
+			new EntityId(1, 2, 3));
 
 	MerkleAccountState state;
 	MerkleAccountState otherState;
 	FCQueue<ExpirableTxnRecord> records;
 	FCQueue<ExpirableTxnRecord> payerRecords;
+	MerkleAccountTokens tokens;
 	DomainSerdes serdes;
 
 	MerkleAccount subject;
+	MerkleAccountState delegate;
 
 	public static void offerRecordsInOrder(MerkleAccount account, List<ExpirableTxnRecord> _records) {
 		List<ExpirableTxnRecord> recordList = new ArrayList<>(_records);
@@ -108,6 +134,11 @@ public class MerkleAccountTest {
 		given(payerRecords.copy()).willReturn(payerRecords);
 		given(payerRecords.isImmutable()).willReturn(false);
 
+		tokens = mock(MerkleAccountTokens.class);
+		given(tokens.copy()).willReturn(tokens);
+
+		delegate = mock(MerkleAccountState.class);
+
 		state = new MerkleAccountState(
 				key,
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
@@ -121,7 +152,7 @@ public class MerkleAccountTest {
 				otherDeleted, otherSmartContract, otherReceiverSigRequired,
 				otherProxy);
 
-		subject = new MerkleAccount(List.of(state, records, payerRecords));
+		subject = new MerkleAccount(List.of(state, records, payerRecords, tokens));
 	}
 
 	@AfterEach
@@ -130,22 +161,26 @@ public class MerkleAccountTest {
 	}
 
 	@Test
-	public void fastCopyUsesImmutableFcqs() {
+	public void immutableAccountThrowsIse() {
+		// given:
+		var original = new MerkleAccount();
+
 		// when:
-		var copy = subject.copy();
+		original.copy();
 
 		// then:
-		verify(records).isImmutable();
-		verify(records).copy();
-		// and:
-		verify(payerRecords).isImmutable();
-		verify(payerRecords).copy();
+		assertThrows(IllegalStateException.class, () -> original.copy());
 	}
 
 	@Test
 	public void merkleMethodsWork() {
 		// expect;
-		assertEquals(MerkleAccount.NUM_V1_CHILDREN, subject.getMinimumChildCount(MerkleAccount.MERKLE_VERSION));
+		assertEquals(
+				MerkleAccount.ChildIndices.NUM_V1_CHILDREN,
+				subject.getMinimumChildCount(MerkleAccount.MERKLE_VERSION - 1));
+		assertEquals(
+				MerkleAccount.ChildIndices.NUM_V2_CHILDREN,
+				subject.getMinimumChildCount(MerkleAccount.MERKLE_VERSION));
 		assertEquals(MerkleAccount.MERKLE_VERSION, subject.getVersion());
 		assertEquals(MerkleAccount.RUNTIME_CONSTRUCTABLE_ID, subject.getClassId());
 		assertFalse(subject.isLeaf());
@@ -155,12 +190,15 @@ public class MerkleAccountTest {
 	public void toStringWorks() {
 		given(records.size()).willReturn(2);
 		given(payerRecords.size()).willReturn(3);
+		given(tokens.readableTokenIds()).willReturn("[1.2.3, 2.3.4]");
 
 		// expect:
 		assertEquals(
 				"MerkleAccount{state=" + state.toString()
 						+ ", # records=" + 2
-						+ ", # payer records=" + 3 + "}",
+						+ ", # payer records=" + 3
+						+ ", tokens=" + "[1.2.3, 2.3.4]"
+						+ "}",
 				subject.toString());
 	}
 
@@ -178,10 +216,14 @@ public class MerkleAccountTest {
 		assertEquals(state.memo(), subject.getMemo());
 		assertEquals(state.proxy(), subject.getProxy());
 		assertTrue(equalUpToDecodability(state.key(), subject.getKey()));
+		assertSame(tokens, subject.tokens());
 	}
 
 	@Test
 	public void settersDelegate() throws NegativeAccountBalanceException {
+		// given:
+		subject = new MerkleAccount(List.of(delegate, IMMUTABLE_EMPTY_FCQ, IMMUTABLE_EMPTY_FCQ));
+
 		// when:
 		subject.setExpiry(otherExpiry);
 		subject.setBalance(otherBalance);
@@ -196,7 +238,17 @@ public class MerkleAccountTest {
 		subject.setKey(otherKey);
 
 		// then:
-		assertEquals(otherState, subject.state());
+		verify(delegate).setExpiry(otherExpiry);
+		verify(delegate).setAutoRenewSecs(otherAutoRenewSecs);
+		verify(delegate).setSenderThreshold(otherSenderThreshold);
+		verify(delegate).setReceiverThreshold(otherReceiverThreshold);
+		verify(delegate).setDeleted(otherDeleted);
+		verify(delegate).setSmartContract(otherSmartContract);
+		verify(delegate).setReceiverSigRequired(otherReceiverSigRequired);
+		verify(delegate).setMemo(otherMemo);
+		verify(delegate).setProxy(otherProxy);
+		verify(delegate).setKey(otherKey);
+		verify(delegate).setHbarBalance(otherBalance);
 	}
 
 	@Test
@@ -210,12 +262,13 @@ public class MerkleAccountTest {
 	public void objectContractMet() {
 		// given:
 		var one = new MerkleAccount();
-		var two = new MerkleAccount(List.of(state, payerRecords, records));
+		var two = new MerkleAccount(List.of(state, payerRecords, records, tokens));
 		var three = two.copy();
 
 		// then:
 		verify(records).copy();
 		verify(payerRecords).copy();
+		verify(tokens).copy();
 		assertNotEquals(null, one);
 		assertNotEquals(new Object(), one);
 		assertNotEquals(two, one);
@@ -237,22 +290,6 @@ public class MerkleAccountTest {
 		// then:
 		verify(records).copy();
 		verify(payerRecords).copy();
-		// and:
-		assertEquals(records, copy.records());
-		assertEquals(payerRecords, copy.payerRecords());
-	}
-
-	@Test
-	public void copyConstructorReusesImmutableFcqs() {
-		given(records.isImmutable()).willReturn(true);
-		given(payerRecords.isImmutable()).willReturn(true);
-
-		// when:
-		var copy = subject.copy();
-
-		// then:
-		verify(records, never()).copy();
-		verify(payerRecords, never()).copy();
 		// and:
 		assertEquals(records, copy.records());
 		assertEquals(payerRecords, copy.payerRecords());
@@ -284,6 +321,18 @@ public class MerkleAccountTest {
 	public void throwsOnNegativeBalance() {
 		// expect:
 		assertThrows(NegativeAccountBalanceException.class, () -> subject.setBalance(-1L));
+	}
+
+	@Test
+	public void initializeEnsuresAssociationsExist() {
+		// given:
+		subject.setTokens(null);
+
+		// when:
+		subject.initialize(null);
+
+		// then:
+		assertNotNull(subject.tokens());
 	}
 
 	@Test

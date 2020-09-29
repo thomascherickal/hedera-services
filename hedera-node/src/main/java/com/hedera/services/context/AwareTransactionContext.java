@@ -22,8 +22,6 @@ package com.hedera.services.context;
 
 import com.google.protobuf.ByteString;
 import com.hedera.services.state.merkle.MerkleTopic;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.*;
 import com.hedera.services.legacy.core.jproto.JKey;
@@ -55,12 +53,12 @@ import java.util.function.Consumer;
 public class AwareTransactionContext implements TransactionContext {
 	private static final Logger log = LogManager.getLogger(AwareTransactionContext.class);
 
-	static final JKey EMPTY_HEDERA_KEY;
+	public static final JKey EMPTY_KEY;
 	static {
 		try {
-			EMPTY_HEDERA_KEY = mapKey(Key.newBuilder().setKeyList(KeyList.getDefaultInstance()).build());
+			EMPTY_KEY = mapKey(Key.newBuilder().setKeyList(KeyList.getDefaultInstance()).build());
 		} catch (Exception impossible) {
-			throw new IllegalStateException("Empty Hedera key could not be initialized! " + impossible.getMessage());
+			throw new IllegalStateException("Empty Hedera key could not be initialized!", impossible);
 		}
 	}
 
@@ -94,7 +92,7 @@ public class AwareTransactionContext implements TransactionContext {
 		this.submittingMember = submittingMember;
 
 		otherNonThresholdFees = 0L;
-		hash = MiscUtils.sha384HashOf(accessor);
+		hash = accessor.getHash();
 		statusSoFar = UNKNOWN;
 		consensusTimestamp = asTimestamp(consensusTime);
 		recordConfig = noopRecordConfig;
@@ -110,7 +108,7 @@ public class AwareTransactionContext implements TransactionContext {
 	public JKey activePayerKey() {
 		return isPayerSigKnownActive
 				? ctx.accounts().get(fromAccountId(accessor.getPayer())).getKey()
-				: EMPTY_HEDERA_KEY;
+				: EMPTY_KEY;
 	}
 
 	@Override
@@ -152,7 +150,8 @@ public class AwareTransactionContext implements TransactionContext {
 				.setTransactionID(accessor.getTxnId())
 				.setTransactionFee(amount)
 				.setTransactionHash(hash)
-				.setConsensusTimestamp(consensusTimestamp);
+				.setConsensusTimestamp(consensusTimestamp)
+				.addAllTokenTransferLists(ctx.ledger().netTokenTransfersInTxn());
 
 		recordConfig.accept(recordSoFar);
 		hasComputedRecordSoFar = true;
@@ -225,6 +224,11 @@ public class AwareTransactionContext implements TransactionContext {
 	@Override
 	public void setCreated(AccountID id) {
 		receiptConfig = receipt -> receipt.setAccountID(id);
+	}
+
+	@Override
+	public void setCreated(TokenID id) {
+		receiptConfig = receipt -> receipt.setTokenId(id);
 	}
 
 	@Override

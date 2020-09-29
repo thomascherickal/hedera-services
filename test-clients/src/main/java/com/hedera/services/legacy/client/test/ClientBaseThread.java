@@ -45,7 +45,6 @@ import com.hederahashgraph.api.proto.java.QueryHeader;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -81,7 +80,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.RECORD_NOT_FOUND;
-import static com.hedera.services.legacy.client.util.Common.createAccountComplex;
 import static org.junit.Assert.fail;
 
 /**
@@ -94,9 +92,7 @@ public class ClientBaseThread extends Thread {
 	public static String INITIAL_ACCOUNTS_FILE = TestHelper.getStartUpFile();
 
 	public static AccountID DEFAULT_FEE_COLLECTION_ACCOUNT = RequestBuilder.getAccountIdBuild(98L, 0L, 0L);
-	;
 
-	boolean useSigMap;
 	long nodeAccountNumber = 3;
 	String host;
 	int port;
@@ -130,10 +126,10 @@ public class ClientBaseThread extends Thread {
 
 
 	public ClientBaseThread() {
-		this("localhost", 50211, 3, false, null, 0);
+		this("localhost", 50211, 3, null, 0);
 	}
 
-	public ClientBaseThread(String host, int port, long nodeAccountNumber, boolean useSigMap, String[] args,
+	public ClientBaseThread(String host, int port, long nodeAccountNumber, String[] args,
 			int index) {
 		grpcStub = new GrpcStub(host, port);
 	}
@@ -275,7 +271,6 @@ public class ClientBaseThread extends Thread {
 		Transaction transferTx = Common.createTransfer(payer, accountKeys.get(payer).get(0),
 				nodeAccount, payer,
 				accountKeys.get(payer).get(0), nodeAccount, transferAmt, "queryFrom" + payer.getAccountNum());
-		//transferTx = TransactionSigner.signTransaction(transferTx, accountKeys.get(payer));
 		return transferTx;
 
 	}
@@ -298,22 +293,13 @@ public class ClientBaseThread extends Thread {
 		Transaction createContractRequest = Common.tranSubmit(() -> {
 			Transaction request;
 			try {
-				if (useSigMap) {
-					request = Common
-							.getCreateContractRequestWithSigMap(payerAccount.getAccountNum(),
-									payerAccount.getRealmNum(),
-									payerAccount.getShardNum(), nodeAccount.getAccountNum(), nodeAccount.getRealmNum(),
-									nodeAccount.getShardNum(), 100l, timestamp,
-									transactionDuration, true, "", 2500000, contractFile, dataToPass, initialBalance,
-									contractAutoRenew, accountKeys.get(payerAccount), "", adminKey, pubKey2privKeyMap);
-				} else {
-					request = TestHelper
-							.getCreateContractRequest(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
-									payerAccount.getShardNum(), nodeAccount.getAccountNum(), nodeAccount.getRealmNum(),
-									nodeAccount.getShardNum(), 100l, timestamp,
-									transactionDuration, true, "", 2500000, contractFile, dataToPass, initialBalance,
-									contractAutoRenew, accountKeys.get(payerAccount), "", adminKey);
-				}
+				request = Common
+						.getCreateContractRequestWithSigMap(payerAccount.getAccountNum(),
+								payerAccount.getRealmNum(),
+								payerAccount.getShardNum(), nodeAccount.getAccountNum(), nodeAccount.getRealmNum(),
+								nodeAccount.getShardNum(), 100l, timestamp,
+								transactionDuration, true, "", 2500000, contractFile, dataToPass, initialBalance,
+								contractAutoRenew, accountKeys.get(payerAccount), "", adminKey, pubKey2privKeyMap);
 			} catch (Exception e) {
 				log.error("Build request exception ", e);
 				return null;
@@ -340,21 +326,13 @@ public class ClientBaseThread extends Thread {
 		Transaction result = Common.tranSubmit(() -> {
 			Transaction request;
 			try {
-				if (useSigMap) {
-					request = Common
-							.getContractCallRequestWithSigMap(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
-									payerAccount.getShardNum(), nodeAccountNumber, 0l, 0l,
-									TestHelper.getContractMaxFee(), timestamp,
-									transactionDuration, 25_000_000_000L, contractToCall, dataBstr, value,
-									accountKeys.get(payerAccount), pubKey2privKeyMap);
-				} else {
-					request = TestHelper
-							.getContractCallRequest(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
-									payerAccount.getShardNum(), nodeAccountNumber, 0l, 0l,
-									TestHelper.getContractMaxFee(), timestamp,
-									transactionDuration, 25_000_000_000L, contractToCall, dataBstr, value,
-									accountKeys.get(payerAccount));
-				}
+				request = Common
+						.getContractCallRequestWithSigMap(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
+								payerAccount.getShardNum(), nodeAccountNumber, 0l, 0l,
+								TestHelper.getContractMaxFee(), timestamp,
+								transactionDuration, 25_000_000_000L, contractToCall, dataBstr, value,
+								accountKeys.get(payerAccount), pubKey2privKeyMap);
+
 			} catch (Exception e) {
 				log.error("Call contract generating transaction error ", e);
 				return null;
@@ -383,7 +361,7 @@ public class ClientBaseThread extends Thread {
 				deleteRequest = RequestBuilder
 						.getDeleteContractRequest(payerAccount, nodeAccount, TestHelper.getContractMaxFee(), timestamp,
 								transactionDuration, contractID, transferAccount, null, true,
-								"deleteContract", SignatureList.getDefaultInstance());
+								"deleteContract");
 
 				deleteRequest = TransactionSigner
 						.signTransactionComplexWithSigMap(deleteRequest, keyList, pubKey2privKeyMap);
@@ -421,7 +399,7 @@ public class ClientBaseThread extends Thread {
 						.getContractUpdateRequest(payerAccount, nodeAccount, TestHelper.getContractMaxFee(), timestamp,
 								transactionDuration, true, "updateContract", contractToUpdate,
 								autoRenewPeriod, adminKey, null,
-								expirationTime, SignatureList.getDefaultInstance(), "newContract");
+								expirationTime, "newContract");
 
 				updateRequest = TransactionSigner
 						.signTransactionComplexWithSigMap(updateRequest, keyList, pubKey2privKeyMap);
@@ -447,18 +425,13 @@ public class ClientBaseThread extends Thread {
 		Transaction transaction = Common.tranSubmit(() -> {
 			Transaction createRequest;
 			try {
-				if (useSigMap) {
-					byte[] pubKey = ((EdDSAPublicKey) newAccountKeyPair.getPublic()).getAbyte();
-					Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
-					Key newAccountKeyList = Key.newBuilder().setKeyList(KeyList.newBuilder().addKeys(key).build()).build();
-					Key payerKey = acc2ComplexKeyMap.get(payerAccount);
-					createRequest = Common.createAccountComplex(payerAccount, payerKey, nodeAccount, newAccountKeyList, initialBalance,
-							pubKey2privKeyMap);
-				} else {
-					createRequest = TestHelper
-							.createAccountWithFee(payerAccount, nodeAccount, newAccountKeyPair, initialBalance,
-									accountKeys.get(payerAccount));
-				}
+				byte[] pubKey = ((EdDSAPublicKey) newAccountKeyPair.getPublic()).getAbyte();
+				Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
+				Key newAccountKeyList = Key.newBuilder().setKeyList(KeyList.newBuilder().addKeys(key).build()).build();
+				Key payerKey = acc2ComplexKeyMap.get(payerAccount);
+				createRequest = Common.createAccountComplex(payerAccount, payerKey, nodeAccount, newAccountKeyList,
+						initialBalance,
+						pubKey2privKeyMap);
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -527,7 +500,6 @@ public class ClientBaseThread extends Thread {
 			return null;
 		}
 		if (recordResp.getTransactionGetRecord().getHeader().getNodeTransactionPrecheckCode() == RECORD_NOT_FOUND) {
-			//log.info("record not found for txID {}", transactionId);
 			return null;
 		}
 		fee = recordResp.getTransactionGetRecord().getHeader().getCost();
@@ -540,7 +512,6 @@ public class ClientBaseThread extends Thread {
 				return null;
 			}
 			if (recordResp.getTransactionGetRecord().getHeader().getNodeTransactionPrecheckCode() == RECORD_NOT_FOUND) {
-				//log.info("record not found for txID {}", transactionId);
 				return null;
 			}
 
@@ -575,15 +546,6 @@ public class ClientBaseThread extends Thread {
 				return null;
 			}
 		}, stub::getTxRecordByTxID);
-		//if successful
-//		if(isBackupTxIDRecord && trackTxID){
-//			try {
-//				submittedTxID.add(TransactionBody.parseFrom(queryPaymentTx.getBodyBytes())
-//						.getTransactionID());
-//			} catch (InvalidProtocolBufferException e) {
-//				e.printStackTrace();
-//			}
-//		}
 		return Pair.of(queryPaymentTx, response);
 	}
 
@@ -601,11 +563,9 @@ public class ClientBaseThread extends Thread {
 				gas, ResponseType.COST_ANSWER);
 		fee = callResp.getContractCallLocal().getHeader().getCost() + localCallGas;
 
-		//log.info("===> Fee offered is " + fee + ", gas offered is " + gas);
 
 		callResp = executeContractCall(payerAccount, contractToCall, callData, fee,
 				gas, ResponseType.ANSWER_ONLY);
-		//log.info("callContractLocal response = " + callResp);
 		Assert.assertTrue(callResp.hasContractCallLocal());
 		ContractCallLocalResponse response = callResp.getContractCallLocal();
 		return response;

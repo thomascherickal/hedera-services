@@ -44,7 +44,10 @@ import static java.util.Collections.unmodifiableMap;
  *
  * @author Michael Tinker
  */
-public abstract class AccountCustomizer<K, A, P extends Enum<P> & BeanProperty<A>, T extends AccountCustomizer<K, A, P, T>> {
+public abstract class AccountCustomizer<
+		K,
+		A,
+		P extends Enum<P> & BeanProperty<A>, T extends AccountCustomizer<K, A, P, T>> {
 	public enum Option {
 		KEY,
 		MEMO,

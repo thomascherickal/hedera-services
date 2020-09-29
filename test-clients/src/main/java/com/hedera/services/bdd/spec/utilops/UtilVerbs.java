@@ -21,6 +21,7 @@ package com.hedera.services.bdd.spec.utilops;
  */
 
 import com.google.protobuf.ByteString;
+import com.hedera.services.bdd.spec.HapiSpecSetup;
 import com.hedera.services.bdd.spec.infrastructure.OpProvider;
 import com.hedera.services.bdd.spec.transactions.consensus.HapiMessageSubmit;
 import com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer;
@@ -39,6 +40,8 @@ import com.hedera.services.bdd.spec.utilops.pauses.HapiSpecWaitUntil;
 import com.hedera.services.bdd.spec.utilops.streams.RecordStreamVerification;
 import com.hedera.services.bdd.spec.utilops.throughput.FinishThroughputObs;
 import com.hedera.services.bdd.spec.utilops.throughput.StartThroughputObs;
+import com.hedera.services.bdd.suites.perf.HCSChunkingRealisticPerfSuite;
+import com.hedera.services.bdd.suites.perf.PerfTestLoadSettings;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
@@ -65,6 +68,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -76,7 +80,9 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.BYTES_4K;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.asId;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.asTransactionID;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.isIdLiteral;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileAppend;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.submitMessageTo;
@@ -204,7 +210,7 @@ public class UtilVerbs {
 
 	public static HapiSpecOperation fundAnAccount(String account) {
 		return withOpContext((spec, ctxLog) -> {
-			if (!account.equals(GENESIS)) {
+			if ( !asId(account, spec).equals(asId(GENESIS,spec)) ) {
 				HapiCryptoTransfer subOp =
 						cryptoTransfer(tinyBarsFromTo(GENESIS, account, HapiApiSuite.ADEQUATE_FUNDS));
 				CustomSpecAssert.allRunFor(spec, subOp);
@@ -244,34 +250,77 @@ public class UtilVerbs {
 	}
 
 	public static HapiSpecOperation chunkAFile(String filePath, int chunkSize, String payer, String topic) {
+		return chunkAFile(filePath, chunkSize, payer, topic, new AtomicLong(-1));
+	}
+
+	public static HapiSpecOperation chunkAFile(String filePath, int chunkSize, String payer, String topic,
+			AtomicLong count) {
 		return withOpContext((spec, ctxLog) -> {
 			List<HapiSpecOperation> opsList = new ArrayList<HapiSpecOperation>();
+			String overriddenFile = new String(filePath);
+			int overriddenChunkSize = chunkSize;
+			String overriddenTopic = new String(topic);
+			boolean validateRunningHash = false;
 
+			long currentCount = count.getAndIncrement();
+			if (currentCount >= 0) {
+				var ciProperties = spec.setup().ciPropertiesMap();
+				if (null != ciProperties) {
+					if (ciProperties.has("file")) {
+						overriddenFile = ciProperties.get("file");
+					}
+					if (ciProperties.has("chunkSize")) {
+						overriddenChunkSize = ciProperties.getInteger("chunkSize");
+					}
+					if (ciProperties.has("validateRunningHash")) {
+						validateRunningHash = ciProperties.getBoolean("validateRunningHash");
+					}
+					int threads = PerfTestLoadSettings.DEFAULT_THREADS;
+					if (ciProperties.has("threads")) {
+						threads = ciProperties.getInteger("threads");
+					}
+					int factor = HCSChunkingRealisticPerfSuite.DEFAULT_COLLISION_AVOIDANCE_FACTOR;
+					if (ciProperties.has("collisionAvoidanceFactor")) {
+						factor = ciProperties.getInteger("collisionAvoidanceFactor");
+					}
+					overriddenTopic += currentCount % (threads * factor);
+				}
+			}
 			ByteString msg = ByteString.copyFrom(
-					Files.readAllBytes(Paths.get(filePath))
+					Files.readAllBytes(Paths.get(overriddenFile))
 			);
 			int size = msg.size();
-			int totalChunks = (size + chunkSize - 1) / chunkSize;
+			int totalChunks = (size + overriddenChunkSize - 1) / overriddenChunkSize;
 			int position = 0;
 			int currentChunk = 0;
 			var initialTransactionID = asTransactionID(spec, Optional.of(payer));
 
 			while (position < size) {
 				++currentChunk;
-				int newPosition = Math.min(size, position + chunkSize);
-				HapiMessageSubmit subOp = submitMessageTo(topic)
-						.message(msg.substring(position, newPosition))
+				int newPosition = Math.min(size, position + overriddenChunkSize);
+				ByteString subMsg = msg.substring(position, newPosition);
+				HapiMessageSubmit subOp = submitMessageTo(overriddenTopic)
+						.message(subMsg)
 						.chunkInfo(totalChunks, currentChunk, initialTransactionID)
 						.payingWith(payer)
 						.hasKnownStatus(SUCCESS)
 						.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED, INSUFFICIENT_PAYER_BALANCE)
 						.noLogging()
-						.suppressStats(true)
-						.deferStatusResolution();
+						.suppressStats(true);
 				if (1 == currentChunk) {
 					subOp = subOp.usePresetTimestamp();
 				}
-				opsList.add(subOp);
+				if (validateRunningHash) {
+					String txnName = "submitMessage-" + overriddenTopic + "-" + currentChunk;
+					HapiGetTxnRecord validateOp = getTxnRecord(txnName)
+							.hasCorrectRunningHash(overriddenTopic, subMsg.toByteArray())
+							.payingWith(payer)
+							.noLogging();
+					opsList.add(subOp.via(txnName));
+					opsList.add(validateOp);
+				} else {
+					opsList.add(subOp.deferStatusResolution());
+				}
 				position = newPosition;
 			}
 
@@ -423,7 +472,10 @@ public class UtilVerbs {
 
 	public static HapiSpecOperation validateRecordTransactionFees(String txn, Set<AccountID> feeRecipients) {
 		return assertionsHold((spec, assertLog) -> {
-			HapiGetTxnRecord subOp = getTxnRecord(txn).logged().payingWith(EXCHANGE_RATE_CONTROL);
+			HapiGetTxnRecord subOp = getTxnRecord(txn)
+					.logged()
+					.payingWith(EXCHANGE_RATE_CONTROL)
+					.expectStrictCostAnswer();
 			allRunFor(spec, subOp);
 			TransactionRecord record = subOp.getResponse().getTransactionGetRecord().getTransactionRecord();
 			long realFee = record.getTransferList().getAccountAmountsList()
@@ -480,7 +532,8 @@ public class UtilVerbs {
 			List<AccountAmount> transfers = new ArrayList<>();
 
 			for (String txn : txns) {
-				HapiGetTxnRecord subOp = getTxnRecord(txn).logged().payingWith(EXCHANGE_RATE_CONTROL);
+				HapiGetTxnRecord subOp = getTxnRecord(txn).logged()
+						.payingWith(EXCHANGE_RATE_CONTROL);
 				allRunFor(spec, subOp);
 				TransactionRecord record = subOp.getResponse().getTransactionGetRecord().getTransactionRecord();
 				transfers.addAll(record.getTransferList().getAccountAmountsList());

@@ -20,11 +20,12 @@ package com.hedera.services.queries.crypto;
  * ‍
  */
 
+import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hedera.services.queries.answering.AnswerFunctions;
-import com.hedera.test.factories.accounts.MapValueFactory;
+import com.hedera.test.factories.accounts.MerkleAccountFactory;
 import com.hederahashgraph.api.proto.java.CryptoGetAccountRecordsQuery;
 import com.hederahashgraph.api.proto.java.CryptoGetAccountRecordsResponse;
 import com.hederahashgraph.api.proto.java.Query;
@@ -68,9 +69,10 @@ class GetAccountRecordsAnswerTest {
 
 	GetAccountRecordsAnswer subject;
 
+	PropertySource propertySource;
 	@BeforeEach
 	private void setup() throws Throwable {
-		payerAccount = MapValueFactory.newAccount()
+		payerAccount = MerkleAccountFactory.newAccount()
 				.accountKeys(COMPLEX_KEY_ACCOUNT_KT)
 				.proxy(asAccount("1.2.3"))
 				.senderThreshold(1_234L)
@@ -85,7 +87,9 @@ class GetAccountRecordsAnswerTest {
 
 		accounts = mock(FCMap.class);
 		given(accounts.get(MerkleEntityId.fromAccountId(asAccount(target)))).willReturn(payerAccount);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts);
+
+		propertySource = mock(PropertySource.class);
+		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource);
 
 		optionValidator = mock(OptionValidator.class);
 

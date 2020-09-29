@@ -20,36 +20,44 @@ package com.hedera.services.utils;
  * ‍
  */
 
-import com.google.protobuf.ByteString;
 import com.hedera.services.exceptions.UnknownHederaFunctionality;
+import static com.hedera.services.grpc.controllers.CryptoController.*;
+import static com.hedera.services.grpc.controllers.ConsensusController.*;
+import static com.hedera.services.grpc.controllers.TokenController.*;
+import static com.hedera.services.grpc.controllers.FileController.*;
+
 import com.hedera.services.keys.LegacyEd25519KeyReader;
 import com.hedera.services.ledger.HederaLedger;
 import com.hederahashgraph.api.proto.java.AccountAmount;
+import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
 import com.hederahashgraph.api.proto.java.Timestamp;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
+import com.swirlds.common.AddressBook;
 import com.swirlds.fcqueue.FCQueue;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.CONSENSUSGETTOPICINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.CONTRACTCALLLOCAL;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.CONTRACTGETBYTECODE;
@@ -64,6 +72,7 @@ import static com.hederahashgraph.api.proto.java.Query.QueryCase.FILEGETINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.GETBYKEY;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.GETBYSOLIDITYID;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.NETWORKGETVERSIONINFO;
+import static com.hederahashgraph.api.proto.java.Query.QueryCase.TOKENGETINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.TRANSACTIONGETRECEIPT;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.TRANSACTIONGETRECORD;
 import static com.hedera.services.legacy.core.jproto.JKey.mapJKey;
@@ -71,6 +80,7 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.*;
+import static java.util.stream.Collectors.toSet;
 
 public class MiscUtils {
 	private static final EnumMap<Query.QueryCase, HederaFunctionality> queryFunctions =
@@ -92,6 +102,7 @@ public class MiscUtils {
 		queryFunctions.put(FILEGETINFO, FileGetInfo);
 		queryFunctions.put(TRANSACTIONGETRECEIPT, TransactionGetReceipt);
 		queryFunctions.put(TRANSACTIONGETRECORD, TransactionGetRecord);
+		queryFunctions.put(TOKENGETINFO, TokenGetInfo);
 	}
 
 	public static List<AccountAmount> canonicalDiffRepr(List<AccountAmount> a, List<AccountAmount> b) {
@@ -149,16 +160,24 @@ public class MiscUtils {
 		}
 	}
 
+	public static Optional<JKey> asUsableFcKey(Key key) {
+		try {
+			var fcKey = JKey.mapKey(key);
+			if (!fcKey.isValid()) {
+				return Optional.empty();
+			}
+			return Optional.of(fcKey);
+		} catch (Exception ignore) {
+			return Optional.empty();
+		}
+	}
+
 	public static Key asKeyUnchecked(JKey fcKey) {
 		try {
 			return mapJKey(fcKey);
 		} catch (Exception impossible) {
 			return Key.getDefaultInstance();
 		}
-	}
-
-	public static ByteString sha384HashOf(PlatformTxnAccessor accessor) {
-		return ByteString.copyFrom(uncheckedSha384Hash(accessor.getSignedTxn().toByteArray()));
 	}
 
 	public static Timestamp asTimestamp(Instant when) {
@@ -170,6 +189,8 @@ public class MiscUtils {
 
 	public static Optional<QueryHeader> activeHeaderFrom(Query query) {
 		switch (query.getQueryCase()) {
+			case TOKENGETINFO:
+				return Optional.of(query.getTokenGetInfo().getHeader());
 			case CONSENSUSGETTOPICINFO:
 				return Optional.of(query.getConsensusGetTopicInfo().getHeader());
 			case GETBYSOLIDITYID:
@@ -211,13 +232,13 @@ public class MiscUtils {
 
 	public static String getTxnStat(TransactionBody txn) {
 		if (txn.hasCryptoCreateAccount()) {
-			return "createAccount";
+			return CRYPTO_CREATE_METRIC;
 		} else if (txn.hasCryptoUpdateAccount()) {
-			return "updateAccount";
+			return CRYPTO_UPDATE_METRIC;
 		} else if (txn.hasCryptoTransfer()) {
-			return "cryptoTransfer";
+			return CRYPTO_TRANSFER_METRIC;
 		} else if (txn.hasCryptoDelete()) {
-			return "cryptoDelete";
+			return CRYPTO_DELETE_METRIC;
 		} else if (txn.hasContractCreateInstance()) {
 			return "createContract";
 		} else if (txn.hasContractCall()) {
@@ -231,13 +252,13 @@ public class MiscUtils {
 		} else if (txn.hasCryptoDeleteLiveHash()) {
 			return "deleteLiveHash";
 		} else if (txn.hasFileCreate()) {
-			return "createFile";
+			return CREATE_FILE_METRIC;
 		} else if (txn.hasFileAppend()) {
-			return "appendContent";
+			return FILE_APPEND_METRIC;
 		} else if (txn.hasFileUpdate()) {
-			return "updateFile";
+			return UPDATE_FILE_METRIC;
 		} else if (txn.hasFileDelete()) {
-			return "deleteFile";
+			return DELETE_FILE_METRIC;
 		} else if (txn.hasSystemDelete()) {
 			return "systemDelete";
 		} else if (txn.hasSystemUndelete()) {
@@ -245,13 +266,39 @@ public class MiscUtils {
 		} else if (txn.hasFreeze()) {
 			return "freeze";
 		} else if (txn.hasConsensusCreateTopic()) {
-			return "createTopic";
+			return CREATE_TOPIC_METRIC;
 		} else if (txn.hasConsensusUpdateTopic()) {
-			return "updateTopic";
+			return UPDATE_TOPIC_METRIC;
 		} else if (txn.hasConsensusDeleteTopic()) {
-			return "deleteTopic";
+			return DELETE_TOPIC_METRIC;
 		} else if (txn.hasConsensusSubmitMessage()) {
-			return "submitMessage";
+			return SUBMIT_MESSAGE_METRIC;
+		} else if (txn.hasTokenCreation()) {
+			return TOKEN_CREATE_METRIC;
+		} else if (txn.hasTokenTransfers()) {
+			return TOKEN_TRANSACT_METRIC;
+		} else if (txn.hasTokenFreeze()) {
+			return TOKEN_FREEZE_METRIC;
+		} else if (txn.hasTokenUnfreeze()) {
+			return TOKEN_UNFREEZE_METRIC;
+		} else if (txn.hasTokenGrantKyc()) {
+			return TOKEN_GRANT_KYC_METRIC;
+		} else if (txn.hasTokenRevokeKyc()) {
+			return TOKEN_REVOKE_KYC_METRIC;
+		} else if (txn.hasTokenDeletion()) {
+			return TOKEN_DELETE_METRIC;
+		} else if (txn.hasTokenUpdate()) {
+			return TOKEN_UPDATE_METRIC;
+		} else if (txn.hasTokenMint()) {
+			return TOKEN_MINT_METRIC;
+		} else if (txn.hasTokenBurn()) {
+			return TOKEN_BURN_METRIC;
+		} else if (txn.hasTokenWipe()) {
+			return TOKEN_WIPE_ACCOUNT_METRIC;
+		} else if (txn.hasTokenAssociate()) {
+			return TOKEN_ASSOCIATE_METRIC;
+		} else if (txn.hasTokenDissociate()) {
+			return TOKEN_DISSOCIATE_METRIC;
 		} else {
 			return "NotImplemented";
 		}
@@ -300,6 +347,34 @@ public class MiscUtils {
 			return ConsensusDeleteTopic;
 		} else if (txn.hasConsensusSubmitMessage()) {
 			return ConsensusSubmitMessage;
+		} else if (txn.hasTokenCreation()) {
+			return TokenCreate;
+		} else if (txn.hasTokenTransfers()) {
+			return TokenTransact;
+		} else if (txn.hasTokenFreeze()) {
+			return TokenFreezeAccount;
+		} else if (txn.hasTokenUnfreeze()) {
+			return TokenUnfreezeAccount;
+		} else if (txn.hasTokenGrantKyc()) {
+			return TokenGrantKycToAccount;
+		} else if (txn.hasTokenRevokeKyc()) {
+			return TokenRevokeKycFromAccount;
+		} else if (txn.hasTokenDeletion()) {
+			return TokenDelete;
+		} else if (txn.hasTokenUpdate()) {
+			return TokenUpdate;
+		} else if (txn.hasTokenMint()) {
+			return TokenMint;
+		} else if (txn.hasTokenBurn()) {
+			return TokenBurn;
+		} else if (txn.hasTokenWipe()) {
+			return TokenAccountWipe;
+		} else if (txn.hasTokenAssociate()) {
+			return TokenAssociateToAccount;
+		} else if (txn.hasTokenDissociate()) {
+			return TokenDissociateFromAccount;
+		} else if (txn.hasUncheckedSubmit()) {
+			return UncheckedSubmit;
 		} else {
 			throw new UnknownHederaFunctionality();
 		}
@@ -317,14 +392,6 @@ public class MiscUtils {
 		return Hex.decodeHex(literal);
 	}
 
-	public static byte[] uncheckedSha384Hash(byte[] data) {
-		try {
-			return MessageDigest.getInstance("SHA-384").digest(data);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
 	public static String describe(JKey k) {
 		if (k == null) {
 			return "<N/A>";
@@ -335,5 +402,16 @@ public class MiscUtils {
 			} catch (Exception ignore) { }
 			return String.valueOf(readable);
 		}
+	}
+
+	public static Set<AccountID> getNodeAccounts(AddressBook addressBook) {
+		return IntStream.range(0, addressBook.getSize())
+				.mapToObj(addressBook::getAddress)
+				.map(address -> accountParsedFromString(address.getMemo()))
+				.collect(toSet());
+	}
+
+	public static Set<Long> getNodeAccountNums(AddressBook addressBook) {
+		return getNodeAccounts(addressBook).stream().map(AccountID::getAccountNum).collect(toSet());
 	}
 }

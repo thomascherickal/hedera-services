@@ -21,9 +21,10 @@ package com.hedera.services.fees.calculation.crypto.queries;
  */
 
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.queries.answering.AnswerFunctions;
-import com.hedera.test.factories.accounts.MapValueFactory;
+import com.hedera.test.factories.accounts.MerkleAccountFactory;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.CryptoGetAccountRecordsQuery;
 import com.hederahashgraph.api.proto.java.FeeData;
@@ -60,15 +61,17 @@ class GetAccountRecordsResourceUsageTest {
 	String a = "0.0.1234";
 	MerkleAccount aValue;
 	List<TransactionRecord> someRecords = ExpirableTxnRecord.allToGrpc(List.of(recordOne(), recordTwo()));
+	PropertySource propertySource;
 
 	@BeforeEach
 	private void setup() throws Throwable {
-		aValue = MapValueFactory.newAccount().get();
+		aValue = MerkleAccountFactory.newAccount().get();
 		aValue.records().offer(recordOne());
 		aValue.records().offer(recordTwo());
 		usageEstimator = mock(CryptoFeeBuilder.class);
 		accounts = mock(FCMap.class);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts);
+		propertySource = mock(PropertySource.class);
+		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource);
 
 		subject = new GetAccountRecordsResourceUsage(new AnswerFunctions(), usageEstimator);
 	}

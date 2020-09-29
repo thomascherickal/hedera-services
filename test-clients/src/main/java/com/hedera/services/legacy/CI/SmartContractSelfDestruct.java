@@ -112,9 +112,6 @@ public class SmartContractSelfDestruct {
 			localCallGas = Long.parseLong(properties.getProperty("LOCAL_CALL_GAS"));
 
 	    int numberOfReps = 1;
-//	    if ((args.length) > 0) {
-//	      numberOfReps = Integer.parseInt(args[0]);
-//	    }
 	    for (int i = 0; i < numberOfReps; i++) {
 	    	SmartContractSelfDestruct scSs = new SmartContractSelfDestruct();
 	      scSs.demo();
@@ -164,7 +161,6 @@ public class SmartContractSelfDestruct {
 	    Transaction transaction = TestHelper
 	        .createAccountWithSigMap(payerAccount, nodeAccount, keyPair, initialBalance,
 	            accountKeyPairs.get(payerAccount));
-	    //	Transaction signTransaction = TransactionSigner.signTransaction(transaction, accountKeys.get(payerAccount));
 	    TransactionResponse response = stub.createAccount(transaction);
 	    Assert.assertNotNull(response);
 	    Assert.assertEquals(ResponseCodeEnum.OK, response.getNodeTransactionPrecheckCode());
@@ -274,7 +270,6 @@ public class SmartContractSelfDestruct {
 	    Timestamp timestamp = RequestBuilder
 	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
 	    Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-	    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 	    ByteString dataBstr = ByteString.EMPTY;
 	    if (data != null) {
 	      dataBstr = ByteString.copyFrom(data);
@@ -359,7 +354,6 @@ public class SmartContractSelfDestruct {
 	    Timestamp timestamp = RequestBuilder
 	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
 	    Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-	    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 	    ByteString dataBstr = ByteString.EMPTY;
 	    if (data != null) {
 	      dataBstr = ByteString.copyFrom(data);

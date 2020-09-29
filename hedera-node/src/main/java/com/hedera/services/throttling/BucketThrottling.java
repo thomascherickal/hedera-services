@@ -45,6 +45,7 @@ import static com.hedera.services.throttling.ThrottlingPropsBuilder.*;
 import static com.hedera.services.throttling.bucket.BucketConfig.*;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.*;
 import static java.util.Comparator.comparing;
+import static java.util.EnumSet.complementOf;
 import static java.util.stream.Collectors.*;
 
 public class BucketThrottling implements FunctionalityThrottling {
@@ -57,7 +58,7 @@ public class BucketThrottling implements FunctionalityThrottling {
 	private final Function<PropertySource, Map<String, BucketConfig>> getBuckets;
 	private final BiFunction<PropertySource, Integer, PropertySource> getThrottleProps;
 
-	private static final EnumSet<HederaFunctionality> REAL = EnumSet.complementOf(EnumSet.of(NONE, UNRECOGNIZED));
+	private static final EnumSet<HederaFunctionality> REAL = complementOf(EnumSet.of(NONE, UNRECOGNIZED));
 	HederaFunctionality[] functions = Arrays.stream(HederaFunctionality.class.getEnumConstants())
 			.filter(REAL::contains)
 			.sorted(comparing(Object::toString))
@@ -94,9 +95,10 @@ public class BucketThrottling implements FunctionalityThrottling {
 		var throttleProps = getThrottleProps.apply(properties, book.get().getSize());
 		var config = getBuckets.apply(throttleProps);
 		var throttles = throttlesGiven(throttleProps, config);
-		capacities.clear();
+		var newCapacities = new EnumMap<HederaFunctionality, CapacityTest>(HederaFunctionality.class);
 		Arrays.stream(functions)
-				.forEach(function -> capacities.put(function, testGiven(throttleProps, function, throttles)));
+				.forEach(function -> newCapacities.put(function, testGiven(throttleProps, function, throttles)));
+		capacities = newCapacities;
 		var sb = new StringBuilder("Resolved node-level throttling:");
 		List.of(functions).stream()
 				.sorted(comparing(HederaFunctionality::toString))
@@ -167,6 +169,7 @@ public class BucketThrottling implements FunctionalityThrottling {
 			FileGetInfo,
 			TransactionGetReceipt,
 			TransactionGetRecord,
-			GetVersionInfo
+			GetVersionInfo,
+			TokenGetInfo
 	);
 }

@@ -298,20 +298,6 @@ public class LandRegistry {
 
     return createdContract;
   }
-  
-  /*
-Methods to run the buyProperty method
- */
-//  private String doBuyProperty(AccountID payerAccount, ContractID contractId, String buyer,
-//      int propertyId, int amount, ResponseCodeEnum expectedStatus) throws Exception {
-//    String retVal = null; // Value if nothing was returned
-//    byte[] dataToGet = encodeBuyProperty(buyer, propertyId, amount);
-//    byte[] result = callContract(payerAccount, contractId, dataToGet, amount, expectedStatus);
-//    if (result != null && result.length > 0) {
-//      retVal = decodeBuyPropertyResult(result);
-//    }
-//    return retVal;
-//  }
 
   private TransactionID doBuyProperty(AccountID payerAccount, ContractID contractId, String buyer,
       int propertyId, int amount) throws Exception {
@@ -450,7 +436,6 @@ Methods to run the highestSold method
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
     Duration transactionDuration = RequestBuilder.getDuration(30);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);
@@ -503,7 +488,6 @@ Methods to run the highestSold method
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
     Duration transactionDuration = RequestBuilder.getDuration(30);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);

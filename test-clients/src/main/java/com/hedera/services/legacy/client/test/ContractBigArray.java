@@ -66,10 +66,9 @@ public class ContractBigArray extends ClientBaseThread {
   private boolean checkRunning = true;
   private boolean checkRecord = false;
 
-  public ContractBigArray(String host, int port, long nodeAccountNumber, boolean useSigMap, String[] args, int index)
+  public ContractBigArray(String host, int port, long nodeAccountNumber, String[] args, int index)
   {
-    super(host, port, nodeAccountNumber, useSigMap, args, index);
-    this.useSigMap = useSigMap;
+    super(host, port, nodeAccountNumber, args, index);
     this.nodeAccountNumber = nodeAccountNumber;
     this.host = host;
     this.port = port;
@@ -102,9 +101,7 @@ public class ContractBigArray extends ClientBaseThread {
                       genesisPrivateKey, stub, crAccountKeyPair);
       accountKeys.put(crAccount, Collections.singletonList(crAccountKeyPair.getPrivate()));
 
-      if(useSigMap){
-        Common.addKeyMap(crAccountKeyPair, pubKey2privKeyMap);
-      }
+      Common.addKeyMap(crAccountKeyPair, pubKey2privKeyMap);
 
       Assert.assertNotNull(crAccount);
       Assert.assertNotEquals(0, crAccount.getAccountNum());
@@ -118,8 +115,6 @@ public class ContractBigArray extends ClientBaseThread {
       Assert.assertNotEquals(0, zeroContractFileId.getFileNum());
       log.info("Contract file uploaded successfully");
 
-      // Create contract
-      //zeroContractId = createContract(crAccount, zeroContractFileId, null);
       Properties properties = TestHelper.getApplicationProperties();
       long contractDuration = Long.parseLong(properties.getProperty("CONTRACT_DURATION"));
       TransactionID txID = createContractOnly(crAccount, zeroContractFileId, null, contractDuration, null);
@@ -151,7 +146,9 @@ public class ContractBigArray extends ClientBaseThread {
                 Thread.sleep(50);
               }
             } catch (io.grpc.StatusRuntimeException e) {
-              if(!tryReconnect(e)) break;
+              if(!tryReconnect(e)) {
+                break;
+              }
             } catch (Exception e){
               log.error("{} Exception ", getName(), e);
             }
@@ -188,7 +185,9 @@ public class ContractBigArray extends ClientBaseThread {
                   BA_CHANGEARRAY_ABI);
           txnIdList.add(txnId);
         } catch (io.grpc.StatusRuntimeException e) {
-          if(!tryReconnect(e)) return;
+          if(!tryReconnect(e)) {
+            return;
+          }
         }
 
         accumulatedTransferCount++;
@@ -199,7 +198,9 @@ public class ContractBigArray extends ClientBaseThread {
         }
       }
     }finally {
-      while(txnIdList.size()>0); //wait query thread to finish
+      while(txnIdList.size()>0) {
+        ; //wait query thread to finish
+      }
       sleep(1000);         //wait check thread done query
       log.info("{} query queue empty", getName());
       channel.shutdown();
@@ -212,7 +213,6 @@ public class ContractBigArray extends ClientBaseThread {
     TransactionGetReceiptResponse contractCallReceipt = Common.getReceiptByTransactionId(stub, txId);
     if (contractCallReceipt != null && contractCallReceipt.getReceipt().getStatus().name()
         .equalsIgnoreCase(ResponseCodeEnum.SUCCESS.name())) {
-      //Thread.sleep(6000);
       TransactionRecord trRecord = getTransactionRecord(payerAccount, txId, true);
       if (trRecord != null && trRecord.hasContractCallResult()) {
         ContractFunctionResult callResults = trRecord.getContractCallResult();

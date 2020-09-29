@@ -39,6 +39,7 @@ import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.Timestamp;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hedera.services.legacy.core.HexUtils;
@@ -56,6 +57,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static com.hedera.services.bdd.spec.HapiPropertySource.asAccountString;
+import static com.hedera.services.bdd.spec.HapiPropertySource.asTokenString;
 import static com.hedera.services.bdd.spec.keys.KeyFactory.firstStartupKp;
 import static java.util.stream.Collectors.*;
 
@@ -74,8 +76,10 @@ public class HapiSpecRegistry {
 		this.setup = setup;
 		KeyPairObj genesisKp = firstStartupKp(setup);
 		Key genesisKey = asPublicKey(genesisKp.getPublicKeyAbyteStr());
+		saveAccountId(setup.genesisAccountName(), setup.genesisAccount());
 		saveKey(setup.genesisAccountName(), asKeyList(genesisKey));
 		saveAccountId(setup.defaultPayerName(), setup.defaultPayer());
+		saveKey(setup.defaultPayerName(), asKeyList(genesisKey));
 		saveAccountId(setup.defaultNodeName(), setup.defaultNode());
 		saveAccountId(setup.fundingAccountName(), setup.fundingAccount());
 		saveContractId(setup.invalidContractName(), setup.invalidContract());
@@ -238,8 +242,62 @@ public class HapiSpecRegistry {
 		put(name, key, Key.class);
 	}
 
+	public void saveAdminKey(String name, Key key) { put(name + "Admin", key, Key.class); }
+
+	public void saveFreezeKey(String name, Key key) {
+		put(name + "Freeze", key, Key.class);
+	}
+
+	public void saveSupplyKey(String name, Key key) {
+		put(name + "Supply", key, Key.class);
+	}
+
+	public void saveWipeKey(String name, Key key) {
+		put(name + "Wipe", key, Key.class);
+	}
+
+	public void saveKycKey(String name, Key key) {
+		put(name + "Kyc", key, Key.class);
+	}
+
+	public void saveSymbol(String token, String symbol) {
+		put(token + "Symbol", symbol, String.class);
+	}
+
+	public void saveName(String token, String name) {
+		put(token + "Name", name, String.class);
+	}
+
+	public String getSymbol(String token) {
+		return get(token + "Symbol", String.class);
+	}
+
+	public String getName(String token) {
+		return get(token + "Name", String.class);
+	}
+
 	public Key getKey(String name) {
 		return get(name, Key.class);
+	}
+
+	public Key getAdminKey(String name) {
+		return get(name + "Admin", Key.class);
+	}
+
+	public Key getFreezeKey(String name) {
+		return get(name + "Freeze", Key.class);
+	}
+
+	public Key getSupplyKey(String name) {
+		return get(name + "Supply", Key.class);
+	}
+
+	public Key getWipeKey(String name) {
+		return get(name + "Wipe", Key.class);
+	}
+
+	public Key getKycKey(String name) {
+		return get(name + "Kyc", Key.class);
 	}
 
 	public boolean hasKey(String name) {
@@ -323,11 +381,9 @@ public class HapiSpecRegistry {
 	}
 
 	public boolean isSigRequired(String name) {
-		try {
-			return get(name, Boolean.class);
-		} catch (Throwable ignore) {
-		}
-		return setup.defaultReceiverSigRequired();
+		return registry.containsKey(full(name, Boolean.class))
+				? get(name, Boolean.class)
+				: setup.defaultReceiverSigRequired();
 	}
 
 	public boolean hasSigRequirement(String name) {
@@ -354,6 +410,11 @@ public class HapiSpecRegistry {
 	public void saveAccountId(String name, AccountID id) {
 		put(name, id);
 		put(asAccountString(id), name);
+	}
+
+	public void saveTokenId(String name, TokenID id) {
+		put(name, id);
+		put(asTokenString(id), name);
 	}
 
 	public void setRecharging(String account, long amount) {
@@ -421,6 +482,10 @@ public class HapiSpecRegistry {
 
 	public TopicID getTopicID(String name) {
 		return get(name, TopicID.class);
+	}
+
+	public TokenID getTokenID(String name) {
+		return get(name, TokenID.class);
 	}
 
 	public boolean hasFileId(String name) {

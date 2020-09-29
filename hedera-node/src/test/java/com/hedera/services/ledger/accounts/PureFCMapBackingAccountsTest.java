@@ -22,7 +22,7 @@ package com.hedera.services.ledger.accounts;
 
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.test.factories.accounts.MapValueFactory;
+import com.hedera.test.factories.accounts.MerkleAccountFactory;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ class PureFCMapBackingAccountsTest {
 	private final AccountID b = asAccount("3.2.1");
 	private final MerkleEntityId aKey = MerkleEntityId.fromAccountId(a);
 	private final MerkleEntityId bKey = MerkleEntityId.fromAccountId(b);
-	private final MerkleAccount aValue = MapValueFactory.newAccount().balance(123L).get();
+	private final MerkleAccount aValue = MerkleAccountFactory.newAccount().balance(123L).get();
 
 	private FCMap<MerkleEntityId, MerkleAccount> map;
 	private PureFCMapBackingAccounts subject;

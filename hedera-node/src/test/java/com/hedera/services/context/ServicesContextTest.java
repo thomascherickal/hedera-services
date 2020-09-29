@@ -24,16 +24,27 @@ import com.hedera.services.ServicesState;
 import com.hedera.services.config.AccountNumbers;
 import com.hedera.services.config.EntityNumbers;
 import com.hedera.services.config.FileNumbers;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
+import com.hedera.services.context.properties.NodeLocalProperties;
+import com.hedera.services.fees.AwareHbarCentExchange;
 import com.hedera.services.fees.StandardExemptions;
+import com.hedera.services.grpc.controllers.TokenController;
 import com.hedera.services.keys.LegacyEd25519KeyReader;
+import com.hedera.services.ledger.accounts.BackingTokenRels;
 import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.queries.answering.ZeroStakeAnswerFlow;
+import com.hedera.services.queries.contract.ContractAnswers;
+import com.hedera.services.queries.token.TokenAnswers;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.state.expiry.ExpiringCreations;
 import com.hedera.services.state.expiry.ExpiryManager;
+import com.hedera.services.state.exports.SignedStateBalancesExporter;
 import com.hedera.services.state.initialization.BackedSystemAccountsCreator;
 import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
 import com.hedera.services.state.merkle.MerkleNetworkContext;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.context.domain.trackers.ConsensusStatusCounts;
 import com.hedera.services.context.domain.trackers.IssEventInfo;
@@ -72,7 +83,9 @@ import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.state.validation.BasedLedgerValidator;
 import com.hedera.services.throttling.BucketThrottling;
 import com.hedera.services.throttling.TransactionThrottling;
+import com.hedera.services.tokens.HederaTokenStore;
 import com.hedera.services.txns.TransitionLogicLookup;
+import com.hedera.services.txns.submission.PlatformSubmissionManager;
 import com.hedera.services.txns.submission.TxnHandlerSubmissionFlow;
 import com.hedera.services.txns.submission.TxnResponseHelper;
 import com.hedera.services.txns.validation.ContextOptionValidator;
@@ -85,7 +98,7 @@ import com.hedera.services.records.RecordCache;
 import com.hedera.services.sigs.order.HederaSigningOrder;
 import com.hedera.services.sigs.verification.PrecheckVerifier;
 import com.hedera.services.sigs.verification.SyncVerifier;
-import com.hedera.services.state.migration.DefaultStateMigrations;
+import com.hedera.services.state.migration.StdStateMigrations;
 import com.hedera.services.utils.SleepingPause;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hedera.services.legacy.handler.FreezeHandler;
@@ -94,12 +107,8 @@ import com.hedera.services.legacy.handler.TransactionHandler;
 import com.hedera.services.contracts.sources.LedgerAccountsSource;
 import com.hedera.services.contracts.sources.BlobStorageSource;
 import com.hedera.services.legacy.service.FreezeServiceImpl;
-import com.hedera.services.legacy.service.GlobalFlag;
 import com.hedera.services.legacy.service.SmartContractServiceImpl;
-import com.hedera.services.legacy.services.context.properties.DefaultPropertySanitizer;
-import com.hedera.services.legacy.services.fees.DefaultHbarCentExchange;
 import com.hedera.services.legacy.services.state.AwareProcessLogic;
-import com.hedera.services.legacy.services.state.export.DefaultBalancesExporter;
 import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.legacy.services.utils.DefaultAccountsExporter;
 import com.hedera.services.legacy.stream.RecordStream;
@@ -144,12 +153,16 @@ public class ServicesContextTest {
 	PropertySource properties;
 	PropertySources propertySources;
 	FCMap<MerkleEntityId, MerkleTopic> topics;
+	FCMap<MerkleEntityId, MerkleToken> tokens;
 	FCMap<MerkleEntityId, MerkleAccount> accounts;
 	FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage;
+	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
 
 	@BeforeEach
 	void setup() {
 		topics = mock(FCMap.class);
+		tokens = mock(FCMap.class);
+		tokenAssociations = mock(FCMap.class);
 		storage = mock(FCMap.class);
 		accounts = mock(FCMap.class);
 		seqNo = mock(SequenceNumber.class);
@@ -160,6 +173,8 @@ public class ServicesContextTest {
 		given(state.accounts()).willReturn(accounts);
 		given(state.storage()).willReturn(storage);
 		given(state.topics()).willReturn(topics);
+		given(state.tokens()).willReturn(tokens);
+		given(state.tokenAssociations()).willReturn(tokenAssociations);
 		crypto = mock(Cryptography.class);
 		platform = mock(Platform.class);
 		given(platform.getCryptography()).willReturn(crypto);
@@ -175,16 +190,22 @@ public class ServicesContextTest {
 		var newAccounts = mock(FCMap.class);
 		var newTopics = mock(FCMap.class);
 		var newStorage = mock(FCMap.class);
+		var newTokens = mock(FCMap.class);
+		var newTokenRels = mock(FCMap.class);
 
 		given(newState.accounts()).willReturn(newAccounts);
 		given(newState.topics()).willReturn(newTopics);
+		given(newState.tokens()).willReturn(newTokens);
 		given(newState.storage()).willReturn(newStorage);
+		given(newState.tokenAssociations()).willReturn(newTokenRels);
 		// given:
 		var subject = new ServicesContext(id, platform, state, propertySources);
 		// and:
 		var accountsRef = subject.queryableAccounts();
 		var topicsRef = subject.queryableTopics();
 		var storageRef = subject.queryableStorage();
+		var tokensRef = subject.queryableTokens();
+		var tokenRelsRef = subject.queryableTokenAssociations();
 
 		// when:
 		subject.update(newState);
@@ -194,10 +215,14 @@ public class ServicesContextTest {
 		assertSame(accountsRef, subject.queryableAccounts());
 		assertSame(topicsRef, subject.queryableTopics());
 		assertSame(storageRef, subject.queryableStorage());
+		assertSame(tokensRef, subject.queryableTokens());
+		assertSame(tokenRelsRef, subject.queryableTokenAssociations());
 		// and:
 		assertSame(newAccounts, subject.queryableAccounts().get());
 		assertSame(newTopics, subject.queryableTopics().get());
 		assertSame(newStorage, subject.queryableStorage().get());
+		assertSame(newTokens, subject.queryableTokens().get());
+		assertSame(newTokenRels, subject.queryableTokenAssociations().get());
 	}
 
 	@Test
@@ -225,26 +250,6 @@ public class ServicesContextTest {
 		inOrder.verify(state).topics();
 		inOrder.verify(state).storage();
 		inOrder.verify(state).accounts();
-	}
-
-	@Test
-	public void hasExpectedFundingAccount() {
-		given(properties.getStringProperty("ledger.funding.account")).willReturn("0.0.98");
-
-		// when:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
-
-		// then:
-		assertEquals(AccountID.newBuilder().setAccountNum(98L).build(), ctx.fundingAccount());
-	}
-
-	@Test
-	public void returnsMissingValueWithoutFundingAccountProp() {
-		// when:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
-
-		// then:
-		assertNull(ctx.fundingAccount());
 	}
 
 	@Test
@@ -326,10 +331,11 @@ public class ServicesContextTest {
 		given(book.getAddress(1L)).willReturn(address);
 		given(state.addressBook()).willReturn(book);
 		given(properties.getStringProperty("hedera.recordStream.logDir")).willReturn("src/main/resources");
-		GlobalFlag.getInstance().setPlatformStatus(PlatformStatus.DISCONNECTED);
 
 		// given:
 		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		// and:
+		ctx.platformStatus().set(PlatformStatus.DISCONNECTED);
 
 		// expect:
 		assertEquals(SleepingPause.INSTANCE, ctx.pause());
@@ -368,6 +374,7 @@ public class ServicesContextTest {
 		assertThat(ctx.accountSource(), instanceOf(LedgerAccountsSource.class));
 		assertThat(ctx.bytecodeDb(), instanceOf(BlobStorageSource.class));
 		assertThat(ctx.cryptoAnswers(), instanceOf(CryptoAnswers.class));
+		assertThat(ctx.tokenAnswers(), instanceOf(TokenAnswers.class));
 		assertThat(ctx.consensusGrpc(), instanceOf(ConsensusController.class));
 		assertThat(ctx.storagePersistence(), instanceOf(BlobStoragePersistence.class));
 		assertThat(ctx.filesGrpc(), instanceOf(FileController.class));
@@ -401,28 +408,33 @@ public class ServicesContextTest {
 		assertThat(ctx.creator(), instanceOf(ExpiringCreations.class));
 		assertThat(ctx.txnHistories(), instanceOf(Map.class));
 		assertThat(ctx.backingAccounts(), instanceOf(FCMapBackingAccounts.class));
+		assertThat(ctx.backingTokenRels(), instanceOf(BackingTokenRels.class));
 		assertThat(ctx.systemAccountsCreator(), instanceOf(BackedSystemAccountsCreator.class));
 		assertThat(ctx.b64KeyReader(), instanceOf(LegacyEd25519KeyReader.class));
 		assertThat(ctx.ledgerValidator(), instanceOf(BasedLedgerValidator.class));
 		assertThat(ctx.systemOpPolicies(), instanceOf(SystemOpPolicies.class));
 		assertThat(ctx.exemptions(), instanceOf(StandardExemptions.class));
+		assertThat(ctx.submissionManager(), instanceOf(PlatformSubmissionManager.class));
+		assertThat(ctx.platformStatus(), instanceOf(ContextPlatformStatus.class));
+		assertThat(ctx.contractAnswers(), instanceOf(ContractAnswers.class));
+		assertThat(ctx.tokenStore(), instanceOf(HederaTokenStore.class));
+		assertThat(ctx.globalDynamicProperties(), instanceOf(GlobalDynamicProperties.class));
+		assertThat(ctx.tokenGrpc(), instanceOf(TokenController.class));
+		assertThat(ctx.nodeLocalProperties(), instanceOf(NodeLocalProperties.class));
+		assertThat(ctx.balancesExporter(), instanceOf(SignedStateBalancesExporter.class));
+		assertThat(ctx.exchange(), instanceOf(AwareHbarCentExchange.class));
+		assertThat(ctx.stateMigrations(), instanceOf(StdStateMigrations.class));
+		// and:
 		assertEquals(ServicesNodeType.STAKED_NODE, ctx.nodeType());
 		// and expect legacy:
-		assertThat(ctx.exchange(), instanceOf(DefaultHbarCentExchange.class));
 		assertThat(ctx.txns(), instanceOf(TransactionHandler.class));
 		assertThat(ctx.stats(), instanceOf(HederaNodeStats.class));
 		assertThat(ctx.contracts(), instanceOf(SmartContractRequestHandler.class));
 		assertThat(ctx.freezeGrpc(), instanceOf(FreezeServiceImpl.class));
 		assertThat(ctx.contractsGrpc(), instanceOf(SmartContractServiceImpl.class));
-		assertThat(ctx.propertySanitizer(), instanceOf(DefaultPropertySanitizer.class));
-		assertThat(ctx.stateMigrations(), instanceOf(DefaultStateMigrations.class));
 		assertThat(ctx.recordStream(), instanceOf(RecordStream.class));
 		assertThat(ctx.accountsExporter(), instanceOf(DefaultAccountsExporter.class));
-		assertThat(ctx.balancesExporter(), instanceOf(DefaultBalancesExporter.class));
 		assertThat(ctx.freeze(), instanceOf(FreezeHandler.class));
 		assertThat(ctx.logic(), instanceOf(AwareProcessLogic.class));
-
-		// cleanup:
-		GlobalFlag.getInstance().setPlatformStatus(null);
 	}
 }

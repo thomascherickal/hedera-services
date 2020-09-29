@@ -26,7 +26,6 @@ import com.hederahashgraph.api.proto.java.CryptoGetInfoResponse;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -235,7 +234,6 @@ public class CryptoDuplicatedTransaction extends Thread {
         TransactionResponse response2 = stub2.cryptoTransfer(transfer2[i]);
 
         if (response.getNodeTransactionPrecheckCode() == ResponseCodeEnum.OK) {
-          //log.info(getName() + "Transferring 1 coin from 1st account to 2nd account....");
           break;
         } else if (response.getNodeTransactionPrecheckCode() == ResponseCodeEnum.BUSY || response.getNodeTransactionPrecheckCode() == ResponseCodeEnum.PLATFORM_TRANSACTION_NOT_CREATED) {
           // Try again
@@ -249,7 +247,6 @@ public class CryptoDuplicatedTransaction extends Thread {
 
 
         if (response2.getNodeTransactionPrecheckCode() == ResponseCodeEnum.OK) {
-          //log.info(getName() + "Transferring 1 coin from 1st account to 2nd account....");
           break;
         } else if (response2.getNodeTransactionPrecheckCode() == ResponseCodeEnum.BUSY || response2.getNodeTransactionPrecheckCode() == ResponseCodeEnum.PLATFORM_TRANSACTION_NOT_CREATED) {
           // Try again
@@ -261,9 +258,6 @@ public class CryptoDuplicatedTransaction extends Thread {
           Assert.assertEquals(ResponseCodeEnum.OK, response2.getNodeTransactionPrecheckCode());
         }
       }
-      // log.info("Pre Check Response transfer :: " +
-      // transferRes.getNodeTransactionPrecheckCode().name());
-
     }
 
     if (fetchReceipt == 1) { // ask for receipt
@@ -271,13 +265,11 @@ public class CryptoDuplicatedTransaction extends Thread {
         TransactionBody body = TransactionBody.parseFrom(transfer1[i].getBodyBytes());
         TransactionReceipt txReceipt = TestHelper
                 .getTxReceipt(body.getTransactionID(), stub);
-        //Assert.assertNotNull(txReceipt);
         log.info("Get receipt from first node, receipt = " + txReceipt);
 
         TransactionBody body2 = TransactionBody.parseFrom(transfer2[i].getBodyBytes());
         TransactionReceipt txReceipt2 = TestHelper
                 .getTxReceipt(body2.getTransactionID(), stub2);
-        //Assert.assertNotNull(txReceipt);
         log.info("Get receipt from second node, receipt = " + txReceipt2);
 
       }
@@ -333,11 +325,8 @@ public class CryptoDuplicatedTransaction extends Thread {
     CryptoGetInfoResponse.AccountInfo accountInfo1 = accountInfoResponse.getCryptoGetInfo()
             .getAccountInfo();
     log.info("Check balance of Account ID " + accountID.getAccountNum());
-    // log.info(accountInfo1);
     Assert.assertNotNull(accountInfo1);
     Assert.assertEquals(accountID, accountInfo1.getAccountID());
-    // Assert.assertEquals(firstPair.getPublic().toString(),
-    // accountInfo1.getKey().getKeyList().getKeys(0).getEd25519().toStringUtf8());
     Assert.assertEquals(TestHelper.DEFAULT_SEND_RECV_RECORD_THRESHOLD,
             accountInfo1.getGenerateReceiveRecordThreshold());
     Assert.assertEquals(TestHelper.DEFAULT_SEND_RECV_RECORD_THRESHOLD,
@@ -359,34 +348,28 @@ public class CryptoDuplicatedTransaction extends Thread {
             .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
     Duration transactionDuration = RequestBuilder.getDuration(30);
 
-    SignatureList sigList = SignatureList.getDefaultInstance();
     Transaction transferTx = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
             payerAccount.getRealmNum(), payerAccount.getShardNum(), nodeAccount.getAccountNum(),
             nodeAccount.getRealmNum(), nodeAccount.getShardNum(), CRYPTO_TRANSFER_TX_FEE, timestamp,
             transactionDuration,
-            generateRecord, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+            generateRecord, "Test Transfer", fromAccount.getAccountNum(), -amount,
             toAccount.getAccountNum(), amount);
 
     Transaction transferTx2 = RequestBuilder.getCryptoTransferRequest(payerAccount.getAccountNum(),
             payerAccount.getRealmNum(), payerAccount.getShardNum(), secondNodeAccount.getAccountNum(),
             secondNodeAccount.getRealmNum(), secondNodeAccount.getShardNum(), CRYPTO_TRANSFER_TX_FEE, timestamp,
             transactionDuration,
-            generateRecord, "Test Transfer", sigList, fromAccount.getAccountNum(), -amount,
+            generateRecord, "Test Transfer", fromAccount.getAccountNum(), -amount,
             toAccount.getAccountNum(), amount);
 
     // sign the tx
-    List<List<PrivateKey>> privKeysList = new ArrayList<>();
-    List<PrivateKey> payerPrivKeyList = new ArrayList<>();
-    payerPrivKeyList.add(payerAccountKey);
-    privKeysList.add(payerPrivKeyList);
+    List<PrivateKey> privKeysList = new ArrayList<>();
+    privKeysList.add(payerAccountKey);
+    privKeysList.add(fromKey);
 
-    List<PrivateKey> fromPrivKeyList = new ArrayList<>();
-    fromPrivKeyList.add(fromKey);
-    privKeysList.add(fromPrivKeyList);
+    Transaction signedTx = TransactionSigner.signTransaction(transferTx, privKeysList);
 
-    Transaction signedTx = TransactionSigner.signTransactionNew(transferTx, privKeysList);
-
-    Transaction signedTx2 = TransactionSigner.signTransactionNew(transferTx2, privKeysList);
+    Transaction signedTx2 = TransactionSigner.signTransaction(transferTx2, privKeysList);
 
     return Pair.of(signedTx, signedTx2);
   }

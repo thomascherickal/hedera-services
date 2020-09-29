@@ -97,10 +97,9 @@ public class ERC20Contract extends ClientBaseThread {
   private static AccountID tokenIssuer;
   private static KeyPair tokenIssuerKeyPair;
 
-  public ERC20Contract(String host, int port, long nodeAccountNumber, boolean useSigMap, String [] args, int index)
+  public ERC20Contract(String host, int port, long nodeAccountNumber, String [] args, int index)
   {
-    super(host, port, nodeAccountNumber, useSigMap, args, index);
-    this.useSigMap = useSigMap;
+    super(host, port, nodeAccountNumber, args, index);
     this.nodeAccountNumber = nodeAccountNumber;
     this.host = host;
     this.port = port;
@@ -204,7 +203,9 @@ public class ERC20Contract extends ClientBaseThread {
         log.info("---------- Account " + accounts + " initialized: " +
                 newAccount.getAccountNum());
         } catch (StatusRuntimeException e) {
-          if (!tryReconnect(e)) return;
+          if (!tryReconnect(e)) {
+			  return;
+		  }
         }
       }
 
@@ -244,7 +245,9 @@ public class ERC20Contract extends ClientBaseThread {
             log.info("{} currentTPS {}", getName(), currentTPS);
           }
         } catch (StatusRuntimeException e) {
-          if (!tryReconnect(e)) return;
+          if (!tryReconnect(e)) {
+			  return;
+		  }
         }
       }
 

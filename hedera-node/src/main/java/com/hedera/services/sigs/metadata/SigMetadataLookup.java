@@ -20,20 +20,40 @@ package com.hedera.services.sigs.metadata;
  * ‍
  */
 
+import com.hedera.services.sigs.metadata.lookups.SafeLookupResult;
+import com.hedera.services.tokens.TokenStore;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
+
+import java.util.function.Function;
+
+import static com.hedera.services.sigs.metadata.TokenSigningMetadata.from;
+import static com.hedera.services.sigs.metadata.lookups.SafeLookupResult.failure;
+import static com.hedera.services.sigs.order.KeyOrderingFailure.MISSING_TOKEN;
+import static com.hedera.services.state.merkle.MerkleEntityId.fromTokenId;
 
 /**
  * Defines a type able to look up metadata associated to the signing activities
- * of any Hedera entity (account, smart contract, or file).
+ * of any Hedera entity (account, smart contract, file, topic, or token).
  *
  * @author Michael Tinker
  */
 public interface SigMetadataLookup {
-	FileSigningMetadata lookup(FileID file) throws Exception;
-	AccountSigningMetadata lookup(AccountID account) throws Exception;
-	ContractSigningMetadata lookup(ContractID contract) throws Exception;
-	TopicSigningMetadata lookup(TopicID topic) throws Exception;
+	Function<
+			TokenStore,
+			Function<TokenID, SafeLookupResult<TokenSigningMetadata>>> REF_LOOKUP_FACTORY = tokenStore -> ref -> {
+		TokenID id;
+		return TokenStore.MISSING_TOKEN.equals(id = tokenStore.resolve(ref))
+				? failure(MISSING_TOKEN)
+				: new SafeLookupResult<>(from(tokenStore.get(id)));
+	};
+
+	SafeLookupResult<FileSigningMetadata> fileSigningMetaFor(FileID id);
+	SafeLookupResult<TopicSigningMetadata> topicSigningMetaFor(TopicID id);
+	SafeLookupResult<TokenSigningMetadata> tokenSigningMetaFor(TokenID id);
+	SafeLookupResult<AccountSigningMetadata> accountSigningMetaFor(AccountID id);
+	SafeLookupResult<ContractSigningMetadata> contractSigningMetaFor(ContractID id);
 }

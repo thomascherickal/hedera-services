@@ -20,6 +20,8 @@ package com.hederahashgraph.fee;
  * ‍
  */
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hederahashgraph.api.proto.java.*;
 import com.hederahashgraph.exception.InvalidTxBodyException;
 
@@ -49,9 +51,9 @@ public class FeeBuilder {
   public static final int FEE_DIVISOR_FACTOR = 1000;
   public static final int SIGNATURE_SIZE = 64;
   public static final int HRS_DIVISOR = 3600;
-  public static final int BASIC_ACCT_AMT_SIZE = (4 * LONG_SIZE);
-  public static final int BASIC_ACCTID_SIZE = (3 * LONG_SIZE);
-  public static final int BASIC_TX_ID_SIZE = BASIC_ACCTID_SIZE + LONG_SIZE;
+  public static final int BASIC_ENTITY_ID_SIZE = (3 * LONG_SIZE);
+  public static final int BASIC_ACCOUNT_AMT_SIZE = BASIC_ENTITY_ID_SIZE + LONG_SIZE;
+  public static final int BASIC_TX_ID_SIZE = BASIC_ENTITY_ID_SIZE + LONG_SIZE;
   public static final int EXCHANGE_RATE_SIZE = 2 * INT_SIZE + LONG_SIZE;
   /**
    * Fields included: status, exchangeRate.
@@ -61,19 +63,19 @@ public class FeeBuilder {
    * Fields included: transactionID, nodeAccountID, transactionFee, transactionValidDuration, generateRecord
    */
   public static final int BASIC_TX_BODY_SIZE =
-      BASIC_ACCTID_SIZE + BASIC_TX_ID_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
+      BASIC_ENTITY_ID_SIZE + BASIC_TX_ID_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
   public static final int STATE_PROOF_SIZE = 2000;
   public static final int BASE_FILEINFO_SIZE =
-      BASIC_ACCTID_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
+      BASIC_ENTITY_ID_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
   public static final int BASIC_ACCOUNT_SIZE = 8 * LONG_SIZE + BOOL_SIZE;
   /**
    * Fields included: nodeTransactionPrecheckCode, responseType, cost
    */
   public static final int BASIC_QUERY_RES_HEADER = 2 * INT_SIZE + LONG_SIZE;
   public static final int BASIC_QUERY_HEADER = 212;
-  public static final int BASIC_CONTRACT_CREATE_SIZE = BASIC_ACCTID_SIZE + 6 * LONG_SIZE;
+  public static final int BASIC_CONTRACT_CREATE_SIZE = BASIC_ENTITY_ID_SIZE + 6 * LONG_SIZE;
   public static final int BASIC_CONTRACT_INFO_SIZE =
-      2 * BASIC_ACCTID_SIZE + SOLIDITY_ADDRESS + 4 * LONG_SIZE;
+      2 * BASIC_ENTITY_ID_SIZE + SOLIDITY_ADDRESS + BASIC_TX_ID_SIZE;
   /**
    * Fields included in size: receipt (basic size), transactionHash, consensusTimestamp, transactionID
    * transactionFee.
@@ -143,8 +145,8 @@ public class FeeBuilder {
    * Common fields in all transaction:
    * <p>
    * <ul>
-   *     <li>TransactionID transactionID - 3 * LONG_SIZE (accountId) + LONG_SIZE (transactionValidStart)</li>
-   *     <li>AccountID nodeAccountID - 3 * LONG_SIZE</li>
+   *     <li>TransactionID transactionID - BASIC_ENTITY_ID_SIZE (accountId) + LONG_SIZE (transactionValidStart)</li>
+   *     <li>AccountID nodeAccountID - BASIC_ENTITY_ID_SIZE</li>
    *     <li>uint64 transactionFee - LONG_SIZE</li>
    *     <li>Duration transactionValidDuration - (LONG_SIZE)</li>
    *     <li>bool generateRecord - BOOL_SIZE</li>
@@ -160,46 +162,6 @@ public class FeeBuilder {
       memoSize = txBody.getMemoBytes().size();
     }
     return BASIC_TX_BODY_SIZE + memoSize;
-  }
-
-  /**
-   * This method is invoked by individual Fee builder classes to calculated the number of signatures
-   * in transaction.
-   */
-  public static long getVPT(Transaction tx) {
-    // need to verify recursive depth of signatures
-    if (tx == null) {
-      return 0;
-    }
-    Signature sig = Signature.newBuilder().setSignatureList(tx.getSigs()).build();
-    return calculateNoOfSigs(sig, 0);
-  }
-
-  public static int calculateNoOfSigsInList(SignatureList signatureList) {
-    if (signatureList == null) {
-      return 0;
-    }
-    Signature sig = Signature.newBuilder().setSignatureList(signatureList).build();
-    return calculateNoOfSigs(sig, 0);
-  }
-
-  /**
-   * This method returns the gas converted to hashbar units. (This needs to be updated)
-   */
-  public static long getGas(Transaction tx) throws Exception {
-    long gas = 0;
-    TransactionBody body;
-    if (tx.hasBody()) {
-      body = tx.getBody();
-    } else {
-      body = TransactionBody.parseFrom(tx.getBodyBytes());
-    }
-    if (body.hasContractCreateInstance()) {
-      gas = body.getContractCreateInstance().getGas();
-    } else if (body.hasContractCall()) {
-      gas = body.getContractCall().getGas();
-    }
-    return gas * 1; // 1 Gas = 1 hashbars - need to get from standard configuration
   }
 
   /**
@@ -222,27 +184,6 @@ public class FeeBuilder {
       e.printStackTrace();
     }
     return keyStorageSize;
-  }
-
-
-  /**
-   * This method calculates number of signature in Signature object
-   */
-  private static int calculateNoOfSigs(Signature sig, int count) {
-    if (sig.hasSignatureList()) {
-      List<Signature> sigList = sig.getSignatureList().getSigsList();
-      for (int i = 0; i < sigList.size(); i++) {
-        count = calculateNoOfSigs(sigList.get(i), count);
-      }
-    } else if (sig.hasThresholdSignature()) {
-      List<Signature> sigList = sig.getThresholdSignature().getSigs().getSigsList();
-      for (int i = 0; i < sigList.size(); i++) {
-        count = calculateNoOfSigs(sigList.get(i), count);
-      }
-    } else {
-      count++;
-    }
-    return count;
   }
 
   /**
@@ -284,11 +225,11 @@ public class FeeBuilder {
 
     /*
      * Query QueryHeader Transaction - CryptoTransfer - (will be taken care in Transaction
-     * processing) ResponseType - INT_SIZE ID - 3 * LONG_SIZE
+     * processing) ResponseType - INT_SIZE ID - BASIC_ENTITY_ID_SIZE
      *
      */
 
-    bpt = INT_SIZE + BASIC_ACCTID_SIZE;
+    bpt = INT_SIZE + BASIC_ENTITY_ID_SIZE;
 
     /*
      * bpr = Response header NodeTransactionPrecheckCode - 4 bytes ResponseType - 4 bytes uint64
@@ -299,9 +240,7 @@ public class FeeBuilder {
     FeeComponents feeMatrices = FeeComponents.newBuilder().setBpt(bpt).setVpt(vpt).setRbh(rbs)
         .setSbh(sbs).setGas(gas).setTv(tv).setBpr(bpr).setSbpr(sbpr).build();
 
-    /*return getQueryFeeDataMatrices(feeMatrices);*/
     return FeeData.getDefaultInstance();
-
   }
 
 
@@ -328,24 +267,17 @@ public class FeeBuilder {
   }
 
   public static int getSignatureCount(Transaction transaction) {
-    if (transaction.hasSigMap()) {
-      return transaction.getSigMap().getSigPairCount();
-    } else if (transaction.hasSigs()) {
-      Signature sig = Signature.newBuilder().setSignatureList(transaction.getSigs()).build();
-      return calculateNoOfSigs(sig, 0);
-    } else {
-      return 0;
-    }
+    try {
+      return CommonUtils.extractSignatureMap(transaction).getSigPairCount();
+    } catch (InvalidProtocolBufferException ignoreToReturnZeroCount) { }
+    return 0;
   }
 
   public static int getSignatureSize(Transaction transaction) {
-    if (transaction.hasSigMap()) {
-      return transaction.getSigMap().toByteArray().length;
-    } else if (transaction.hasSigs()) {
-      return transaction.getSigs().toByteArray().length;
-    } else {
-      return 0;
-    }
+    try {
+      return CommonUtils.extractSignatureMap(transaction).toByteArray().length;
+    } catch (InvalidProtocolBufferException ignoreToReturnZeroSize) { }
+    return 0;
   }
 
   /**
@@ -415,31 +347,7 @@ public class FeeBuilder {
   public static long getDefaultRBHNetworkSize() {
     return (BASIC_RECEIPT_SIZE) * (RECIEPT_STORAGE_TIME_SEC);
   }
-  
- /* public FeeData getCreateTransactionRecordFeeMatrices(int txRecordSize, int time) {
 
-    long bpt = 0;
-    long vpt = 0;
-    long rbs = 0;
-    long sbs = 0;
-    long gas = 0;
-    long tv = 0;
-    long bpr = 0;
-    long sbpr = 0;
-
-    
-    rbs = (txRecordSize) * time;
-    // sbs - Stoarge bytes seconds
-    sbs = 0; // Transaction Record fee is charged when they are saved!, so no fee is required at
-
-    FeeComponents feeMatricesForTx = FeeComponents.newBuilder().setBpt(bpt).setVpt(vpt).setRbh(rbs)
-        .setSbh(sbs).setGas(gas).setTv(tv).setBpr(bpr).setSbpr(sbpr).build();
-
-    return getFeeDataMatrices(feeMatricesForTx, DEFAULT_PAYER_ACC_SIG_COUNT);
-
-  }*/
-
-  // does not account for transferlist due to threshold record generation
   public static int getBaseTransactionRecordSize(TransactionBody txBody) {
     int txRecordSize = BASIC_TX_RECORD_SIZE;
     if (txBody.getMemo() != null) {
@@ -449,26 +357,28 @@ public class FeeBuilder {
     if (txBody.hasCryptoTransfer()) {
       txRecordSize = txRecordSize
           + txBody.getCryptoTransfer().getTransfers().getAccountAmountsCount()
-          * (BASIC_ACCT_AMT_SIZE);
+          * (BASIC_ACCOUNT_AMT_SIZE);
     }
     return txRecordSize;
   }
 
   public static long getTxRecordUsageRBH(TransactionRecord txRecord, int timeInSeconds) {
-	if(txRecord == null) return 0;
+	if(txRecord == null) {
+      return 0;
+    }
 	long txRecordSize = getTransactionRecordSize(txRecord);    
     return (txRecordSize) * getHoursFromSec(timeInSeconds);
   }
-  
-  
+
   public static int getHoursFromSec(int valueInSeconds) {	  
 	  return valueInSeconds==0 ? 0 : Math.max(1,(valueInSeconds/HRS_DIVISOR));
   }
 
-
   public static int getTransactionRecordSize(TransactionRecord txRecord) {
 	
-	if(txRecord == null) return 0;
+	if(txRecord == null) {
+      return 0;
+    }
 	
     int txRecordSize = BASIC_TX_RECORD_SIZE;
 
@@ -482,7 +392,7 @@ public class FeeBuilder {
     if (txRecord.hasTransferList()) {
       txRecordSize =
           txRecordSize
-              + (txRecord.getTransferList().getAccountAmountsCount()) * (BASIC_ACCT_AMT_SIZE);
+              + (txRecord.getTransferList().getAccountAmountsCount()) * (BASIC_ACCOUNT_AMT_SIZE);
     }
 
     int memoBytesSize = 0;
@@ -513,21 +423,20 @@ public class FeeBuilder {
 
     return contResult;
   }
-  
-  
+
   public static long getTransactionRecordFeeInTinyCents(TransactionRecord txRecord,long feeCoeffRBH, int timeInSec) {
-	  if(txRecord == null) return 0;
+	  if(txRecord == null) {
+        return 0;
+      }
 	  long txRecordUsageRBH = getTxRecordUsageRBH(txRecord, timeInSec);
 	  long rawFee = txRecordUsageRBH * feeCoeffRBH;
 	  return Math.max(rawFee > 0 ? 1 : 0, (rawFee) / FEE_DIVISOR_FACTOR);	  
   }
 
-
   public static int getQueryTransactionSize() {
     int commonTxBodyBytes =
-        3 * LONG_SIZE + (LONG_SIZE) + 3 * LONG_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
-    int commonTransferListSize = 4 * LONG_SIZE;
-    return (commonTxBodyBytes + commonTransferListSize + SIGNATURE_SIZE + INT_SIZE);
+            BASIC_ENTITY_ID_SIZE + (LONG_SIZE) + BASIC_ENTITY_ID_SIZE + LONG_SIZE + (LONG_SIZE) + BOOL_SIZE;
+    return (commonTxBodyBytes + BASIC_TX_ID_SIZE + SIGNATURE_SIZE + INT_SIZE);
   }
 
   public static int liveHashSize(List<LiveHash> liveHashes) {
@@ -538,7 +447,7 @@ public class FeeBuilder {
     if (liveHashes != null) {
       int liveHashsListSize = liveHashes.size();
       liveHashDataSize = TX_HASH_SIZE * liveHashsListSize;
-      liveHashsAccountID = (3 * LONG_SIZE) * liveHashsListSize;
+      liveHashsAccountID = (BASIC_ENTITY_ID_SIZE) * liveHashsListSize;
       for (LiveHash liveHashs : liveHashes) {
         List<Key> keyList = liveHashs.getKeys().getKeysList();
         for (Key key : keyList) {
@@ -554,6 +463,4 @@ public class FeeBuilder {
     return (responseType == ResponseType.ANSWER_STATE_PROOF
         || responseType == ResponseType.COST_ANSWER_STATE_PROOF) ? STATE_PROOF_SIZE : 0;
   }
-
-
 }

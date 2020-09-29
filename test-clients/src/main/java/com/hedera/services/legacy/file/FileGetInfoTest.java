@@ -31,7 +31,6 @@ import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.ThresholdKey;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -88,8 +87,6 @@ public class FileGetInfoTest extends FileServiceTest {
   public void init() throws Throwable {
     setUp();
     CryptoServiceTest.payerAccounts = accountCreatBatch4Payer(1); // accounts as payers
-    
-//    accountCreatBatch(1);
   }
 
   /**
@@ -115,7 +112,6 @@ public class FileGetInfoTest extends FileServiceTest {
       
       // check file info
       FileInfo fi = getFileInfo(fid, payerID, nodeID);
-//      Assert.assertEquals(1024, fi.getSize());
       Assert.assertEquals(false, fi.getDeleted());
       log.info(LOG_PREFIX + "Create file: get file info test passed! fi = " + fi);
       fid2waclMap.put(fid, waclPubKeyList);
@@ -162,7 +158,6 @@ public class FileGetInfoTest extends FileServiceTest {
 
       // check file info
       FileInfo fi = getFileInfo(fileID, payerID, nodeID);
-//      Assert.assertEquals(2 * 1024, fi.getSize());
       Assert.assertEquals(false, fi.getDeleted());
       log.info(LOG_PREFIX + "Append file: get file info test passed! fi = " + fi);
     } catch (Throwable e) {
@@ -194,7 +189,6 @@ public class FileGetInfoTest extends FileServiceTest {
       
       // check file info
       FileInfo fi = getFileInfo(fileID, payerID, nodeID);
-//      Assert.assertEquals(1024, fi.getSize());
       Assert.assertEquals(false, fi.getDeleted());
       fid2waclMap.put(fileID, newWaclPubKeyList);
       log.info(LOG_PREFIX + "Update file: get file info test passed! fi = " + fi);
@@ -252,8 +246,7 @@ public class FileGetInfoTest extends FileServiceTest {
     Transaction fileAppendRequest = RequestBuilder.getFileAppendBuilder(payerID.getAccountNum(),
         payerID.getRealmNum(), payerID.getShardNum(), nodeID.getAccountNum(), nodeID.getRealmNum(),
         nodeID.getShardNum(), MAX_TX_FEE, timestamp, transactionDuration, true, "FileAppend",
-        signatures, fileData,
-        fid);
+        fileData, fid);
     TransactionBody body = TransactionBody.parseFrom(fileAppendRequest.getBodyBytes());
     TransactionID txId = body.getTransactionID();
   
@@ -267,7 +260,7 @@ public class FileGetInfoTest extends FileServiceTest {
       keys.add(waclKey);
     }
     Transaction txSigned = TransactionSigner
-        .signTransactionComplex(fileAppendRequest, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(fileAppendRequest, keys, pubKey2privKeyMap);
   
     log.info("\n-----------------------------------");
     log.info("FileAppend: request = " + txSigned);
@@ -296,13 +289,11 @@ public class FileGetInfoTest extends FileServiceTest {
     log.debug("@@@ upload file: file size in byte = " + fileData.size());
     Timestamp timestamp = TestHelperComplex.getDefaultCurrentTimestampUTC();
     Timestamp fileExp = ProtoCommonUtils.getCurrentTimestampUTC(DAY_SEC);
-    SignatureList signatures = SignatureList.newBuilder().getDefaultInstanceForType();
   
     Transaction FileCreateRequest = RequestBuilder.getFileCreateBuilder(payerID.getAccountNum(),
         payerID.getRealmNum(), payerID.getShardNum(), nodeID.getAccountNum(), nodeID.getRealmNum(),
         nodeID.getShardNum(), MAX_TX_FEE, timestamp, transactionDuration, true, "FileCreate",
-        signatures, fileData,
-        fileExp, waclKeyList);
+        fileData, fileExp, waclKeyList);
     TransactionBody body = TransactionBody.parseFrom(FileCreateRequest.getBodyBytes());
     TransactionID txId = body.getTransactionID();
   
@@ -352,7 +343,7 @@ public class FileGetInfoTest extends FileServiceTest {
       keys.add(waclKey);
     }
     Transaction filesigned = TransactionSigner
-        .signTransactionComplex(FileCreateRequest, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(FileCreateRequest, keys, pubKey2privKeyMap);
   
     log.debug("\n-----------------------------------");
     log.debug("FileCreate: request = " + filesigned);
@@ -406,9 +397,7 @@ public class FileGetInfoTest extends FileServiceTest {
     Timestamp timestamp = TestHelperComplex.getDefaultCurrentTimestampUTC();
     Transaction FileDeleteRequest = RequestBuilder.getFileDeleteBuilder(payerID.getAccountNum(),
         payerID.getRealmNum(), payerID.getShardNum(), nodeID.getAccountNum(), nodeID.getRealmNum(),
-        nodeID.getShardNum(), MAX_TX_FEE, timestamp, transactionDuration, true, "FileDelete",
-        signatures,
-        fid);
+        nodeID.getShardNum(), MAX_TX_FEE, timestamp, transactionDuration, true, "FileDelete", fid);
   
     Key payerKey = acc2ComplexKeyMap.get(payerID);
     Key waclKey = Key.newBuilder().setKeyList(KeyList.newBuilder().addAllKeys(waclKeyList)).build();
@@ -420,7 +409,7 @@ public class FileGetInfoTest extends FileServiceTest {
       keys.add(waclKey);
     }
     Transaction txSigned = TransactionSigner
-        .signTransactionComplex(FileDeleteRequest, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(FileDeleteRequest, keys, pubKey2privKeyMap);
   
     log.info("\n-----------------------------------");
     log.info("FileDelete: request = " + txSigned);
@@ -460,8 +449,7 @@ public class FileGetInfoTest extends FileServiceTest {
     Transaction FileUpdateRequest = RequestBuilder.getFileUpdateBuilder(payerID.getAccountNum(),
         payerID.getRealmNum(), payerID.getShardNum(), nodeID.getAccountNum(), nodeID.getRealmNum(),
         nodeID.getShardNum(), MAX_TX_FEE, timestamp, fileExp, transactionDuration, true,
-        "FileUpdate",
-        signatures, fileData, fid, wacl);
+        "FileUpdate", fileData, fid, wacl);
   
     Key payerKey = acc2ComplexKeyMap.get(payerID);
     Key existingWaclKey = Key.newBuilder()
@@ -477,7 +465,7 @@ public class FileGetInfoTest extends FileServiceTest {
       keys.add(newWaclKey);
     }
     Transaction txSigned = TransactionSigner
-        .signTransactionComplex(FileUpdateRequest, keys, pubKey2privKeyMap);
+        .signTransactionComplexWithSigMap(FileUpdateRequest, keys, pubKey2privKeyMap);
   
     log.info("\n-----------------------------------");
     log.info(

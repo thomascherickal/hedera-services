@@ -59,8 +59,6 @@ import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -139,28 +137,6 @@ public class ChainOfContracts {
 	  }
 
 	  public static void main(String args[]) throws Exception {
-			/* byte[] arrTest = {2,3,4,5,6,};
-			 byte[] arrTest2 = {7,8,9,10};
-			 DataWord dw = new DataWord(arrTest);
-			 DataWord dw1 = new DataWord(arrTest);
-			 Map<byte[],DataWord> mapToSerialize = new HashMap<byte[],DataWord>();
-			 mapToSerialize.put(arrTest, dw);
-			 mapToSerialize.put(arrTest2, dw1);
-			 byte[] serializedDataWordMap = SerializationUtils.serialize((Serializable)mapToSerialize);
-			 try {
-		            Path folderpath = Paths.get("/persisttest");
-		            Path filePath =  Paths.get("/persisttest/testpersist.data");
-		            if(Files.notExists(folderpath)) {
-		            	Files.createDirectory(folderpath);
-		            }
-		            Files.write(filePath, serializedDataWordMap);
-		            Files.readAllBytes(filePath);
-		        } catch (IOException e) {
-		            e.printStackTrace();
-		        }
-			 
-			 
-			 Map<byte[],DataWord>  deserializedMap = SerializationUtils.deserialize(serializedDataWordMap);*/
 	    Properties properties = TestHelper.getApplicationProperties();
 			contractDuration = Long.parseLong(properties.getProperty("CONTRACT_DURATION"));
 	    host = properties.getProperty("host");
@@ -191,7 +167,6 @@ public class ChainOfContracts {
 
 	    if (crAccount != null) {
 
-//				FileID simpleStorageFileId = uploadFile(crAccount, fileName);
 	      FileID simpleStorageFileId = LargeFileUploadIT.uploadFile(crAccount, fileName, keyPair);
 	      if (simpleStorageFileId != null) {
 	        ContractID storageWrapperContractId = createContract(crAccount, simpleStorageFileId,
@@ -208,7 +183,6 @@ public class ChainOfContracts {
 	        setValueToContract(crAccount, storageWrapperContractId, valuePassedContract1);
 	        
 	        int actualStoredValueC1 = getValueFromContract(crAccount, storageWrapperContractId);
-	        actualStoredValueC1 = getValueFromContract(crAccount, storageWrapperContractId);
 	        Assert.assertEquals(valuePassedContract1, actualStoredValueC1);
 
 	        valuePassedContract1 = ThreadLocalRandom.current().nextInt(1, 1000000 + 1);;
@@ -228,32 +202,14 @@ public class ChainOfContracts {
 	  }
 
 	  private static Transaction createQueryHeaderTransfer(AccountID payer) throws Exception {
-	    Timestamp timestamp = RequestBuilder
-	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
-	    Duration transactionDuration = RequestBuilder.getDuration(30);
-
-	    //KeyPair pair = new KeyPairGenerator().generateKeyPair();
-	    //byte[] pubKeyBytes = ((EdDSAPublicKey) pair.getPublic()).getAbyte();
-	    //String pubKey = HexUtils.bytes2Hex(pubKeyBytes);
-	    //Key key = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey.getBytes())).build(); // used later
-	    SignatureList sigList = SignatureList.getDefaultInstance();
-			 /* Transaction transferTx = RequestBuilder.getCryptoTransferRequest(
-						 payer.getAccountNum(), payer.getRealmNum(), payer.getShardNum(), nodeAccount.getAccountNum(), nodeAccount.getRealmNum(), nodeAccount.getShardNum(),
-						 50, timestamp, transactionDuration, false, "test", sigList,
-						 payer.getAccountNum(), -100l, nodeAccount.getAccountNum(), 100l);*/
-
-	    Transaction transferTx = TestHelper.createTransfer(payer, accountKeys.get(payer).get(0),
-	        nodeAccount, payer,
-	        accountKeys.get(payer).get(0), nodeAccount, TestHelper.getCryptoMaxFee());
-	    //transferTx = TransactionSigner.signTransaction(transferTx, accountKeys.get(payer));
-	    return transferTx;
-
+		  return TestHelper.createTransfer(payer, accountKeys.get(payer).get(0),
+			  nodeAccount, payer,
+			  accountKeys.get(payer).get(0), nodeAccount, TestHelper.getCryptoMaxFee());
 	  }
 
 	  private static AccountID createAccount(AccountID payerAccount, long initialBalance,
 	      KeyPair keyGenerated) throws Exception {
-	    AccountID createdAccount = null;
-	    int port = 50211;
+		  int port = 50211;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
 	        .usePlaintext(true)
 	        .build();
@@ -261,7 +217,6 @@ public class ChainOfContracts {
 	    Transaction transaction = TestHelper
 	        .createAccountWithFee(payerAccount, nodeAccount, keyGenerated, initialBalance,
 	            accountKeys.get(payerAccount));
-//			  Transaction signTransaction = TransactionSigner.signTransaction(transaction, accountKeys.get(payerAccount));
 	    TransactionResponse response = stub.createAccount(transaction);
 	    Assert.assertNotNull(response);
 	    Assert.assertEquals(ResponseCodeEnum.OK, response.getNodeTransactionPrecheckCode());
@@ -324,8 +279,6 @@ public class ChainOfContracts {
 	    Timestamp fileExp = RequestBuilder.getTimestamp(Instant.now());
 	    Duration transactionDuration = RequestBuilder.getDuration(30);
 
-	    SignatureList signatures = SignatureList.newBuilder().getDefaultInstanceForType();
-
 	    List<Key> waclKeyList = new ArrayList<>();
 	    KeyPair pair = new KeyPairGenerator().generateKeyPair();
 	    Key waclKey = Key.newBuilder()
@@ -343,7 +296,7 @@ public class ChainOfContracts {
 	        .getFileCreateBuilder(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
 	            payerAccount.getShardNum(), nodeAccount.getAccountNum(), nodeAccount.getRealmNum(),
 	            nodeAccount.getShardNum(), 100l, timestamp,
-	            transactionDuration, true, "FileCreate", signatures, fileData, fileExp, waclKeyList);
+	            transactionDuration, true, "FileCreate", fileData, fileExp, waclKeyList);
 	    FileCreateRequest = TransactionSigner
 	        .signTransaction(FileCreateRequest, accountKeys.get(payerAccount));
 
@@ -425,8 +378,6 @@ public class ChainOfContracts {
 	    Timestamp fileExp = RequestBuilder.getTimestamp(Instant.now());
 	    Duration transactionDuration = RequestBuilder.getDuration(30);
 
-	    SignatureList signatures = SignatureList.newBuilder().getDefaultInstanceForType();
-
 	    List<Key> waclKeyList = new ArrayList<>();
 	    KeyPair pair = new KeyPairGenerator().generateKeyPair();
 	    Key waclKey = Key.newBuilder()
@@ -443,7 +394,7 @@ public class ChainOfContracts {
 	        .getFileCreateBuilder(payerAccount.getAccountNum(), payerAccount.getRealmNum(),
 	            payerAccount.getShardNum(), Utilities.getDefaultNodeAccount(), 0l, 0l,
 	            TestHelper.getFileMaxFee(), timestamp,
-	            transactionDuration, true, "FileCreate", signatures, fileData, fileExp, waclKeyList);
+	            transactionDuration, true, "FileCreate", fileData, fileExp, waclKeyList);
 	    TransactionBody fileCreateBody = TransactionBody.parseFrom(FileCreateRequest.getBodyBytes());
 	    TransactionID txId = fileCreateBody.getTransactionID();
 	    TransactionResponse response = stub.createFile(FileCreateRequest);
@@ -483,7 +434,6 @@ public class ChainOfContracts {
 	    Timestamp timestamp = RequestBuilder
 	        .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(13));
 	    Duration transactionDuration = RequestBuilder.getDuration(30);
-	    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
 	    ByteString dataBstr = ByteString.EMPTY;
 	    if (data != null) {
 	      dataBstr = ByteString.copyFrom(data);
@@ -652,8 +602,7 @@ public class ChainOfContracts {
 	    Transaction updateContractRequest = RequestBuilder
 	        .getContractUpdateRequest(payerAccount, nodeAccount, TestHelper.getContractMaxFee(), timestamp,
 	            transactionDuration, true, "", contractToUpdate, autoRenewPeriod, null, null,
-	            expirationTime, SignatureList.newBuilder().addSigs(Signature.newBuilder()
-	                .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build(), "");
+	            expirationTime, "");
 
 	    updateContractRequest = TransactionSigner
 	        .signTransaction(updateContractRequest, accountKeys.get(payerAccount));

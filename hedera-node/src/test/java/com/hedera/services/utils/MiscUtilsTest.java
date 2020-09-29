@@ -23,9 +23,14 @@ package com.hedera.services.utils;
 import com.google.common.io.Files;
 import com.google.protobuf.ByteString;
 import com.hedera.services.exceptions.UnknownHederaFunctionality;
+import com.hedera.services.grpc.controllers.ConsensusController;
+import com.hedera.services.grpc.controllers.CryptoController;
+import com.hedera.services.grpc.controllers.FileController;
+import com.hedera.services.grpc.controllers.TokenController;
 import com.hedera.services.keys.LegacyEd25519KeyReader;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
@@ -62,11 +67,27 @@ import com.hederahashgraph.api.proto.java.GetByKeyQuery;
 import com.hederahashgraph.api.proto.java.GetBySolidityIDQuery;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
+import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.NetworkGetVersionInfoQuery;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
 import com.hederahashgraph.api.proto.java.SystemDeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.SystemUndeleteTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenAssociateTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenBurnTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenCreateTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenDeleteTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenDissociateTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenFreezeAccountTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenGetInfoQuery;
+import com.hederahashgraph.api.proto.java.TokenGrantKycTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenRevokeKycTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenUpdateTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenMintTransactionBody;
+import com.hederahashgraph.api.proto.java.Transaction;
+import com.hederahashgraph.api.proto.java.TokenTransfersTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenUnfreezeAccountTransactionBody;
+import com.hederahashgraph.api.proto.java.TokenWipeAccountTransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionGetFastRecordQuery;
 import com.hederahashgraph.api.proto.java.TransactionGetReceiptQuery;
@@ -78,8 +99,12 @@ import com.hedera.services.legacy.core.AccountKeyListObj;
 import com.hedera.services.legacy.core.KeyPairObj;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
+import com.hederahashgraph.api.proto.java.UncheckedSubmitBody;
+import com.swirlds.common.Address;
+import com.swirlds.common.AddressBook;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -99,6 +124,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.hedera.services.utils.MiscUtils.*;
@@ -112,13 +138,62 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 @RunWith(JUnitPlatform.class)
 public class MiscUtilsTest {
 	@Test
+	public void getsNodeAccounts() {
+		var address = mock(Address.class);
+		given(address.getMemo()).willReturn("0.0.3");
+
+		var book = mock(AddressBook.class);
+		given(book.getSize()).willReturn(1);
+		given(book.getAddress(0)).willReturn(address);
+
+		// when:
+		var accounts = MiscUtils.getNodeAccounts(book);
+
+		// then:
+		assertEquals(Set.of(IdUtils.asAccount("0.0.3")), accounts);
+	}
+
+	@Test
 	public void asFcKeyUncheckedTranslatesExceptions() {
 		// expect:
-		assertThrows(IllegalArgumentException.class, () -> MiscUtils.asFcKeyUnchecked(null));
+		assertThrows(IllegalArgumentException.class,
+				() -> MiscUtils.asFcKeyUnchecked(Key.getDefaultInstance()));
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnUnparseableKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.getDefaultInstance()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnEmptyKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.newBuilder().setKeyList(KeyList.getDefaultInstance()).build()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsEmptyOnInvalidKey() {
+		// expect:
+		assertTrue(asUsableFcKey(Key.newBuilder().setEd25519(ByteString.copyFrom("1".getBytes())).build()).isEmpty());
+	}
+
+	@Test
+	public void asFcKeyReturnsExpected() {
+		// given:
+		var key = Key.newBuilder().setEd25519(ByteString.copyFrom(
+				"01234567890123456789012345678901".getBytes())).build();
+
+		// expect:
+		assertTrue(JKey.equalUpToDecodability(
+				asUsableFcKey(key).get(),
+				MiscUtils.asFcKeyUnchecked(key)));
 	}
 
 	@Test
@@ -249,27 +324,40 @@ public class MiscUtilsTest {
 	@Test
 	public void getExpectedTxnStat() {
 		Map<String, BodySetter<? extends GeneratedMessageV3>> setters = new HashMap<>() {{
-			put("createAccount", new BodySetter<>(CryptoCreateTransactionBody.class));
-			put("updateAccount", new BodySetter<>(CryptoUpdateTransactionBody.class));
-			put("cryptoTransfer", new BodySetter<>(CryptoTransferTransactionBody.class));
-			put("cryptoDelete", new BodySetter<>(CryptoDeleteTransactionBody.class));
+			put(CryptoController.CRYPTO_CREATE_METRIC, new BodySetter<>(CryptoCreateTransactionBody.class));
+			put(CryptoController.CRYPTO_UPDATE_METRIC, new BodySetter<>(CryptoUpdateTransactionBody.class));
+			put(CryptoController.CRYPTO_TRANSFER_METRIC, new BodySetter<>(CryptoTransferTransactionBody.class));
+			put(CryptoController.CRYPTO_DELETE_METRIC, new BodySetter<>(CryptoDeleteTransactionBody.class));
 			put("createContract", new BodySetter<>(ContractCreateTransactionBody.class));
 			put("contractCallMethod", new BodySetter<>(ContractCallTransactionBody.class));
 			put("updateContract", new BodySetter<>(ContractUpdateTransactionBody.class));
 			put("deleteContract", new BodySetter<>(ContractDeleteTransactionBody.class));
 			put("addLiveHash", new BodySetter<>(CryptoAddLiveHashTransactionBody.class));
 			put("deleteLiveHash", new BodySetter<>(CryptoDeleteLiveHashTransactionBody.class));
-			put("createFile", new BodySetter<>(FileCreateTransactionBody.class));
-			put("appendContent", new BodySetter<>(FileAppendTransactionBody.class));
-			put("updateFile", new BodySetter<>(FileUpdateTransactionBody.class));
-			put("deleteFile", new BodySetter<>(FileDeleteTransactionBody.class));
+			put(FileController.CREATE_FILE_METRIC, new BodySetter<>(FileCreateTransactionBody.class));
+			put(FileController.FILE_APPEND_METRIC, new BodySetter<>(FileAppendTransactionBody.class));
+			put(FileController.UPDATE_FILE_METRIC, new BodySetter<>(FileUpdateTransactionBody.class));
+			put(FileController.DELETE_FILE_METRIC, new BodySetter<>(FileDeleteTransactionBody.class));
 			put("systemDelete", new BodySetter<>(SystemDeleteTransactionBody.class));
 			put("systemUndelete", new BodySetter<>(SystemUndeleteTransactionBody.class));
 			put("freeze", new BodySetter<>(FreezeTransactionBody.class));
-			put("createTopic", new BodySetter<>(ConsensusCreateTopicTransactionBody.class));
-			put("updateTopic", new BodySetter<>(ConsensusUpdateTopicTransactionBody.class));
-			put("deleteTopic", new BodySetter<>(ConsensusDeleteTopicTransactionBody.class));
-			put("submitMessage", new BodySetter<>(ConsensusSubmitMessageTransactionBody.class));
+			put(ConsensusController.CREATE_TOPIC_METRIC, new BodySetter<>(ConsensusCreateTopicTransactionBody.class));
+			put(ConsensusController.UPDATE_TOPIC_METRIC, new BodySetter<>(ConsensusUpdateTopicTransactionBody.class));
+			put(ConsensusController.DELETE_TOPIC_METRIC, new BodySetter<>(ConsensusDeleteTopicTransactionBody.class));
+			put(ConsensusController.SUBMIT_MESSAGE_METRIC, new BodySetter<>(ConsensusSubmitMessageTransactionBody.class));
+			put(TokenController.TOKEN_CREATE_METRIC, new BodySetter<>(TokenCreateTransactionBody.class));
+			put(TokenController.TOKEN_TRANSACT_METRIC, new BodySetter<>(TokenTransfersTransactionBody.class));
+			put(TokenController.TOKEN_FREEZE_METRIC, new BodySetter<>(TokenFreezeAccountTransactionBody.class));
+			put(TokenController.TOKEN_UNFREEZE_METRIC, new BodySetter<>(TokenUnfreezeAccountTransactionBody.class));
+			put(TokenController.TOKEN_GRANT_KYC_METRIC, new BodySetter<>(TokenGrantKycTransactionBody.class));
+			put(TokenController.TOKEN_REVOKE_KYC_METRIC, new BodySetter<>(TokenRevokeKycTransactionBody.class));
+			put(TokenController.TOKEN_DELETE_METRIC, new BodySetter<>(TokenDeleteTransactionBody.class));
+			put(TokenController.TOKEN_UPDATE_METRIC, new BodySetter<>(TokenUpdateTransactionBody.class));
+			put(TokenController.TOKEN_MINT_METRIC, new BodySetter<>(TokenMintTransactionBody.class));
+			put(TokenController.TOKEN_BURN_METRIC, new BodySetter<>(TokenBurnTransactionBody.class));
+			put(TokenController.TOKEN_WIPE_ACCOUNT_METRIC, new BodySetter<>(TokenWipeAccountTransactionBody.class));
+			put(TokenController.TOKEN_ASSOCIATE_METRIC, new BodySetter<>(TokenAssociateTransactionBody.class));
+			put(TokenController.TOKEN_DISSOCIATE_METRIC, new BodySetter<>(TokenDissociateTransactionBody.class));
 		}};
 
 		// expect:
@@ -308,6 +396,7 @@ public class MiscUtilsTest {
 			put(FileGetInfo, new BodySetter<>(FileGetInfoQuery.class));
 			put(TransactionGetReceipt, new BodySetter<>(TransactionGetReceiptQuery.class));
 			put(TransactionGetRecord, new BodySetter<>(TransactionGetRecordQuery.class));
+			put(TokenGetInfo, new BodySetter<>(TokenGetInfoQuery.class));
 		}};
 
 		// expect:
@@ -316,6 +405,16 @@ public class MiscUtilsTest {
 			setter.setDefaultInstanceOnQuery(query);
 			assertEquals(function, functionalityOfQuery(query.build()).get());
 		});
+	}
+
+	@Test
+	public void worksForGetTokenInfo() {
+		var op = TokenGetInfoQuery.newBuilder()
+				.setHeader(QueryHeader.newBuilder().setResponseType(ANSWER_ONLY));
+		var query = Query.newBuilder()
+				.setTokenGetInfo(op)
+				.build();
+		assertEquals(ANSWER_ONLY, activeHeaderFrom(query).get().getResponseType());
 	}
 
 	@Test
@@ -503,11 +602,25 @@ public class MiscUtilsTest {
 			put(FileDelete, new BodySetter<>(FileDeleteTransactionBody.class));
 			put(FileUpdate, new BodySetter<>(FileUpdateTransactionBody.class));
 			put(ContractDelete, new BodySetter<>(ContractDeleteTransactionBody.class));
+			put(TokenCreate, new BodySetter<>(TokenCreateTransactionBody.class));
+			put(TokenTransact, new BodySetter<>(TokenTransfersTransactionBody.class));
+			put(TokenFreezeAccount, new BodySetter<>(TokenFreezeAccountTransactionBody.class));
+			put(TokenUnfreezeAccount, new BodySetter<>(TokenUnfreezeAccountTransactionBody.class));
+			put(TokenGrantKycToAccount, new BodySetter<>(TokenGrantKycTransactionBody.class));
+			put(TokenRevokeKycFromAccount, new BodySetter<>(TokenRevokeKycTransactionBody.class));
+			put(TokenDelete, new BodySetter<>(TokenDeleteTransactionBody.class));
+			put(TokenUpdate, new BodySetter<>(TokenUpdateTransactionBody.class));
+			put(TokenMint, new BodySetter<>(TokenMintTransactionBody.class));
+			put(TokenBurn, new BodySetter<>(TokenBurnTransactionBody.class));
+			put(TokenAccountWipe, new BodySetter<>(TokenWipeAccountTransactionBody.class));
+			put(TokenAssociateToAccount, new BodySetter<>(TokenAssociateTransactionBody.class));
+			put(TokenDissociateFromAccount, new BodySetter<>(TokenDissociateTransactionBody.class));
 			put(Freeze, new BodySetter<>(FreezeTransactionBody.class));
 			put(ConsensusCreateTopic, new BodySetter<>(ConsensusCreateTopicTransactionBody.class));
 			put(ConsensusUpdateTopic, new BodySetter<>(ConsensusUpdateTopicTransactionBody.class));
 			put(ConsensusDeleteTopic, new BodySetter<>(ConsensusDeleteTopicTransactionBody.class));
 			put(ConsensusSubmitMessage, new BodySetter<>(ConsensusSubmitMessageTransactionBody.class));
+			put(UncheckedSubmit, new BodySetter<>(UncheckedSubmitBody.class));
 		}};
 
 		// expect:
@@ -520,6 +633,21 @@ public class MiscUtilsTest {
 				throw new IllegalStateException(uhf);
 			}
 		});
+	}
+
+	@Test
+	public void hashCorrectly() throws DecoderException {
+		byte[] testBytes = "test bytes".getBytes();
+		byte[] expectedHash = Hex.decodeHex(
+				"2ddb907ecf9a8c086521063d6d310d46259437770587b3dbe2814ab17962a4e124a825fdd02cb167ac9fffdd4a5e8120"
+		);
+		Transaction transaction = mock(Transaction.class);
+		PlatformTxnAccessor accessor = mock(PlatformTxnAccessor.class);
+		given(transaction.toByteArray()).willReturn(testBytes);
+		given(accessor.getSignedTxn()).willReturn(transaction);
+
+		assertArrayEquals(expectedHash, CommonUtils.noThrowSha384HashOf(testBytes));
+		assertArrayEquals(expectedHash, CommonUtils.sha384HashOf(testBytes).toByteArray());
 	}
 
 	public static class BodySetter<T> {

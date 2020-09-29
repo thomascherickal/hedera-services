@@ -59,7 +59,7 @@ public class HederaNodeStatsTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		stats = new HederaNodeStats(platform, 0, log);
-		verify(platform, times(209)).addAppStatEntry(any(StatEntry.class));
+		verify(platform, times(213)).addAppStatEntry(any(StatEntry.class));
 		verify(platform, times(1)).appStatInit();
 	}
 
@@ -142,7 +142,7 @@ public class HederaNodeStatsTest {
 
 	@Test
 	public void shouldIncreaseFileTransactionsSubmitted() {
-		String statToTest = FileController.APPEND_METRIC;
+		String statToTest = FileController.FILE_APPEND_METRIC;
 		assertEquals(0, stats.getCountStat(statToTest, HederaNodeStats.SUBMITTED_SUFFIX));
 		for (int i = 1; i <= 10; i++) {
 			stats.fileTransactionSubmitted(statToTest);

@@ -75,7 +75,9 @@ public class HederaNodeStats {
 			CryptoController.DELETE_LIVE_HASH_METRIC
 	);
 	private static final List<String> networkQueriesList = Arrays.asList(
-			NetworkController.GET_VERSION_INFO_METRIC
+			NetworkController.GET_VERSION_INFO_METRIC,
+			NetworkController.UNCHECKED_SUBMIT_METRIC
+
 	);
 	private static final List<String> cryptoQueriesList = Arrays.asList(
 			CryptoController.GET_CLAIM_METRIC,
@@ -91,7 +93,7 @@ public class HederaNodeStats {
 			FileController.CREATE_FILE_METRIC,
 			FileController.UPDATE_FILE_METRIC,
 			FileController.DELETE_FILE_METRIC,
-			FileController.APPEND_METRIC,
+			FileController.FILE_APPEND_METRIC,
 			FileController.FILE_SYSDEL_METRIC,
 			FileController.FILE_SYSUNDEL_METRIC
 	);
@@ -335,8 +337,9 @@ public class HederaNodeStats {
 					previousCounts.put(statName, currentCount);
 				}
 			} catch (InterruptedException e) {
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.debug("Interruption error when trying to sleep in HGCAppStats... ignore and continue");
+				}
 			}
 		}
 	}
@@ -366,6 +369,30 @@ public class HederaNodeStats {
 	}
 
 	public void networkQueryAnswered(String type) {
+		updateCountStat(type, SUBMITTED_SUFFIX);
+	}
+
+	public void networkTxnReceived(String type) {
+		updateCountStat(type, RECEIVED_SUFFIX);
+	}
+
+	public void networkTxnSubmitted(String type) {
+		updateCountStat(type, SUBMITTED_SUFFIX);
+	}
+
+	public void tokenTxnReceived(String type) {
+		updateCountStat(type, RECEIVED_SUFFIX);
+	}
+
+	public void tokenTxnSubmitted(String type) {
+		updateCountStat(type, SUBMITTED_SUFFIX);
+	}
+
+	public void tokenQueryReceived(String type) {
+		updateCountStat(type, RECEIVED_SUFFIX);
+	}
+
+	public void tokenQueryAnswered(String type) {
 		updateCountStat(type, SUBMITTED_SUFFIX);
 	}
 

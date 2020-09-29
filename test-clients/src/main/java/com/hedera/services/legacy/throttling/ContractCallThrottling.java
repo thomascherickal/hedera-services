@@ -30,8 +30,6 @@ import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
-import com.hederahashgraph.api.proto.java.Signature;
-import com.hederahashgraph.api.proto.java.SignatureList;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -49,7 +47,6 @@ import com.hedera.services.legacy.core.CommonUtils;
 import com.hedera.services.legacy.core.CustomPropertiesSingleton;
 import com.hedera.services.legacy.core.KeyPairObj;
 import com.hedera.services.legacy.core.TestHelper;
-import com.hedera.services.legacy.file.FileServiceIT;
 import com.hedera.services.legacy.proto.utils.ProtoCommonUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -144,7 +141,6 @@ public class ContractCallThrottling {
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Timestamp fileExp = ProtoCommonUtils.addSecondsToTimestamp(timestamp,
         CustomPropertiesSingleton.getInstance().getContractDuration());
-    SignatureList signatures = SignatureList.newBuilder().getDefaultInstanceForType();
 
     List<PrivateKey> keyList = new ArrayList<>();
     keyList.add(genesisPrivateKey);
@@ -157,16 +153,11 @@ public class ContractCallThrottling {
         .getFileCreateBuilder(
             payerAccount.getAccountNum(), payerAccount.getRealmNum(), payerAccount.getShardNum(),
             nodeAccount2.getAccountNum(), nodeAccount2.getRealmNum(), nodeAccount2.getShardNum(),
-                TestHelper.getContractMaxFee(), timestamp, transactionDuration, true, "FileCreate", signatures,
+                TestHelper.getContractMaxFee(), timestamp, transactionDuration, true, "FileCreate",
             fileData, fileExp, waclPubKeyList);
     Transaction filesignedByPayer = TransactionSigner.signTransaction(FileCreateRequest, keyList);
     // append wacl sigs
-    Transaction filesigned = null;
-    try {
-      filesigned = FileServiceIT.appendSignature(filesignedByPayer, waclPrivKeyList);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    Transaction filesigned = TransactionSigner.signTransaction(filesignedByPayer, waclPrivKeyList, true);
     return filesigned;
   }
 
@@ -199,10 +190,7 @@ public class ContractCallThrottling {
             nodeAccount2.getAccountNum(), nodeAccount2.getRealmNum(), nodeAccount2.getShardNum(),
                 TestHelper.getContractMaxFee(), timestamp,
             txDuration, true, "", 250000L, contractFile, ByteString.EMPTY, 0L,
-            contractAutoRenew, SignatureList.newBuilder()
-                .addSigs(Signature.newBuilder()
-                    .setEd25519(ByteString.copyFrom("testsignature".getBytes())))
-                .build(), "Contract Memo", null);
+            contractAutoRenew, "Contract Memo", null);
     transaction = TransactionSigner.signTransaction(transaction, keyList);
     TransactionResponse result = retryLoopTransaction(transaction,  "createContract");
     Assert.assertEquals(ResponseCodeEnum.OK, result.getNodeTransactionPrecheckCode());
@@ -244,8 +232,6 @@ public class ContractCallThrottling {
     genesisKeyPair = new KeyPair(genKeyPairObj.getPublicKey(), genesisPrivateKey);
     payerAccount = genesisAccount.get(0).getAccountId();
     log.info(payerAccount);
-//        log.info(cStub.withWaitForReady());
-//        log.info(cStub.);
      TestHelper.initializeFeeClient(channel, payerAccount, genesisKeyPair, nodeAccount2);
 
     // create Account
@@ -280,11 +266,9 @@ public class ContractCallThrottling {
 
     channel.shutdown();
 
-//        Response transactionRecord = getTransactionRecord(transaction);
   }
 
   public AccountID createAccount(Transaction transaction) throws InterruptedException {
-//    StopWatch stopWatch = new Log4JStopWatch("RoundTrip:createAccount");
     AccountID accountID = AccountID.newBuilder().setAccountNum(100000000).build();
     try {
       TransactionResponse response = cStub.createAccount(transaction);
@@ -304,7 +288,6 @@ public class ContractCallThrottling {
       accountID =
           getTxReceipt(body.getTransactionID()).getTransactionGetReceipt()
               .getReceipt().getAccountID();
-//      stopWatch.stop();
       return accountID;
 
     } catch (Exception e) {
@@ -319,7 +302,6 @@ public class ContractCallThrottling {
     Query query = Query.newBuilder().setTransactionGetReceipt(
         RequestBuilder.getTransactionGetReceiptQuery(transactionID, ResponseType.ANSWER_ONLY))
         .build();
-//    StopWatch stopWatch = new Log4JStopWatch("RoundTrip:getReceipt");
     Response transactionReceipts = Response.newBuilder()
         .setTransactionGetReceipt(TransactionGetReceiptResponse
             .newBuilder().setReceipt(TransactionReceipt.newBuilder().setStatusValue(0).build())
@@ -342,7 +324,6 @@ public class ContractCallThrottling {
       }
       log.info(transactionReceipts.getTransactionGetReceipt().getReceipt().getStatus()
           + ":: is the status");
-//      stopWatch.stop();
       return transactionReceipts;
 
     } catch (Exception e) {
@@ -383,8 +364,7 @@ public class ContractCallThrottling {
     return callResponse;
   }
 
-  public Response doTransfer(Transaction transaction) throws InterruptedException, Exception {
-//    StopWatch stopWatch = new Log4JStopWatch("RoundTrip:transfer");
+  public Response doTransfer(Transaction transaction) throws Exception {
     TransactionResponse transferResponse = cStub.cryptoTransfer(transaction);
     log.info(transferResponse.getNodeTransactionPrecheckCode());
     int count = 0;
@@ -400,7 +380,6 @@ public class ContractCallThrottling {
     }
     TransactionBody body = TransactionBody.parseFrom(transaction.getBodyBytes());
     Response transferReceipt = getTxReceipt(body.getTransactionID());
-//    stopWatch.stop();
     return transferReceipt;
   }
 
@@ -410,7 +389,6 @@ public class ContractCallThrottling {
     Query query = TestHelper.getTxRecordByTxId(body.getTransactionID(),
         payerAccount, genesisKeyPair, nodeAccount2, TestHelper.getCryptoMaxFee(),
         ResponseType.ANSWER_ONLY);
-//    StopWatch stopWatch = new Log4JStopWatch("RoundTrip:transactionRecord");
     Response transactionRecord = cStub.getTxRecordByTxID(query);
     int count = 0;
     while ((transactionRecord.getTransactionGetReceipt().getReceipt().getStatus()
@@ -425,12 +403,10 @@ public class ContractCallThrottling {
       }
       count++;
     }
-//    stopWatch.stop();
     return transactionRecord;
   }
 
-  public Response updateAccount(Transaction transaction) throws InterruptedException, Exception {
-//    StopWatch stopWatch = new Log4JStopWatch("RoundTrip:updateAccount");
+  public Response updateAccount(Transaction transaction) throws Exception {
     TransactionResponse updateAccountResponse = cStub.updateAccount(transaction);
     log.info(updateAccountResponse.getNodeTransactionPrecheckCode());
     int count = 0;
@@ -446,7 +422,6 @@ public class ContractCallThrottling {
     }
     TransactionBody body = TransactionBody.parseFrom(transaction.getBodyBytes());
     Response transferReceipt = getTxReceipt(body.getTransactionID());
-//    stopWatch.stop();
     return transferReceipt;
   }
 

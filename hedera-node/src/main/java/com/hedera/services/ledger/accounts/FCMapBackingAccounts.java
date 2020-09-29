@@ -35,10 +35,8 @@ import java.util.function.Supplier;
 import static com.hedera.services.state.merkle.MerkleEntityId.fromAccountId;
 import static com.hedera.services.utils.EntityIdUtils.readableId;
 
-public class FCMapBackingAccounts implements BackingAccounts<AccountID, MerkleAccount> {
+public class FCMapBackingAccounts implements BackingStore<AccountID, MerkleAccount> {
 	Set<AccountID> existingAccounts = new HashSet<>();
-	/* Note that all cache elements accumulated after a call to {@code startCaching}
-	* must be flushed (i.e. replaced) before the end of {@code flush}. */
 	Map<AccountID, MerkleAccount> cache = new HashMap<>();
 
 	private final Supplier<FCMap<MerkleEntityId, MerkleAccount>> delegate;

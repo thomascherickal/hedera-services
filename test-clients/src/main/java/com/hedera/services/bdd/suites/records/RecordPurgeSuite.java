@@ -35,7 +35,6 @@ import static com.hedera.services.bdd.spec.queries.QueryVerbs.*;
 import static com.hedera.services.bdd.spec.assertions.AssertUtils.*;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.*;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.*;
-import static org.junit.Assert.assertEquals;
 /* --------------------------------------------------------------------------- */
 
 public class RecordPurgeSuite extends HapiApiSuite {
@@ -75,7 +74,6 @@ public class RecordPurgeSuite extends HapiApiSuite {
 						).payingWith("target").via("txn")
 				).then(
 						getAccountRecords("target").has(inOrder(
-//								recordWith().txnId("txn"),
 								recordWith().txnId("txn")
 						)),
 						sleepFor(CACHE_RECORD_TTL_MS + EPSILON_MS),

@@ -100,9 +100,6 @@ public class SmartContractCRUD {
         .setRealmNum(node_shard_number).setShardNum(node_realm_number).build();
 
     int numberOfReps = 1;
-//    if ((args.length) > 0) {
-//      numberOfReps = Integer.parseInt(args[0]);
-//    }
     for (int i = 0; i < numberOfReps; i++) {
       SmartContractCRUD scc = new SmartContractCRUD();
       scc.demo();
@@ -265,7 +262,6 @@ public class SmartContractCRUD {
     Timestamp timestamp = RequestBuilder
         .getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(-1 * TestHelper.DEFAULT_WIND_SEC));
     Duration transactionDuration = RequestBuilder.getDuration(TestHelper.TX_DURATION);
-    //payerAccountNum, payerRealmNum, payerShardNum, nodeAccountNum, nodeRealmNum, nodeShardNum, transactionFee, timestamp, txDuration, gas, contractId, functionData, value, signatures
     ByteString dataBstr = ByteString.EMPTY;
     if (data != null) {
       dataBstr = ByteString.copyFrom(data);
@@ -457,9 +453,7 @@ public class SmartContractCRUD {
     Transaction updateContractRequest = RequestBuilder
         .getContractUpdateRequest(payerAccount, nodeAccount, MAX_TX_FEE, timestamp,
             transactionDuration, true, "", contractToUpdate, autoRenewPeriod, newAdminKey, null,
-            expirationTime, SignatureList.newBuilder().addSigs(Signature.newBuilder()
-                .setEd25519(ByteString.copyFrom("testsignature".getBytes()))).build(),
-            contractMemo);
+            expirationTime, contractMemo);
     updateContractRequest = TransactionSigner
         .signTransactionComplexWithSigMap(updateContractRequest, keyList, pubKey2privKeyMap);
 

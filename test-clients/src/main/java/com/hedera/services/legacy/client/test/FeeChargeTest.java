@@ -42,17 +42,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.hedera.services.legacy.client.util.Common.createAccountComplex;
-
 public class FeeChargeTest extends ClientBaseThread {
 
   private static final Logger log = LogManager.getLogger(FeeChargeTest.class);
   public static String fileName = TestHelper.getStartUpFile();
 
-  public FeeChargeTest(String host, int port, long nodeAccountNumber, boolean useSigMap, String [] args, int index) {
-    super(host, port, nodeAccountNumber, useSigMap, args, index);
+  public FeeChargeTest(String host, int port, long nodeAccountNumber, String [] args, int index) {
+    super(host, port, nodeAccountNumber, args, index);
     log.info("host {} nodeAccountNumber {}", host, nodeAccountNumber);
-    this.useSigMap = useSigMap;
     this.nodeAccountNumber = nodeAccountNumber;
     this.host = host;
     this.port = port;
@@ -117,16 +114,9 @@ public class FeeChargeTest extends ClientBaseThread {
       TransactionID firstTxID = callCreateAccount(payAccount, firstKeyPair, testAccountBalance);
       TransactionID secondTxID = callCreateAccount(payAccount, secondKeyPair, testAccountBalance);
 
-
       Common.getReceiptByTransactionId(stub, secondTxID);
 
-//      TransactionRecord temp = getTransactionRecord(genesisAccount, firstTxID, false);
-//
-//      Assert.assertEquals(temp.getReceipt().getStatus(), ResponseCodeEnum.SUCCESS);
-
       verifyBalance(firstTxID, preBalance, false);
-
-
     }finally {
       channel.shutdown();
     }

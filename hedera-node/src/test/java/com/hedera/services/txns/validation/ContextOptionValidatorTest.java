@@ -24,10 +24,9 @@ import com.hedera.services.context.TransactionContext;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.context.properties.PropertySource;
-import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.utils.SignedTxnAccessor;
-import com.hedera.test.factories.accounts.MapValueFactory;
+import com.hedera.test.factories.accounts.MerkleAccountFactory;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
 import com.hedera.test.factories.topics.TopicFactory;
 import com.hedera.test.factories.txns.SignedTxnFactory;
@@ -70,19 +69,19 @@ public class ContextOptionValidatorTest {
 	final private Key key = SignedTxnFactory.DEFAULT_PAYER_KT.asKey();
 	final private Instant now = Instant.now();
 	final private AccountID a = AccountID.newBuilder().setAccountNum(9_999L).build();
-	final private MerkleAccount aV = MapValueFactory.newAccount().get();
+	final private MerkleAccount aV = MerkleAccountFactory.newAccount().get();
 	final private AccountID b = AccountID.newBuilder().setAccountNum(8_999L).build();
 	final private AccountID c = AccountID.newBuilder().setAccountNum(7_999L).build();
 	final private AccountID d = AccountID.newBuilder().setAccountNum(6_999L).build();
 	final private AccountID missing = AccountID.newBuilder().setAccountNum(1_234L).build();
 	final private ContractID missingContract = ContractID.newBuilder().setContractNum(5_431L).build();
 	final private AccountID deleted = AccountID.newBuilder().setAccountNum(2_234L).build();
-	final private MerkleAccount deletedV = MapValueFactory.newAccount().deleted(true).get();
+	final private MerkleAccount deletedV = MerkleAccountFactory.newAccount().deleted(true).get();
 	final private ContractID contract = ContractID.newBuilder().setContractNum(5_432L).build();
-	final private MerkleAccount contractV = MapValueFactory.newAccount().isSmartContract(true).get();
+	final private MerkleAccount contractV = MerkleAccountFactory.newAccount().isSmartContract(true).get();
 	final private ContractID deletedContract = ContractID.newBuilder().setContractNum(4_432L).build();
 	final private MerkleAccount deletedContractV =
-			MapValueFactory.newAccount().isSmartContract(true).deleted(true).get();
+			MerkleAccountFactory.newAccount().isSmartContract(true).deleted(true).get();
 	final private TopicID missingTopicId = TopicID.newBuilder().setTopicNum(1_234L).build();
 	final private TopicID deletedTopicId = TopicID.newBuilder().setTopicNum(2_345L).build();
 	final private TopicID expiredTopicId = TopicID.newBuilder().setTopicNum(3_456L).build();
@@ -94,7 +93,6 @@ public class ContextOptionValidatorTest {
 	private MerkleTopic merkleTopic;
 	private FCMap topics;
 	private FCMap accounts;
-	private HederaLedger ledger;
 	private PropertySource properties;
 	private TransactionContext txnCtx;
 	private ContextOptionValidator subject;
@@ -109,11 +107,6 @@ public class ContextOptionValidatorTest {
 	private void setup() throws Exception {
 		txnCtx = mock(TransactionContext.class);
 		given(txnCtx.consensusTime()).willReturn(now);
-		ledger = mock(HederaLedger.class);
-		given(ledger.isSmartContract(a)).willReturn(false);
-		given(ledger.isSmartContract(b)).willReturn(false);
-		given(ledger.isSmartContract(c)).willReturn(true);
-		given(ledger.isSmartContract(d)).willReturn(false);
 		properties = mock(PropertySource.class);
 		given(properties.getIntProperty("hedera.transaction.maxMemoUtf8Bytes")).willReturn(100);
 		accounts = mock(FCMap.class);
@@ -137,7 +130,7 @@ public class ContextOptionValidatorTest {
 		deletedAttr = new JFileInfo(true, wacl, expiry);
 		view = mock(StateView.class);
 
-		subject = new ContextOptionValidator(ledger, properties, txnCtx);
+		subject = new ContextOptionValidator(properties, txnCtx);
 	}
 
 	private FileGetInfoResponse.FileInfo asMinimalInfo(JFileInfo meta) throws Exception {
@@ -149,7 +142,7 @@ public class ContextOptionValidatorTest {
 
 	@Test
 	public void recognizesOkFile() throws Exception {
-		given(view.infoFor(target)).willReturn(Optional.of(asMinimalInfo(attr)));
+		given(view.infoForFile(target)).willReturn(Optional.of(asMinimalInfo(attr)));
 
 		// when:
 		var status = subject.queryableFileStatus(target, view);
@@ -160,7 +153,7 @@ public class ContextOptionValidatorTest {
 
 	@Test
 	public void recognizesDeletedFile() throws Exception {
-		given(view.infoFor(target)).willReturn(Optional.of(asMinimalInfo(deletedAttr)));
+		given(view.infoForFile(target)).willReturn(Optional.of(asMinimalInfo(deletedAttr)));
 
 		// when:
 		var status = subject.queryableFileStatus(target, view);
@@ -172,7 +165,7 @@ public class ContextOptionValidatorTest {
 
 	@Test
 	public void recognizesMissingFile() {
-		given(view.infoFor(target)).willReturn(Optional.empty());
+		given(view.infoForFile(target)).willReturn(Optional.empty());
 
 		// when:
 		var status = subject.queryableFileStatus(target, view);
@@ -357,24 +350,6 @@ public class ContextOptionValidatorTest {
 		assertFalse(subject.isAcceptableLength(wrapper));
 		// and:
 		verify(properties).getIntProperty("ledger.transfers.maxLen");
-	}
-
-	@Test
-	public void recognizesCleanTransfers() {
-		// given:
-		TransferList wrapper = withAdjustments(a, 2L, b, -3L, d, 1L);
-
-		// expect:
-		assertTrue(subject.hasOnlyCryptoAccounts(wrapper));
-	}
-
-	@Test
-	public void recognizesContractInTransfer() {
-		// given:
-		TransferList wrapper = withAdjustments(a, 2L, c, -3L, d, 1L);
-
-		// expect:
-		assertFalse(subject.hasOnlyCryptoAccounts(wrapper));
 	}
 
 	@Test

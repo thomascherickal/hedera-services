@@ -67,10 +67,9 @@ public class ContractCallLocal extends ClientBaseThread {
 
   private FileID contractFileId;
 
-  public ContractCallLocal(String host, int port, long nodeAccountNumber, boolean useSigMap, String [] args, int index)
+  public ContractCallLocal(String host, int port, long nodeAccountNumber, String [] args, int index)
   {
-    super(host, port, nodeAccountNumber, useSigMap, args, index);
-    this.useSigMap = useSigMap;
+    super(host, port, nodeAccountNumber, args, index);
     this.nodeAccountNumber = nodeAccountNumber;
     this.host = host;
     this.port = port;
@@ -160,7 +159,6 @@ public class ContractCallLocal extends ClientBaseThread {
           if (response != null){
             bytes = response.getFunctionResult().getContractCallResult().toByteArray();
             long readValue = new BigInteger(bytes).longValue();
-            //log.info("readValue " + readValue);
             Assert.assertEquals(readValue, currValueToSet);
             long gasUsed = response.getFunctionResult().getGasUsed();
             Assert.assertTrue(gasUsed > 0L);
@@ -168,7 +166,9 @@ public class ContractCallLocal extends ClientBaseThread {
 
           }
         } catch (StatusRuntimeException e) {
-          if(!tryReconnect(e)) return;
+          if(!tryReconnect(e)) {
+			  return;
+		  }
         }
 
         accumulatedTransferCount++;

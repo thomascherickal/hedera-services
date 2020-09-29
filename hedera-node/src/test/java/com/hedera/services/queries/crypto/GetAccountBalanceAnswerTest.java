@@ -9,9 +9,9 @@ package com.hedera.services.queries.crypto;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,13 +20,23 @@ package com.hedera.services.queries.crypto;
  * ‍
  */
 
+import static com.hedera.services.state.merkle.MerkleEntityAssociation.fromAccountTokenRel;
+import static com.hedera.services.state.merkle.MerkleEntityId.fromAccountId;
+import static com.hedera.services.tokens.ExceptionalTokenStore.NOOP_TOKEN_STORE;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoGetAccountBalance;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.hedera.services.context.primitives.StateView;
-import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.context.properties.PropertySource;
+import com.hedera.services.state.merkle.MerkleAccountTokens;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
+import com.hedera.services.tokens.ExceptionalTokenStore;
+import com.hedera.services.tokens.TokenStore;
 import com.hedera.services.txns.validation.OptionValidator;
-import com.hedera.test.factories.accounts.MapValueFactory;
+import com.hedera.test.factories.accounts.MerkleAccountFactory;
+import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.CryptoGetAccountBalanceQuery;
@@ -37,11 +47,16 @@ import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hedera.services.state.merkle.MerkleAccount;
+import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.BDDMockito.*;
 import static com.hedera.services.state.merkle.MerkleEntityId.fromContractId;
@@ -49,23 +64,68 @@ import static com.hedera.test.utils.IdUtils.*;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 @RunWith(JUnitPlatform.class)
-class GetAccountBalanceAnswerTest {
+public class GetAccountBalanceAnswerTest {
 	private FCMap accounts;
+	private FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenRels;
 	private StateView view;
 	private OptionValidator optionValidator;
-	private String idLit = "0.0.12345";
+	private String accountIdLit = "0.0.12345";
+	private AccountID target = asAccount(accountIdLit);
+	private String contractIdLit = "0.0.12346";
 	private long balance = 1_234L;
-	private MerkleAccount accountV = MapValueFactory.newAccount().balance(balance).get();
-	private MerkleAccount contractV = MapValueFactory.newContract().balance(balance).get();
+	private TokenID aToken = IdUtils.asToken("0.0.3");
+	private long aBalance = 345;
+	private long bBalance = 456;
+	private TokenID bToken = IdUtils.asToken("0.0.4");
+	private TokenID cToken = IdUtils.asToken("0.0.5");
+	private TokenID dToken = IdUtils.asToken("0.0.6");
+	TokenStore tokenStore;
+	MerkleToken notDeleted, deleted;
+	private MerkleAccount accountV = MerkleAccountFactory.newAccount()
+			.balance(balance)
+			.tokens(aToken, bToken, cToken, dToken)
+			.get();
+	private MerkleAccount contractV = MerkleAccountFactory.newContract().balance(balance).get();
 
 	private GetAccountBalanceAnswer subject;
+	private PropertySource propertySource;
 
 	@BeforeEach
 	private void setup() {
+		deleted = mock(MerkleToken.class);
+		given(deleted.isDeleted()).willReturn(true);
+		notDeleted = mock(MerkleToken.class);
+		given(notDeleted.isDeleted()).willReturn(false);
+
+		tokenRels = new FCMap<>();
+		tokenRels.put(
+				fromAccountTokenRel(target, aToken),
+				new MerkleTokenRelStatus(aBalance, true, true));
+		tokenRels.put(
+				fromAccountTokenRel(target, bToken),
+				new MerkleTokenRelStatus(bBalance, false, false));
+
 		accounts = mock(FCMap.class);
-		given(accounts.get(MerkleEntityId.fromAccountId(asAccount(idLit)))).willReturn(accountV);
-		given(accounts.get(fromContractId(asContract(idLit)))).willReturn(contractV);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts);
+		propertySource = mock(PropertySource.class);
+		given(accounts.get(fromAccountId(asAccount(accountIdLit)))).willReturn(accountV);
+		given(accounts.get(fromContractId(asContract(contractIdLit)))).willReturn(contractV);
+
+		tokenStore = mock(TokenStore.class);
+		given(tokenStore.exists(aToken)).willReturn(true);
+		given(tokenStore.exists(bToken)).willReturn(true);
+		given(tokenStore.exists(cToken)).willReturn(true);
+		given(tokenStore.exists(dToken)).willReturn(false);
+		given(tokenStore.get(aToken)).willReturn(notDeleted);
+		given(tokenStore.get(bToken)).willReturn(notDeleted);
+		given(tokenStore.get(cToken)).willReturn(deleted);
+
+		view = new StateView(
+				tokenStore,
+				StateView.EMPTY_TOPICS_SUPPLIER,
+				() -> accounts,
+				StateView.EMPTY_STORAGE_SUPPLIER,
+				() -> tokenRels,
+				propertySource);
 
 		optionValidator = mock(OptionValidator.class);
 		subject = new GetAccountBalanceAnswer(optionValidator);
@@ -112,7 +172,7 @@ class GetAccountBalanceAnswerTest {
 	@Test
 	public void syntaxCheckValidatesCidIfPresent() {
 		// setup:
-		ContractID cid = asContract(idLit);
+		ContractID cid = asContract(contractIdLit);
 
 		// given:
 		CryptoGetAccountBalanceQuery op = CryptoGetAccountBalanceQuery.newBuilder()
@@ -143,7 +203,7 @@ class GetAccountBalanceAnswerTest {
 	@Test
 	public void requiresOkMetaValidity() {
 		// setup:
-		AccountID id = asAccount(idLit);
+		AccountID id = asAccount(accountIdLit);
 
 		// given:
 		CryptoGetAccountBalanceQuery op = CryptoGetAccountBalanceQuery.newBuilder()
@@ -165,7 +225,7 @@ class GetAccountBalanceAnswerTest {
 	@Test
 	public void syntaxCheckValidatesIdIfPresent() {
 		// setup:
-		AccountID id = asAccount(idLit);
+		AccountID id = asAccount(accountIdLit);
 
 		// given:
 		CryptoGetAccountBalanceQuery op = CryptoGetAccountBalanceQuery.newBuilder()
@@ -186,7 +246,7 @@ class GetAccountBalanceAnswerTest {
 	@Test
 	public void answersWithAccountBalance() {
 		// setup:
-		AccountID id = asAccount(idLit);
+		AccountID id = asAccount(accountIdLit);
 
 		// given:
 		CryptoGetAccountBalanceQuery op = CryptoGetAccountBalanceQuery.newBuilder()
@@ -203,6 +263,9 @@ class GetAccountBalanceAnswerTest {
 
 		// expect:
 		assertTrue(response.getCryptogetAccountBalance().hasHeader(), "Missing response header!");
+		assertEquals(
+				List.of(tokenBalanceWith(aToken, aBalance), tokenBalanceWith(bToken, bBalance)),
+				response.getCryptogetAccountBalance().getTokenBalancesList());
 		assertEquals(OK, status);
 		assertEquals(balance, answer);
 		assertEquals(id, response.getCryptogetAccountBalance().getAccountID());

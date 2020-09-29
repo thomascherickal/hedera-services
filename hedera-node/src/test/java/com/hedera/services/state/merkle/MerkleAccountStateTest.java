@@ -9,9 +9,9 @@ package com.hedera.services.state.merkle;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,12 +20,12 @@ package com.hedera.services.state.merkle;
  * ‍
  */
 
+import com.hedera.services.legacy.core.jproto.JEd25519Key;
+import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.serdes.IoReadingFunction;
 import com.hedera.services.state.serdes.IoWritingConsumer;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.legacy.core.jproto.JEd25519Key;
-import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.utils.MiscUtils;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
@@ -38,14 +38,20 @@ import org.mockito.InOrder;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static com.hedera.services.state.merkle.MerkleAccountState.MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.anyInt;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.times;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(JUnitPlatform.class)
 class MerkleAccountStateTest {
@@ -76,6 +82,7 @@ class MerkleAccountStateTest {
 	DomainSerdes serdes;
 
 	MerkleAccountState subject;
+	MerkleAccountState release070Subject;
 	MerkleAccountState otherSubject;
 
 	@BeforeEach
@@ -86,6 +93,12 @@ class MerkleAccountStateTest {
 		otherKey = new JEd25519Key("aBcDeFgHiJkLmNoPqRsTuVwXyZ012345".getBytes());
 		otherProxy = new EntityId(3L, 2L, 1L);
 
+		release070Subject = new MerkleAccountState(
+				key,
+				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
+				memo,
+				deleted, smartContract, receiverSigRequired,
+				proxy);
 		subject = new MerkleAccountState(
 				key,
 				expiry, balance, autoRenewSecs, senderThreshold, receiverThreshold,
@@ -121,7 +134,37 @@ class MerkleAccountStateTest {
 	}
 
 	@Test
-	public void deserializeWorks() throws IOException {
+	public void release070DeserializeWorks() throws IOException {
+		// setup:
+		var in = mock(SerializableDataInputStream.class);
+		// and:
+		var newSubject = new MerkleAccountState();
+
+		given(serdes.readNullable(argThat(in::equals), any(IoReadingFunction.class))).willReturn(key);
+		given(in.readLong())
+				.willReturn(expiry)
+				.willReturn(balance)
+				.willReturn(autoRenewSecs)
+				.willReturn(senderThreshold)
+				.willReturn(receiverThreshold);
+		given(in.readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE))
+				.willThrow(IllegalStateException.class);
+		given(in.readNormalisedString(anyInt())).willReturn(memo);
+		given(in.readBoolean())
+				.willReturn(deleted)
+				.willReturn(smartContract)
+				.willReturn(receiverSigRequired);
+		given(serdes.readNullableSerializable(in)).willReturn(proxy);
+
+		// when:
+		newSubject.deserialize(in, MerkleAccountState.RELEASE_070_VERSION);
+
+		// then:
+		assertEquals(release070Subject, newSubject);
+	}
+
+	@Test
+	public void release080DeserializeWorks() throws IOException {
 		// setup:
 		var in = mock(SerializableDataInputStream.class);
 		// and:
@@ -142,10 +185,42 @@ class MerkleAccountStateTest {
 		given(serdes.readNullableSerializable(in)).willReturn(proxy);
 
 		// when:
-		newSubject.deserialize(in, MerkleAccountState.MERKLE_VERSION);
+		newSubject.deserialize(in, MerkleAccountState.RELEASE_080_VERSION);
 
 		// then:
 		assertEquals(subject, newSubject);
+		// and:
+		verify(in).readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE);
+	}
+
+	@Test
+	public void release090DeserializeWorks() throws IOException {
+		// setup:
+		var in = mock(SerializableDataInputStream.class);
+		// and:
+		var newSubject = new MerkleAccountState();
+
+		given(serdes.readNullable(argThat(in::equals), any(IoReadingFunction.class))).willReturn(key);
+		given(in.readLong())
+				.willReturn(expiry)
+				.willReturn(balance)
+				.willReturn(autoRenewSecs)
+				.willReturn(senderThreshold)
+				.willReturn(receiverThreshold);
+		given(in.readNormalisedString(anyInt())).willReturn(memo);
+		given(in.readBoolean())
+				.willReturn(deleted)
+				.willReturn(smartContract)
+				.willReturn(receiverSigRequired);
+		given(serdes.readNullableSerializable(in)).willReturn(proxy);
+
+		// when:
+		newSubject.deserialize(in, MerkleAccountState.RELEASE_090_VERSION);
+
+		// then:
+		assertEquals(subject, newSubject);
+		// and:
+		verify(in, never()).readLongArray(MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE);
 	}
 
 	@Test
@@ -168,6 +243,8 @@ class MerkleAccountStateTest {
 		inOrder.verify(out).writeNormalisedString(memo);
 		inOrder.verify(out, times(3)).writeBoolean(true);
 		inOrder.verify(serdes).writeNullableSerializable(proxy, out);
+		// and:
+		verify(out, never()).writeLongArray(any());
 	}
 
 	@Test
@@ -176,7 +253,7 @@ class MerkleAccountStateTest {
 		var copySubject = subject.copy();
 
 		// expect:
-		assertFalse(copySubject == subject);
+		assertNotSame(copySubject, subject);
 		assertEquals(subject, copySubject);
 	}
 
@@ -345,7 +422,7 @@ class MerkleAccountStateTest {
 	@Test
 	public void merkleMethodsWork() {
 		// expect;
-		assertEquals(MerkleAccountState.MERKLE_VERSION, subject.getVersion());
+		assertEquals(MerkleAccountState.RELEASE_090_VERSION, subject.getVersion());
 		assertEquals(MerkleAccountState.RUNTIME_CONSTRUCTABLE_ID, subject.getClassId());
 		assertTrue(subject.isLeaf());
 	}

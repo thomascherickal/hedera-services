@@ -20,8 +20,9 @@ package com.hedera.services.sigs.metadata.lookups;
  * ‍
  */
 
-import com.hedera.services.context.properties.PropertySource;
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.sigs.metadata.AccountSigningMetadata;
+import com.hedera.services.sigs.order.KeyOrderingFailure;
 import com.hedera.services.utils.Pause;
 import com.hedera.services.utils.SleepingPause;
 import com.hedera.test.factories.keys.KeyTree;
@@ -31,7 +32,6 @@ import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.exception.InvalidAccountIDException;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,11 +46,11 @@ import org.mockito.InOrder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.BDDMockito.*;
-import static com.hedera.test.factories.accounts.MapValueFactory.*;
+import static com.hedera.test.factories.accounts.MerkleAccountFactory.*;
 
 @RunWith(JUnitPlatform.class)
 public class RetryingFCMapAccountLookupTest {
-	private PropertySource properties;
+	private NodeLocalProperties properties;
 	private HederaNodeStats stats;
 	private FCMap<MerkleEntityId, MerkleAccount> accounts;
 	private RetryingFCMapAccountLookup subject;
@@ -72,11 +72,9 @@ public class RetryingFCMapAccountLookupTest {
 		stats = mock(HederaNodeStats.class);
 		pause = mock(Pause.class);
 		accounts = (FCMap<MerkleEntityId, MerkleAccount>)mock(FCMap.class);
-		properties = mock(PropertySource.class);
-		given(properties.getIntProperty("validation.preConsensus.accountKey.maxLookupRetries"))
-				.willReturn(2);
-		given(properties.getIntProperty("validation.preConsensus.accountKey.retryBackoffIncrementMs"))
-				.willReturn(RETRY_WAIT_MS);
+		properties = mock(NodeLocalProperties.class);
+		given(properties.precheckLookupRetries()).willReturn(2);
+		given(properties.precheckLookupRetryBackoffMs()).willReturn(RETRY_WAIT_MS);
 	}
 
 	@Test
@@ -86,7 +84,7 @@ public class RetryingFCMapAccountLookupTest {
 		subject = new RetryingFCMapAccountLookup(pause, properties, stats, () -> accounts);
 
 		// when:
-		AccountSigningMetadata meta = subject.lookup(account);
+		AccountSigningMetadata meta = subject.safeLookup(account).metadata();
 
 		// then:
 		verifyZeroInteractions(stats, pause);
@@ -104,7 +102,7 @@ public class RetryingFCMapAccountLookupTest {
 		InOrder inOrder = inOrder(pause, stats);
 
 		// when:
-		AccountSigningMetadata meta = subject.lookup(account);
+		AccountSigningMetadata meta = subject.safeLookup(account).metadata();
 
 		// then:
 		inOrder.verify(pause).forMs(RETRY_WAIT_MS);
@@ -125,7 +123,7 @@ public class RetryingFCMapAccountLookupTest {
 		InOrder inOrder = inOrder(stats);
 
 		// when:
-		AccountSigningMetadata meta = subject.lookup(account);
+		AccountSigningMetadata meta = subject.safeLookup(account).metadata();
 
 		// then:
 		ArgumentCaptor<Integer> captor = forClass(Integer.class);
@@ -145,7 +143,7 @@ public class RetryingFCMapAccountLookupTest {
 		InOrder inOrder = inOrder(pause, stats);
 
 		// when:
-		assertThrows(InvalidAccountIDException.class, () -> subject.lookup(account));
+		assertEquals(KeyOrderingFailure.MISSING_ACCOUNT, subject.safeLookup(account).failureIfAny());
 
 		// then:
 		inOrder.verify(pause).forMs(RETRY_WAIT_MS);
@@ -165,7 +163,7 @@ public class RetryingFCMapAccountLookupTest {
 		InOrder inOrder = inOrder(pause, stats);
 
 		// when:
-		assertThrows(InvalidAccountIDException.class, () -> subject.lookup(account));
+		assertEquals(KeyOrderingFailure.MISSING_ACCOUNT, subject.safeLookup(account).failureIfAny());
 
 		// then:
 		inOrder.verify(pause).forMs(RETRY_WAIT_MS);

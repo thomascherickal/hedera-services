@@ -31,17 +31,18 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_TRANS
 import static com.hedera.services.context.ServicesNodeType.*;
 
 import com.google.protobuf.ByteString;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hedera.services.txns.TransitionLogic;
 import com.hedera.services.txns.TransitionLogicLookup;
 import com.hederahashgraph.api.proto.java.CryptoTransferTransactionBody;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.SignedTransaction;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.api.proto.java.TransactionResponse;
 import com.hedera.services.context.domain.process.TxnValidityAndFeeReq;
 import com.hedera.services.legacy.handler.TransactionHandler;
-import com.swirlds.common.Platform;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -61,37 +62,51 @@ class TxnHandlerSubmissionFlowTest {
 	long feeRequired = 1_234L;
 	TransactionID txnId = TransactionID.newBuilder().setAccountID(asAccount("0.0.2")).build();
 	Transaction signedTxn = Transaction.newBuilder()
-			.setBody(TransactionBody.newBuilder()
+			.setBodyBytes(TransactionBody.newBuilder()
 					.setCryptoTransfer(CryptoTransferTransactionBody.getDefaultInstance())
-					.setTransactionID(txnId))
+					.setTransactionID(txnId)
+					.build().toByteString())
 			.build();
 	TxnValidityAndFeeReq okMeta = new TxnValidityAndFeeReq(OK);
 
-	private Platform platform;
 	private TransitionLogic logic;
 	private TransactionHandler txnHandler;
 	private TransitionLogicLookup logicLookup;
+	private PlatformSubmissionManager submissionManager;
 	private Function<TransactionBody, ResponseCodeEnum> syntaxCheck;
 
 	private TxnHandlerSubmissionFlow subject;
 
+	// Create second transaction using signedTransactionBytes
+	SignedTransaction newSignedTxn = SignedTransaction.newBuilder().
+			setBodyBytes(TransactionBody.newBuilder()
+					.setCryptoTransfer(CryptoTransferTransactionBody.getDefaultInstance()).
+							setTransactionID(txnId).build().toByteString()).
+			build();
+
+	Transaction newTxn = Transaction.newBuilder()
+			.setSignedTransactionBytes(newSignedTxn.toByteString())
+			.build();
+
 	@BeforeEach
-	private void setup() {
+	private void setup() throws Exception {
 		logic = mock(TransitionLogic.class);
-		platform = mock(Platform.class);
 		txnHandler = mock(TransactionHandler.class);
 		syntaxCheck = mock(Function.class);
 		given(logic.syntaxCheck()).willReturn(syntaxCheck);
 		logicLookup = mock(TransitionLogicLookup.class);
-		given(logicLookup.lookupFor(CryptoTransfer, signedTxn.getBody())).willReturn(Optional.of(logic));
+		given(logicLookup.lookupFor(CryptoTransfer, CommonUtils.extractTransactionBody(signedTxn))).willReturn(Optional.of(logic));
+		submissionManager = mock(PlatformSubmissionManager.class);
 
-		subject = new TxnHandlerSubmissionFlow(platform, STAKED_NODE, txnHandler, logicLookup);
+		subject = new TxnHandlerSubmissionFlow(STAKED_NODE, txnHandler, logicLookup, submissionManager);
+
+		given(logicLookup.lookupFor(CryptoTransfer, CommonUtils.extractTransactionBody(newTxn))).willReturn(Optional.of(logic));
 	}
 
 	@Test
 	public void rejectsAllTxnsOnZeroStakeNode() {
 		// given:
-		subject = new TxnHandlerSubmissionFlow(platform, ZERO_STAKE_NODE, txnHandler, logicLookup);
+		subject = new TxnHandlerSubmissionFlow(ZERO_STAKE_NODE, txnHandler, logicLookup, submissionManager);
 
 		// when:
 		TransactionResponse response = subject.submit(Transaction.getDefaultInstance());
@@ -109,15 +124,6 @@ class TxnHandlerSubmissionFlowTest {
 
 		// when:
 		TransactionResponse response = subject.submit(signedNonsenseTxn);
-
-		// then:
-		assertEquals(INVALID_TRANSACTION_BODY, response.getNodeTransactionPrecheckCode());
-	}
-
-	@Test
-	public void shortCircuitsOnEmptyTxn() {
-		// when:
-		TransactionResponse response = subject.submit(Transaction.getDefaultInstance());
 
 		// then:
 		assertEquals(INVALID_TRANSACTION_BODY, response.getNodeTransactionPrecheckCode());
@@ -154,7 +160,7 @@ class TxnHandlerSubmissionFlowTest {
 	public void catchesPlatformCreateEx() throws Exception {
 		given(txnHandler.validateTransactionPreConsensus(signedTxn, false)).willReturn(okMeta);
 		given(syntaxCheck.apply(any())).willReturn(OK);
-		given(txnHandler.submitTransaction(platform, signedTxn, txnId)).willReturn(false);
+		given(submissionManager.trySubmission(any())).willReturn(PLATFORM_TRANSACTION_NOT_CREATED);
 
 		// when:
 		TransactionResponse response = subject.submit(signedTxn);
@@ -167,7 +173,7 @@ class TxnHandlerSubmissionFlowTest {
 	public void followsHappyPathToOk() throws Exception {
 		given(txnHandler.validateTransactionPreConsensus(signedTxn, false)).willReturn(okMeta);
 		given(syntaxCheck.apply(any())).willReturn(OK);
-		given(txnHandler.submitTransaction(platform, signedTxn, txnId)).willReturn(true);
+		given(submissionManager.trySubmission(any())).willReturn(OK);
 
 		// when:
 		TransactionResponse response = subject.submit(signedTxn);
@@ -186,5 +192,33 @@ class TxnHandlerSubmissionFlowTest {
 
 		// then:
 		assertEquals(NOT_SUPPORTED, response.getNodeTransactionPrecheckCode());
+	}
+
+	@Test
+	public void shortCircuitsSignedTxnOnInvalidMeta() {
+		// setup:
+		TxnValidityAndFeeReq metaValidity = new TxnValidityAndFeeReq(INSUFFICIENT_PAYER_BALANCE, feeRequired);
+
+		given(txnHandler.validateTransactionPreConsensus(newTxn, false)).willReturn(metaValidity);
+
+		// when:
+		TransactionResponse response = subject.submit(newTxn);
+
+		// then:
+		assertEquals(INSUFFICIENT_PAYER_BALANCE, response.getNodeTransactionPrecheckCode());
+		assertEquals(feeRequired, response.getCost());
+	}
+
+	@Test
+	public void followsSignedTxnHappyPathToOk() throws Exception {
+		given(txnHandler.validateTransactionPreConsensus(newTxn, false)).willReturn(okMeta);
+		given(syntaxCheck.apply(any())).willReturn(OK);
+		given(submissionManager.trySubmission(any())).willReturn(OK);
+
+		// when:
+		TransactionResponse response = subject.submit(newTxn);
+
+		// then:
+		assertEquals(OK, response.getNodeTransactionPrecheckCode());
 	}
 }
