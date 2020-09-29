@@ -151,14 +151,6 @@ def datetime_from_isformat(date_string):
 
     return datetime(*(date_components + time_components))
 
-# enable non-interactive mode if no DISPLAY defined in environment
-# this is for running script as backend to generate PDF, PNG, etc
-# must call use('Agg') before import plt
-if os.name == 'posix' and "DISPLAY" not in os.environ:
-    print("No display detected")
-    matplotlib.use('Agg')
-
-import matplotlib.pyplot as plt
 import argparse
 import math
 import matplotlib.widgets
@@ -501,6 +493,11 @@ parser.add_argument('-e', '--endTime',
                     default='',
                     dest="endTime")
 
+parser.add_argument('-t', '--title',
+                    help='set title of generate figures',
+                    default='',
+                    dest="figTitle")
+
 PARAMETER = parser.parse_args(sys.argv[1:])
 
 pp.pprint(PARAMETER)
@@ -508,6 +505,16 @@ pp.pprint(PARAMETER)
 #########################################
 # Change default setting according to OS
 #########################################
+
+# enable non-interactive mode if no DISPLAY defined in environment
+# this is for running script as backend to generate PDF, PNG, etc
+# must call use('Agg') before import plt
+if PARAMETER.pdfOnly:
+    print("No display needed for pdf generation")
+    matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt
+
 print("OS=" + os.name)
 print("Platform=" + platform.system())
 if platform.system() == "Linux" and PARAMETER.pdfOnly:
@@ -1047,9 +1054,10 @@ def choose_subdirecotry():
     directory_list = sorted(directory_list)
     if (len(directory_list) == 1):  # auto select if only one directory available
         selected = 0
+        return (PARAMETER.directory)
     else:
         selected = multi_choice(directory_list)
-    return (PARAMETER.directory + '/' + directory_list[selected])
+        return (PARAMETER.directory + '/' + directory_list[selected])
 
 
 #
@@ -1067,10 +1075,11 @@ def find_prefix_dir(prefix):
 # 
 def scan_csv_files(directory):
     # find a list of csv files
-    csv_file_list = []
+    csv_file_list = set()  # use set to support unique file name
     for filename in glob.iglob(directory + '/**/*.csv', recursive=True):
-        csv_file_list.append(filename)
-
+        csv_file_list.add(filename)
+    csv_file_list = list(csv_file_list) # convert to list
+    pprint.pprint(csv_file_list)
     extract_list(csv_file_list, default_stat_names)
 
 
@@ -1205,6 +1214,11 @@ def graphing():
         sub_axes = np.concatenate(axes)
     else:
         sub_axes = axes
+
+    if len(PARAMETER.figTitle) > 0:
+        fig.suptitle(PARAMETER.figTitle + ":"+ PARAMETER.startTime, fontsize=16)
+    else:
+        fig.suptitle(choose_directory + ":"+ PARAMETER.startTime, fontsize=16)
     
     if PARAMETER.pdfOnly:
         fig.canvas.manager.full_screen_toggle()  # toggle fullscreen mode
@@ -1220,8 +1234,6 @@ def graphing():
 
         # keyboard event handling
         fig.canvas.mpl_connect('key_press_event', press)
-        fig.suptitle(choose_directory, fontsize=16)
-
         # show first page and legend
         draw_page(0)
         # plt.figlegend(shadow=True, fancybox=True)
