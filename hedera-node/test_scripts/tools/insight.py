@@ -169,6 +169,14 @@ from threading import Thread
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
+print("Python version is: ", platform.python_version())
+
+if platform.python_version() < "3.7":
+    print("**************************************")
+    print("*    Must use Python 3.7 or above  *")
+    print("**************************************")
+    raise Exception("Must use Python 3.7 or above")
+
 pp = pprint.PrettyPrinter(indent=4)
 
 CONST_PAUSE = "GC Pauses"
@@ -249,7 +257,7 @@ class PageSlider(matplotlib.widgets.Slider):
 
 
 ##############################
-# default global 
+# default global
 ##############################
 
 # key log information to analyze in swirlds.log
@@ -506,7 +514,6 @@ if platform.system() == "Linux" and PARAMETER.pdfOnly:
     print("Use smaller font for save PDF on Ubuntu backend mode")
     plt.rcParams.update({'font.size': 5})
 
-
 #
 #
 #
@@ -600,7 +607,7 @@ def scan_invalid_state(file_name):
     invalid_state_dict.update({nodeid: my_dict})
 
 
-# 
+#
 # given a file, search the key words appears how many times
 # insert result in stat_data_dict
 #
@@ -634,7 +641,7 @@ def search_log_file(file_name, search_dict):
 
             # pp.pprint(stat_data_dict[keyword])
 
-        # search exception 
+        # search exception
         # with open(file_name, 'r') as searchfile:
         #     print (" ------   File name ", file_name, " ---------")
         #     for line in searchfile:
@@ -646,22 +653,22 @@ def search_log_file(file_name, search_dict):
         print("Failed to open file ", file_name, " size too big ? size = ", os.path.getsize(file_name))
 
 
-# 
+#
 # given a GC log file, search the key words appears find its time stamp and values
 #
 #
 #  {  "Gc_Pauses" : {
 #         "0" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #         "1" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #         "2" : {
 #                  "time" : [],
-#                  "values" : []   
+#                  "values" : []
 #               }
 #  }
 #
@@ -707,7 +714,7 @@ def search_gc_log_file(file_name, search_dict):
         print("Failed to open file ", file_name, " size too big ? size = ", os.path.getsize(file_name))
 
 
-# 
+#
 # given a file list, search the key words appears how many times
 #
 def search_log_in_list(file_list, search_dict):
@@ -761,10 +768,16 @@ def extract_stat_data(file, stat_name_list):
     # extract node id from *?.csv
     simple_name = os.path.basename(file)
     simple_name = os.path.splitext(simple_name)[0]  # remove csv suffix
-    nodeid = simple_name.replace(PARAMETER.csvPrefix, "")  # remove file prefix
+    # removing leading non-digit charaters, for example, changing "PlatformTesting0" to "0"
+    nodeid = re.sub(r"\A(\D)+", "", simple_name) 
+    print(" nodeid ", nodeid)
     with open(file, 'r') as f:
+        category_line_skipped =  False
         reader = csv.reader(f)
         for i, row in enumerate(reader):
+            if len(row) == 0:
+                print("skip empty line ", i)
+                continue;            
             if len(row) > 5:  # only apply start/end time on data lines
                 if PARAMETER.startTime or PARAMETER.endTime:
                     isSkipped = False
@@ -780,6 +793,15 @@ def extract_stat_data(file, stat_name_list):
                         break
                     if isSkipped:
                         continue
+            if row[0] not in (None, "") and row[1] not in (None, ""):
+                # skip lines for stat description such as badEv/sec:	number of corrupted events received per second
+                # print("skip description line ",i)
+                continue
+            if row[2] not in (None, "") and row[3] not in (None, "") and category_line_skipped is False:
+                # skip stat category line, which is above the state name line
+                print("skip category line ",i)
+                category_line_skipped = True
+                continue
             for j, column in enumerate(row):
                 try:
                     if column not in (None, "") and j in pos_map:  # this happen more frequently then match stat name
@@ -822,7 +844,7 @@ def extract_stat_data(file, stat_name_list):
     print("file ", file, " has ", csv_gap_counter, " big csv gaps ")
 
 
-# 
+#
 # extrat data from csv file list and save in map
 #
 def extract_list(file_list, stat_name_list):
@@ -853,7 +875,7 @@ def number_array_min_max_avg(stat_name, numbers):
 
 
 # Draw graph of the given statistic
-# 
+#
 # stat_name
 #       name of statistic
 # fig_count
@@ -868,7 +890,7 @@ def draw_subplot(stat_name, fig_count):
     if len(data_dict) > 0:
         row = math.floor(fig_count / fig_per_row)
         column = fig_count % fig_per_row
-        sub_axes[row, column].clear()  # clear prev subplot
+        sub_axes[row*fig_per_row+column].clear()  # clear prev subplot
 
         # plot keywords count from swirlds.log
         if stat_name in log_search_keys:
@@ -879,10 +901,10 @@ def draw_subplot(stat_name, fig_count):
             # data_list = list(data_dict.values())
             # for nodeid, values in data_dict.items():
             #     data_list.append(values)
-            sub_axes[row, column].bar(index, data_list)
-            sub_axes[row, column].set_xticklabels(data_dict.keys())
-            sub_axes[row, column].get_xaxis().set_visible(True)
-            sub_axes[row, column].set_xticks(index)
+            sub_axes[row*fig_per_row+column].bar(index, data_list)
+            sub_axes[row*fig_per_row+column].set_xticklabels(data_dict.keys())
+            sub_axes[row*fig_per_row+column].get_xaxis().set_visible(True)
+            sub_axes[row*fig_per_row+column].set_xticks(index)
             # pp.pprint(data_dict.keys())
             # pp.pprint(data_list)
 
@@ -934,23 +956,23 @@ def draw_subplot(stat_name, fig_count):
                     xlables_new = xlables_new[:(len(sampled_values) - len(xlables_new))]
 
                 if fig_count == 1:  # only set lable once
-                    lines = sub_axes[row, column].plot(xlables_new, sampled_values, label=nodeid)
+                    lines = sub_axes[row*fig_per_row+column].plot(xlables_new, sampled_values, label=nodeid)
                 else:
-                    lines = sub_axes[row, column].plot(xlables_new, sampled_values)
+                    lines = sub_axes[row*fig_per_row+column].plot(xlables_new, sampled_values)
                 lines[0].set_linestyle(LINE_STYLES[i % NUM_STYLES])
-                # lines[0].set_color(LINE_COLORS[i%NUM_COLORS])  
+                # lines[0].set_color(LINE_COLORS[i%NUM_COLORS])
                 line_ref.append(lines[0])
                 nodeid_ref.append(nodeid)
 
                 # print("Node id ", nodeid, " color ",  lines[0].get_color() , " sytle ", LINE_STYLES[i%NUM_STYLES] )
                 i = i + 1
-            sub_axes[row, column].set_xlabel('time (min)')
-            sub_axes[row, column].get_xaxis().set_visible(True)  # hide x-axis labels
+            sub_axes[row*fig_per_row+column].set_xlabel('time (min)')
+            sub_axes[row*fig_per_row+column].get_xaxis().set_visible(True)  # hide x-axis labels
 
-            sub_axes[row, column].legend(line_ref, nodeid_ref)
+            sub_axes[row*fig_per_row+column].legend(line_ref, nodeid_ref)
             number_array_min_max_avg(stat_name, accumulated_values)
 
-        sub_axes[row, column].set_title(stat_name)
+        sub_axes[row*fig_per_row+column].set_title(stat_name)
     else:
         print("No data for stat_name " + stat_name)
 
@@ -964,10 +986,10 @@ def draw_page(page_num):
                 # find stat name by page and index
                 stat_key = list(stat_data_dict.keys())[index]
                 draw_subplot(stat_key, i)
-                sub_axes[math.floor(i / fig_per_row), i % fig_per_row].set_visible(True)
+                sub_axes[math.floor(i / fig_per_row)*fig_per_row + (i % fig_per_row)].set_visible(True)
             else:
                 # clear the subplot
-                sub_axes[math.floor(i / fig_per_row), i % fig_per_row].set_visible(False)
+                sub_axes[math.floor(i / fig_per_row)*fig_per_row + (i % fig_per_row)].set_visible(False)
         except IndexError:
             print(" Index error, check default_stat_names may have repeated names ")
 
@@ -1046,7 +1068,7 @@ def find_prefix_dir(prefix):
 def scan_csv_files(directory):
     # find a list of csv files
     csv_file_list = []
-    for filename in glob.iglob(directory + '/**/' + PARAMETER.csvPrefix + '*.csv', recursive=True):
+    for filename in glob.iglob(directory + '/**/*.csv', recursive=True):
         csv_file_list.append(filename)
 
     extract_list(csv_file_list, default_stat_names)
@@ -1069,7 +1091,7 @@ def scan_gc_logs(directory):
 #
 # scan swirlds log files given a directory
 #
-def scan_swirlds_log(directory):
+def scan_swirlds_log(directory):       
     # find a list of swirlds.log files
     log_file_list = []
     for filename in glob.iglob(directory + '/**/' + SWIRLDS_LOG, recursive=True):
@@ -1077,7 +1099,7 @@ def scan_swirlds_log(directory):
     if (len(log_file_list) > 0):
         search_log_in_list(log_file_list, log_search_keys)
     else:
-        print("No swirlds.log found")
+        print("No swirlds.log found in directory ", directory)
 
 
 #
@@ -1093,7 +1115,7 @@ def clear_data():
 #
 #  list subdirectoreis under target directory
 #  and prompt user to select one subdirectory
-#  then scan csv and swirlds.log under the 
+#  then scan csv and swirlds.log under the
 #  selected subdirectory and save data
 #  in global variable stat_data_dict
 #
@@ -1102,7 +1124,7 @@ def scan_csv_and_logs():
     global choose_directory
 
     if len(PARAMETER.autoScan) > 0:
-        # auto scan mode to scan all subdirectories with defined prefix and 
+        # auto scan mode to scan all subdirectories with defined prefix and
         # print out summary
         direcotry_list = find_prefix_dir(PARAMETER.autoScan)
         for direcotry in direcotry_list:
@@ -1141,6 +1163,7 @@ def read_plot_subdirectory(subdirectory):
     global fig
     clear_data()
 
+
     print("The directory to search for csv files is %s" % (subdirectory))
     scan_csv_files(subdirectory)
 
@@ -1174,9 +1197,15 @@ def graphing():
     global fig
 
     # divide fiugre window into multple subplot
-    fig, sub_axes = plt.subplots(row_per_page, fig_per_row)
+    fig, axes = plt.subplots(row_per_page, fig_per_row, figsize=[16.8, 9.8])
     fig.subplots_adjust(bottom=0.18)
 
+    # change to one dimension array of its multiple dimension array
+    if axes.ndim > 1:
+        sub_axes = np.concatenate(axes)
+    else:
+        sub_axes = axes
+    
     if PARAMETER.pdfOnly:
         fig.canvas.manager.full_screen_toggle()  # toggle fullscreen mode
         with PdfPages('multipage_pdf.pdf') as pdf:
