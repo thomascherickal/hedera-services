@@ -150,6 +150,8 @@ import com.hedera.services.state.initialization.HfsSystemFilesManager;
 import com.hedera.services.state.initialization.SystemFilesManager;
 import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.state.validation.BasedLedgerValidator;
+import com.hedera.services.stream.RunningHashCalculator;
+import com.hedera.services.stream.RunningHashLeaf;
 import com.hedera.services.throttling.BucketThrottling;
 import com.hedera.services.throttling.ThrottlingPropsBuilder;
 import com.hedera.services.throttling.TransactionThrottling;
@@ -369,6 +371,7 @@ public class ServicesContext {
 	private BucketThrottling bucketThrottling;
 	private HbarCentExchange exchange;
 	private PrecheckVerifier precheckVerifier;
+
 	private BackingTokenRels backingTokenRels;
 	private BalancesExporter balancesExporter;
 	private SolidityLifecycle solidityLifecycle;
@@ -396,6 +399,7 @@ public class ServicesContext {
 	private TxnAwareRatesManager exchangeRatesManager;
 	private LedgerAccountsSource accountSource;
 	private FCMapBackingAccounts backingAccounts;
+	private RunningHashCalculator runningHashCalculator;
 	private TransitionLogicLookup transitionLogic;
 	private TransactionThrottling txnThrottling;
 	private ConsensusStatusCounts statusCounts;
@@ -1195,6 +1199,14 @@ public class ServicesContext {
 		return recordStream;
 	}
 
+	public RunningHashCalculator runningHashCalculator() {
+		if (runningHashCalculator == null) {
+			runningHashCalculator = new RunningHashCalculator(platform, properties(),
+					state.recordStreamRunningHash().getHash(), this::recordStreamRunningHash);
+		}
+		return runningHashCalculator;
+	}
+
 	public FileUpdateInterceptor exchangeRatesManager() {
 		if (exchangeRatesManager == null) {
 			exchangeRatesManager = new TxnAwareRatesManager(
@@ -1617,4 +1629,6 @@ public class ServicesContext {
 	public FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations() {
 		return state.tokenAssociations();
 	}
+
+	public RunningHashLeaf recordStreamRunningHash() {return state.recordStreamRunningHash(); }
 }

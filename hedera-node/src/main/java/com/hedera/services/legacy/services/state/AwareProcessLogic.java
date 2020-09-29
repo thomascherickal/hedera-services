@@ -29,6 +29,7 @@ import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.hedera.services.legacy.utils.TransactionValidationUtils;
 import com.hedera.services.state.logic.ServicesTxnManager;
+import com.hedera.services.stream.RecordStreamObject;
 import com.hedera.services.txns.ProcessLogic;
 import com.hedera.services.txns.diligence.DuplicateClassification;
 import com.hedera.services.utils.PlatformTxnAccessor;
@@ -359,6 +360,9 @@ public class AwareProcessLogic implements ProcessLogic {
 			TransactionRecord transactionRecord,
 			Instant consensusTimeStamp
 	) {
+		// update runningHash, write to record stream file when record streaming is enabled
+		ctx.runningHashCalculator().forRunningHashPut(new RecordStreamObject(transactionRecord, grpcTransaction, consensusTimeStamp));
+		//TODO: remove the following
 		if (PropertiesLoader.isEnableRecordStreaming()) {
 			ctx.recordStream().addRecord(grpcTransaction, transactionRecord, consensusTimeStamp);
 		}

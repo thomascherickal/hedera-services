@@ -167,7 +167,9 @@ public class ServicesMain implements SwirldMain {
 	}
 
 	private void startRecordStreamThread() {
-		ctx.recordStreamThread().start();
+		// ctx.recordStreamThread().start();
+
+		ctx.runningHashCalculator().startCalcRunningHashThread();
 	}
 
 	private void exportAccountsIfDesired() {
