@@ -37,6 +37,7 @@ import com.hedera.services.ledger.properties.TokenRelProperty;
 import com.hedera.services.legacy.core.jproto.JContractIDKey;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.expiry.ExpiringCreations;
 import com.hedera.services.state.merkle.MerkleAccount;
@@ -192,6 +193,7 @@ public class HederaLedgerTest {
 
 	HederaTokenStore tokenStore;
 	EntityIdSource ids;
+	HederaNodeStats stats;
 	ExpiringCreations creator;
 	AccountRecordsHistorian historian;
 	TransactionalLedger<AccountID, AccountProperty, MerkleAccount> accountsLedger;
@@ -258,7 +260,9 @@ public class HederaLedgerTest {
 		given(tokenStore.resolve(tokenId))
 				.willReturn(tokenId);
 
-		subject = new HederaLedger(tokenStore, ids, creator, historian, accountsLedger);
+		stats = mock(HederaNodeStats.class);
+
+		subject = new HederaLedger(tokenStore, ids, creator, stats, historian, accountsLedger);
 		subject.setTokenRelsLedger(tokenRelsLedger);
 	}
 
@@ -500,7 +504,7 @@ public class HederaLedgerTest {
 				new MockGlobalDynamicProps(),
 				() -> tokens,
 				tokenRelsLedger);
-		subject = new HederaLedger(tokenStore, ids, creator, historian, accountsLedger);
+		subject = new HederaLedger(tokenStore, ids, creator, stats, historian, accountsLedger);
 	}
 
 	private void setupWithLiveFcBackedLedger() {
@@ -520,7 +524,7 @@ public class HederaLedgerTest {
 				() -> new MerkleAccount(),
 				backingAccounts,
 				new ChangeSummaryManager<>());
-		subject = new HederaLedger(tokenStore, ids, creator, historian, accountsLedger);
+		subject = new HederaLedger(tokenStore, ids, creator, stats, historian, accountsLedger);
 	}
 
 	@Test

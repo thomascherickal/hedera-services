@@ -164,14 +164,26 @@ public class AwareProcessLogic implements ProcessLogic {
 	}
 
 	private void addRecordToStream() {
+		var watch = StopWatch.createStarted();
 		var finalRecord = ctx.recordsHistorian().lastCreatedRecord().get();
 		addForStreaming(ctx.txnCtx().accessor().getSignedTxn(), finalRecord, ctx.txnCtx().consensusTime());
+		ctx.stats().updateAvgRecordStreamingNanos(watch.getNanoTime());
 	}
 
 	private void purgeExpiredEntities() {
 		var watch = StopWatch.createStarted();
 		ctx.recordsHistorian().purgeExpiredRecords();
 		ctx.stats().updateAvgEntityExpiryNanos(watch.getNanoTime());
+	}
+
+	private SignatureStatus rationalizeSigs(PlatformTxnAccessor accessor) {
+		var watch = StopWatch.createStarted();
+		var sigStatus = rationalizeWithPreConsensusSigs(accessor);
+		if (hasActivePayerSig(accessor)) {
+			ctx.txnCtx().payerSigIsKnownActive();
+		}
+		ctx.stats().updateAvgSigRationalizationNanos(watch.getNanoTime());
+		return sigStatus;
 	}
 
 	private void doProcess(PlatformTxnAccessor accessor, Instant consensusTime) {
@@ -188,10 +200,7 @@ public class AwareProcessLogic implements ProcessLogic {
 			}
 		}
 
-		final SignatureStatus sigStatus = rationalizeWithPreConsensusSigs(accessor);
-		if (hasActivePayerSig(accessor)) {
-			ctx.txnCtx().payerSigIsKnownActive();
-		}
+		final SignatureStatus sigStatus = rationalizeSigs(accessor);
 
 		FeeObject fee = ctx.fees().computeFee(accessor, ctx.txnCtx().activePayerKey(), ctx.currentView());
 
@@ -209,7 +218,6 @@ public class AwareProcessLogic implements ProcessLogic {
 			ctx.txnCtx().setStatus(DUPLICATE_TRANSACTION);
 			return;
 		}
-
 		var chargingOutcome = ctx.txnChargingPolicy().apply(ctx.charging(), fee);
 		if (chargingOutcome != OK) {
 			ctx.txnCtx().setStatus(chargingOutcome);
@@ -220,7 +228,6 @@ public class AwareProcessLogic implements ProcessLogic {
 			ctx.txnCtx().setStatus(sigStatus.getResponseCode());
 			return;
 		}
-
 		if (!hasActiveNonPayerEntitySigs(accessor)) {
 			ctx.txnCtx().setStatus(INVALID_SIGNATURE);
 			return;
@@ -236,14 +243,15 @@ public class AwareProcessLogic implements ProcessLogic {
 		ResponseCodeEnum opValidity = transitionLogic.isPresent()
 				? transitionLogic.get().syntaxCheck().apply(accessor.getTxn())
 				: TransactionValidationUtils.validateTxSpecificBody(accessor.getTxn(), ctx.validator());
-
 		if (opValidity != OK) {
 			ctx.txnCtx().setStatus(opValidity);
 			return;
 		}
 
 		if (transitionLogic.isPresent()) {
+			var watch = StopWatch.createStarted();
 			transitionLogic.get().doStateTransition();
+			ctx.stats().updateAvgStateTransitionNanos(watch.getNanoTime());
 		} else {
 			TransactionRecord record = processTransaction(accessor.getTxn(), consensusTime);
 			if (record != null && record.isInitialized()) {

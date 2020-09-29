@@ -1121,6 +1121,7 @@ public class ServicesContext {
 					tokenStore(),
 					ids(),
 					creator(),
+					stats(),
 					recordsHistorian(),
 					accountsLedger);
 		}
@@ -1397,6 +1398,7 @@ public class ServicesContext {
 					NOOP_TOKEN_STORE,
 					NOOP_ID_SOURCE,
 					NOOP_EXPIRING_CREATIONS,
+					stats(),
 					NOOP_RECORDS_HISTORIAN,
 					pureDelegate);
 			Source<byte[], AccountState> pureAccountSource = new LedgerAccountsSource(

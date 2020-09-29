@@ -225,6 +225,7 @@ public class SmartContractServiceImplTest {
 				mock(TokenStore.class),
 				mock(EntityIdSource.class),
 				mock(ExpiringCreations.class),
+				mock(HederaNodeStats.class),
 				mock(AccountRecordsHistorian.class),
 				delegate);
 		ledgerSource = new LedgerAccountsSource(ledger, new MockGlobalDynamicProps());

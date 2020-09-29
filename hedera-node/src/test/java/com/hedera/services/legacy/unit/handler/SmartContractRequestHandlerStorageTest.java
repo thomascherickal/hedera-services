@@ -31,6 +31,7 @@ import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.ledger.ids.EntityIdSource;
 import com.hedera.services.ledger.properties.ChangeSummaryManager;
 import com.hedera.services.ledger.properties.AccountProperty;
+import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.legacy.unit.FCStorageWrapper;
 import com.hedera.services.legacy.handler.SmartContractRequestHandler;
 import com.hedera.services.legacy.util.SCEncoding;
@@ -159,6 +160,7 @@ public class SmartContractRequestHandlerStorageTest {
             mock(TokenStore.class),
             mock(EntityIdSource.class),
             mock(ExpiringCreations.class),
+            mock(HederaNodeStats.class),
             mock(AccountRecordsHistorian.class),
             delegate);
     ledgerSource = new LedgerAccountsSource(ledger, new MockGlobalDynamicProps());

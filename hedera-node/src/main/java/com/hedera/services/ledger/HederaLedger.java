@@ -29,6 +29,7 @@ import com.hedera.services.ledger.accounts.HederaAccountCustomizer;
 import com.hedera.services.ledger.ids.EntityIdSource;
 import com.hedera.services.ledger.properties.AccountProperty;
 import com.hedera.services.ledger.properties.TokenRelProperty;
+import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.EntityCreator;
 import com.hedera.services.state.merkle.MerkleAccount;
@@ -45,6 +46,7 @@ import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TokenTransfersTransactionBody;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.swirlds.fcqueue.FCQueue;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -123,6 +125,7 @@ public class HederaLedger {
 
 	private final TokenStore tokenStore;
 	private final EntityIdSource ids;
+	private final HederaNodeStats stats;
 	private final TransferList.Builder netTransfers = TransferList.newBuilder();
 	private final AccountRecordsHistorian historian;
 	private final TransactionalLedger<AccountID, AccountProperty, MerkleAccount> accountsLedger;
@@ -139,10 +142,12 @@ public class HederaLedger {
 			TokenStore tokenStore,
 			EntityIdSource ids,
 			EntityCreator creator,
+			HederaNodeStats stats,
 			AccountRecordsHistorian historian,
 			TransactionalLedger<AccountID, AccountProperty, MerkleAccount> accountsLedger
 	) {
 		this.ids = ids;
+		this.stats = stats;
 		this.historian = historian;
 		this.tokenStore = tokenStore;
 		this.accountsLedger = accountsLedger;
@@ -501,8 +506,14 @@ public class HederaLedger {
 			Consumer<ExpirableTxnRecord> cb
 	) {
 		long newEarliestExpiry = -1;
+		var watch = StopWatch.create();
 		while (!records.isEmpty() && records.peek().getExpiry() <= now) {
-			cb.accept(records.poll());
+			watch.start();
+			var record = records.poll();
+			watch.stop();
+			stats.updateAvgFcqRemoveNanos(watch.getNanoTime());
+			watch.reset();
+			cb.accept(record);
 		}
 		if (!records.isEmpty()) {
 			newEarliestExpiry = records.peek().getExpiry();

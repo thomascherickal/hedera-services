@@ -133,6 +133,10 @@ public class HederaNodeStats {
 	/** size of the queue from which we take records and write to RecordStream file */
 	private final StatsRunningAverage recordStreamQueueSize = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 	private final StatsRunningAverage avgEntityExpiryNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
+	private final StatsRunningAverage avgRecordStreamingNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
+	private final StatsRunningAverage avgSigRationalizationNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
+	private final StatsRunningAverage avgFcqRemoveNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
+	private final StatsRunningAverage avgStateTransitionNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 
 	private void initializeOneCountStat(String request, String requestSuffix, String descriptionSuffix,
 			Platform platform) {
@@ -312,6 +316,62 @@ public class HederaNodeStats {
 				},
 				avgEntityExpiryNanos::reset,
 				avgEntityExpiryNanos::getWeightedMean)
+		);
+
+		platform.addAppStatEntry(new StatEntry(
+				"app",
+				"avgRecordStreamingNanos",
+				"average nanoseconds spent enqueuing a record to be streamed",
+				"%,13.6f",
+				avgRecordStreamingNanos,
+				(h) -> {
+					avgRecordStreamingNanos.reset(h);
+					return avgRecordStreamingNanos;
+				},
+				avgRecordStreamingNanos::reset,
+				avgRecordStreamingNanos::getWeightedMean)
+		);
+
+		platform.addAppStatEntry(new StatEntry(
+				"app",
+				"avgStateTransitionNanos",
+				"average nanoseconds spent performing the state transition in handle",
+				"%,13.6f",
+				avgStateTransitionNanos,
+				(h) -> {
+					avgStateTransitionNanos.reset(h);
+					return avgStateTransitionNanos;
+				},
+				avgStateTransitionNanos::reset,
+				avgStateTransitionNanos::getWeightedMean)
+		);
+
+		platform.addAppStatEntry(new StatEntry(
+				"app",
+				"avgFcqRemoveNanos",
+				"average nanoseconds spent enqueuing a record to be streamed",
+				"%,13.6f",
+				avgFcqRemoveNanos,
+				(h) -> {
+					avgFcqRemoveNanos.reset(h);
+					return avgFcqRemoveNanos;
+				},
+				avgFcqRemoveNanos::reset,
+				avgFcqRemoveNanos::getWeightedMean)
+		);
+
+		platform.addAppStatEntry(new StatEntry(
+				"app",
+				"avgSigRationalizationNanos",
+				"average nanoseconds spent rationalizing with preconsensus sigs",
+				"%,13.6f",
+				avgSigRationalizationNanos,
+				(h) -> {
+					avgSigRationalizationNanos.reset(h);
+					return avgSigRationalizationNanos;
+				},
+				avgSigRationalizationNanos::reset,
+				avgSigRationalizationNanos::getWeightedMean)
 		);
 
 		platformTxnNotCreatedPerSecond = new StatsSpeedometer(DEFAULT_HALF_LIFE);
@@ -523,9 +583,36 @@ public class HederaNodeStats {
 	public void updateAvgEntityExpiryNanos(long nanos) {
 		avgEntityExpiryNanos.recordValue(nanos);
 	}
-
 	public double getAvgEntityExpiryNanos() {
 		return avgEntityExpiryNanos.getWeightedMean();
+	}
+
+	public void updateAvgRecordStreamingNanos(long nanos) {
+		avgRecordStreamingNanos.recordValue(nanos);
+	}
+	public double getAvgRecordStreamingNanos() {
+		return avgRecordStreamingNanos.getWeightedMean();
+	}
+
+	public void updateAvgFcqRemoveNanos(long nanos) {
+		avgFcqRemoveNanos.recordValue(nanos);
+	}
+	public double getAvgFcqRemoveNanos() {
+		return avgFcqRemoveNanos.getWeightedMean();
+	}
+
+	public void updateAvgStateTransitionNanos(long nanos) {
+		avgStateTransitionNanos.recordValue(nanos);
+	}
+	public double getAvgStateTransitionNanos() {
+		return avgStateTransitionNanos.getWeightedMean();
+	}
+
+	public void updateAvgSigRationalizationNanos(long nanos) {
+		avgSigRationalizationNanos.recordValue(nanos);
+	}
+	public double getAvgSigRationalizationNanos() {
+		return avgSigRationalizationNanos.getWeightedMean();
 	}
 
 	public double getRecordStreamQueueSize() {

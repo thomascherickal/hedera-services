@@ -59,7 +59,7 @@ public class HederaNodeStatsTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		stats = new HederaNodeStats(platform, 0, log);
-		verify(platform, times(214)).addAppStatEntry(any(StatEntry.class));
+		verify(platform, times(218)).addAppStatEntry(any(StatEntry.class));
 		verify(platform, times(1)).appStatInit();
 	}
 
@@ -311,6 +311,34 @@ public class HederaNodeStatsTest {
 		assertEquals(0, stats.getAvgEntityExpiryNanos());
 		stats.updateAvgEntityExpiryNanos(4567);
 		assertEquals(4567, stats.getAvgEntityExpiryNanos());
+	}
+
+	@Test
+	public void shouldUpdateAvgSigRationalizationNanos() {
+		assertEquals(0, stats.getAvgSigRationalizationNanos());
+		stats.updateAvgSigRationalizationNanos(4567);
+		assertEquals(4567, stats.getAvgSigRationalizationNanos());
+	}
+
+	@Test
+	public void shouldUpdateAvgRecordStreamingNanos() {
+		assertEquals(0, stats.getAvgRecordStreamingNanos());
+		stats.updateAvgRecordStreamingNanos(4567);
+		assertEquals(4567, stats.getAvgRecordStreamingNanos());
+	}
+
+	@Test
+	public void shouldUpdateAvgTransitionNanos() {
+		assertEquals(0, stats.getAvgStateTransitionNanos());
+		stats.updateAvgStateTransitionNanos(4567);
+		assertEquals(4567, stats.getAvgStateTransitionNanos());
+	}
+
+	@Test
+	public void shouldUpdateAvgFcqRemoveNanos() {
+		assertEquals(0, stats.getAvgFcqRemoveNanos());
+		stats.updateAvgFcqRemoveNanos(4567);
+		assertEquals(4567, stats.getAvgFcqRemoveNanos());
 	}
 
 	@Test
