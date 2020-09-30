@@ -41,6 +41,7 @@ import com.hedera.services.state.initialization.SystemFilesManager;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.migration.StateMigrations;
 import com.hedera.services.state.validation.LedgerValidator;
+import com.hedera.services.stream.RunningHashCalculator;
 import com.hedera.services.utils.Pause;
 import com.hedera.services.utils.SystemExits;
 import com.hedera.services.utils.TimerUtils;
@@ -114,6 +115,7 @@ public class ServicesMainTest {
 	AccountRecordsHistorian recordsHistorian;
 	GlobalDynamicProperties globalDynamicProperties;
 	BackingStore<AccountID, MerkleAccount> backingAccounts;
+	RunningHashCalculator runningHashCalculator;
 
 	@BeforeEach
 	private void setup() {
@@ -145,6 +147,7 @@ public class ServicesMainTest {
 		systemFilesManager = mock(SystemFilesManager.class);
 		systemAccountsCreator = mock(SystemAccountsCreator.class);
 		globalDynamicProperties = mock(GlobalDynamicProperties.class);
+		runningHashCalculator = mock(RunningHashCalculator.class);
 		ctx = mock(ServicesContext.class);
 
 		ServicesMain.log = mockLog;
@@ -178,6 +181,7 @@ public class ServicesMainTest {
 		given(ctx.systemAccountsCreator()).willReturn(systemAccountsCreator);
 		given(ctx.accountsExporter()).willReturn(accountsExporter);
 		given(ctx.balancesExporter()).willReturn(balancesExporter);
+		given(ctx.runningHashCalculator()).willReturn(runningHashCalculator);
 		given(ctx.consensusTimeOfLastHandledTxn()).willReturn(Instant.ofEpochSecond(33L, 0));
 		given(ledgerValidator.hasExpectedTotalBalance(any())).willReturn(true);
 		given(properties.getIntProperty("timer.stats.dump.value")).willReturn(123);
@@ -261,7 +265,7 @@ public class ServicesMainTest {
 				platform,
 				stateMigrations,
 				ledgerValidator,
-				recordStreamThread,
+				runningHashCalculator,
 				recordsHistorian,
 				fees,
 				grpc);
@@ -274,7 +278,7 @@ public class ServicesMainTest {
 		inOrder.verify(propertySources).assertSourcesArePresent();
 		inOrder.verify(platform).setSleepAfterSync(0L);
 		inOrder.verify(stateMigrations).runAllFor(ctx);
-		inOrder.verify(recordStreamThread).start();
+		inOrder.verify(runningHashCalculator).startCalcRunningHashThread();
 		inOrder.verify(ledgerValidator).assertIdsAreValid(accounts);
 		inOrder.verify(ledgerValidator).hasExpectedTotalBalance(accounts);
 		inOrder.verify(recordsHistorian).reviewExistingRecords();
