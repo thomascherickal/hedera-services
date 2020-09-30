@@ -100,9 +100,9 @@ public class ServicesMain implements SwirldMain {
 		log.info("Now current platform status = {} in HederaNode#{}.", status, ctx.id());
 		ctx.platformStatus().set(status);
 		if (status == ACTIVE) {
-			ctx.recordStream().setInFreeze(false);
+			ctx.runningHashCalculator().setInFreeze(false);
 		} else if (status == MAINTENANCE) {
-			ctx.recordStream().setInFreeze(true);
+			ctx.runningHashCalculator().setInFreeze(true);
 			ctx.updateFeature();
 		} else {
 			log.info("Platform {} status set to : {}", ctx.id(), status);
@@ -167,8 +167,6 @@ public class ServicesMain implements SwirldMain {
 	}
 
 	private void startRecordStreamThread() {
-		// ctx.recordStreamThread().start();
-
 		ctx.runningHashCalculator().startCalcRunningHashThread();
 	}
 

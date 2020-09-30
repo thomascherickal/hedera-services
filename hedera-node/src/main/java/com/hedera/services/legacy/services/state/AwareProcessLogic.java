@@ -362,10 +362,6 @@ public class AwareProcessLogic implements ProcessLogic {
 	) {
 		// update runningHash, write to record stream file when record streaming is enabled
 		ctx.runningHashCalculator().forRunningHashPut(new RecordStreamObject(transactionRecord, grpcTransaction, consensusTimeStamp));
-		//TODO: remove the following
-		if (PropertiesLoader.isEnableRecordStreaming()) {
-			ctx.recordStream().addRecord(grpcTransaction, transactionRecord, consensusTimeStamp);
-		}
 	}
 
 	private TransactionRecord processTransaction(TransactionBody txn, Instant consensusTime) {

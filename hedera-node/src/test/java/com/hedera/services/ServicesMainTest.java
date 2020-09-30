@@ -31,7 +31,6 @@ import com.hedera.services.fees.FeeCalculator;
 import com.hedera.services.grpc.GrpcServerManager;
 import com.hedera.services.ledger.accounts.BackingStore;
 import com.hedera.services.legacy.services.stats.HederaNodeStats;
-import com.hedera.services.legacy.stream.RecordStream;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.exports.AccountsExporter;
 import com.hedera.services.state.exports.BalancesExporter;
@@ -96,7 +95,6 @@ public class ServicesMainTest {
 	SystemExits systemExits;
 	AddressBook addressBook;
 	PrintStream consoleOut;
-	RecordStream recordStream;
 	FeeCalculator fees;
 	ServicesMain subject;
 	ServicesContext ctx;
@@ -131,7 +129,6 @@ public class ServicesMainTest {
 		consoleOut = mock(PrintStream.class);
 		platform = mock(Platform.class);
 		systemExits = mock(SystemExits.class);
-		recordStream = mock(RecordStream.class);
 		recordStreamThread = mock(Thread.class);
 		backingAccounts = (BackingStore<AccountID, MerkleAccount>)mock(BackingStore.class);
 		stateMigrations = mock(StateMigrations.class);
@@ -167,13 +164,10 @@ public class ServicesMainTest {
 		given(ctx.consoleOut()).willReturn(consoleOut);
 		given(ctx.addressBook()).willReturn(addressBook);
 		given(ctx.platform()).willReturn(platform);
-		given(ctx.recordStream()).willReturn(recordStream);
 		given(ctx.platformStatus()).willReturn(platformStatus);
 		given(ctx.ledgerValidator()).willReturn(ledgerValidator);
-		given(ctx.recordStreamThread()).willReturn(recordStreamThread);
 		given(ctx.propertySources()).willReturn(propertySources);
 		given(ctx.properties()).willReturn(properties);
-		given(ctx.recordStream()).willReturn(recordStream);
 		given(ctx.stateMigrations()).willReturn(stateMigrations);
 		given(ctx.recordsHistorian()).willReturn(recordsHistorian);
 		given(ctx.backingAccounts()).willReturn(backingAccounts);
@@ -444,7 +438,7 @@ public class ServicesMainTest {
 
 		// then:
 		verify(platformStatus).set(newStatus);
-		verifyNoInteractions(recordStream);
+		verifyNoInteractions(runningHashCalculator);
 	}
 
 	@Test
@@ -458,7 +452,7 @@ public class ServicesMainTest {
 
 		// then:
 		verify(platformStatus).set(newStatus);
-		verify(recordStream).setInFreeze(true);
+		verify(runningHashCalculator).setInFreeze(true);
 	}
 
 	@Test
@@ -472,7 +466,7 @@ public class ServicesMainTest {
 
 		// then:
 		verify(platformStatus).set(newStatus);
-		verify(recordStream).setInFreeze(false);
+		verify(runningHashCalculator).setInFreeze(false);
 	}
 
 	@Test

@@ -81,6 +81,7 @@ import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.RichInstant;
 import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.state.validation.BasedLedgerValidator;
+import com.hedera.services.stream.RunningHashCalculator;
 import com.hedera.services.throttling.BucketThrottling;
 import com.hedera.services.throttling.TransactionThrottling;
 import com.hedera.services.tokens.HederaTokenStore;
@@ -111,7 +112,6 @@ import com.hedera.services.legacy.service.SmartContractServiceImpl;
 import com.hedera.services.legacy.services.state.AwareProcessLogic;
 import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.hedera.services.legacy.services.utils.DefaultAccountsExporter;
-import com.hedera.services.legacy.stream.RecordStream;
 import com.swirlds.common.Address;
 import com.swirlds.common.AddressBook;
 import com.swirlds.common.Console;
@@ -340,7 +340,7 @@ public class ServicesContextTest {
 		// expect:
 		assertEquals(SleepingPause.INSTANCE, ctx.pause());
 		assertEquals(PlatformStatus.DISCONNECTED, ctx.platformStatus().get());
-		assertEquals("record_stream_0.0.3", ctx.recordStreamThread().getName());
+		assertEquals("src/main/resources", ctx.runningHashCalculator().getStreamDir());
 		assertEquals(ctx.properties(), properties);
 		assertEquals(ctx.propertySources(), propertySources);
 		// and expect TDD:
@@ -432,7 +432,7 @@ public class ServicesContextTest {
 		assertThat(ctx.contracts(), instanceOf(SmartContractRequestHandler.class));
 		assertThat(ctx.freezeGrpc(), instanceOf(FreezeServiceImpl.class));
 		assertThat(ctx.contractsGrpc(), instanceOf(SmartContractServiceImpl.class));
-		assertThat(ctx.recordStream(), instanceOf(RecordStream.class));
+		assertThat(ctx.runningHashCalculator(), instanceOf(RunningHashCalculator.class));
 		assertThat(ctx.accountsExporter(), instanceOf(DefaultAccountsExporter.class));
 		assertThat(ctx.freeze(), instanceOf(FreezeHandler.class));
 		assertThat(ctx.logic(), instanceOf(AwareProcessLogic.class));

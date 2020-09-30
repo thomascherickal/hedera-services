@@ -54,6 +54,15 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This RecordStream class write .rcd and .rcd_sig files which doesn't support reconnect.
+ * This class has been replaced by {@link com.hedera.services.stream.RunningHashCalculator} and
+ * {@link com.hedera.services.stream.RecordStreamFileWriter}.
+ * The former class calculates runningHash for records and transactions, and saves the runningHash in ServicesState.
+ * The latter class writes records and transactions to .soc file.
+ * In the beginning and end of each .soc file, there are initialRunningHash and lastRunningHash
+ */
+@Deprecated
 public class RecordStream implements Runnable {
 
 	/** use this for all logging, as controlled by the optional data/log4j2.xml file */

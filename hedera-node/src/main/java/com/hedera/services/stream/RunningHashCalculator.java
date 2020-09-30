@@ -4,14 +4,8 @@ import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.swirlds.common.Platform;
-import com.swirlds.common.crypto.DigestType;
 import com.swirlds.common.crypto.Hash;
-import com.swirlds.common.crypto.ImmutableHash;
 import com.swirlds.common.stream.ObjectStreamCreator;
-import com.swirlds.common.stream.TimestampStreamFileWriter;
-import com.swirlds.platform.AbstractPlatform;
-import com.swirlds.platform.FreezeManager;
-import com.swirlds.platform.event.EventUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,7 +17,6 @@ import java.util.function.Supplier;
 import static com.swirlds.common.Constants.SEC_TO_MS;
 import static com.swirlds.logging.LogMarker.EVENT_STREAM;
 import static com.swirlds.logging.LogMarker.OBJECT_STREAM_DETAIL;
-import static com.swirlds.logging.LogMarker.RECONNECT;
 
 public class RunningHashCalculator {
 	/** use this for all logging, as controlled by the optional data/log4j2.xml file */
@@ -71,9 +64,12 @@ public class RunningHashCalculator {
 
 	private HederaNodeStats stats;
 
+	private String addressMemo;
+
 	public RunningHashCalculator(final Platform platform, final PropertySource propertySource,
 			final Hash initialHash, final Supplier<RunningHashLeaf> runningHashLeafSupplier,
-			final HederaNodeStats stats) {
+			final HederaNodeStats stats,
+			final String addressMemo) {
 		this.platform = platform;
 		forRunningHash = new ArrayBlockingQueue<>(PropertiesLoader.getRecordStreamQueueCapacity());
 		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
@@ -81,14 +77,19 @@ public class RunningHashCalculator {
 		this.initialHash = initialHash;
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
 		this.stats = stats;
+		this.addressMemo = addressMemo;
 	}
 
 	/**
 	 * @param streamDir
 	 */
-	void setStreamDir(final String streamDir) {
+	public void setStreamDir(final String streamDir) {
 		directoryAssurance(streamDir);
 		this.streamDir = streamDir;
+	}
+
+	public String getStreamDir() {
+		return streamDir;
 	}
 
 	/**
@@ -103,12 +104,15 @@ public class RunningHashCalculator {
 					this.platform,
 					startWriteAtCompleteWindow,
 					PropertiesLoader.getRecordStreamQueueCapacity(),
-					stats);
+					stats,
+					addressMemo);
 		}
 		objectStreamCreator = new ObjectStreamCreator<>(initialHash, consumer);
 		threadCalcRunningHash = new Thread(this::run);
 		threadCalcRunningHash.start();
-		log.info("threadCalcRunningHash started. initialHash: {}",
+		threadCalcRunningHash.setName("calc_running_hash_" + addressMemo);
+		log.info("{} started. initialHash: {}",
+				() -> threadCalcRunningHash.getName(),
 				() -> initialHash);
 	}
 

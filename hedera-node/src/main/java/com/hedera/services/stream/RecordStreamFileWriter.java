@@ -23,14 +23,14 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static com.swirlds.common.Constants.MS_TO_NS;
 import static com.swirlds.common.Constants.SEC_TO_NS;
 
 public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable> implements ObjectStreamConsumer<T> {
 	/** use this for all logging, as controlled by the optional data/log4j2.xml file */
-	private static final Logger log = LogManager.getLogger();
-
+	private static final Logger log = LogManager.getLogger(RecordStreamFileWriter.class);
 	/**
 	 * logs related to Object Stream threads
 	 */
@@ -116,13 +116,16 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 
 	private HederaNodeStats stats;
 
+	static final int STREAM_DELAY = 500;
+
 	public RecordStreamFileWriter(Hash initialHash,
 			String dirPath,
 			long logPeriodMs,
 			Signer signer,
 			boolean startWriteAtCompleteWindow,
 			int eventStreamQueueCapacity,
-			HederaNodeStats stats) {
+			HederaNodeStats stats,
+			String addressMemo) {
 		runningHash = initialHash;
 		this.dirPath = dirPath;
 		this.logPeriodMs = logPeriodMs;
@@ -131,8 +134,10 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 		forStream = new ArrayBlockingQueue<>(eventStreamQueueCapacity);
 		this.stats = stats;
 		writeThread = new Thread(this::work);
+		writeThread.setName("record_stream_" + addressMemo);
 		//writeThread.setDaemon(true);
 		writeThread.start();
+		log.info("{} started.", () -> writeThread.getName());
 	}
 
 	@Override
@@ -148,18 +153,23 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 
 	private void work() {
 		while (!stopped) {
-			// if close() has been called, and forStream is empty
-			// we should close current file, and stop this writing thread
+			// if it is closed, and forStream is empty
+			// we should close current file
 			if (closed && forStream.isEmpty()) {
 				closeCurrentAndSign();
 				stopped = true;
 				log.info(LOGM_OBJECT_STREAM,
-						"RecordStreamFileWriter has been closed and finished writing all objects in forStream, will be stopped");
+						"RecordStreamFileWriter has been closed and finished writing all objects in forStream, will be " +
+								"stopped");
 				return;
 			}
 
 			try {
-				WorkLoad workLoad = forStream.take();
+				WorkLoad workLoad = forStream.poll(STREAM_DELAY,
+						TimeUnit.MILLISECONDS);
+				if (workLoad == null) {
+					continue;
+				}
 				stats.updateRecordStreamQueueSize(getRecordStreamQueueSize());
 
 				T object = workLoad.object;
@@ -224,7 +234,9 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 			} else {
 				stream = new FileOutputStream(file, false);
 				dos = new SerializableDataOutputStream(new BufferedOutputStream(stream));
-				log.info(LOGM_OBJECT_STREAM_FILE, "Stream file created {}", () -> fileNameShort);
+				if (log.isDebugEnabled()) {
+					log.debug(LOGM_OBJECT_STREAM, "Record file {} created ", () -> fileNameShort);
+				}
 			}
 		} catch (FileNotFoundException e) {
 			log.error(LOGM_EXCEPTION, "startNewFile :: FileNotFound: ", e);
