@@ -82,6 +82,7 @@ import com.hedera.services.state.submerkle.RichInstant;
 import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.state.validation.BasedLedgerValidator;
 import com.hedera.services.stream.RunningHashCalculator;
+import com.hedera.services.stream.RunningHashLeaf;
 import com.hedera.services.throttling.BucketThrottling;
 import com.hedera.services.throttling.TransactionThrottling;
 import com.hedera.services.tokens.HederaTokenStore;
@@ -119,6 +120,9 @@ import com.swirlds.common.NodeId;
 import com.swirlds.common.Platform;
 import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.crypto.Cryptography;
+import com.swirlds.common.crypto.DigestType;
+import com.swirlds.common.crypto.Hash;
+import com.swirlds.common.crypto.ImmutableHash;
 import com.swirlds.fcmap.FCMap;
 import org.ethereum.db.ServicesRepositoryRoot;
 import org.junit.jupiter.api.BeforeEach;
@@ -157,6 +161,7 @@ public class ServicesContextTest {
 	FCMap<MerkleEntityId, MerkleAccount> accounts;
 	FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
+	RunningHashLeaf runningHashLeaf;
 
 	@BeforeEach
 	void setup() {
@@ -169,12 +174,14 @@ public class ServicesContextTest {
 		midnightRates = mock(ExchangeRates.class);
 		networkCtx = new MerkleNetworkContext(consensusTimeOfLastHandledTxn, seqNo, midnightRates);
 		state = mock(ServicesState.class);
+		runningHashLeaf = mock(RunningHashLeaf.class);
 		given(state.networkCtx()).willReturn(networkCtx);
 		given(state.accounts()).willReturn(accounts);
 		given(state.storage()).willReturn(storage);
 		given(state.topics()).willReturn(topics);
 		given(state.tokens()).willReturn(tokens);
 		given(state.tokenAssociations()).willReturn(tokenAssociations);
+		given(state.recordStreamRunningHash()).willReturn(runningHashLeaf);
 		crypto = mock(Cryptography.class);
 		platform = mock(Platform.class);
 		given(platform.getCryptography()).willReturn(crypto);
