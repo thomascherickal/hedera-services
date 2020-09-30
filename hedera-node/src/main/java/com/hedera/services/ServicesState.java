@@ -137,6 +137,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 
 	@Override
 	public int getMinimumChildCount(int version) {
+		log.info("getMinimumChildCount: version: {}", version);
 		switch (version) {
 			case RELEASE_070_VERSION:
 				return ChildIndices.NUM_070_CHILDREN;
