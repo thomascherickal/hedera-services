@@ -137,7 +137,6 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 
 	@Override
 	public int getMinimumChildCount(int version) {
-		log.info("getMinimumChildCount: version: {}", version);
 		switch (version) {
 			case RELEASE_070_VERSION:
 				return ChildIndices.NUM_070_CHILDREN;
@@ -179,7 +178,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		setChild(ChildIndices.ADDRESS_BOOK, addressBook);
 
 		var bootstrapProps = new BootstrapProperties();
-		if (getNumberOfChildren() < ChildIndices.NUM_090_CHILDREN) {
+		if (getNumberOfChildren() < ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN) {
 			long seqStart = bootstrapProps.getLongProperty("hedera.numReservedSystemEntities") + 1;
 			var networkCtx = new MerkleNetworkContext(
 					UNKNOWN_CONSENSUS_TIME,
@@ -197,13 +196,10 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 					new FCMap<>(new MerkleEntityId.Provider(), MerkleToken.LEGACY_PROVIDER));
 			setChild(ChildIndices.TOKEN_ASSOCIATIONS,
 					new FCMap<>(MerkleEntityAssociation.LEGACY_PROVIDER, MerkleTokenRelStatus.LEGACY_PROVIDER));
+			setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
+					new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
 			log.info("Init called on Services node {} WITHOUT Merkle saved state", nodeId);
 		} else {
-			if (getNumberOfChildren() < ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN){
-				setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
-						new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
-
-			}
 			log.info("Init called on Services node {} WITH Merkle saved state", nodeId);
 			merkleDigest.accept(this);
 			printHashes();
