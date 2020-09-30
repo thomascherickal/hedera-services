@@ -1,5 +1,6 @@
 package com.hedera.services.stream;
 
+import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.swirlds.common.crypto.Hash;
 import com.swirlds.common.crypto.SerializableHashable;
 import com.swirlds.common.crypto.Signature;
@@ -113,18 +114,22 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 	 */
 	private volatile boolean closed = false;
 
+	private HederaNodeStats stats;
+
 	public RecordStreamFileWriter(Hash initialHash,
 			String dirPath,
 			long logPeriodMs,
 			Signer signer,
 			boolean startWriteAtCompleteWindow,
-			int eventStreamQueueCapacity) {
+			int eventStreamQueueCapacity,
+			HederaNodeStats stats) {
 		runningHash = initialHash;
 		this.dirPath = dirPath;
 		this.logPeriodMs = logPeriodMs;
 		this.signer = signer;
 		this.startWriteAtCompleteWindow = startWriteAtCompleteWindow;
 		forStream = new ArrayBlockingQueue<>(eventStreamQueueCapacity);
+		this.stats = stats;
 		writeThread = new Thread(this::work);
 		//writeThread.setDaemon(true);
 		writeThread.start();
@@ -134,6 +139,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 	public void addToObjectStream(T object, Hash runningHash) {
 		try {
 			forStream.put(new WorkLoad(object, runningHash));
+			stats.updateRecordStreamQueueSize(getRecordStreamQueueSize());
 		} catch (InterruptedException ex) {
 			// Restore interrupted state
 			Thread.currentThread().interrupt();
@@ -154,6 +160,8 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 
 			try {
 				WorkLoad workLoad = forStream.take();
+				stats.updateRecordStreamQueueSize(getRecordStreamQueueSize());
+
 				T object = workLoad.object;
 				Hash runningHash = workLoad.hash;
 
@@ -248,6 +256,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 	 */
 	public void closeCurrentAndSign() {
 		if (stream != null) {
+			log.info("Start to close File {} at {}", fileNameShort, Instant.now());
 			// write lastRunningHash
 			try {
 				dos.writeSerializable(runningHash, true);
@@ -267,6 +276,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 				log.error(LOGM_EXCEPTION,
 						"writeSignatureFile :: Fail to generate signature file for {}", fileNameShort, e);
 			}
+			log.info("Finish closing File {} at {}", fileNameShort, Instant.now());
 		}
 	}
 
@@ -408,5 +418,12 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 	@Override
 	public void close() {
 		closed = true;
+	}
+
+	public int getRecordStreamQueueSize() {
+		if (forStream == null) {
+			return 0;
+		}
+		return forStream.size();
 	}
 }

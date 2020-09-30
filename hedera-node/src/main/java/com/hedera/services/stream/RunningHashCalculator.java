@@ -2,6 +2,7 @@ package com.hedera.services.stream;
 
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.legacy.config.PropertiesLoader;
+import com.hedera.services.legacy.services.stats.HederaNodeStats;
 import com.swirlds.common.Platform;
 import com.swirlds.common.crypto.DigestType;
 import com.swirlds.common.crypto.Hash;
@@ -68,14 +69,18 @@ public class RunningHashCalculator {
 
 	private Supplier<RunningHashLeaf> runningHashLeafSupplier;
 
+	private HederaNodeStats stats;
+
 	public RunningHashCalculator(final Platform platform, final PropertySource propertySource,
-			final Hash initialHash, final Supplier<RunningHashLeaf> runningHashLeafSupplier) {
+			final Hash initialHash, final Supplier<RunningHashLeaf> runningHashLeafSupplier,
+			final HederaNodeStats stats) {
 		this.platform = platform;
 		forRunningHash = new ArrayBlockingQueue<>(PropertiesLoader.getRecordStreamQueueCapacity());
 		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
 		this.streamDir = propertySource.getStringProperty("hedera.recordStream.logDir");
 		this.initialHash = initialHash;
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
+		this.stats = stats;
 	}
 
 	/**
@@ -97,7 +102,8 @@ public class RunningHashCalculator {
 					recordLogPeriod * SEC_TO_MS,
 					this.platform,
 					startWriteAtCompleteWindow,
-					PropertiesLoader.getRecordStreamQueueCapacity());
+					PropertiesLoader.getRecordStreamQueueCapacity(),
+					stats);
 		}
 		objectStreamCreator = new ObjectStreamCreator<>(initialHash, consumer);
 		threadCalcRunningHash = new Thread(this::run);
@@ -130,6 +136,9 @@ public class RunningHashCalculator {
 		// if the node is frozen, and forRunningHash queue is not empty, we should consume all elements in forRunningHash queue
 		if (!inFreeze || !forRunningHash.isEmpty()) {
 			RecordStreamObject recordStreamObject = forRunningHash.take();
+
+			stats.updateRecordStreamQueueSize(getCalcRunningHashQueueSize());
+
 			// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
 			Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
 
@@ -192,6 +201,7 @@ public class RunningHashCalculator {
 			// put this consensus recordStreamObject into the queue for calculating running Hash
 			// later this recordStreamObject will be put into forCons queue
 			forRunningHash.put(recordStreamObject);
+			stats.updateRecordStreamQueueSize(getCalcRunningHashQueueSize());
 		} catch (InterruptedException e) {
 			log.info("forRunningHashPut interrupted");
 		}
@@ -217,6 +227,13 @@ public class RunningHashCalculator {
 	public void setInFreeze(boolean inFreeze) {
 		this.inFreeze = inFreeze;
 		log.info("RecordStream inFreeze is set to be {} ", inFreeze);
+	}
+
+	public int getCalcRunningHashQueueSize() {
+		if (forRunningHash == null) {
+			return 0;
+		}
+		return forRunningHash.size();
 	}
 }
 

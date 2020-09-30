@@ -1202,7 +1202,7 @@ public class ServicesContext {
 	public RunningHashCalculator runningHashCalculator() {
 		if (runningHashCalculator == null) {
 			runningHashCalculator = new RunningHashCalculator(platform, properties(),
-					state.recordStreamRunningHash().getHash(), this::recordStreamRunningHash);
+					state.recordStreamRunningHash().getHash(), this::recordStreamRunningHash, stats());
 		}
 		return runningHashCalculator;
 	}
