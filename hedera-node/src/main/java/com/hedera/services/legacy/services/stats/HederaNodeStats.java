@@ -28,6 +28,7 @@ import com.hedera.services.utils.MiscUtils;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.swirlds.common.Platform;
 import com.swirlds.common.StatEntry;
+import com.swirlds.fcqueue.FCQueueStatistics;
 import com.swirlds.platform.StatsRunningAverage;
 import com.swirlds.platform.StatsSpeedometer;
 
@@ -204,6 +205,8 @@ public class HederaNodeStats {
 		initializeInternalStatsForTransactions(consensusTransactionList, platform);
 
 		initializeInternalStats(networkQueriesList, platform);
+
+		FCQueueStatistics.register(platform);
 
 		platform.addAppStatEntry(new StatEntry(//
 				"app",//
