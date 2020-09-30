@@ -59,7 +59,7 @@ public class HederaNodeStatsTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		stats = new HederaNodeStats(platform, 0, log);
-		verify(platform, times(213)).addAppStatEntry(any(StatEntry.class));
+		verify(platform, times(214)).addAppStatEntry(any(StatEntry.class));
 		verify(platform, times(1)).appStatInit();
 	}
 
@@ -304,6 +304,13 @@ public class HederaNodeStatsTest {
 		assertEquals(0, stats.getRecordStreamQueueSize());
 		stats.updateRecordStreamQueueSize(4567);
 		assertEquals(4567, stats.getRecordStreamQueueSize());
+	}
+
+	@Test
+	public void shouldUpdateCalcRunningHashQueueSize() {
+		assertEquals(0, stats.getCalcRunningHashQueueSize());
+		stats.updateCalcRunningHashQueueSize(4321);
+		assertEquals(4321, stats.getCalcRunningHashQueueSize());
 	}
 
 	@Test
