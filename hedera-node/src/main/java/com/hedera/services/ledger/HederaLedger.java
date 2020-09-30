@@ -24,7 +24,6 @@ import com.hedera.services.exceptions.DeletedAccountException;
 import com.hedera.services.exceptions.InconsistentAdjustmentsException;
 import com.hedera.services.exceptions.InsufficientFundsException;
 import com.hedera.services.exceptions.NonZeroNetTransfersException;
-import com.hedera.services.ledger.accounts.BackingTokenRels;
 import com.hedera.services.ledger.accounts.HederaAccountCustomizer;
 import com.hedera.services.ledger.ids.EntityIdSource;
 import com.hedera.services.ledger.properties.AccountProperty;
@@ -37,7 +36,6 @@ import com.hedera.services.state.merkle.MerkleAccountTokens;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.tokens.TokenStore;
-import com.hedera.services.utils.EntityIdUtils;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
@@ -513,7 +511,7 @@ public class HederaLedger {
 
 			ExpirableTxnRecord.timedSerialize.set(true);
 			var record = records.poll();
-			stats.updateAvgRecordSerializeMicros(ExpirableTxnRecord.watch.getTime(TimeUnit.MICROSECONDS));
+			stats.updateAvgRecordSerializeNanos(ExpirableTxnRecord.watch.getNanoTime());
 			ExpirableTxnRecord.timedSerialize.set(false);
 
 			watch.stop();
