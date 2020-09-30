@@ -20,6 +20,12 @@ public class RunningHashLeaf extends AbstractMerkleLeaf {
 	 */
 	private Hash runningRecordStreamHash;
 
+	/**
+	 * no-args constructor required by ConstructableRegistry
+	 */
+	public RunningHashLeaf() {
+	}
+
 	public RunningHashLeaf(final Hash runningRecordStreamHash) {
 		this.runningRecordStreamHash = runningRecordStreamHash;
 	}
