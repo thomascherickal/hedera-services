@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import com.swirlds.common.crypto.Hash;
@@ -42,6 +43,7 @@ import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.fcqueue.FCQueueElement;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -70,6 +72,9 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 
 	@Deprecated
 	public static final Provider LEGACY_PROVIDER = new Provider();
+
+	public static StopWatch watch = new StopWatch();
+	public static AtomicBoolean timedSerialize = new AtomicBoolean(false);
 
 	static DomainSerdes serdes = new DomainSerdes();
 	static TxnId.Provider legacyTxnIdProvider = TxnId.LEGACY_PROVIDER;
@@ -284,6 +289,10 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 
 	@Override
 	public void serialize(SerializableDataOutputStream out) throws IOException {
+		if (timedSerialize.get()) {
+			watch.reset();
+			watch.start();
+		}
 		serdes.writeNullableSerializable(receipt, out);
 
 		out.writeByteArray(txnHash);
@@ -303,6 +312,9 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 
 		out.writeSerializableList(tokens, true, true);
 		out.writeSerializableList(tokenAdjustments, true, true);
+		if (timedSerialize.get()) {
+			watch.stop();
+		}
 	}
 
 	@Override

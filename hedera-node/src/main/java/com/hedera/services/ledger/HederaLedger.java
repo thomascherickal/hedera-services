@@ -57,6 +57,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.hedera.services.ledger.accounts.BackingTokenRels.asTokenRel;
@@ -509,7 +510,12 @@ public class HederaLedger {
 		var watch = StopWatch.create();
 		while (!records.isEmpty() && records.peek().getExpiry() <= now) {
 			watch.start();
+
+			ExpirableTxnRecord.timedSerialize.set(true);
 			var record = records.poll();
+			stats.updateAvgRecordSerializeMicros(ExpirableTxnRecord.watch.getTime(TimeUnit.MICROSECONDS));
+			ExpirableTxnRecord.timedSerialize.set(false);
+
 			watch.stop();
 			stats.updateAvgFcqRemoveNanos(watch.getNanoTime());
 			watch.reset();

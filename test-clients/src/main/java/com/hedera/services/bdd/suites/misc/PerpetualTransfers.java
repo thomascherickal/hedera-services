@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,7 +48,7 @@ public class PerpetualTransfers extends HapiApiSuite {
 
 	private AtomicLong duration = new AtomicLong(Long.MAX_VALUE);
 	private AtomicReference<TimeUnit> unit = new AtomicReference<>(MINUTES);
-	private AtomicInteger maxOpsPerSec = new AtomicInteger(10);
+	private AtomicInteger maxOpsPerSec = new AtomicInteger(2);
 
 	public static void main(String... args) {
 		new PerpetualTransfers().runSuiteSync();
@@ -63,7 +64,10 @@ public class PerpetualTransfers extends HapiApiSuite {
 	}
 
 	private HapiApiSpec canTransferBackAndForthForever() {
-		return HapiApiSpec.defaultHapiSpec("CanTransferBackAndForthForever")
+		return HapiApiSpec.customHapiSpec("CanTransferBackAndForthForever")
+				.withProperties(Map.of(
+					"nodes", "3.96.133.133"
+				))
 				.given().when().then(
 						runWithProvider(transfersFactory())
 								.lasting(duration::get, unit::get)
