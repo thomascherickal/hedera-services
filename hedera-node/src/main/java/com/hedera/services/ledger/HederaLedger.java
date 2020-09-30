@@ -508,12 +508,7 @@ public class HederaLedger {
 		var watch = StopWatch.create();
 		while (!records.isEmpty() && records.peek().getExpiry() <= now) {
 			watch.start();
-
-			ExpirableTxnRecord.timedSerialize.set(true);
 			var record = records.poll();
-			stats.updateAvgRecordSerializeNanos(ExpirableTxnRecord.watch.getNanoTime());
-			ExpirableTxnRecord.timedSerialize.set(false);
-
 			watch.stop();
 			stats.updateAvgFcqRemoveNanos(watch.getNanoTime());
 			watch.reset();

@@ -73,9 +73,6 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 	@Deprecated
 	public static final Provider LEGACY_PROVIDER = new Provider();
 
-	public static StopWatch watch = new StopWatch();
-	public static AtomicBoolean timedSerialize = new AtomicBoolean(false);
-
 	static DomainSerdes serdes = new DomainSerdes();
 	static TxnId.Provider legacyTxnIdProvider = TxnId.LEGACY_PROVIDER;
 	static TxnReceipt.Provider legacyReceiptProvider = TxnReceipt.LEGACY_PROVIDER;
@@ -289,10 +286,6 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 
 	@Override
 	public void serialize(SerializableDataOutputStream out) throws IOException {
-		if (timedSerialize.get()) {
-			watch.reset();
-			watch.start();
-		}
 		serdes.writeNullableSerializable(receipt, out);
 
 		out.writeByteArray(txnHash);
@@ -312,9 +305,6 @@ public class ExpirableTxnRecord implements FCQueueElement<ExpirableTxnRecord> {
 
 		out.writeSerializableList(tokens, true, true);
 		out.writeSerializableList(tokenAdjustments, true, true);
-		if (timedSerialize.get()) {
-			watch.stop();
-		}
 	}
 
 	@Override

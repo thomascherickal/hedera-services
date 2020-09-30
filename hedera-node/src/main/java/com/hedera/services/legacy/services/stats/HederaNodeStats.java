@@ -138,7 +138,6 @@ public class HederaNodeStats {
 	private final StatsRunningAverage avgSigRationalizationNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 	private final StatsRunningAverage avgFcqRemoveNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 	private final StatsRunningAverage avgStateTransitionNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
-	private final StatsRunningAverage avgRecordSerializeNanos = new StatsRunningAverage(DEFAULT_HALF_LIFE);
 
 	private void initializeOneCountStat(String request, String requestSuffix, String descriptionSuffix,
 			Platform platform) {
@@ -334,20 +333,6 @@ public class HederaNodeStats {
 				},
 				avgRecordStreamingNanos::reset,
 				avgRecordStreamingNanos::getWeightedMean)
-		);
-
-		platform.addAppStatEntry(new StatEntry(
-				"app",
-				"avgRecordSerializeNanos",
-				"average nanosecods spent serializing a record during FCQ#poll",
-				"%,13.6f",
-				avgRecordSerializeNanos,
-				(h) -> {
-					avgRecordSerializeNanos.reset(h);
-					return avgRecordSerializeNanos;
-				},
-				avgRecordSerializeNanos::reset,
-				avgRecordSerializeNanos::getWeightedMean)
 		);
 
 		platform.addAppStatEntry(new StatEntry(
@@ -603,13 +588,6 @@ public class HederaNodeStats {
 	}
 	public double getAvgEntityExpiryNanos() {
 		return avgEntityExpiryNanos.getWeightedMean();
-	}
-
-	public void updateAvgRecordSerializeNanos(long nanos) {
-		avgRecordSerializeNanos.recordValue(nanos);
-	}
-	public double getAvgRecordSerializeNanos() {
-		return avgRecordSerializeNanos.getWeightedMean();
 	}
 
 	public void updateAvgRecordStreamingNanos(long nanos) {
