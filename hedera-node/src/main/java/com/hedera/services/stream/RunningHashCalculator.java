@@ -40,7 +40,7 @@ public class RunningHashCalculator {
 	/** calculates RunningHash for RecordStreamObjects */
 	private ObjectStreamCreator<RecordStreamObject> objectStreamCreator;
 	/** serializes RecordStreamObjects to recordStreamObject stream files */
-	private TimestampStreamFileWriter<RecordStreamObject> consumer;
+	private RecordStreamFileWriter<RecordStreamObject> consumer;
 	/** initialHash loaded from state */
 	private Hash initialHash;
 	/**
@@ -93,7 +93,7 @@ public class RunningHashCalculator {
 	public void startCalcRunningHashThread() {
 		if (PropertiesLoader.isEnableRecordStreaming()) {
 			//initialize and start TimestampStreamFileWriter, set directory and set startWriteAtCompleteWindow;
-			consumer = new TimestampStreamFileWriter<>(initialHash, streamDir,
+			consumer = new RecordStreamFileWriter<>(initialHash, streamDir,
 					recordLogPeriod * SEC_TO_MS,
 					this.platform,
 					startWriteAtCompleteWindow,
@@ -125,41 +125,28 @@ public class RunningHashCalculator {
 	 * @throws InterruptedException
 	 */
 	private void calcRunningHash() throws InterruptedException {
-		RecordStreamObject recordStreamObject = forRunningHash.take();
+		// if the node is not frozen, we should take RecordStreamObject from forRunningHash queue;
+		// update runningHash and write it to record stream file;
+		// if the node is frozen, and forRunningHash queue is not empty, we should consume all elements in forRunningHash queue
+		if (!inFreeze || !forRunningHash.isEmpty()) {
+			RecordStreamObject recordStreamObject = forRunningHash.take();
+			// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
+			Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
 
-		// if freeze period is started, we don't update runningHash,
-		// don't put recordStreamObjects to forCons queue, don't write recordStreamObjects to stream file
-		if (inFreeze) {
-			return;
-		}
-
-		if (PropertiesLoader.isEnableRecordStreaming()) {
-			if (inFreeze) {
-				log.info(EVENT_STREAM.getMarker(),
-						"the last RecordStreamObject to be written into RecordStream file before restarting: {}",
-						recordStreamObject);
-				// if this recordStreamObject is the last recordStreamObject, we send a close notification to the consumer
+			log.info(OBJECT_STREAM_DETAIL.getMarker(),
+					"RunningHash after adding recordStreamObject {} : {}",
+					() -> recordStreamObject, () -> runningHash);
+			// update runningHash in ServicesState
+			runningHashLeafSupplier.get().setHash(runningHash);
+		} else {
+			// if freeze period is started, and forRunningHash queue is empty, we close the objectStreamCreator,
+			objectStreamCreator.close();
+			if (PropertiesLoader.isEnableRecordStreaming()) {
+				// if freeze period is started, and forRunningHash queue is empty, we send a close notification to the consumer
 				// to let the consumer know it should close and sign file after finish writing all workloads
 				// in its working queue.
-				// we should close consumer before putting this last recordStreamObject,
-				// because otherwise the consumer might have consumed the last recordStreamObject before it get the
-				// notification, thus never close and sign the last file.
 				consumer.close();
 			}
-		}
-
-		// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
-		Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
-
-		log.info(OBJECT_STREAM_DETAIL.getMarker(),
-				"RunningHash after adding recordStreamObject {} : {}",
-				() -> recordStreamObject, () -> runningHash);
-		// update runningHash in ServicesState
-		runningHashLeafSupplier.get().setHash(runningHash);
-
-		if (inFreeze) {
-			// if this recordStreamObject is the last recordStreamObject, we close the objectStreamCreator,
-			objectStreamCreator.close();
 		}
 	}
 
