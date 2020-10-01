@@ -10,30 +10,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
 
 import static com.swirlds.common.Constants.SEC_TO_MS;
 import static com.swirlds.logging.LogMarker.EVENT_STREAM;
 import static com.swirlds.logging.LogMarker.OBJECT_STREAM_DETAIL;
 
+/**
+ * RunningHashCalculator takes a RecordStreamObject, calculates running Hash,
+ * sends this object and runningHash to RecordStreamFileWriter.
+ * This is not be a separate thread, because we need to update the runningHash in ServicesState at the end of handleTransaction() for avoiding ISS
+ */
 public class RunningHashCalculator {
 	/** use this for all logging, as controlled by the optional data/log4j2.xml file */
 	private static final Logger log = LogManager.getLogger();
-
-	/**
-	 * a queue of RecordStreamObject for calculating RunningHash;
-	 * A running hash of hashes of all RecordStreamObject have there been throughout all of history, is stored in the SwildsState;
-	 * when recordStreaming is enabled, a running hash of hashes of all RecordStreamObject have been written
-	 * is saved in the beginning of each new record stream file.
-	 */
-	private BlockingQueue<RecordStreamObject> forRunningHash;
-	/** A thread that calculates RunningHash for RecordStreamObjects */
-	private Thread threadCalcRunningHash;
 	/** calculates RunningHash for RecordStreamObjects */
 	private ObjectStreamCreator<RecordStreamObject> objectStreamCreator;
-	/** serializes RecordStreamObjects to recordStreamObject stream files */
+	/** serializes RecordStreamObjects to record stream files */
 	private RecordStreamFileWriter<RecordStreamObject> consumer;
 	/** initialHash loaded from state */
 	private Hash initialHash;
@@ -71,7 +64,6 @@ public class RunningHashCalculator {
 			final HederaNodeStats stats,
 			final String addressMemo) {
 		this.platform = platform;
-		forRunningHash = new ArrayBlockingQueue<>(PropertiesLoader.getRecordStreamQueueCapacity());
 		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
 		this.streamDir = propertySource.getStringProperty("hedera.recordStream.logDir");
 		this.initialHash = initialHash;
@@ -96,7 +88,7 @@ public class RunningHashCalculator {
 	 * initialize ObjectStreamCreator and set initial RunningHash;
 	 * initialize and start TimestampStreamFileWriter if recordStreamObject streaming is enabled
 	 */
-	public void startCalcRunningHashThread() {
+	public void initializeAndStartRecordStream() {
 		if (PropertiesLoader.isEnableRecordStreaming()) {
 			//initialize and start TimestampStreamFileWriter, set directory and set startWriteAtCompleteWindow;
 			consumer = new RecordStreamFileWriter<>(initialHash, streamDir,
@@ -108,56 +100,31 @@ public class RunningHashCalculator {
 					addressMemo);
 		}
 		objectStreamCreator = new ObjectStreamCreator<>(initialHash, consumer);
-		threadCalcRunningHash = new Thread(this::run);
-		threadCalcRunningHash.start();
-		threadCalcRunningHash.setName("calc_running_hash_" + addressMemo);
-		log.info("{} started. initialHash: {}",
-				() -> threadCalcRunningHash.getName(),
-				() -> initialHash);
-	}
-
-	private void run() {
-		while (!stopped) {
-			try {
-				calcRunningHash();
-			} catch (InterruptedException ex) {
-				log.info("calcRunningHash interrupted");
-			}
-		}
 	}
 
 	/**
-	 * calcRunningHash is repeatedly called by the threadCalRunningHash thread.
-	 * Each time, it takes one recordStreamObject from forRunningHash queue
-	 * streamCreator updates RunningHash,
-	 * and sends this recordStreamObject to consumer which serializes this recordStreamObject to file if recordStreamObjectStreaming is enabled
-	 *
-	 * @throws InterruptedException
+	 * Each time a Record is generated,
+	 * calculates the runningHash of RecordStreamObjects,
+	 * updates the runningHash in ServicesState,
+	 * and sends this recordStreamObject to a consumer which serializes it to file if recordStreamObjectStreaming is enabled
 	 */
-	private void calcRunningHash() throws InterruptedException {
-		// if the node is not frozen, we should take RecordStreamObject from forRunningHash queue;
-		// update runningHash and write it to record stream file;
-		// if the node is frozen, and forRunningHash queue is not empty, we should consume all elements in forRunningHash queue
-		if (!inFreeze || !forRunningHash.isEmpty()) {
-			RecordStreamObject recordStreamObject = forRunningHash.take();
+	public void calcAndUpdateRunningHash(RecordStreamObject recordStreamObject) {
+		// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
+		Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
 
-			stats.updateRecordStreamQueueSize(getCalcRunningHashQueueSize());
+		//TODO: change to debug level, if (log.isDebugEnabled()) {
+		log.info(OBJECT_STREAM_DETAIL.getMarker(),
+				"RunningHash after adding recordStreamObject {} : {}",
+				() -> recordStreamObject.toShortString(), () -> runningHash);
 
-			// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
-			Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
+		// update runningHash in ServicesState
+		runningHashLeafSupplier.get().setHash(runningHash);
 
-			//TODO: change to debug level, if (log.isDebugEnabled()) {
-			log.info(OBJECT_STREAM_DETAIL.getMarker(),
-					"RunningHash after adding recordStreamObject {} : {}",
-					() -> recordStreamObject.toShortString(), () -> runningHash);
-
-			// update runningHash in ServicesState
-			runningHashLeafSupplier.get().setHash(runningHash);
-		} else {
-			// if freeze period is started, and forRunningHash queue is empty, we close the objectStreamCreator,
+		if (inFreeze) {
+			// if freeze period is started, we close the objectStreamCreator,
 			objectStreamCreator.close();
 			if (PropertiesLoader.isEnableRecordStreaming()) {
-				// if freeze period is started, and forRunningHash queue is empty, we send a close notification to the consumer
+				// if freeze period is started, we send a close notification to the consumer
 				// to let the consumer know it should close and sign file after finish writing all workloads
 				// in its working queue.
 				consumer.close();
@@ -195,35 +162,13 @@ public class RunningHashCalculator {
 	}
 
 	/**
-	 * put RecordStreamObject into forRunningHash queue
-	 *
-	 * This method is called by {@link com.hedera.services.legacy.services.state.AwareProcessLogic} when a new TransactionRecord has been generated.
-	 * If the queue is full, then this will block until it isn't full
-	 *
-	 * @param recordStreamObject
-	 */
-	public void forRunningHashPut(final RecordStreamObject recordStreamObject) {
-		try {
-			// put this consensus recordStreamObject into the queue for calculating running Hash
-			// later this recordStreamObject will be put into forCons queue
-			forRunningHash.put(recordStreamObject);
-			stats.updateRecordStreamQueueSize(getCalcRunningHashQueueSize());
-		} catch (InterruptedException e) {
-			log.info("forRunningHashPut interrupted");
-		}
-	}
-
-	/**
 	 * this method is called when the node falls behind,
-	 * clears the queue, stops threadCalcRunningHash and streamFileWriter.
+	 * stops the streamFileWriter.
 	 */
 	void stopAndClear() {
-		forRunningHash.clear();
-		stopped = true;
 		if (consumer != null) {
 			consumer.stopAndClear();
 		}
-		log.info("threadCalcRunningHash stopped");
 	}
 
 	/**
@@ -233,13 +178,6 @@ public class RunningHashCalculator {
 	public void setInFreeze(boolean inFreeze) {
 		this.inFreeze = inFreeze;
 		log.info("RecordStream inFreeze is set to be {} ", inFreeze);
-	}
-
-	public int getCalcRunningHashQueueSize() {
-		if (forRunningHash == null) {
-			return 0;
-		}
-		return forRunningHash.size();
 	}
 }
 

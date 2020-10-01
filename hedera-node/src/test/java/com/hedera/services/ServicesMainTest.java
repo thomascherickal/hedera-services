@@ -272,7 +272,7 @@ public class ServicesMainTest {
 		inOrder.verify(propertySources).assertSourcesArePresent();
 		inOrder.verify(platform).setSleepAfterSync(0L);
 		inOrder.verify(stateMigrations).runAllFor(ctx);
-		inOrder.verify(runningHashCalculator).startCalcRunningHashThread();
+		inOrder.verify(runningHashCalculator).initializeAndStartRecordStream();
 		inOrder.verify(ledgerValidator).assertIdsAreValid(accounts);
 		inOrder.verify(ledgerValidator).hasExpectedTotalBalance(accounts);
 		inOrder.verify(recordsHistorian).reviewExistingRecords();

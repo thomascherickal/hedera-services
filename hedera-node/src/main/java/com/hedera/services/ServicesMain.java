@@ -144,8 +144,8 @@ public class ServicesMain implements SwirldMain {
 		log.info("Migrations complete.");
 		loadPropertiesAndPermissions();
 		log.info("Initialized properties and permissions.");
-		startRecordStreamThread();
-		log.info("Record stream started.");
+		initializeRunningHashCalculator();
+		log.info("RunningHashCalculator initialized.");
 		startNettyIfAppropriate();
 		log.info("Netty started.");
 		createSystemAccountsIfNeeded();
@@ -166,8 +166,8 @@ public class ServicesMain implements SwirldMain {
 		startTimerTasksIfNeeded();
 	}
 
-	private void startRecordStreamThread() {
-		ctx.runningHashCalculator().startCalcRunningHashThread();
+	private void initializeRunningHashCalculator() {
+		ctx.runningHashCalculator().initializeAndStartRecordStream();
 	}
 
 	private void exportAccountsIfDesired() {

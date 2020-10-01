@@ -425,14 +425,14 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 			try {
 				// delete this file since it is half written
 				Files.delete(currentFile.toPath());
-				log.info(LOGM_OBJECT_STREAM, "TimestampStreamFileWriter::stopAndClear deleted {}",
+				log.info(LOGM_OBJECT_STREAM, "RecordStreamFileWriter::stopAndClear deleted {}",
 						() -> currentFile.getName());
 			} catch (IOException ex) {
-				log.error(LOGM_EXCEPTION, "TimestampStreamFileWriter::stopAndClear got IOException " +
+				log.error(LOGM_EXCEPTION, "RecordStreamFileWriter::stopAndClear got IOException " +
 						"when deleting file {}", () -> currentFile.getName());
 			}
 		}
-		log.info(LOGM_OBJECT_STREAM, "TimestampStreamFileWriter stopped");
+		log.info(LOGM_OBJECT_STREAM, "RecordStreamFileWriter stopped");
 	}
 
 	@Override

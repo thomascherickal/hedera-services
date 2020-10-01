@@ -23,7 +23,6 @@ package com.hedera.services.legacy.services.state;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
 import com.hedera.services.context.ServicesContext;
-import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.hedera.services.legacy.crypto.SignatureStatus;
@@ -61,7 +60,6 @@ import static com.hedera.services.txns.diligence.DuplicateClassification.NODE_DU
 import static com.hedera.services.utils.EntityIdUtils.readableId;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CONTRACT_FILE_EMPTY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CONTRACT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
@@ -96,7 +94,7 @@ public class AwareProcessLogic implements ProcessLogic {
 			INVALID_CONTRACT_ID);
 	private final ServicesTxnManager txnManager = new ServicesTxnManager(
 			this::processTxnInCtx,
-			this::addRecordToStream,
+			this::updateRunningHashAndAddRecordToStream,
 			this::warnOf);
 	private final ServicesContext ctx;
 
@@ -163,9 +161,11 @@ public class AwareProcessLogic implements ProcessLogic {
 		}
 	}
 
-	private void addRecordToStream() {
+	private void updateRunningHashAndAddRecordToStream() {
 		var finalRecord = ctx.recordsHistorian().lastCreatedRecord().get();
-		addForStreaming(ctx.txnCtx().accessor().getSignedTxn(), finalRecord, ctx.txnCtx().consensusTime());
+		// update runningHash, write to record stream file when record streaming is enabled
+		ctx.runningHashCalculator().calcAndUpdateRunningHash(
+				new RecordStreamObject(finalRecord, ctx.txnCtx().accessor().getSignedTxn(), ctx.txnCtx().consensusTime()));
 	}
 
 	private void doProcess(PlatformTxnAccessor accessor, Instant consensusTime) {
@@ -353,15 +353,6 @@ public class AwareProcessLogic implements ProcessLogic {
 				ctx.txnCtx().setCreated(legacyRecord.getReceipt().getContractID());
 			}
 		}
-	}
-
-	private void addForStreaming(
-			com.hederahashgraph.api.proto.java.Transaction grpcTransaction,
-			TransactionRecord transactionRecord,
-			Instant consensusTimeStamp
-	) {
-		// update runningHash, write to record stream file when record streaming is enabled
-		ctx.runningHashCalculator().forRunningHashPut(new RecordStreamObject(transactionRecord, grpcTransaction, consensusTimeStamp));
 	}
 
 	private TransactionRecord processTransaction(TransactionBody txn, Instant consensusTime) {
