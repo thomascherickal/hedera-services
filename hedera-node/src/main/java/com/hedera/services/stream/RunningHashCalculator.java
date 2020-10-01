@@ -10,6 +10,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.function.Supplier;
 
 import static com.swirlds.common.Constants.SEC_TO_MS;
@@ -65,7 +68,7 @@ public class RunningHashCalculator {
 			final String addressMemo) {
 		this.platform = platform;
 		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
-		this.streamDir = propertySource.getStringProperty("hedera.recordStream.logDir");
+		setStreamDir(propertySource.getStringProperty("hedera.recordStream.logDir"));
 		this.initialHash = initialHash;
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
 		this.stats = stats;
@@ -157,8 +160,12 @@ public class RunningHashCalculator {
 
 	/** Creates parent if necessary */
 	private static void directoryAssurance(String directory) {
-		File dir = new File(directory);
-		if (!dir.exists()) dir.mkdirs();
+		try {
+			Files.createDirectories(Paths.get(directory));
+		} catch (IOException e) {
+			log.error("Record stream dir {} doesn't exist and cannot be created!", directory, e);
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**

@@ -129,14 +129,6 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 			String addressMemo) {
 		runningHash = initialHash;
 		this.dirPath = dirPath;
-
-		try {
-			Files.createDirectories(Paths.get(dirPath));
-		} catch (IOException e) {
-			log.error("Record stream dir {} doesn't exist and cannot be created!", dirPath, e);
-			throw new IllegalStateException(e);
-		}
-
 		this.logPeriodMs = logPeriodMs;
 		this.signer = signer;
 		this.startWriteAtCompleteWindow = startWriteAtCompleteWindow;
