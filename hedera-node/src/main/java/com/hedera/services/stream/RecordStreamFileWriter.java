@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -128,6 +129,14 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 			String addressMemo) {
 		runningHash = initialHash;
 		this.dirPath = dirPath;
+
+		try {
+			Files.createDirectories(Paths.get(dirPath));
+		} catch (IOException e) {
+			log.error("Record stream dir {} doesn't exist and cannot be created!", dirPath, e);
+			throw new IllegalStateException(e);
+		}
+
 		this.logPeriodMs = logPeriodMs;
 		this.signer = signer;
 		this.startWriteAtCompleteWindow = startWriteAtCompleteWindow;

@@ -146,9 +146,11 @@ public class RunningHashCalculator {
 			// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
 			Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
 
+			//TODO: change to debug level, if (log.isDebugEnabled()) {
 			log.info(OBJECT_STREAM_DETAIL.getMarker(),
 					"RunningHash after adding recordStreamObject {} : {}",
-					() -> recordStreamObject, () -> runningHash);
+					() -> recordStreamObject.toShortString(), () -> runningHash);
+
 			// update runningHash in ServicesState
 			runningHashLeafSupplier.get().setHash(runningHash);
 		} else {
