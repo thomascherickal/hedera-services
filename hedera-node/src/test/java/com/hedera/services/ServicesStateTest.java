@@ -342,7 +342,7 @@ class ServicesStateTest {
 		given(tokenAssociations.getHash()).willReturn(tokenRelsRootHash);
 		given(networkCtx.getHash()).willReturn(ctxHash);
 		given(book.getHash()).willReturn(bookHash);
-		given(runningHashLeaf.getHash()).willReturn(runningHashLeafHash);
+		given(runningHashLeaf.getRunningRecordStreamHash()).willReturn(runningHashLeafHash);
 		// when:
 		subject.printHashes();
 

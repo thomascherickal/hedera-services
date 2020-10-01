@@ -94,4 +94,8 @@ public class RunningHashLeaf extends AbstractMerkleLeaf {
 	public int getVersion() {
 		return CLASS_VERSION;
 	}
+
+	public Hash getRunningRecordStreamHash() {
+		return runningRecordStreamHash;
+	}
 }

@@ -316,7 +316,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 				tokenAssociations().getHash(),
 				networkCtx().getHash(),
 				addressBook().getHash(),
-				recordStreamRunningHash().getHash()));
+				recordStreamRunningHash().getRunningRecordStreamHash()));
 	}
 
 	public FCMap<MerkleEntityId, MerkleAccount> accounts() {
