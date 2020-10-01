@@ -29,7 +29,6 @@ import com.swirlds.common.NodeId;
 import com.swirlds.common.Platform;
 import com.swirlds.common.SwirldState;
 import com.swirlds.common.events.Event;
-import com.swirlds.common.merkle.MerkleLeaf;
 import com.swirlds.common.merkle.MerkleNode;
 import com.swirlds.common.merkle.io.MerkleDataOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -47,8 +46,6 @@ public class IssListener implements InvalidSignedStateListener {
 	static Logger log = LogManager.getLogger(IssListener.class);
 
 	static final String FC_DUMP_LOC_TPL = "data/saved/%s/%d/%s-round%d.fcm";
-	static final String FC_DUMP_STATE = "data/saved/%s/%d/%s-round%d.state";
-
 	static final String ISS_ERROR_MSG_PATTERN =
 			"In round %d, node %d received a signed state from node %d with " +
 					"a signature different than %s on %s [accounts :: %s | storage :: %s | topics :: %s | runningHash :: %s]!";
@@ -107,20 +104,13 @@ public class IssListener implements InvalidSignedStateListener {
 		dump(state.accounts(), "accounts", self, round);
 		dump(state.storage(), "storage", self, round);
 		dump(state.topics(), "topics", self, round);
-		dumpState(state, "state", self, round);
+		dump(state.recordStreamRunningHash(), "runningHash", self, round);
 	}
 
 	private static void dump(MerkleNode fcm, String name, NodeId self, long round) throws IOException {
 		var out = merkleOutFn.apply(String.format(IssListener.FC_DUMP_LOC_TPL,
 				ServicesMain.class.getName(), self.getId(), name, round));
 		out.writeMerkleTree(fcm);
-		out.close();
-	}
-
-	private static void dumpState(MerkleNode state, String name, NodeId self, long round) throws IOException {
-		var out = merkleOutFn.apply(String.format(IssListener.FC_DUMP_STATE,
-				ServicesMain.class.getName(), self.getId(), name, round));
-		out.writeMerkleTree(state);
 		out.close();
 	}
 }
