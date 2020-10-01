@@ -70,6 +70,7 @@ public class RunningHashCalculator {
 		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
 		setStreamDir(propertySource.getStringProperty("hedera.recordStream.logDir"));
 		this.initialHash = initialHash;
+		log.info("RunningHashCalculator initialHash: ", () -> (initialHash));
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
 		this.stats = stats;
 		this.addressMemo = addressMemo;
