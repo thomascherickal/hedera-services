@@ -22,6 +22,7 @@ package com.hedera.services.state.forensics;
 import com.hedera.services.ServicesMain;
 import com.hedera.services.ServicesState;
 import com.hedera.services.context.domain.trackers.IssEventInfo;
+import com.hedera.services.stream.RunningHashLeaf;
 import com.swirlds.common.AddressBook;
 import com.swirlds.common.NodeId;
 import com.swirlds.common.Platform;
@@ -69,11 +70,14 @@ class IssListenerTest {
 	String srHashHex = Hex.encodeHexString(storageRootHash);
 	byte[] accountsRootHash = "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf".getBytes();
 	String acHashHex = Hex.encodeHexString(accountsRootHash);
+	byte[] runningHash = "qasdqasdqasdqasdqasdqasdqasdqasdqasdqasdqasdqasd".getBytes();
+	String runningHashHex = Hex.encodeHexString(runningHash);
 	Instant consensusTime = Instant.now();
 
 	FCMap topics;
 	FCMap accounts;
 	FCMap storage;
+	RunningHashLeaf runningHashLeaf;
 	Logger mockLog;
 	Platform platform;
 	AddressBook book;
@@ -92,15 +96,17 @@ class IssListenerTest {
 		accounts = mock(FCMap.class);
 		storage = mock(FCMap.class);
 		topics = mock(FCMap.class);
+		runningHashLeaf = mock(RunningHashLeaf.class);
 		given(accounts.getRootHash()).willReturn(new Hash(accountsRootHash));
 		given(storage.getRootHash()).willReturn(new Hash(storageRootHash));
 		given(topics.getRootHash()).willReturn(new Hash(topicRootHash));
+		given(runningHashLeaf.getHash()).willReturn(new Hash(runningHash));
 		// and:
 		state = mock(ServicesState.class);
 		given(state.topics()).willReturn(topics);
 		given(state.storage()).willReturn(storage);
 		given(state.accounts()).willReturn(accounts);
-
+		given(state.recordStreamRunningHash()).willReturn(runningHashLeaf);
 		IssListener.log = mockLog;
 
 		subject = new IssListener(info);
@@ -189,7 +195,7 @@ class IssListenerTest {
 		// then:
 		String msg = String.format(
 				IssListener.ISS_ERROR_MSG_PATTERN,
-				round, selfId, otherId, sigHex, hashHex, acHashHex, srHashHex, trHashHex);
+				round, selfId, otherId, sigHex, hashHex, acHashHex, srHashHex, trHashHex, runningHashHex);
 		verify(mockLog).error(msg);
 		// and
 		inOrder.verify(info).alert(consensusTime);

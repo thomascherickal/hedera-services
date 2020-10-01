@@ -220,8 +220,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 		try {
 			dos.writeSerializable(object, true);
 			dos.flush();
-			log.info(LOGM_OBJECT_STREAM_DETAIL, "consume :: write object {}",
-					() -> object);
+			// log.info(LOGM_OBJECT_STREAM_DETAIL, "consume :: write object {}", () -> object);
 		} catch (IOException e) {
 			log.warn(LOGM_EXCEPTION, "IOException when serializing {}", object, e);
 		}
