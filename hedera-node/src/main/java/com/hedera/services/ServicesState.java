@@ -104,13 +104,11 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 	ServicesContext ctx;
 
 	public ServicesState() {
-		setImmutable(true);
 	}
 
 	public ServicesState(List<MerkleNode> children) {
 		super(ChildIndices.RECORD_STREAM_RUNNING_HASH);
 		addDeserializedChildren(children, MERKLE_VERSION);
-		setImmutable(true);
 	}
 
 	public ServicesState(ServicesContext ctx, NodeId nodeId, List<MerkleNode> children) {
@@ -120,8 +118,6 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		if (ctx != null) {
 			ctx.update(this);
 		}
-
-		setImmutable(true);
 	}
 
 	/* --- MerkleInternal --- */
@@ -166,6 +162,11 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 					new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
 			log.info("Created initial RecordStream RunningHash after < RECORD_STREAM_RECONNECT_VERSION state restoration");
 		}
+	}
+
+	@Override
+	public void genesisInit(Platform platform, AddressBook addressBook) {
+		this.init(platform, addressBook);
 	}
 
 	/* --- SwirldState --- */
@@ -247,6 +248,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 	/* --- FastCopyable --- */
 	@Override
 	public synchronized ServicesState copy() {
+		setImmutable(true);
 		return new ServicesState(ctx, nodeId, List.of(
 				addressBook().copy(),
 				networkCtx().copy(),

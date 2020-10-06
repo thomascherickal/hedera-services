@@ -61,6 +61,7 @@ class GlobalDynamicPropertiesTest {
 		subject = new GlobalDynamicProperties(numbers, properties);
 
 		// expect:
+		assertFalse(subject.shouldCreatePayerRecords());
 		assertFalse(subject.shouldCreateThresholdRecords());
 		assertEquals(1, subject.maxTokensPerAccount());
 		assertEquals(2, subject.maxTokenSymbolLength());
@@ -77,6 +78,11 @@ class GlobalDynamicPropertiesTest {
 		assertEquals(13L, subject.nodeBalanceWarningThreshold());
 		assertEquals(balanceExportPaths[1], subject.pathToBalancesExportDir());
 		assertTrue(subject.shouldExportTokenBalances());
+		assertEquals(15, subject.maxTransferListSize());
+		assertEquals(16, subject.maxTokenTransferListSize());
+		assertEquals(17, subject.maxMemoUtf8Bytes());
+		assertEquals(18L, subject.maxTxnDuration());
+		assertEquals(19L, subject.minTxnDuration());
 	}
 
 	private AccountID accountWith(long shard, long realm, long num) {
@@ -95,6 +101,7 @@ class GlobalDynamicPropertiesTest {
 		subject = new GlobalDynamicProperties(numbers, properties);
 
 		// expect:
+		assertTrue(subject.shouldCreatePayerRecords());
 		assertTrue(subject.shouldCreateThresholdRecords());
 		assertEquals(2, subject.maxTokensPerAccount());
 		assertEquals(3, subject.maxTokenSymbolLength());
@@ -111,11 +118,17 @@ class GlobalDynamicPropertiesTest {
 		assertEquals(14L, subject.nodeBalanceWarningThreshold());
 		assertEquals(balanceExportPaths[0], subject.pathToBalancesExportDir());
 		assertFalse(subject.shouldExportTokenBalances());
+		assertEquals(16, subject.maxTransferListSize());
+		assertEquals(17, subject.maxTokenTransferListSize());
+		assertEquals(18, subject.maxMemoUtf8Bytes());
+		assertEquals(19L, subject.maxTxnDuration());
+		assertEquals(20L, subject.minTxnDuration());
 	}
 
 	private void givenPropsWithSeed(int i) {
 		given(properties.getIntProperty("tokens.maxPerAccount")).willReturn(i);
 		given(properties.getIntProperty("tokens.maxSymbolLength")).willReturn(i + 1);
+		given(properties.getBooleanProperty("ledger.createPayerRecords")).willReturn((i % 2) == 0);
 		given(properties.getBooleanProperty("ledger.createThresholdRecords")).willReturn((i % 2) == 0);
 		given(properties.getLongProperty("ledger.maxAccountNum")).willReturn((long)i + 2);
 		given(properties.getLongProperty("contracts.defaultSendThreshold")).willReturn((long)i + 3);
@@ -130,5 +143,10 @@ class GlobalDynamicPropertiesTest {
 		given(properties.getLongProperty("balances.nodeBalanceWarningThreshold")).willReturn(i + 12L);
 		given(properties.getStringProperty("balances.exportDir.path")).willReturn(balanceExportPaths[i % 2]);
 		given(properties.getBooleanProperty("balances.exportTokenBalances")).willReturn((i + 13) % 2 == 0);
+		given(properties.getIntProperty("ledger.transfers.maxLen")).willReturn(i + 14);
+		given(properties.getIntProperty("ledger.tokenTransfers.maxLen")).willReturn(i + 15);
+		given(properties.getIntProperty("hedera.transaction.maxMemoUtf8Bytes")).willReturn(i + 16);
+		given(properties.getLongProperty("hedera.transaction.maxValidDuration")).willReturn(i + 17L);
+		given(properties.getLongProperty("hedera.transaction.minValidDuration")).willReturn(i + 18L);
 	}
 }

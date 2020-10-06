@@ -26,8 +26,7 @@ import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.submerkle.EntityId;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import com.swirlds.common.merkle.MerkleLeaf;
-import com.swirlds.common.merkle.utility.AbstractMerkleNode;
+import com.swirlds.common.merkle.utility.AbstractMerkleLeaf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,13 +34,13 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.hedera.services.context.properties.StandardizedPropertySources.MAX_MEMO_UTF8_BYTES;
 import static com.hedera.services.legacy.core.jproto.JKey.equalUpToDecodability;
 import static com.hedera.services.utils.MiscUtils.describe;
 
-public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf {
+public class MerkleAccountState extends AbstractMerkleLeaf {
 	private static final Logger log = LogManager.getLogger(MerkleAccountState.class);
 
+	static final int MAX_CONCEIVABLE_MEMO_UTF8_BYTES = 1_024;
 	static final int MAX_CONCEIVABLE_TOKEN_BALANCES_SIZE = 4_096;
 
 	static final int RELEASE_070_VERSION = 1;
@@ -113,7 +112,7 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 		autoRenewSecs = in.readLong();
 		senderThreshold = in.readLong();
 		receiverThreshold = in.readLong();
-		memo = in.readNormalisedString(MAX_MEMO_UTF8_BYTES);
+		memo = in.readNormalisedString(MAX_CONCEIVABLE_MEMO_UTF8_BYTES);
 		accountDeleted = in.readBoolean();
 		smartContract = in.readBoolean();
 		receiverSigRequired = in.readBoolean();
@@ -298,9 +297,5 @@ public class MerkleAccountState extends AbstractMerkleNode implements MerkleLeaf
 
 	public void setProxy(EntityId proxy) {
 		this.proxy = proxy;
-	}
-
-	@Override
-	public void delete() {
 	}
 }

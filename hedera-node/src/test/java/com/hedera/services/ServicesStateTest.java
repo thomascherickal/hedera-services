@@ -21,6 +21,10 @@ package com.hedera.services;
  */
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.hedera.services.context.ServicesContext;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleNetworkContext;
 import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.properties.PropertySources;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
@@ -37,6 +41,17 @@ import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
+import com.hedera.services.context.properties.PropertySources;
+import com.hedera.services.legacy.core.jproto.JEd25519Key;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.legacy.crypto.SignatureStatus;
+import com.hedera.services.sigs.order.HederaSigningOrder;
+import com.hedera.services.sigs.order.SigningOrderResult;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.stream.RunningHashLeaf;
@@ -47,6 +62,7 @@ import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.SignatureMap;
 import com.hederahashgraph.api.proto.java.SignaturePair;
+import com.hederahashgraph.api.proto.java.SignedTransaction;
 import com.swirlds.common.Address;
 import com.swirlds.common.AddressBook;
 import com.swirlds.common.NodeId;
@@ -371,7 +387,7 @@ class ServicesStateTest {
 		ServicesState copy = (ServicesState) subject.copy();
 
 		// then:
-		assertTrue(copy.isImmutable());
+		assertTrue(subject.isImmutable());
 		assertEquals(self, copy.nodeId);
 		assertEquals(bookCopy, copy.addressBook());
 		assertEquals(networkCtxCopy, copy.networkCtx());
@@ -404,7 +420,7 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
 
 		// when:
-		subject.delete();
+		subject.release();
 
 		// then:
 		verify(storage).decrementReferenceCount();
@@ -524,6 +540,41 @@ class ServicesStateTest {
 										.setEd25519(mockSig)))
 						.build();
 		platformTxn = PlatformTxnFactory.from(signedTxn);
+		JKey key = new JEd25519Key(mockPk.toByteArray());
+		SigningOrderResult<SignatureStatus> payerOrderResult = new SigningOrderResult<>(List.of(key));
+		SigningOrderResult<SignatureStatus> otherOrderResult = new SigningOrderResult<>(EMPTY_LIST);
+		HederaSigningOrder keyOrderer = mock(HederaSigningOrder.class);
+
+		given(keyOrderer.keysForPayer(any(), any())).willReturn((SigningOrderResult) payerOrderResult);
+		given(keyOrderer.keysForOtherParties(any(), any())).willReturn((SigningOrderResult) otherOrderResult);
+		given(ctx.lookupRetryingKeyOrder()).willReturn(keyOrderer);
+
+		// and:
+		subject.ctx = ctx;
+
+		// when:
+		subject.expandSignatures(platformTxn);
+
+		// then:
+		assertEquals(1, platformTxn.getSignatures().size());
+		assertEquals(mockPk, ByteString.copyFrom(platformTxn.getSignatures().get(0).getExpandedPublicKeyDirect()));
+	}
+
+	@Test
+	public void expandsSigsWithSignedTransactionBytes() throws InvalidProtocolBufferException {
+		// setup:
+		ByteString mockPk = ByteString.copyFrom("not-a-real-pkPrefix".getBytes());
+		ByteString mockSig = ByteString.copyFrom("not-a-real-sig".getBytes());
+		SignatureMap signMap = SignatureMap.newBuilder()
+				.addSigPair(SignaturePair.newBuilder()
+						.setPubKeyPrefix(mockPk)
+						.setEd25519(mockSig)).build();
+		SignedTransaction signedTxn = SignedTransaction.newBuilder().setSigMap(signMap).build();
+		com.hederahashgraph.api.proto.java.Transaction txn =
+				com.hederahashgraph.api.proto.java.Transaction.newBuilder()
+						.setSignedTransactionBytes(signedTxn.toByteString())
+						.build();
+		platformTxn = PlatformTxnFactory.from(txn);
 		JKey key = new JEd25519Key(mockPk.toByteArray());
 		SigningOrderResult<SignatureStatus> payerOrderResult = new SigningOrderResult<>(List.of(key));
 		SigningOrderResult<SignatureStatus> otherOrderResult = new SigningOrderResult<>(EMPTY_LIST);

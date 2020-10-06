@@ -24,6 +24,7 @@ import com.google.common.base.MoreObjects;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hedera.services.usage.token.TokenTransactUsage;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.FeeData;
@@ -41,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,35 +61,60 @@ public class HapiTokenTransact extends HapiTxnOp<HapiTokenTransact> {
 	public static class TokenMovement {
 		private final long amount;
 		private final String token;
-		private final String sender;
+		private final Optional<String> sender;
 		private final Optional<String> receiver;
+		private final Optional<List<String>> receivers;
 
 		TokenMovement(
 				String token,
-				String sender,
+				Optional<String> sender,
 				long amount,
-				Optional<String> receiver
+				Optional<String> receiver,
+				Optional<List<String>> receivers
 		) {
 			this.token = token;
 			this.sender = sender;
 			this.amount = amount;
 			this.receiver = receiver;
+			this.receivers = receivers;
 		}
 
 		public List<Map.Entry<String, Long>> generallyInvolved() {
-			Map.Entry<String, Long> senderEntry = new AbstractMap.SimpleEntry<>(sender, -amount);
-			return receiver.isPresent()
-					? List.of(senderEntry, new AbstractMap.SimpleEntry<>(receiver.get(), -amount))
-					: List.of(senderEntry);
+			if (sender.isPresent()) {
+				Map.Entry<String, Long> senderEntry = new AbstractMap.SimpleEntry<>(sender.get(), -amount);
+				return receiver.isPresent()
+						? List.of(senderEntry, new AbstractMap.SimpleEntry<>(receiver.get(), -amount))
+						: (receivers.isPresent() ? involvedInDistribution(senderEntry) : List.of(senderEntry));
+			}
+			return Collections.emptyList();
+		}
+
+		private List<Map.Entry<String, Long>> involvedInDistribution(Map.Entry<String, Long> senderEntry) {
+			List<Map.Entry<String, Long>> all = new ArrayList<>();
+			all.add(senderEntry);
+			var targets = receivers.get();
+			var perTarget = senderEntry.getValue() / targets.size();
+			for (String target : targets) {
+				all.add(new AbstractMap.SimpleEntry<>(target, -perTarget));
+			}
+			return all;
 		}
 
 		public TokenTransferList specializedFor(HapiApiSpec spec) {
 			var scopedTransfers = TokenTransferList.newBuilder();
 			var id = spec.registry().getTokenID(token);
 			scopedTransfers.setToken(id);
-			scopedTransfers.addTransfers(adjustment(sender, -amount, spec));
+			if (sender.isPresent()) {
+				scopedTransfers.addTransfers(adjustment(sender.get(), -amount, spec));
+			}
 			if (receiver.isPresent()) {
 				scopedTransfers.addTransfers(adjustment(receiver.get(), +amount, spec));
+			} else if (receivers.isPresent()) {
+				var targets = receivers.get();
+				var amountPerReceiver = amount / targets.size();
+				for (int i = 0, n = targets.size(); i < n; i++) {
+					scopedTransfers.addTransfers(adjustment(targets.get(i), +amountPerReceiver, spec));
+				}
 			}
 			return scopedTransfers.build();
 		}
@@ -109,11 +136,34 @@ public class HapiTokenTransact extends HapiTxnOp<HapiTokenTransact> {
 			}
 
 			public TokenMovement between(String sender, String receiver) {
-				return new TokenMovement(token, sender, amount, Optional.of(receiver));
+				return new TokenMovement(
+						token,
+						Optional.of(sender),
+						amount,
+						Optional.of(receiver),
+						Optional.empty());
+			}
+
+			public TokenMovement distributing(String sender, String... receivers) {
+				return new TokenMovement(
+						token,
+						Optional.of(sender),
+						amount,
+						Optional.empty(),
+						Optional.of(List.of(receivers)));
 			}
 
 			public TokenMovement from(String magician) {
-				return new TokenMovement(token, magician, amount, Optional.empty());
+				return new TokenMovement(
+						token,
+						Optional.of(magician),
+						amount,
+						Optional.empty(),
+						Optional.empty());
+			}
+
+			public TokenMovement empty() {
+				return new TokenMovement(token, Optional.empty(), amount, Optional.empty(), Optional.empty());
 			}
 		}
 
@@ -202,7 +252,7 @@ public class HapiTokenTransact extends HapiTxnOp<HapiTokenTransact> {
 		MoreObjects.ToStringHelper helper = super.toStringHelper();
 		if (txnSubmitted != null) {
 			try {
-				TransactionBody txn = TransactionBody.parseFrom(txnSubmitted.getBodyBytes());
+				TransactionBody txn = CommonUtils.extractTransactionBody(txnSubmitted);
 				helper.add(
 						"transfers",
 						TxnUtils.readableTokenTransferList(txn.getTokenTransfers()));

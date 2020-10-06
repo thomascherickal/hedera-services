@@ -40,10 +40,16 @@ public class GlobalDynamicProperties {
 	private long defaultContractReceiveThreshold;
 	private long nodeBalanceWarningThreshold;
 	private String pathToBalancesExportDir;
+	private boolean shouldCreatePayerRecords;
 	private boolean shouldCreateThresholdRecords;
 	private boolean shouldExportBalances;
 	private boolean shouldExportTokenBalances;
 	private AccountID fundingAccount;
+	private int maxTransfersLen;
+	private int maxTokenTransfersLen;
+	private int maxMemoUtf8Bytes;
+	private long maxTxnDuration;
+	private long minTxnDuration;
 
 	public GlobalDynamicProperties(
 			HederaNumbers hederaNums,
@@ -56,6 +62,7 @@ public class GlobalDynamicProperties {
 	}
 
 	public void reload() {
+		shouldCreatePayerRecords = properties.getBooleanProperty("ledger.createPayerRecords");
 		shouldCreateThresholdRecords = properties.getBooleanProperty("ledger.createThresholdRecords");
 		maxTokensPerAccount = properties.getIntProperty("tokens.maxPerAccount");
 		maxTokensSymbolLength = properties.getIntProperty("tokens.maxSymbolLength");
@@ -77,6 +84,11 @@ public class GlobalDynamicProperties {
 		nodeBalanceWarningThreshold = properties.getLongProperty("balances.nodeBalanceWarningThreshold");
 		pathToBalancesExportDir = properties.getStringProperty("balances.exportDir.path");
 		shouldExportTokenBalances = properties.getBooleanProperty("balances.exportTokenBalances");
+		maxTransfersLen = properties.getIntProperty("ledger.transfers.maxLen");
+		maxTokenTransfersLen = properties.getIntProperty("ledger.tokenTransfers.maxLen");
+		maxMemoUtf8Bytes = properties.getIntProperty("hedera.transaction.maxMemoUtf8Bytes");
+		maxTxnDuration = properties.getLongProperty("hedera.transaction.maxValidDuration");
+		minTxnDuration = properties.getLongProperty("hedera.transaction.minValidDuration");
 	}
 
 	public long defaultContractSendThreshold() {
@@ -99,7 +111,7 @@ public class GlobalDynamicProperties {
 		return maxAccountNum;
 	}
 
-	public int maxTokensNameLength() {
+	public int maxTokenNameLength() {
 		return maxTokensNameLength;
 	}
 
@@ -123,6 +135,10 @@ public class GlobalDynamicProperties {
 		return ratesIntradayChangeLimitPercent;
         }
 
+	public boolean shouldCreatePayerRecords() {
+		return shouldCreatePayerRecords;
+	}
+
 	public boolean shouldCreateThresholdRecords() {
 		return shouldCreateThresholdRecords;
 	}
@@ -145,5 +161,25 @@ public class GlobalDynamicProperties {
 
 	public boolean shouldExportTokenBalances() {
 		return shouldExportTokenBalances;
+	}
+
+	public int maxTransferListSize() {
+		return maxTransfersLen;
+	}
+
+	public int maxTokenTransferListSize() {
+		return maxTokenTransfersLen;
+	}
+
+	public int maxMemoUtf8Bytes() {
+		return maxMemoUtf8Bytes;
+	}
+
+	public long maxTxnDuration() {
+		return maxTxnDuration;
+	}
+
+	public long minTxnDuration() {
+		return minTxnDuration;
 	}
 }
