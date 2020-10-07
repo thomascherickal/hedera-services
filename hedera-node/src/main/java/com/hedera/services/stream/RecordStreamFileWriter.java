@@ -54,7 +54,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 
 	public static final String OBJECT_STREAM_SIG_EXTENSION = ".socs";
 
-	/** file stream and output stream for dump event bytes to file */
+	/** file stream and output stream for dump records bytes to file */
 	private FileOutputStream stream = null;
 	private SerializableDataOutputStream dos = null;
 
@@ -124,7 +124,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 			long logPeriodMs,
 			Signer signer,
 			boolean startWriteAtCompleteWindow,
-			int eventStreamQueueCapacity,
+			int streamQueueCapacity,
 			HederaNodeStats stats,
 			String addressMemo) {
 		runningHash = initialHash;
@@ -132,7 +132,7 @@ public class RecordStreamFileWriter<T extends Timestamped & SerializableHashable
 		this.logPeriodMs = logPeriodMs;
 		this.signer = signer;
 		this.startWriteAtCompleteWindow = startWriteAtCompleteWindow;
-		forStream = new ArrayBlockingQueue<>(eventStreamQueueCapacity);
+		forStream = new ArrayBlockingQueue<>(streamQueueCapacity);
 		this.stats = stats;
 		writeThread = new Thread(this::work);
 		writeThread.setName("record_stream_" + addressMemo);
