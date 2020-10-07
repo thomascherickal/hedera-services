@@ -3,15 +3,17 @@ package com.hedera.services.stream;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.legacy.services.stats.HederaNodeStats;
+import com.hedera.services.utils.EntityIdUtils;
+import com.hederahashgraph.api.proto.java.AccountID;
 import com.swirlds.common.Platform;
 import com.swirlds.common.crypto.Hash;
 import com.swirlds.common.stream.ObjectStreamCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
 
@@ -60,28 +62,31 @@ public class RunningHashCalculator {
 
 	private HederaNodeStats stats;
 
-	private String addressMemo;
+	private String nodeIdStr;
+
+	static final String RECORD_LOG_PERIOD_PROP_NAME = "hedera.recordStream.logPeriod";
+	static final String RECORD_LOG_DIR_PROP_NAME = "hedera.recordStream.logDir";
 
 	public RunningHashCalculator(final Platform platform, final PropertySource propertySource,
 			final Hash initialHash, final Supplier<RunningHashLeaf> runningHashLeafSupplier,
 			final HederaNodeStats stats,
-			final String addressMemo) {
+			final AccountID nodeAccountID) {
 		this.platform = platform;
-		this.recordLogPeriod = propertySource.getLongProperty("hedera.recordStream.logPeriod");
-		setStreamDir(propertySource.getStringProperty("hedera.recordStream.logDir"));
+		this.recordLogPeriod = propertySource.getLongProperty(RECORD_LOG_PERIOD_PROP_NAME);
 		this.initialHash = initialHash;
 		log.info("RunningHashCalculator initialHash: ", () -> (initialHash));
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
 		this.stats = stats;
-		this.addressMemo = addressMemo;
+		this.nodeIdStr = EntityIdUtils.asLiteralString(nodeAccountID);
+		setStreamDir(propertySource.getStringProperty(RECORD_LOG_DIR_PROP_NAME));
 	}
 
 	/**
-	 * @param streamDir
+	 * @param parentDir parent directory of record stream directory
 	 */
-	public void setStreamDir(final String streamDir) {
+	public void setStreamDir(final String parentDir) {
+		streamDir = Path.of(parentDir, "record" + nodeIdStr).toString();
 		directoryAssurance(streamDir);
-		this.streamDir = streamDir;
 	}
 
 	public String getStreamDir() {
@@ -101,7 +106,7 @@ public class RunningHashCalculator {
 					startWriteAtCompleteWindow,
 					PropertiesLoader.getRecordStreamQueueCapacity(),
 					stats,
-					addressMemo);
+					nodeIdStr);
 		}
 		objectStreamCreator = new ObjectStreamCreator<>(initialHash, consumer);
 	}

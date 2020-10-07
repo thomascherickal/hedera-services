@@ -1209,7 +1209,7 @@ public class ServicesContext {
 		if (runningHashCalculator == null) {
 			runningHashCalculator = new RunningHashCalculator(platform, properties(),
 					state.recordStreamRunningHash().getRunningRecordStreamHash(), this::recordStreamRunningHash,
-					stats(), address().getMemo());
+					stats(), accountId);
 		}
 		return runningHashCalculator;
 	}
@@ -1637,5 +1637,7 @@ public class ServicesContext {
 		return state.tokenAssociations();
 	}
 
-	public RunningHashLeaf recordStreamRunningHash() {return state.recordStreamRunningHash(); }
+	public RunningHashLeaf recordStreamRunningHash() {
+		return state.recordStreamRunningHash();
+	}
 }
