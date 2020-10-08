@@ -346,7 +346,7 @@ public class ServicesContextTest {
 		// expect:
 		assertEquals(SleepingPause.INSTANCE, ctx.pause());
 		assertEquals(PlatformStatus.DISCONNECTED, ctx.platformStatus().get());
-		assertEquals("src/main/resources", ctx.runningHashCalculator().getStreamDir());
+		assertEquals("src/main/resources/record0.0.3", ctx.runningHashCalculator().getStreamDir());
 		assertEquals(ctx.properties(), properties);
 		assertEquals(ctx.propertySources(), propertySources);
 		// and expect TDD:

@@ -1209,7 +1209,7 @@ public class ServicesContext {
 		if (runningHashCalculator == null) {
 			runningHashCalculator = new RunningHashCalculator(platform, properties(),
 					state.recordStreamRunningHash().getRunningRecordStreamHash(), this::recordStreamRunningHash,
-					stats(), accountId);
+					stats(), nodeAccount());
 		}
 		return runningHashCalculator;
 	}
