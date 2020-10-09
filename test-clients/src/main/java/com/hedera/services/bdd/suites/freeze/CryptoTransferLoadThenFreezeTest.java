@@ -27,6 +27,7 @@ public class CryptoTransferLoadThenFreezeTest extends CryptoTransferLoadTest {
 	}
 
 	private HapiApiSpec freezeAfterTransfers() {
+		log.info("Is about to send freeze transaction");
 		return defaultHapiSpec("FreezeAfterTransfers").given().when(
 		).then(
 				freeze().startingIn(60).seconds().andLasting(1).minutes()
