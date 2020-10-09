@@ -10,27 +10,27 @@ import java.util.List;
 import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.freeze;
 
-public class CryptoTransferLoadThenFreezeTest extends CryptoTransferLoadTest {
-	private static final Logger log = LogManager.getLogger(CryptoTransferLoadThenFreezeTest.class);
+public class CryptoTransferThenFreezeTest extends CryptoTransferLoadTest {
+	private static final Logger log = LogManager.getLogger(CryptoTransferThenFreezeTest.class);
 
 	public static void main(String... args) {
 		parseArgs(args);
 
-		CryptoTransferLoadThenFreezeTest suite = new CryptoTransferLoadThenFreezeTest();
+		CryptoTransferThenFreezeTest suite = new CryptoTransferThenFreezeTest();
 		suite.setReportStats(true);
 		suite.runSuiteSync();
 	}
 
 	@Override
 	protected List<HapiApiSpec> getSpecsInSuite() {
-		return List.of(new HapiApiSpec[] { runCryptoTransfers(), freezeAfterTransfers() });
+		return List.of(freezeAfterTransfers(), runCryptoTransfers() );
 	}
 
 	private HapiApiSpec freezeAfterTransfers() {
 		log.info("Is about to send freeze transaction");
 		return defaultHapiSpec("FreezeAfterTransfers").given().when(
 		).then(
-				freeze().startingIn(60).seconds().andLasting(1).minutes()
+				freeze().startingIn(testDurationMinutes.getAsInt()).seconds().andLasting(1).minutes()
 		);
 	}
 
