@@ -23,7 +23,8 @@ public class CryptoTransferThenFreezeTest extends CryptoTransferLoadTest {
 
 	@Override
 	protected List<HapiApiSpec> getSpecsInSuite() {
-		return List.of(freezeAfterTransfers(), runCryptoTransfers() );
+		return List.of(
+				new HapiApiSpec[] { freezeAfterTransfers(), runCryptoTransfers() });
 	}
 
 	private HapiApiSpec freezeAfterTransfers() {
