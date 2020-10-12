@@ -144,7 +144,7 @@ public class CryptoTransferSuite extends HapiApiSuite {
 				);
 	}
 
-	private HapiApiSpec vanillaTransferSucceeds() {
+	protected HapiApiSpec vanillaTransferSucceeds() {
 		long initialBalance = HapiSpecSetup.getDefaultInstance().defaultBalance();
 
 		return defaultHapiSpec("VanillaTransferSucceeds")
