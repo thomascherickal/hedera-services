@@ -22,8 +22,12 @@ package com.hedera.services.bdd.suites.perf;
 
 import com.google.common.base.MoreObjects;
 import com.hedera.services.bdd.spec.HapiPropertySource;
+import com.hedera.services.bdd.spec.HapiSpecSetup;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PerfTestLoadSettings {
+	private static final Logger log = LogManager.getLogger(PerfTestLoadSettings.class);
 	public static final int DEFAULT_TPS = 500;
 	public static final int DEFAULT_TOLERANCE_PERCENTAGE = 5;
 	public static final int DEFAULT_MINS = 5;
