@@ -23,10 +23,6 @@ package com.hedera.services;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.context.ServicesContext;
-import com.hedera.services.state.merkle.MerkleDiskFs;
-import com.hedera.services.state.merkle.MerkleEntityAssociation;
-import com.hedera.services.state.merkle.MerkleNetworkContext;
-import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.properties.PropertySources;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
@@ -35,6 +31,7 @@ import com.hedera.services.sigs.order.HederaSigningOrder;
 import com.hedera.services.sigs.order.SigningOrderResult;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleDiskFs;
 import com.hedera.services.state.merkle.MerkleEntityAssociation;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleNetworkContext;
@@ -42,17 +39,6 @@ import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
-import com.hedera.services.context.properties.PropertySources;
-import com.hedera.services.legacy.core.jproto.JEd25519Key;
-import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.crypto.SignatureStatus;
-import com.hedera.services.sigs.order.HederaSigningOrder;
-import com.hedera.services.sigs.order.SigningOrderResult;
-import com.hedera.services.state.merkle.MerkleBlobMeta;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleOptionalBlob;
-import com.hedera.services.state.submerkle.ExchangeRates;
-import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
 import com.hedera.services.stream.RunningHashLeaf;
@@ -345,15 +331,15 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		// and:
 		var expected = String.format("[SwirldState Hashes]\n" +
-				"  Overall           :: %s\n" +
-				"  Accounts          :: %s\n" +
-				"  Storage           :: %s\n" +
-				"  Topics            :: %s\n" +
-				"  Tokens            :: %s\n" +
-				"  TokenAssociations :: %s\n" +
-				"  DiskFs            :: %s\n" +
-				"  NetworkContext    :: %s\n" +
-				"  AddressBook       :: %s\n" +
+						"  Overall           :: %s\n" +
+						"  Accounts          :: %s\n" +
+						"  Storage           :: %s\n" +
+						"  Topics            :: %s\n" +
+						"  Tokens            :: %s\n" +
+						"  TokenAssociations :: %s\n" +
+						"  DiskFs            :: %s\n" +
+						"  NetworkContext    :: %s\n" +
+						"  AddressBook       :: %s\n" +
 						"  RecordStreamRunningHash 	:: %s\n",
 				overallHash,
 				accountsRootHash,
