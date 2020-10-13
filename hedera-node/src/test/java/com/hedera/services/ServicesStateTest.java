@@ -23,6 +23,7 @@ package com.hedera.services;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.context.ServicesContext;
+import com.hedera.services.state.merkle.MerkleDiskFs;
 import com.hedera.services.state.merkle.MerkleEntityAssociation;
 import com.hedera.services.state.merkle.MerkleNetworkContext;
 import com.hedera.services.context.ServicesContext;
@@ -127,6 +128,8 @@ class ServicesStateTest {
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociationsCopy;
 	FCMap<MerkleEntityId, MerkleToken> tokensCopy;
+	MerkleDiskFs diskFs;
+	MerkleDiskFs diskFsCopy;
 	RunningHashLeaf runningHashLeaf;
 	RunningHashLeaf runningHashLeafCopy;
 	ExchangeRates midnightRates;
@@ -167,11 +170,14 @@ class ServicesStateTest {
 		tokensCopy = mock(FCMap.class);
 		tokenAssociations = mock(FCMap.class);
 		tokenAssociationsCopy = mock(FCMap.class);
+		diskFs = mock(MerkleDiskFs.class);
+
 		storage = mock(FCMap.class);
 		accounts = mock(FCMap.class);
 		topicsCopy = mock(FCMap.class);
 		storageCopy = mock(FCMap.class);
 		accountsCopy = mock(FCMap.class);
+		diskFsCopy = mock(MerkleDiskFs.class);
 		runningHashLeaf = mock(RunningHashLeaf.class);
 		runningHashLeafCopy = mock(RunningHashLeaf.class);
 		given(topics.copy()).willReturn(topicsCopy);
@@ -179,6 +185,7 @@ class ServicesStateTest {
 		given(accounts.copy()).willReturn(accountsCopy);
 		given(tokens.copy()).willReturn(tokensCopy);
 		given(tokenAssociations.copy()).willReturn(tokenAssociationsCopy);
+		given(diskFs.copy()).willReturn(diskFsCopy);
 		given(runningHashLeaf.copy()).willReturn(runningHashLeafCopy);
 
 		seqNo = mock(SequenceNumber.class);
@@ -210,6 +217,7 @@ class ServicesStateTest {
 		// then:
 		assertNotNull(subject.tokens());
 		assertNotNull(subject.tokenAssociations());
+		assertNotNull(subject.diskFs());
 	}
 
 	@Test
@@ -291,6 +299,8 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+
 		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		// when:
 		subject.init(platform, book);
@@ -317,6 +327,8 @@ class ServicesStateTest {
 		Hash storageRootHash = new Hash("fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa".getBytes());
 		Hash accountsRootHash = new Hash("asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf".getBytes());
 		Hash tokenRelsRootHash = new Hash("asdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdh".getBytes());
+		Hash specialFileSystemHash = new Hash("123456781234567812345678123456781234567812345678".getBytes());
+
 		Hash runningHashLeafHash = new Hash("qasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasd".getBytes());
 		// and:
 		Hash overallHash = new Hash("a!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!df".getBytes());
@@ -328,17 +340,20 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.ADDRESS_BOOK, book);
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+
 		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		// and:
 		var expected = String.format("[SwirldState Hashes]\n" +
-						"  Overall           :: %s\n" +
-						"  Accounts          :: %s\n" +
-						"  Storage           :: %s\n" +
-						"  Topics            :: %s\n" +
-						"  Tokens            :: %s\n" +
-						"  TokenAssociations :: %s\n" +
-						"  NetworkContext    :: %s\n" +
-						"  AddressBook       :: %s\n" +
+				"  Overall           :: %s\n" +
+				"  Accounts          :: %s\n" +
+				"  Storage           :: %s\n" +
+				"  Topics            :: %s\n" +
+				"  Tokens            :: %s\n" +
+				"  TokenAssociations :: %s\n" +
+				"  DiskFs            :: %s\n" +
+				"  NetworkContext    :: %s\n" +
+				"  AddressBook       :: %s\n" +
 						"  RecordStreamRunningHash 	:: %s\n",
 				overallHash,
 				accountsRootHash,
@@ -346,6 +361,7 @@ class ServicesStateTest {
 				topicRootHash,
 				tokensRootHash,
 				tokenRelsRootHash,
+				specialFileSystemHash,
 				ctxHash,
 				bookHash,
 				runningHashLeafHash);
@@ -358,6 +374,8 @@ class ServicesStateTest {
 		given(tokenAssociations.getHash()).willReturn(tokenRelsRootHash);
 		given(networkCtx.getHash()).willReturn(ctxHash);
 		given(book.getHash()).willReturn(bookHash);
+		given(diskFs.getHash()).willReturn(specialFileSystemHash);
+
 		given(runningHashLeaf.getRunningRecordStreamHash()).willReturn(runningHashLeafHash);
 		// when:
 		subject.printHashes();
@@ -379,6 +397,7 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
 		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		subject.nodeId = self;
 		subject.ctx = ctx;
@@ -396,6 +415,7 @@ class ServicesStateTest {
 		assertEquals(accountsCopy, copy.accounts());
 		assertSame(tokensCopy, copy.tokens());
 		assertSame(tokenAssociationsCopy, copy.tokenAssociations());
+		assertSame(diskFsCopy, copy.diskFs());
 	}
 
 	@Test

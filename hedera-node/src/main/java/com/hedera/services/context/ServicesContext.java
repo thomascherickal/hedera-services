@@ -32,6 +32,51 @@ import com.hedera.services.context.domain.trackers.IssEventInfo;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.context.properties.NodeLocalProperties;
+import com.hedera.services.fees.AwareHbarCentExchange;
+import com.hedera.services.fees.StandardExemptions;
+import com.hedera.services.fees.calculation.TxnResourceUsageEstimator;
+import com.hedera.services.fees.calculation.contract.queries.GetBytecodeResourceUsage;
+import com.hedera.services.fees.calculation.contract.queries.GetContractInfoResourceUsage;
+import com.hedera.services.fees.calculation.token.queries.GetTokenInfoResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenAssociateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenBurnResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenCreateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenDeleteResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenDissociateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenFreezeResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenGrantKycResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenMintResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenRevokeKycResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenTransactResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenUnfreezeResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenUpdateResourceUsage;
+import com.hedera.services.fees.calculation.token.txns.TokenWipeResourceUsage;
+import com.hedera.services.files.EntityExpiryMapFactory;
+import com.hedera.services.state.merkle.MerkleDiskFs;
+import com.hedera.services.grpc.controllers.TokenController;
+import com.hedera.services.keys.LegacyEd25519KeyReader;
+import com.hedera.services.ledger.accounts.BackingStore;
+import com.hedera.services.ledger.accounts.BackingTokenRels;
+import com.hedera.services.ledger.accounts.PureFCMapBackingAccounts;
+import com.hedera.services.ledger.properties.TokenRelProperty;
+import com.hedera.services.queries.answering.ZeroStakeAnswerFlow;
+import com.hedera.services.queries.contract.ContractAnswers;
+import com.hedera.services.queries.contract.GetBytecodeAnswer;
+import com.hedera.services.queries.contract.GetContractInfoAnswer;
+import com.hedera.services.queries.token.GetTokenInfoAnswer;
+import com.hedera.services.queries.token.TokenAnswers;
+import com.hedera.services.records.TxnIdRecentHistory;
+import com.hedera.services.security.ops.SystemOpPolicies;
+import com.hedera.services.sigs.metadata.DelegatingSigMetadataLookup;
+import com.hedera.services.state.expiry.ExpiringCreations;
+import com.hedera.services.state.expiry.ExpiryManager;
+import com.hedera.services.state.exports.SignedStateBalancesExporter;
+import com.hedera.services.state.initialization.BackedSystemAccountsCreator;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
+import com.hedera.services.state.merkle.MerkleTopic;
+import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.context.properties.PropertySources;
 import com.hedera.services.context.properties.StandardizedPropertySources;
@@ -518,6 +563,7 @@ public class ServicesContext {
 					() -> queryableAccounts().get(),
 					() -> queryableStorage().get(),
 					() -> queryableTokenAssociations().get(),
+					this::diskFs,
 					properties());
 		}
 		return stateViews;
@@ -531,6 +577,7 @@ public class ServicesContext {
 					this::accounts,
 					this::storage,
 					this::tokenAssociations,
+					this::diskFs,
 					properties());
 		}
 		return currentView;
@@ -894,13 +941,18 @@ public class ServicesContext {
 					globalDynamicProperties(),
 					txnCtx()::consensusTime,
 					DataMapFactory.dataMapFrom(blobStore()),
-					MetadataMapFactory.metaMapFrom(blobStore()));
+					MetadataMapFactory.metaMapFrom(blobStore()),
+					this::getCurrentSpecialFileSystem);
 			hfs.register(feeSchedulesManager());
 			hfs.register(exchangeRatesManager());
 			hfs.register(apiPermissionsReloading());
 			hfs.register(applicationPropertiesReloading());
 		}
 		return hfs;
+	}
+
+	MerkleDiskFs getCurrentSpecialFileSystem() {
+		return this.state.diskFs();
 	}
 
 	public SoliditySigsVerifier soliditySigsVerifier() {
@@ -1237,7 +1289,7 @@ public class ServicesContext {
 
 	public FreezeServiceImpl freezeGrpc() {
 		if (freezeGrpc == null) {
-			freezeGrpc = new FreezeServiceImpl(txns(), submissionManager());
+			freezeGrpc = new FreezeServiceImpl(fileNums(), txns(), submissionManager());
 		}
 		return freezeGrpc;
 	}
@@ -1635,6 +1687,10 @@ public class ServicesContext {
 
 	public FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations() {
 		return state.tokenAssociations();
+	}
+
+	public MerkleDiskFs diskFs() {
+		return state.diskFs();
 	}
 
 	public RunningHashLeaf recordStreamRunningHash() {
