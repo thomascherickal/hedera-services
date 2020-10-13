@@ -57,6 +57,7 @@ import com.hedera.services.bdd.suites.file.PermissionSemanticsSpec;
 import com.hedera.services.bdd.suites.file.ProtectedFilesUpdateSuite;
 import com.hedera.services.bdd.suites.file.negative.UpdateFailuresSpec;
 import com.hedera.services.bdd.suites.file.positive.SysDelSysUndelSpec;
+import com.hedera.services.bdd.suites.freeze.CryptoTransferThenFreezeTest;
 import com.hedera.services.bdd.suites.freeze.FreezeIntellijNetwork;
 import com.hedera.services.bdd.suites.freeze.FreezeSuite;
 import com.hedera.services.bdd.suites.freeze.UpdateServerFiles;
@@ -253,6 +254,7 @@ public class SuiteRunner {
 		/* Freeze and update */
 		put("UpdateServerFiles", aof(new UpdateServerFiles()));
 		put("OneOfEveryTxn", aof(new OneOfEveryTransaction()));
+		put("CryptoTransferThenFreezeTest", aof(new CryptoTransferThenFreezeTest()));
 		/* Zero Stake behaviour */
 		put("ZeroStakeTest", aof(new ZeroStakeNodeTest()));
 		/* Query payment validation */
