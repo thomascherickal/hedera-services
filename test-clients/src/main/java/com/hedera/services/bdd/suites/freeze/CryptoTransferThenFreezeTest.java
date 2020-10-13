@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.freeze;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
 
 public class CryptoTransferThenFreezeTest extends CryptoTransferLoadTest {
 	private static final Logger log = LogManager.getLogger(CryptoTransferThenFreezeTest.class);
@@ -30,8 +31,10 @@ public class CryptoTransferThenFreezeTest extends CryptoTransferLoadTest {
 	private HapiApiSpec freezeAfterTransfers() {
 		log.info("Is about to send freeze transaction");
 		return defaultHapiSpec("FreezeAfterTransfers").given().when(
+				freeze().startingIn(15).seconds().andLasting(1).minutes().payingWith(GENESIS)
 		).then(
-				freeze().startingIn(1).minutes().andLasting(1).minutes().payingWith(GENESIS)
+				// sleep for a while to wait for this freeze transaction be handled
+				sleepFor(75_000)
 		);
 	}
 
