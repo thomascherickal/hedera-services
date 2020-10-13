@@ -1,6 +1,7 @@
 package com.hedera.services.bdd.suites.freeze;
 
 import com.hedera.services.bdd.spec.HapiApiSpec;
+import com.hedera.services.bdd.spec.utilops.UtilVerbs;
 import com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +30,11 @@ public class CryptoTransferThenFreezeTest extends CryptoTransferLoadTest {
 	}
 
 	private HapiApiSpec freezeAfterTransfers() {
-		log.info("Is about to send freeze transaction");
 		return defaultHapiSpec("FreezeAfterTransfers").given().when(
-				freeze().startingIn(15).seconds().andLasting(1).minutes().payingWith(GENESIS)
+				freeze().startingIn(1).minutes().andLasting(1).minutes().payingWith(GENESIS)
 		).then(
 				// sleep for a while to wait for this freeze transaction be handled
-				sleepFor(75_000)
+				UtilVerbs.sleepFor(75_000)
 		);
 	}
 

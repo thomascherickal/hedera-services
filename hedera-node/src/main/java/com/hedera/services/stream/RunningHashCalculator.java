@@ -120,7 +120,7 @@ public class RunningHashCalculator {
 	public void calcAndUpdateRunningHash(RecordStreamObject recordStreamObject) {
 		// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
 		Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug(OBJECT_STREAM_DETAIL.getMarker(),
 					"RunningHash after adding recordStreamObject {} : {}",
