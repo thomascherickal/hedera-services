@@ -18,8 +18,6 @@ import java.nio.file.Paths;
 import java.util.function.Supplier;
 
 import static com.swirlds.common.Constants.SEC_TO_MS;
-import static com.swirlds.logging.LogMarker.EVENT_STREAM;
-import static com.swirlds.logging.LogMarker.OBJECT_STREAM_DETAIL;
 
 /**
  * RunningHashCalculator takes a RecordStreamObject, calculates running Hash,
@@ -73,8 +71,7 @@ public class RunningHashCalculator {
 			final AccountID nodeAccountID) {
 		this.platform = platform;
 		this.recordLogPeriod = propertySource.getLongProperty(RECORD_LOG_PERIOD_PROP_NAME);
-		this.initialHash = initialHash;
-		log.info("RunningHashCalculator initialHash: ", () -> (initialHash));
+		setInitialHash(initialHash);
 		this.runningHashLeafSupplier = runningHashLeafSupplier;
 		this.stats = stats;
 		this.nodeIdStr = EntityIdUtils.asLiteralString(nodeAccountID);
@@ -118,27 +115,19 @@ public class RunningHashCalculator {
 	 * and sends this recordStreamObject to a consumer which serializes it to file if recordStreamObjectStreaming is enabled
 	 */
 	public void calcAndUpdateRunningHash(RecordStreamObject recordStreamObject) {
-		// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
-		Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
+		try {
+			// update runningHash, send this object and new runningHash to the consumer if recordStreamObjectStreaming is enabled
+			Hash runningHash = objectStreamCreator.addObject(recordStreamObject);
 
-		if (log.isDebugEnabled()) {
-			log.debug(OBJECT_STREAM_DETAIL.getMarker(),
-					"RunningHash after adding recordStreamObject {} : {}",
-					() -> recordStreamObject.toShortString(), () -> runningHash);
-		}
-
-		// update runningHash in ServicesState
-		runningHashLeafSupplier.get().setHash(runningHash);
-
-		if (inFreeze) {
-			// if freeze period is started, we close the objectStreamCreator,
-			objectStreamCreator.close();
-			if (PropertiesLoader.isEnableRecordStreaming()) {
-				// if freeze period is started, we send a close notification to the consumer
-				// to let the consumer know it should close and sign file after finish writing all workloads
-				// in its working queue.
-				consumer.close();
+			if (log.isDebugEnabled()) {
+				log.debug("RunningHash after adding recordStreamObject {} : {}",
+						() -> recordStreamObject.toShortString(), () -> runningHash);
 			}
+
+			// update runningHash in ServicesState
+			runningHashLeafSupplier.get().setHash(runningHash);
+		} catch (IllegalStateException ex) {
+			log.error("Fail to calcAndUpdateRunningHash: {}", ex.getMessage());
 		}
 	}
 
@@ -155,14 +144,13 @@ public class RunningHashCalculator {
 	}
 
 	/**
-	 * set initialHash and isReconnect after loading from signed state
+	 * set initialHash after loading from signed state
 	 *
 	 * @param initialHash
 	 */
 	void setInitialHash(final Hash initialHash) {
 		this.initialHash = initialHash;
-		log.info(EVENT_STREAM.getMarker(),
-				"RunningHashCalculator::setInitialHash: {}", () -> initialHash);
+		log.info("RunningHashCalculator::setInitialHash: {}", () -> initialHash);
 	}
 
 	/** Creates parent if necessary */
@@ -192,6 +180,16 @@ public class RunningHashCalculator {
 	public void setInFreeze(boolean inFreeze) {
 		this.inFreeze = inFreeze;
 		log.info("RecordStream inFreeze is set to be {} ", inFreeze);
+		if (inFreeze) {
+			// if freeze period is started, we close the objectStreamCreator,
+			objectStreamCreator.close();
+			if (PropertiesLoader.isEnableRecordStreaming()) {
+				// if freeze period is started, we send a close notification to the consumer
+				// to let the consumer know it should close and sign file after finish writing all workloads
+				// in its working queue.
+				consumer.close();
+			}
+		}
 	}
 }
 
