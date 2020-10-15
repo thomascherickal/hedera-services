@@ -42,12 +42,12 @@ public enum AccountProperty implements BeanProperty<MerkleAccount> {
 	IS_DELETED {
 		@Override
 		public BiConsumer<MerkleAccount, Object> setter() {
-			return (a, f) -> a.setAccountDeleted((boolean)f);
+			return (a, f) -> a.setDeleted((boolean) f);
 		}
 
 		@Override
 		public Function<MerkleAccount, Object> getter() {
-			return MerkleAccount::isAccountDeleted;
+			return MerkleAccount::isDeleted;
 		}
 	},
 	IS_RECEIVER_SIG_REQUIRED {

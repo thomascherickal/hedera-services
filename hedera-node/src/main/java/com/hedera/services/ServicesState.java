@@ -27,6 +27,7 @@ import com.hedera.services.context.properties.StandardizedPropertySources;
 import com.hedera.services.legacy.stream.LegacyRecordStream;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.exceptions.ContextNotFoundException;
 import com.hedera.services.state.merkle.MerkleDiskFs;
 import com.hedera.services.state.merkle.MerkleEntityAssociation;
 import com.hedera.services.state.merkle.MerkleEntityId;
@@ -197,7 +198,11 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		var bootstrapProps = new BootstrapProperties();
 		var diskFsBaseDirPath = bootstrapProps.getStringProperty("files.diskFsBaseDir.path");
 		var properties = new StandardizedPropertySources(bootstrapProps, loc -> new File(loc).exists());
-		ctx = new ServicesContext(nodeId, platform, this, properties);
+		try {
+			ctx = CONTEXTS.lookup(nodeId.getId());
+		} catch (ContextNotFoundException ignoreToInstantiateNewContext) {
+			ctx = new ServicesContext(nodeId, platform, this, properties);
+		}
 		if (getNumberOfChildren() < ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN) {
 			log.info("Init called on Services node {} WITHOUT Merkle saved state", nodeId);
 			long seqStart = bootstrapProps.getLongProperty("hedera.numReservedSystemEntities") + 1;
@@ -239,11 +244,8 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 			printHashes();
 		}
 
+		ctx.update(this);
 		CONTEXTS.store(ctx);
-
-		NotificationFactory.getEngine().register(ReconnectCompleteListener.class, (notification) -> {
-			ctx.update(this);
-		});
 
 		log.info("  --> Context initialized accordingly on Services node {}", nodeId);
 	}

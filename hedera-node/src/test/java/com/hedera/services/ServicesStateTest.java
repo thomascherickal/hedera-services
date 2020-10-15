@@ -205,11 +205,6 @@ class ServicesStateTest {
 	@Test
 	void ensureRunningHashFromRecordStreamIsUsedWhenReadingFromSavedState() {
 		// given:
-//		given(subject.getNumberOfChildren())
-////				.willReturn(ServicesState.ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN - 1);
-//		given(LegacyRecordStream.readPrevFileHash(any()))
-//				.willReturn("qasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasd".getBytes());
-//		ServicesState sub = spy(ServicesState.class);
 		given(ctx.getRecordStreamDirectory()).willReturn("src/test/resources/recordstreams/record0.0.3/");
 
 		// when:
@@ -287,6 +282,18 @@ class ServicesStateTest {
 	}
 
 	@Test
+	public void lookupForContext() {
+		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
+		given(ctx.getRecordStreamDirectory()).willReturn("src/test/resources/recordstreams/record0.0.3/");
+		CONTEXTS.store(ctx);
+
+		subject.init(platform, book);
+		InOrder inOrder = inOrder(ctx);
+		inOrder.verify(ctx).nodeAccount();
+		inOrder.verify(ctx).update(subject);
+	}
+
+	@Test
 	public void catchesProtobufParseException() {
 		// setup:
 		var platformTxn = mock(Transaction.class);
@@ -302,6 +309,8 @@ class ServicesStateTest {
 		// setup:
 		var mockLog = mock(Logger.class);
 		ServicesMain.log = mockLog;
+		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
+		CONTEXTS.store(ctx);
 
 		// and:
 		subject.setChild(ServicesState.ChildIndices.TOPICS, topics);
@@ -318,9 +327,23 @@ class ServicesStateTest {
 		subject.init(platform, book);
 
 		// then:
-		verify(mockDigest).accept(subject);
-		// and:
-		verify(mockLog).info(argThat((String s) -> s.startsWith("[SwirldState Hashes]")));
+		InOrder inOrder = inOrder(diskFs, ctx, mockDigest, accounts, storage, topics,
+				tokens, tokenAssociations, networkCtx, book, mockLog);
+		inOrder.verify(diskFs).setFsBaseDir(any());
+		inOrder.verify(ctx).nodeAccount();
+		inOrder.verify(diskFs).setFsNodeScopedDir(any());
+		inOrder.verify(diskFs).checkHashesAgainstDiskContents();
+		inOrder.verify(mockDigest).accept(subject);
+		inOrder.verify(accounts).getHash();
+		inOrder.verify(storage).getHash();
+		inOrder.verify(topics).getHash();
+		inOrder.verify(tokens).getHash();
+		inOrder.verify(tokenAssociations).getHash();
+		inOrder.verify(diskFs).getHash();
+		inOrder.verify(networkCtx).getHash();
+		inOrder.verify(book).getHash();
+		inOrder.verify(mockLog).info(argThat((String s) -> s.startsWith("[SwirldState Hashes]")));
+		inOrder.verify(ctx).update(subject);
 
 		// cleanup:
 		ServicesMain.log = LogManager.getLogger(ServicesMain.class);

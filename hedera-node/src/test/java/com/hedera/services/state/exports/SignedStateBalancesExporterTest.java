@@ -48,8 +48,10 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -131,7 +133,7 @@ class SignedStateBalancesExporterTest {
 				.balance(secondNonNodeAccountBalance)
 				.tokens(theToken, theDeletedToken)
 				.get();
-		deletedAccount = MerkleAccountFactory.newAccount().accountDeleted(true).get();
+		deletedAccount = MerkleAccountFactory.newAccount().deleted(true).get();
 
 		accounts.put(fromAccountId(thisNode), thisNodeAccount);
 		accounts.put(fromAccountId(anotherNode), anotherNodeAccount);
@@ -140,9 +142,9 @@ class SignedStateBalancesExporterTest {
 		accounts.put(fromAccountId(deleted), deletedAccount);
 
 		token = mock(MerkleToken.class);
-		given(token.isTokenDeleted()).willReturn(false);
+		given(token.isDeleted()).willReturn(false);
 		deletedToken = mock(MerkleToken.class);
-		given(deletedToken.isTokenDeleted()).willReturn(true);
+		given(deletedToken.isDeleted()).willReturn(true);
 		tokens.put(fromTokenId(theToken), token);
 		tokens.put(fromTokenId(theDeletedToken), deletedToken);
 
@@ -400,7 +402,10 @@ class SignedStateBalancesExporterTest {
 	}
 
 	@AfterAll
-	public static void removeDir() {
-		new File("src/test/resources/balances0.0.3/").delete();
+	public static void tearDown() throws IOException {
+		Files.walk(Path.of("src/test/resources/balance0.0.3"))
+				.sorted(Comparator.reverseOrder())
+				.map(Path::toFile)
+				.forEach(File::delete);
 	}
 }
