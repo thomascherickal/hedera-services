@@ -125,7 +125,7 @@ public class RunningHashCalculator {
 			}
 
 			// update runningHash in ServicesState
-			runningHashLeafSupplier.get().setHash(runningHash);
+			runningHashLeafSupplier.get().setRunningRecordStreamHash(runningHash);
 		} catch (IllegalStateException ex) {
 			log.error("Fail to calcAndUpdateRunningHash: {}", ex.getMessage());
 		}

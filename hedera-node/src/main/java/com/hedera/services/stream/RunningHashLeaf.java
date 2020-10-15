@@ -98,4 +98,8 @@ public class RunningHashLeaf extends AbstractMerkleLeaf {
 	public Hash getRunningRecordStreamHash() {
 		return runningRecordStreamHash;
 	}
+
+	void setRunningRecordStreamHash(final Hash runningRecordStreamHash) {
+		this.runningRecordStreamHash = runningRecordStreamHash;
+	}
 }
