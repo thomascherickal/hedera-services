@@ -1,7 +1,7 @@
 # Key files
 *.pem
 !hedera-node/data/onboard/devGenesisKeypair.pem
-
+!hedera-node/data/keys/
 # VIM
 *.sw*
 
