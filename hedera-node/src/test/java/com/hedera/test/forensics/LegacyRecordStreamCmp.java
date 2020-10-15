@@ -79,7 +79,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Disabled
 @RunWith(JUnitPlatform.class)
-public class RecordStreamCmp {
+public class LegacyRecordStreamCmp {
 	static ObjectMapper om = new ObjectMapper();
 
 	static final String firstIssRoundAccounts = "/Users/tinkerm/Dev/iss/stable/node00-logs/" +

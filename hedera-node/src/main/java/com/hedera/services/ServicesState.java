@@ -24,6 +24,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.properties.BootstrapProperties;
 import com.hedera.services.context.properties.StandardizedPropertySources;
+import com.hedera.services.legacy.stream.LegacyRecordStream;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
 import com.hedera.services.state.merkle.MerkleDiskFs;
@@ -36,7 +37,9 @@ import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.stream.RunningHashCalculator;
 import com.hedera.services.stream.RunningHashLeaf;
+import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.swirlds.common.Address;
@@ -47,6 +50,7 @@ import com.swirlds.common.SwirldState;
 import com.swirlds.common.Transaction;
 import com.swirlds.common.crypto.CryptoFactory;
 import com.swirlds.common.crypto.DigestType;
+import com.swirlds.common.crypto.Hash;
 import com.swirlds.common.crypto.ImmutableHash;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.merkle.MerkleInternal;
@@ -61,8 +65,10 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -70,6 +76,7 @@ import static com.hedera.services.context.SingletonContextsManager.CONTEXTS;
 import static com.hedera.services.sigs.HederaToPlatformSigOps.expandIn;
 import static com.hedera.services.sigs.sourcing.DefaultSigBytesProvider.DEFAULT_SIG_BYTES;
 import static com.hedera.services.state.merkle.MerkleNetworkContext.UNKNOWN_CONSENSUS_TIME;
+import static com.hedera.services.stream.RunningHashCalculator.RECORD_LOG_DIR_PROP_NAME;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 import static com.hedera.services.utils.EntityIdUtils.asLiteralString;
 
@@ -208,8 +215,14 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 					new FCMap<>(MerkleEntityAssociation.LEGACY_PROVIDER, MerkleTokenRelStatus.LEGACY_PROVIDER));
 			setChild(ChildIndices.DISK_FS,
 					new MerkleDiskFs(diskFsBaseDirPath, asLiteralString(ctx.nodeAccount())));
+
+			// get the running hash from the last record stream file and set it as currentRunningHash
+			byte[] runningHash = LegacyRecordStream.readPrevFileHash(ctx.getRecordStreamDirectory());
+			if( runningHash == null ) {
+				runningHash = new byte[DigestType.SHA_384.digestLength()];
+			}
 			setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
-					new RunningHashLeaf(new ImmutableHash(new byte[DigestType.SHA_384.digestLength()])));
+					new RunningHashLeaf(new ImmutableHash(runningHash)));
 		} else {
 			log.info("Init called on Services node {} WITH Merkle saved state", nodeId);
 

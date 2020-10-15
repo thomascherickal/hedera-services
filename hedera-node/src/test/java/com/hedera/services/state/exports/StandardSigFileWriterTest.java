@@ -32,8 +32,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static com.hedera.services.legacy.stream.RecordStream.TYPE_FILE_HASH;
-import static com.hedera.services.legacy.stream.RecordStream.TYPE_SIGNATURE;
+import static com.hedera.services.legacy.stream.LegacyRecordStream.TYPE_FILE_HASH;
+import static com.hedera.services.legacy.stream.LegacyRecordStream.TYPE_SIGNATURE;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

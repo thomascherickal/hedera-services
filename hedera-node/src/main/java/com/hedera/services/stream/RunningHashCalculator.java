@@ -63,7 +63,7 @@ public class RunningHashCalculator {
 	private String nodeIdStr;
 
 	static final String RECORD_LOG_PERIOD_PROP_NAME = "hedera.recordStream.logPeriod";
-	static final String RECORD_LOG_DIR_PROP_NAME = "hedera.recordStream.logDir";
+	public static final String RECORD_LOG_DIR_PROP_NAME = "hedera.recordStream.logDir";
 
 	public RunningHashCalculator(final Platform platform, final PropertySource propertySource,
 			final Hash initialHash, final Supplier<RunningHashLeaf> runningHashLeafSupplier,
@@ -121,7 +121,7 @@ public class RunningHashCalculator {
 
 			if (log.isDebugEnabled()) {
 				log.debug("RunningHash after adding recordStreamObject {} : {}",
-						() -> recordStreamObject.toShortString(), () -> runningHash);
+						recordStreamObject::toShortString, () -> runningHash);
 			}
 
 			// update runningHash in ServicesState
@@ -154,7 +154,7 @@ public class RunningHashCalculator {
 	}
 
 	/** Creates parent if necessary */
-	private static void directoryAssurance(String directory) {
+	public static void directoryAssurance(String directory) {
 		try {
 			Files.createDirectories(Paths.get(directory));
 		} catch (IOException e) {

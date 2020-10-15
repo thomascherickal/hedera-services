@@ -63,10 +63,10 @@ import java.util.concurrent.TimeUnit;
  * In the beginning and end of each .soc file, there are initialRunningHash and lastRunningHash
  */
 @Deprecated
-public class RecordStream implements Runnable {
+public class LegacyRecordStream implements Runnable {
 
 	/** use this for all logging, as controlled by the optional data/log4j2.xml file */
-	private static final Logger log = LogManager.getLogger(RecordStream.class);
+	private static final Logger log = LogManager.getLogger(LegacyRecordStream.class);
 
 	static final String EXCEPTION = "EXCEPTION";
 	static final int STREAM_DELAY = 500;
@@ -97,7 +97,7 @@ public class RecordStream implements Runnable {
 
 	private final PropertySource properties;
 
-	public RecordStream(
+	public LegacyRecordStream(
 			Platform platform,
 			HederaNodeStats stats,
 			AccountID nodeAccountID,
@@ -475,7 +475,7 @@ public class RecordStream implements Runnable {
 	 * @return
 	 */
 
-	private byte[] readPrevFileHash(String directory) {
+	public static byte[] readPrevFileHash(String directory) {
 		File dir = new File(directory);
 		File[] files = dir.listFiles();
 		Optional<File> lastSigFileOptional = Arrays.stream(files).filter(file -> isRecordSigFile(file))

@@ -288,6 +288,7 @@ import com.hedera.services.txns.token.TokenWipeTransitionLogic;
 import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.txns.validation.ContextOptionValidator;
 import com.hedera.services.txns.validation.OptionValidator;
+import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.Pause;
 import com.hedera.services.utils.SleepingPause;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -310,6 +311,7 @@ import org.ethereum.datasource.StoragePersistence;
 import org.ethereum.db.ServicesRepositoryRoot;
 
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -340,6 +342,7 @@ import static com.hedera.services.sigs.metadata.DelegatingSigMetadataLookup.defa
 import static com.hedera.services.sigs.metadata.SigMetadataLookup.REF_LOOKUP_FACTORY;
 import static com.hedera.services.sigs.utils.PrecheckUtils.queryPaymentTestFor;
 import static com.hedera.services.state.expiry.NoopExpiringCreations.NOOP_EXPIRING_CREATIONS;
+import static com.hedera.services.stream.RunningHashCalculator.RECORD_LOG_DIR_PROP_NAME;
 import static com.hedera.services.throttling.bucket.BucketConfig.bucketsIn;
 import static com.hedera.services.throttling.bucket.BucketConfig.namedIn;
 import static com.hedera.services.tokens.ExceptionalTokenStore.NOOP_TOKEN_STORE;
@@ -953,6 +956,15 @@ public class ServicesContext {
 
 	MerkleDiskFs getCurrentSpecialFileSystem() {
 		return this.state.diskFs();
+	}
+
+
+	public String getRecordStreamDirectory() {
+		String parentDirectory = properties().getStringProperty(RECORD_LOG_DIR_PROP_NAME);
+		String streamDirectory = Path.of(parentDirectory, "record" +
+				EntityIdUtils.asLiteralString(nodeAccount())).toString();
+		RunningHashCalculator.directoryAssurance(streamDirectory);
+		return streamDirectory;
 	}
 
 	public SoliditySigsVerifier soliditySigsVerifier() {

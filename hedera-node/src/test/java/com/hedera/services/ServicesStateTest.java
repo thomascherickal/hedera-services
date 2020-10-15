@@ -27,6 +27,7 @@ import com.hedera.services.context.properties.PropertySources;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.crypto.SignatureStatus;
+import com.hedera.services.legacy.stream.LegacyRecordStream;
 import com.hedera.services.sigs.order.HederaSigningOrder;
 import com.hedera.services.sigs.order.SigningOrderResult;
 import com.hedera.services.state.merkle.MerkleAccount;
@@ -71,13 +72,17 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 import static com.hedera.services.context.SingletonContextsManager.CONTEXTS;
 import static java.util.Collections.EMPTY_LIST;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -91,6 +96,8 @@ import static org.mockito.BDDMockito.inOrder;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnitPlatform.class)
 class ServicesStateTest {
@@ -193,6 +200,25 @@ class ServicesStateTest {
 		systemExits = mock(SystemExits.class);
 
 		subject = new ServicesState();
+	}
+
+	@Test
+	void ensureRunningHashFromRecordStreamIsUsedWhenReadingFromSavedState() {
+		// given:
+//		given(subject.getNumberOfChildren())
+////				.willReturn(ServicesState.ChildIndices.NUM_RECORD_STREAM_RECONNECT_CHILDREN - 1);
+//		given(LegacyRecordStream.readPrevFileHash(any()))
+//				.willReturn("qasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasd".getBytes());
+//		ServicesState sub = spy(ServicesState.class);
+		given(ctx.getRecordStreamDirectory()).willReturn("src/test/resources/recordstreams/record0.0.3/");
+
+		// when:
+		subject.init(platform, book);
+
+		// then:
+		assertArrayEquals(LegacyRecordStream.readPrevFileHash("src/test/resources/recordstreams/record0.0.3/"),
+				subject.recordStreamRunningHash().getRunningRecordStreamHash().getValue());
+
 	}
 
 	@Test
