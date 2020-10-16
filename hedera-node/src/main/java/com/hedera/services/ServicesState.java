@@ -96,6 +96,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 	static Supplier<AddressBook> legacyTmpBookSupplier = AddressBook::new;
 
 	NodeId nodeId = null;
+	boolean skipDiskFsHashCheck = false;
 
 	/* Order of Merkle node children */
 	static class ChildIndices {
@@ -173,6 +174,7 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 		if (diskFs() == null) {
 			setChild(ChildIndices.DISK_FS, new MerkleDiskFs());
 			log.info("Created disk file system after <=0.9.0 state restoration");
+			skipDiskFsHashCheck = true;
 		}
 		if (recordStreamRunningHash() == null) {
 			setChild(ChildIndices.RECORD_STREAM_RUNNING_HASH,
@@ -238,7 +240,9 @@ public class ServicesState extends AbstractMerkleInternal implements SwirldState
 			var restoredDiskFs = diskFs();
 			restoredDiskFs.setFsBaseDir(diskFsBaseDirPath);
 			restoredDiskFs.setFsNodeScopedDir(asLiteralString(ctx.nodeAccount()));
-			restoredDiskFs.checkHashesAgainstDiskContents();
+			if (!skipDiskFsHashCheck) {
+				restoredDiskFs.checkHashesAgainstDiskContents();
+			}
 
 			merkleDigest.accept(this);
 			printHashes();
