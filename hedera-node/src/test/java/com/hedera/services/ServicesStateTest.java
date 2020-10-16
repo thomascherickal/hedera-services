@@ -206,6 +206,8 @@ class ServicesStateTest {
 	void ensureRunningHashFromRecordStreamIsUsedWhenReadingFromSavedState() {
 		// given:
 		given(ctx.getRecordStreamDirectory()).willReturn("src/test/resources/recordstreams/record0.0.3/");
+		given(ctx.nodeAccount()).willReturn(AccountID.newBuilder().setAccountNum(3).build());
+		CONTEXTS.store(ctx);
 
 		// when:
 		subject.init(platform, book);
