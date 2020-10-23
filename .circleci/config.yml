@@ -925,7 +925,7 @@ workflows:
   weekly-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "30 16 * * *"
+          cron: "00 23 * * *"
           filters:
             branches:
               only:
@@ -1725,7 +1725,7 @@ jobs:
           no_output_timeout: 60m
           command: |
             cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/weekly/15N_15C/AWS-Services-Weekly-Perf-StartFromState-15N-15C.json /repo
+            ./regression_services_circleci.sh configs/services/weekly/15N_15C/AWS-Services-Weekly-CryptoTransfer-Perf-StartFromState-15N-15C.json /repo
 
       - run:
           name: Sync results of software update regression to AWS
