@@ -925,13 +925,11 @@ workflows:
   weekly-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-#  Make it run daily before converting to weekly
-#          cron: "0 1 * * 0,6"
-          cron: "0 10,22 * * *"
+          cron: "30 16 * * *"
           filters:
             branches:
               only:
-                - master
+                - test-15N-4hr-regression
     jobs:
       - build-platform-and-services
       - weekly-run-start-from-saved-state-regression:
@@ -1302,6 +1300,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
+                - test-15N-4hr-regression  
           workflow-name: "Continuous integration"
       - start-singlejob-testnet:
           context: Slack
