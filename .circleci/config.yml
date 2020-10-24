@@ -929,7 +929,7 @@ workflows:
           filters:
             branches:
               only:
-                - test-15N-4hr-regression
+                - X-test-15N-4hr-regression
     jobs:
       - build-platform-and-services
       - weekly-run-start-from-saved-state-regression:
