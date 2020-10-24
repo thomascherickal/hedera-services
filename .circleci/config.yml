@@ -925,7 +925,7 @@ workflows:
   weekly-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "00 23 * * *"
+          cron: "40 0 * * *"
           filters:
             branches:
               only:
