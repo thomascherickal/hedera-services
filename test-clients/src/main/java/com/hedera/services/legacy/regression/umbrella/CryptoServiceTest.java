@@ -103,7 +103,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CryptoServiceTest extends TestHelperComplex {
 
   private static final Logger log = LogManager.getLogger(CryptoServiceTest.class);
-  protected static String testConfigFilePath = "config/umbrellaTest.properties";
+  protected static String testConfigFilePath = "src/main/resource/umbrellaTest.properties";
   protected static String[] fileTypes = {"txt", "jpg", "pdf", "bin"};
   protected static int[] fileSizesK = {1, 2, 3, 4, 5};
   public static double MAX_REQUESTS_IN_K = 1;
@@ -695,7 +695,7 @@ public class CryptoServiceTest extends TestHelperComplex {
   }
 
   protected void createStubs() throws URISyntaxException, IOException {
-    channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
+    channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
     stub = FileServiceGrpc.newBlockingStub(channel);
     cstub = CryptoServiceGrpc.newBlockingStub(channel);
   }
@@ -950,7 +950,7 @@ public class CryptoServiceTest extends TestHelperComplex {
       }
     }
 
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, p).usePlaintext(true).build();
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, p).usePlaintext().build();
     rv = FileServiceGrpc.newBlockingStub(channel);
     nodeID2Stub.put(nodeID, rv);
 
@@ -1779,7 +1779,7 @@ public class CryptoServiceTest extends TestHelperComplex {
    * @param createdChannels to store generated channel
    */
   public static FileServiceBlockingStub createFileServiceStub(ManagedChannel[] createdChannels) {
-    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true)
+    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext()
         .build();
     FileServiceBlockingStub rv = FileServiceGrpc.newBlockingStub(channel);
     createdChannels[0] = channel;

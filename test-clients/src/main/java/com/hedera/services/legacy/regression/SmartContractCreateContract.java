@@ -53,6 +53,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -71,12 +72,12 @@ import org.junit.Assert;
  *
  * @author Peter
  */
-public class SmartContractCreateContract {
+public class SmartContractCreateContract extends LegacySmartContractTest {
   private static long DAY_SEC = 24 * 60 * 60; // secs in a day
   private final Logger log = LogManager.getLogger(SmartContractCreateContract.class);
 
   private static final int MAX_RECEIPT_RETRIES = 60;
-  public static final String CREATE_TRIVIAL_BIN = "/testfiles/CreateTrivial.bin";
+  public static final String CREATE_TRIVIAL_BIN = "src/main/resource/CreateTrivial.bin";
   private static final int CREATED_TRIVIAL_CONTRACT_RETURNS = 7;
   private static final String SC_CT_CREATE_ABI = "{\"constant\":false,\"inputs\":[],\"name\":\"create\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}";
   private static final String SC_CT_GETINDIRECT_ABI = "{\"constant\":true,\"inputs\":[],\"name\":\"getIndirect\",\"outputs\":[{\"name\":\"value\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}";
@@ -95,6 +96,19 @@ public class SmartContractCreateContract {
   private static long contractDuration;
 
   public static void main(String args[]) throws Exception {
+
+    int numberOfReps = 1;
+    if ((args.length) > 0) {
+      numberOfReps = Integer.parseInt(args[0]);
+    }
+    for (int i = 0; i < numberOfReps; i++) {
+      SmartContractCreateContract scSs = new SmartContractCreateContract();
+      scSs.demo(host, nodeAccount);
+    }
+
+  }
+
+  private void setUp() {
     Properties properties = TestHelper.getApplicationProperties();
     contractDuration = Long.parseLong(properties.getProperty("CONTRACT_DURATION"));
     host = properties.getProperty("host");
@@ -103,18 +117,8 @@ public class SmartContractCreateContract {
     node_shard_number = Long.parseLong(properties.getProperty("NODE_REALM_NUMBER"));
     node_realm_number = Long.parseLong(properties.getProperty("NODE_SHARD_NUMBER"));
     nodeAccount = AccountID.newBuilder().setAccountNum(node_account_number)
-        .setRealmNum(node_shard_number).setShardNum(node_realm_number).build();
+            .setRealmNum(node_shard_number).setShardNum(node_realm_number).build();
     localCallGas = Long.parseLong(properties.getProperty("LOCAL_CALL_GAS"));
-
-    int numberOfReps = 1;
-    if ((args.length) > 0) {
-      numberOfReps = Integer.parseInt(args[0]);
-    }
-    for (int i = 0; i < numberOfReps; i++) {
-      SmartContractCreateContract scSs = new SmartContractCreateContract();
-      scSs.demo();
-    }
-
   }
 
   private void loadGenesisAndNodeAcccounts() throws Exception {
@@ -144,7 +148,7 @@ public class SmartContractCreateContract {
   private AccountID createAccount(KeyPair keyPair, AccountID payerAccount, long initialBalance)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     Transaction transaction = TestHelper
@@ -170,7 +174,7 @@ public class SmartContractCreateContract {
         .setTransactionGetReceipt(RequestBuilder.getTransactionGetReceiptQuery(
             transactionId, ResponseType.ANSWER_ONLY)).build();
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     Response transactionReceipts = stub.getTransactionReceipts(query);
@@ -191,7 +195,7 @@ public class SmartContractCreateContract {
       long durationInSeconds) throws Exception {
     ContractID createdContract = null;
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
 
     Duration contractAutoRenew = Duration.newBuilder().setSeconds(durationInSeconds).build();
@@ -301,7 +305,7 @@ public class SmartContractCreateContract {
       byte[] data, ResponseCodeEnum expectedStatus)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
         .newBlockingStub(channel);
@@ -347,7 +351,7 @@ public class SmartContractCreateContract {
     AccountID createdAccount = null;
     int port = 50211;
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     long fee = FeeClient.getCostForGettingTxRecord();
@@ -376,7 +380,7 @@ public class SmartContractCreateContract {
   private byte[] callContractLocal(AccountID payerAccount, ContractID contractToCall, byte[] data)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
         .newBlockingStub(channel);
@@ -443,14 +447,18 @@ public class SmartContractCreateContract {
     return txRec;
   }
 
-  public void demo() throws Exception {
+  public void demo(String grpcHost, AccountID nodeAccountID) throws Exception {
+    log.info("-------------- STARTING SmartContractCreateContract Regression");
+    setUp();
+    host = grpcHost;
+    nodeAccount = nodeAccountID;
     loadGenesisAndNodeAcccounts();
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     TestHelper.initializeFeeClient(channel, genesisAccount, accountKeyPairs.get(genesisAccount),
-        nodeAccount);
+            SmartContractCreateContract.nodeAccount);
     channel.shutdown();
 
     KeyPair crAccountKeyPair = new KeyPairGenerator().generateKeyPair();
@@ -460,7 +468,8 @@ public class SmartContractCreateContract {
     log.info("Account created successfully");
 
     FileID simpleStorageFileId = LargeFileUploadIT
-        .uploadFile(crAccount, CREATE_TRIVIAL_BIN, crAccountKeyPair);
+        .uploadFile(crAccount, CREATE_TRIVIAL_BIN, new ArrayList<>(
+                List.of(crAccountKeyPair.getPrivate())), host, nodeAccount);
     Assert.assertNotNull(simpleStorageFileId);
     Assert.assertNotEquals(0, simpleStorageFileId.getFileNum());
     log.info("Smart Contract file uploaded successfully");
@@ -491,12 +500,15 @@ public class SmartContractCreateContract {
 
     // Marker message for regression report
     log.info("Regression summary: This run is successful.");
+    // Marker message for regression report
+    log.info("-------------- RESULTS OF SmartContractCreateContract ----------------------");
+    log.info("SmartContractCreateContract Regression summary: This run is successful.");
   }
 
   private ContractInfo getContractInfo(AccountID payerAccount,
       ContractID contractId) throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
 
     SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc

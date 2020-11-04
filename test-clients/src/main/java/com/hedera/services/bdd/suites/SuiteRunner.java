@@ -34,9 +34,6 @@ import com.hedera.services.bdd.suites.contract.ChildStorageSpec;
 import com.hedera.services.bdd.suites.contract.ContractCallLocalSuite;
 import com.hedera.services.bdd.suites.contract.ContractCallSuite;
 import com.hedera.services.bdd.suites.contract.ContractCreateSuite;
-import com.hedera.services.bdd.suites.contract.ContractDeleteSuite;
-import com.hedera.services.bdd.suites.contract.ContractGetBytecodeSuite;
-import com.hedera.services.bdd.suites.contract.ContractUpdateSuite;
 import com.hedera.services.bdd.suites.contract.DeprecatedContractKeySuite;
 import com.hedera.services.bdd.suites.contract.NewOpInConstructorSuite;
 import com.hedera.services.bdd.suites.contract.OCTokenSpec;
@@ -62,6 +59,7 @@ import com.hedera.services.bdd.suites.file.ProtectedFilesUpdateSuite;
 import com.hedera.services.bdd.suites.file.negative.UpdateFailuresSpec;
 import com.hedera.services.bdd.suites.file.positive.SysDelSysUndelSpec;
 import com.hedera.services.bdd.suites.freeze.FreezeSuite;
+import com.hedera.services.bdd.suites.freeze.SimpleFreezeOnly;
 import com.hedera.services.bdd.suites.freeze.UpdateServerFiles;
 import com.hedera.services.bdd.suites.issues.Issue2144Spec;
 import com.hedera.services.bdd.suites.issues.IssueXXXXSpec;
@@ -80,8 +78,8 @@ import com.hedera.services.bdd.suites.perf.MixedTransferAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.MixedTransferCallAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest;
 import com.hedera.services.bdd.suites.perf.TokenTransfersLoadProvider;
+import com.hedera.services.bdd.suites.reconnect.CheckUnavailableNode;
 import com.hedera.services.bdd.suites.reconnect.GetAccountBalanceAfterReconnect;
-import com.hedera.services.bdd.suites.records.CharacterizationSuite;
 import com.hedera.services.bdd.suites.records.ContractRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.CryptoRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.DuplicateManagementTest;
@@ -97,11 +95,13 @@ import com.hedera.services.bdd.suites.token.TokenDeleteSpecs;
 import com.hedera.services.bdd.suites.token.TokenManagementSpecs;
 import com.hedera.services.bdd.suites.token.TokenTransactSpecs;
 import com.hedera.services.bdd.suites.token.TokenUpdateSpecs;
+import com.hedera.services.legacy.regression.SmartContractAggregatedTests;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -157,12 +157,12 @@ public class SuiteRunner {
 //				new CryptoTransferSuite(),
 //				new CryptoRecordsSanityCheckSuite(),
 //				new Issue2144Spec()));
-//		put("CiTokenJob", aof(
-//				new TokenAssociationSpecs(),
-//				new TokenCreateSpecs(),
-//				new TokenDeleteSpecs(),
-//				new TokenManagementSpecs(),
-//				new TokenTransactSpecs()));
+		put("CiTokenJob", aof(
+				new TokenAssociationSpecs(),
+				new TokenCreateSpecs(),
+				new TokenDeleteSpecs(),
+				new TokenManagementSpecs(),
+				new TokenTransactSpecs()));
 //		put("CiFileJob", aof(
 //				new FileRecordsSanityCheckSuite(),
 //				new VersionInfoSpec(),
@@ -199,6 +199,7 @@ public class SuiteRunner {
 		put("MixedTransferCallAndSubmitLoadTest", aof(new MixedTransferCallAndSubmitLoadTest()));
 		put("HCSChunkingRealisticPerfSuite", aof(new HCSChunkingRealisticPerfSuite()));
 		/* Functional tests - RECONNECT */
+		put("CheckUnavailableNode", aof(new CheckUnavailableNode()));
 		put("GetAccountBalanceAfterReconnect", aof(new GetAccountBalanceAfterReconnect()));
 		/* Functional tests - CONSENSUS */
 		put("TopicCreateSpecs", aof(new TopicCreateSuite()));
@@ -275,10 +276,10 @@ public class SuiteRunner {
 		put("ZeroStakeTest", aof(new ZeroStakeNodeTest()));
 		/* Query payment validation */
 		put("QueryPaymentSuite", aof(new QueryPaymentSuite()));
+		put("SimpleFreezeOnly", aof(new SimpleFreezeOnly()));
 	}};
 
 	static boolean runAsync;
-	static Set<String> argSet;
 	static List<CategorySuites> targetCategories;
 	static boolean globalPassFlag = true;
 
@@ -287,16 +288,23 @@ public class SuiteRunner {
 	private static final String NODE_SELECTOR_ARG = "-NODE";
 	/* Specify the network size so that we can read the appropriate throttle settings for that network. */
 	private static final String NETWORK_SIZE_ARG = "-NETWORKSIZE";
+	/* Specify the network to run legacy SC tests instead of using suiterunner */
+	private static final String LEGACY_SMART_CONTRACT_TESTS="SmartContractAggregatedTests";
 	private static String payerId = DEFAULT_PAYER_ID;
 
-	public static void main(String... args) {
+	public static void main(String... args) throws Exception {
 		/* Has a static initializer whose behavior seems influenced by initialization of ForkJoinPool#commonPool. */
 		new org.ethereum.crypto.HashUtil();
 
 		String[] effArgs = trueArgs(args);
 		log.info("Effective args :: " + List.of(effArgs));
-
-		if (Stream.of(effArgs).anyMatch("-CI"::equals)) {
+		if (Arrays.asList(effArgs).contains(LEGACY_SMART_CONTRACT_TESTS)) {
+			SmartContractAggregatedTests.main(
+					new String[]{
+							System.getenv("NODES").split(":")[0],
+							args[1],
+							"1"});
+		} else if (Stream.of(effArgs).anyMatch("-CI"::equals)) {
 			var tlsOverride = overrideOrDefault(effArgs, TLS_ARG, DEFAULT_TLS_CONFIG.toString());
 			var txnOverride = overrideOrDefault(effArgs, TXN_ARG, DEFAULT_TXN_CONFIG.toString());
 			var nodeSelectorOverride = overrideOrDefault(effArgs, NODE_SELECTOR_ARG, DEFAULT_NODE_SELECTOR.toString());
@@ -402,8 +410,7 @@ public class SuiteRunner {
 	}
 
 	private static List<CategoryResult> runCategories(List<String> args) {
-		argSet = args.stream().collect(Collectors.toSet());
-		collectTargetCategories();
+		collectTargetCategories(args);
 		return runTargetCategories();
 	}
 
@@ -439,11 +446,10 @@ public class SuiteRunner {
 		}
 	}
 
-	private static void collectTargetCategories() {
-		targetCategories = CATEGORY_MAP
-				.keySet()
+	private static void collectTargetCategories(List<String> args) {
+		targetCategories = args
 				.stream()
-				.filter(argSet::contains)
+				.filter(k -> null != CATEGORY_MAP.get(k))
 				.map(k -> new CategorySuites(rightPadded(k, SUITE_NAME_WIDTH), CATEGORY_MAP.get(k)))
 				.collect(toList());
 	}

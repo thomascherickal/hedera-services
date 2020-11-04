@@ -195,7 +195,7 @@ public class FileServiceIT {
         channel.awaitTermination(10, TimeUnit.SECONDS);
       }catch (Exception e) {}
     }
-    channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build();
+    channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
     stub = FileServiceGrpc.newBlockingStub(channel);
     cstub = CryptoServiceGrpc.newBlockingStub(channel);
   }
@@ -234,6 +234,8 @@ public class FileServiceIT {
   public void test02CreateFile()
       throws InvalidKeySpecException, DecoderException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException, SignatureException, Exception {
     log.info("@@@ upload file at: " + localPath + "; file size in byte = " + fileData.size());
+    log.info("host : " + host);
+    log.info("node number : " + defaultListeningNodeAccountID.getAccountNum() );
     Timestamp timestamp = TestHelper.getDefaultCurrentTimestampUTC();
     Timestamp fileExp = ProtoCommonUtils.addSecondsToTimestamp(timestamp, fileDuration);
     List<Key> waclPubKeyList = new ArrayList<>();

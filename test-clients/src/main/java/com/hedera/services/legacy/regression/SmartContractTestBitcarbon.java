@@ -55,6 +55,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +151,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
   private AccountID createAccount(KeyPair keyPair, AccountID payerAccount, long initialBalance)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     Transaction transaction = TestHelper
@@ -176,7 +177,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
         .setTransactionGetReceipt(RequestBuilder.getTransactionGetReceiptQuery(
             transactionId, ResponseType.ANSWER_ONLY)).build();
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     Response transactionReceipts = stub.getTransactionReceipts(query);
@@ -202,7 +203,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
     }
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
 
     Duration contractAutoRenew = Duration.newBuilder().setSeconds(contractDuration).build();
@@ -393,7 +394,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
       byte[] data, ResponseCodeEnum expectedStatus)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
         .newBlockingStub(channel);
@@ -439,7 +440,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
     AccountID createdAccount = null;
     int port = 50211;
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
     long fee = FeeClient.getCostForGettingTxRecord();
@@ -468,7 +469,7 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
   private byte[] callContractLocal(AccountID payerAccount, ContractID contractToCall, byte[] data)
       throws Exception {
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
         .newBlockingStub(channel);
@@ -560,13 +561,14 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
     return txRec;
   }
   public void demo(String grpcHost, AccountID nodeAccount) throws Exception {
+    log.info("-------------- STARTING SmartContractTestBitCarbon Regression");
     setUp();
     host = grpcHost;
     SmartContractTestBitcarbon.nodeAccount = nodeAccount;
     loadGenesisAndNodeAcccounts();
 
     ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-        .usePlaintext(true)
+        .usePlaintext()
         .build();
     TestHelper.initializeFeeClient(channel, genesisAccount, accountKeyPairs.get(genesisAccount),
             SmartContractTestBitcarbon.nodeAccount);
@@ -584,7 +586,8 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
 
     // Upload AddressBook file
     FileID addressBookFileId = LargeFileUploadIT
-        .uploadFile(crAccount, ADDRESS_BOOK_BIN, crAccountKeyPair);
+        .uploadFile(crAccount, ADDRESS_BOOK_BIN, new ArrayList<>(
+                List.of(crAccountKeyPair.getPrivate())), host, nodeAccount);
     Assert.assertNotNull(addressBookFileId);
     Assert.assertNotEquals(0, addressBookFileId.getFileNum());
     log.info("AddressBook file uploaded successfully");
@@ -598,7 +601,8 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
 
       // Upload Jurisdictions file
     FileID jurisdictionsFileId = LargeFileUploadIT
-        .uploadFile(crAccount, JURISDICTIONS_BIN, crAccountKeyPair);
+        .uploadFile(crAccount, JURISDICTIONS_BIN, new ArrayList<>(
+                List.of(crAccountKeyPair.getPrivate())), host, nodeAccount);
     Assert.assertNotNull(jurisdictionsFileId);
     Assert.assertNotEquals(0, jurisdictionsFileId.getFileNum());
     log.info("Jurisdictions file uploaded successfully");
@@ -624,9 +628,10 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
 
 
     // Upload Minters file, "linking" address of AddressBook into the where needed.
-    FileID MintersFileId = LargeFileUploadIT.uploadFileWithSubst(
-        crAccount, MINTERS_BIN, crAccountKeyPair,
-        "_+AddressBook.sol:AddressBook_+", addressBookSolidityAddress);
+    FileID MintersFileId = LargeFileUploadIT.uploadFileWithStringSubstitution(
+        crAccount, MINTERS_BIN, new ArrayList<>(
+                    List.of(crAccountKeyPair.getPrivate())),
+        "_+AddressBook.sol:AddressBook_+", addressBookSolidityAddress, host, nodeAccount);
     Assert.assertNotNull(MintersFileId);
     Assert.assertNotEquals(0, MintersFileId.getFileNum());
     log.info("Minters file uploaded successfully");
@@ -674,7 +679,8 @@ public class SmartContractTestBitcarbon extends LegacySmartContractTest {
           ARBITRARY_ADDRESS, "Peter", jurisdictionCode);
 
     // Marker message for regression report
-    log.info("Regression summary: This run is successful.");
+    log.info("-------------- RESULTS OF SmartContractTestBitCarbon ----------------------");
+    log.info("SmartContractTestBitCarbon Regression summary: This run is successful.");
   }
 
   private void setUp() {

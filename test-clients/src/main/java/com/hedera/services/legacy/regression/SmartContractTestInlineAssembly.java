@@ -56,6 +56,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	  private AccountID createAccount(KeyPair keyPair, AccountID payerAccount, long initialBalance)
 	      throws Exception {
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
 	    Transaction transaction = TestHelper
@@ -163,7 +164,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	        .setTransactionGetReceipt(RequestBuilder.getTransactionGetReceiptQuery(
 	            transactionId, ResponseType.ANSWER_ONLY)).build();
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
 	    Response transactionReceipts = stub.getTransactionReceipts(query);
@@ -190,7 +191,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	      long durationInSeconds) throws Exception {
 	    ContractID createdContract = null;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 
 	    Duration contractAutoRenew = Duration.newBuilder().setSeconds(durationInSeconds).build();
@@ -250,7 +251,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	    byte[] dataToReturn = null;
 	    ContractID createdContract = null;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
 	        .newBlockingStub(channel);
@@ -302,7 +303,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	    AccountID createdAccount = null;
 	    int port = 50211;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
 	    long fee = FeeClient.getCostForGettingTxRecord();
@@ -359,7 +360,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	    byte[] dataToReturn = null;
 	    AccountID createdAccount = null;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
 	        .newBlockingStub(channel);
@@ -418,7 +419,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	  private AccountInfo getCryptoGetAccountInfo(
 	      AccountID accountID) throws Exception {
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    CryptoServiceGrpc.CryptoServiceBlockingStub stub = CryptoServiceGrpc.newBlockingStub(channel);
 
@@ -451,7 +452,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	      String solidityId) throws Exception {
 	    int port = 50211;
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 	    SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
 	        .newBlockingStub(channel);
@@ -469,13 +470,14 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	  }
 
 	  public void demo(String grpcHost, AccountID nodeAccount) throws Exception {
+		  log.info("-------------- STARTING SmartContactTestInlineAssembly Regression");
 	  	setUp();
 	  	host = grpcHost;
 	  	SmartContractTestInlineAssembly.nodeAccount = nodeAccount;
 	    loadGenesisAndNodeAcccounts();
 
 		ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-				.usePlaintext(true)
+				.usePlaintext()
 				.build();
 		TestHelper.initializeFeeClient(channel, genesisAccount, accountKeyPairs.get(genesisAccount),
 				SmartContractTestInlineAssembly.nodeAccount);
@@ -489,7 +491,8 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	    ContractID simpleStorageContractId = null;
 	    if (crAccount != null) {
 	      FileID codeSizeFileId = LargeFileUploadIT
-	          .uploadFile(crAccount, fileName, crAccountKeyPair);
+	          .uploadFile(crAccount, fileName, new ArrayList<>(
+					  List.of(crAccountKeyPair.getPrivate())), host, nodeAccount);
 	      if (codeSizeFileId != null) {
 	        log.info("Smart Contract file uploaded successfully");
 	        ContractID codeSizeContractId = createContract(crAccount, codeSizeFileId,
@@ -497,7 +500,8 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	        Assert.assertNotNull(codeSizeContractId);
 	        log.info("Contract created successfully");
 	        FileID simpleStorageFileID = LargeFileUploadIT
-	  	          .uploadFile(crAccount, secondaryFileName, crAccountKeyPair);
+	  	          .uploadFile(crAccount, secondaryFileName, new ArrayList<>(
+						  List.of(crAccountKeyPair.getPrivate())), host, nodeAccount);
 			if (simpleStorageFileID != null) {
 				log.info("Secondary Smart Contract file uploaded successfully");
 				simpleStorageContractId = createContract(crAccount, simpleStorageFileID,
@@ -515,7 +519,8 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
           }
 
           // Marker message for regression report
-          log.info("Regression summary: This run is successful.");
+          log.info("-------------- RESULTS OF SmartContactTestInlineAssembly ----------------------");
+	      log.info("SmartContactTestInlineAssembly Regression summary: This run is successful.");
         }
       }
 
@@ -534,7 +539,7 @@ public class SmartContractTestInlineAssembly extends LegacySmartContractTest {
 	private ContractInfo getContractInfo(AccountID payerAccount,
 	      ContractID contractId) throws Exception {
 	    ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
-	        .usePlaintext(true)
+	        .usePlaintext()
 	        .build();
 
 	    SmartContractServiceGrpc.SmartContractServiceBlockingStub stub = SmartContractServiceGrpc
