@@ -927,7 +927,7 @@ workflows:
   weekly-crypto-transfer-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "6 15 * * *"
+          cron: "30 15 * * *"
           filters:
             branches:
               only:
@@ -1794,7 +1794,7 @@ jobs:
           no_output_timeout: 120m
           command: |
             cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh   configs/services/suites/weekly/AWS-Weekly-Services-Crypto-StartFromSavedState-15N-15C.json /repo
+            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
 #            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
 
       - run:
