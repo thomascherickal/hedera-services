@@ -927,7 +927,7 @@ workflows:
   weekly-crypto-transfer-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "0 1 * * *"
+          cron: "0 3 * * *"
           filters:
             branches:
               only:
