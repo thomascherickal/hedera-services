@@ -907,7 +907,7 @@ workflows:
   nightly-performance-regression:
     triggers:
       - schedule:
-          cron: "8 18,4 * * *"
+          cron: "30 1,4 * * *"
           filters:
             branches:
               only:
@@ -927,7 +927,7 @@ workflows:
   weekly-crypto-transfer-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "30 15 * * *"
+          cron: "32 16 * * *"
           filters:
             branches:
               only:
@@ -1785,7 +1785,7 @@ jobs:
       workflow-name: << parameters.workflow-name >>
     steps:
       - run:
-          name: Modify Payer account for Public testnet start from saved state test
+          name: Now start from custom network saved state
           command: |
             echo -n "$KEY_DevTestNetTreasury";    echo -n /repo/test-clients/src/main/resource/StartUpAccount.txt;
 #            echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
@@ -1795,7 +1795,6 @@ jobs:
           command: |
             cd /swirlds-platform/regression;
             ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
-#            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
 
       - run:
           name: Sync results of software update regression to AWS
@@ -1816,7 +1815,7 @@ jobs:
       workflow-name: << parameters.workflow-name >>
     steps:
       - run:
-          name: Modify Payer account for Public testnet start from saved state test
+          name: Now start from custom network saved state
           command: |
             echo -n "$KEY_DevTestNetTreasury";    echo -n /repo/test-clients/src/main/resource/StartUpAccount.txt;
 #            echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
