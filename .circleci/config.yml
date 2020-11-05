@@ -907,7 +907,7 @@ workflows:
   nightly-performance-regression:
     triggers:
       - schedule:
-          cron: "30 17,4 * * *"
+          cron: "8 18,4 * * *"
           filters:
             branches:
               only:
