@@ -927,7 +927,7 @@ workflows:
   weekly-crypto-transfer-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "0 3 * * *"
+          cron: "55 5 * * *"
           filters:
             branches:
               only:
@@ -1794,7 +1794,8 @@ jobs:
           no_output_timeout: 120m
           command: |
             cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
+            ./regression_services_circleci.sh  configs/services/weekly/15N_15C/AWS-Services-Weekly-CryptoTransfer-Perf-StartFromState-15N-15C.json /repo
+#            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
 
       - run:
           name: Sync results of software update regression to AWS
@@ -1863,7 +1864,7 @@ jobs:
               git clone  --recurse-submodule ssh://git@github.com/swirlds/swirlds-platform.git
             cd /swirlds-platform; git checkout develop;
             git submodule update --init --recursive --checkout;
-            cd /swirlds-platform/regression;   git checkout 573-D-Final-Changes;
+            cd /swirlds-platform/regression;   git checkout  00678-D-weekly-perf-regression;
             cd /swirlds-platform; mvn --no-transfer-progress clean install -DskipTests;
 
       - run:
