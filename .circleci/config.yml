@@ -887,11 +887,11 @@ workflows:
   nightly-basic-suiterunner-regression:
     triggers:
       - schedule:
-          cron: "15 17,4 * * *"
+          cron: "21 17,4 * * *"
           filters:
             branches:
               only:
-                - master
+                - 00678-D-weekend-perf-regression
     jobs:
       - build-platform-and-services
       - run-basic-suiterunner-tests:
