@@ -891,6 +891,7 @@ workflows:
           filters:
             branches:
               only:
+#                - master
                 - 00678-D-weekend-perf-regression
     jobs:
       - build-platform-and-services
