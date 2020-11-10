@@ -891,8 +891,8 @@ workflows:
           filters:
             branches:
               only:
-#                - master
-                - 00678-D-weekend-perf-regression
+                - master
+#                - 00678-D-weekend-perf-regression
     jobs:
       - build-platform-and-services
       - run-basic-suiterunner-tests:
@@ -932,8 +932,8 @@ workflows:
           filters:
             branches:
               only:
-#                - master
-                - 00678-D-weekend-perf-regression
+                - master
+#                - 00678-D-weekend-perf-regression
     jobs:
       - build-platform-and-services
       - weekly-run-crypto-transfer-start-from-saved-state-regression:
