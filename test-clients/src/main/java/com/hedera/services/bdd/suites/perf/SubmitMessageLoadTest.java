@@ -31,9 +31,11 @@ import org.apache.logging.log4j.Logger;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import static com.hedera.services.bdd.spec.HapiApiSpec.customHapiSpec;
 import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.randomUtf8Bytes;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
@@ -115,8 +117,10 @@ public class SubmitMessageLoadTest extends LoadTest {
 				opSupplier(settings).get()
 		};
 
-		return defaultHapiSpec("RunSubmitMessages")
-				.given(
+		return customHapiSpec("RunSubmitMessages")
+				.withProperties(Map.of(
+						"default.payer", "0.0.950")
+				).given(
 						withOpContext((spec, ignore) -> settings.setFrom(spec.setup().ciPropertiesMap())),
 						// if no pem file defined then create a new submitKey
 						pemFile == null ? newKeyNamed("submitKey") :
@@ -132,10 +136,10 @@ public class SubmitMessageLoadTest extends LoadTest {
 				).when(
 						cryptoCreate("sender").balance(initialBalance.getAsLong())
 								.withRecharging()
-								.rechargeWindow(30)
+								.rechargeWindow(30).payingWith(GENESIS)
 								.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED),
 						topicID == null ? createTopic("topic")
-								.submitKeyName("submitKey")
+								.submitKeyName("submitKey").payingWith(GENESIS)
 								.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED):
 								sleepFor(100),
 						sleepFor(5000) //wait all other thread ready
