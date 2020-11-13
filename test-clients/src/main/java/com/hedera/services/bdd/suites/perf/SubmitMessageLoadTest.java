@@ -57,7 +57,7 @@ public class SubmitMessageLoadTest extends LoadTest {
 
 	private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(SubmitMessageLoadTest.class);
 	private static String topicID = null;
-	private static int messageSize = 256;
+	private static int messageSize = 1024;
 	private static String pemFile = null;
 	public static void main(String... args) {
 		int usedArgs = parseArgs(args);
@@ -135,12 +135,12 @@ public class SubmitMessageLoadTest extends LoadTest {
 						logIt(ignore -> settings.toString())
 				).when(
 						cryptoCreate("sender").balance(initialBalance.getAsLong())
-								.withRecharging()
+								.withRecharging().logged()
 								.rechargeWindow(30).payingWith(GENESIS)
-								.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED),
-						topicID == null ? createTopic("topic")
+								.hasRetryPrecheckFrom(BUSY, PLATFORM_TRANSACTION_NOT_CREATED),
+						topicID == null ? createTopic("topic").logged()
 								.submitKeyName("submitKey").payingWith(GENESIS)
-								.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED):
+								.hasRetryPrecheckFrom(BUSY, PLATFORM_TRANSACTION_NOT_CREATED):
 								sleepFor(100),
 						sleepFor(5000) //wait all other thread ready
 				).then(
@@ -150,13 +150,14 @@ public class SubmitMessageLoadTest extends LoadTest {
 
 	private static Supplier<HapiSpecOperation> opSupplier(PerfTestLoadSettings settings) {
 		byte[] payload = randomUtf8Bytes(settings.getIntProperty("messageSize", messageSize) - 8);
+		//log.info("Topic Id: {}", topicID);
 		var op = submitMessageTo(topicID != null ? topicID : "topic")
 				.message(ArrayUtils.addAll(ByteBuffer.allocate(8).putLong(Instant.now().toEpochMilli()).array(), payload))
 				.noLogging()
 				.payingWith("sender")
 				.signedBy("sender", "submitKey")
 				.suppressStats(true)
-				.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED, INSUFFICIENT_PAYER_BALANCE)
+				.hasRetryPrecheckFrom(BUSY, PLATFORM_TRANSACTION_NOT_CREATED, INSUFFICIENT_PAYER_BALANCE)
 				.hasKnownStatusFrom(SUCCESS, OK)
 				.deferStatusResolution();
 		if (settings.getBooleanProperty("isChunk", false)) {

@@ -56,7 +56,7 @@ public class RandomMessageSubmit implements OpProvider {
         private final SplittableRandom r = new SplittableRandom();
         private final EntityNameProvider<TopicID> topics;
         private int numStableTopics = DEFAULT_NUM_STABLE_TOPICS;
-        private static byte[] messageBytes = new byte[256];
+        private static byte[] messageBytes = new byte[1024];
         static {
                 Arrays.fill(messageBytes, (byte) 0b1);
         }

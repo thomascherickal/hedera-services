@@ -22,6 +22,8 @@ package com.hedera.services.bdd.spec.transactions.consensus;
 
 import com.google.common.base.MoreObjects;
 import com.google.protobuf.ByteString;
+import com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoCreate;
+import com.hedera.services.bdd.spec.utilops.ProviderRun;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -32,6 +34,8 @@ import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
 import com.hederahashgraph.fee.ConsensusServiceFeeBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +64,10 @@ public class HapiTopicCreate extends HapiTxnOp<HapiTopicCreate> {
 
 	/** For some test we need the capability to build transaction has no autoRenewPeiord */
 	private boolean clearAutoRenewPeriod = false;
+	private static final Logger log = LogManager.getLogger(HapiCryptoCreate.class);
 
 	public HapiTopicCreate(String topic) {
+		log.info("Create Topic {}", topic);
 		this.topic = topic;
 	}
 
