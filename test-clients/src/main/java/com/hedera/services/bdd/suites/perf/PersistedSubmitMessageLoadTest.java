@@ -49,7 +49,7 @@ import static org.apache.commons.lang3.ArrayUtils.addAll;
 public class PersistedSubmitMessageLoadTest extends LoadTest {
 	private static final Logger log = LogManager.getLogger(PersistedSubmitMessageLoadTest.class);
 
-	private static int messageSize = 40;
+	private static int messageSize = 256;
 
 	private static String PERSISTENT_PAYER_NAME = "extremelyRich";
 	private static String PERSISTENT_TOPIC_NAME = "extremelyInteresting";

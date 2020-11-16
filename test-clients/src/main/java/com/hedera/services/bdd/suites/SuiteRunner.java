@@ -108,7 +108,7 @@ public class SuiteRunner {
 
 	private static final int EXPECTED_DEV_NETWORK_SIZE = 3;
 	private static final int EXPECTED_CI_NETWORK_SIZE = 4;
-	private static final String DEFAULT_PAYER_ID = "2";
+	private static final String DEFAULT_PAYER_ID = "950";
 
 	public static int expectedNetworkSize = EXPECTED_DEV_NETWORK_SIZE;
 

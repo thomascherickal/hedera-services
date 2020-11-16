@@ -114,6 +114,8 @@ public class RunLoadTest extends UtilOp {
 				e.printStackTrace();
 			}
 		}
+		log.info("Precheck txn status counts :: " + spec.precheckStatusCounts());
+		log.info("Resolved txn status counts :: " + spec.finalizedStatusCounts());
 		log.info("Total Ops submitted {}, actual TPS {}", totalOpsAllThread.get(),
 				totalOpsAllThread.get() / ((float) (testDuration.getAsLong() * 60 )));
 		return false;
@@ -150,6 +152,8 @@ public class RunLoadTest extends UtilOp {
 				if (!reported) {
 					log.info("Thread {} ops {} current TPS {}", Thread.currentThread().getName(),
 							submitOps, currentTPS);
+					log.info("Precheck txn status counts :: " + spec.precheckStatusCounts());
+					log.info("Resolved txn status counts :: " + spec.finalizedStatusCounts());
 					reported = true;
 					submitOps = 0;
 					statDuration = createStarted();
