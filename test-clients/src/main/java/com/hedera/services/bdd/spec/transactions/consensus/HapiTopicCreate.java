@@ -22,6 +22,7 @@ package com.hedera.services.bdd.spec.transactions.consensus;
 
 import com.google.common.base.MoreObjects;
 import com.google.protobuf.ByteString;
+import com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoCreate;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -32,6 +33,8 @@ import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
 import com.hedera.services.bdd.spec.keys.KeyShape;
 import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
 import com.hederahashgraph.fee.ConsensusServiceFeeBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,7 @@ import java.util.OptionalLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.hedera.services.bdd.spec.transactions.TxnFactory.bannerWith;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusCreateTopic;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.asDuration;
@@ -47,8 +51,11 @@ import static com.hedera.services.bdd.spec.transactions.TxnUtils.asId;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.netOf;
 
 public class HapiTopicCreate extends HapiTxnOp<HapiTopicCreate> {
+	static final Logger log = LogManager.getLogger(HapiTopicCreate.class);
+
 	private Key adminKey;
 	private String topic;
+	private boolean advertiseCreation = false;
 	private Optional<Key> submitKey = Optional.empty();
 	private OptionalLong autoRenewPeriod = OptionalLong.empty();
 	private Optional<String> topicMemo = Optional.empty();
@@ -60,6 +67,11 @@ public class HapiTopicCreate extends HapiTxnOp<HapiTopicCreate> {
 
 	/** For some test we need the capability to build transaction has no autoRenewPeiord */
 	private boolean clearAutoRenewPeriod = false;
+
+	public HapiTopicCreate advertisingCreation() {
+		advertiseCreation = true;
+		return this;
+	}
 
 	public HapiTopicCreate(String topic) {
 		this.topic = topic;
@@ -171,6 +183,12 @@ public class HapiTopicCreate extends HapiTxnOp<HapiTopicCreate> {
 			spec.registry().saveTopicMeta(topic, txn.getConsensusCreateTopic(), approxConsensusTime);
 		} catch (Exception impossible) {
 			throw new IllegalStateException(impossible);
+		}
+		if (advertiseCreation) {
+			String banner = "\n\n" + bannerWith(
+					String.format(
+							"Created topic '%s' with id '0.0.%d'.", topic, lastReceipt.getTopicID().getTopicNum()));
+			log.info(banner);
 		}
 	}
 

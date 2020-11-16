@@ -588,4 +588,8 @@ public abstract class HapiTxnOp<T extends HapiTxnOp<T>> extends HapiSpecOperatio
 		usePresetTimestamp = true;
 		return self();
 	}
+
+	public TransactionReceipt getLastReceipt() {
+		return lastReceipt;
+	}
 }
