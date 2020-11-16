@@ -1,0 +1,5 @@
+account:
+  balance: 500000000
+  key: {generateIfMissing: true, passphrase: swirlds, pemLoc: keys/loadTestPayer.pem}
+  recharging: true
+name: extremelyRich
