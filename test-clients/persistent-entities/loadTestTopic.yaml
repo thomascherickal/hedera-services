@@ -1,0 +1,3 @@
+name: extremelyInteresting
+topic:
+  submitKey: {generateIfMissing: true, passphrase: swirlds, pemLoc: keys/extremelyInterestingTopicSubmit.pem}
