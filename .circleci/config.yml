@@ -891,7 +891,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - run-basic-suiterunner-tests:
@@ -911,7 +911,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - weekly-run-crypto-transfer-start-from-saved-state-regression:
@@ -931,7 +931,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - weekly-run-HCS-start-from-saved-state-regression:
@@ -952,7 +952,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - run-network-error-regression:
@@ -973,7 +973,7 @@ workflows:
               filters:
                 branches:
                   only:
-                    - rel-v0.9.0-rc.1
+                    - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - run-testnet-migration-regression:
@@ -1016,7 +1016,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - run-software-update-regression:
@@ -1036,7 +1036,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services-temporary
       - run-state-recover-regression:
@@ -1056,7 +1056,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - build-platform-and-services
       - run-start-from-saved-state-regression:
@@ -1096,7 +1096,7 @@ workflows:
             filters:
               branches:
                 only:
-                  - rel-v0.9.0-rc.1
+                  - rel-v0.9.0-rc.3
     jobs:
       - fast-build-artifact:
           context: Slack
@@ -1160,7 +1160,7 @@ workflows:
             filters:
               branches:
                 only:
-                  - rel-v0.9.0-rc.1
+                  - rel-v0.9.0-rc.3
     jobs:
       - fast-build-artifact:
           context: Slack
@@ -1232,7 +1232,7 @@ workflows:
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.1
+                - rel-v0.9.0-rc.3
     jobs:
       - fast-build-artifact:
           context: Slack
