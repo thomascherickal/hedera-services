@@ -1,3 +1,4 @@
+id: {num: 82746, realm: 0, shard: 0}
 name: extremelyInteresting
 topic:
   submitKey: {generateIfMissing: true, passphrase: swirlds, pemLoc: keys/extremelyInterestingTopicSubmit.pem}

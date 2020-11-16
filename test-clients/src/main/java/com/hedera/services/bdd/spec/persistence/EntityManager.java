@@ -59,6 +59,7 @@ public class EntityManager {
 
 	public boolean init() {
 		var entitiesDir = new File(spec.setup().persistentEntitiesDirPath());
+		log.info("Enitities directory "+entitiesDir.getAbsolutePath());
 		if (!entitiesDir.exists() || !entitiesDir.isDirectory()) {
 			return true;
 		}
