@@ -1,4 +1,0 @@
-id: {num: 1026, realm: 0, shard: 0}
-name: knownToken
-token:
-  adminKey: {generateIfMissing: true, passphrase: swirlds, pemLoc: keys/devDefault.pem}

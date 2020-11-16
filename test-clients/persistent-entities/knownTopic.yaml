@@ -1,4 +1,0 @@
-id: {num: 1002, realm: 0, shard: 0}
-name: knownTopic
-topic:
-  submitKey: {generateIfMissing: true, passphrase: swirlds, pemLoc: keys/knownTopicSubmit.pem}

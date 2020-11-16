@@ -29,6 +29,9 @@ import static com.hedera.services.bdd.spec.persistence.Entity.UNUSED_KEY;
 import static com.hedera.services.bdd.spec.persistence.PemKey.RegistryForms.under;
 import static com.hedera.services.bdd.spec.persistence.PemKey.submitKeyFor;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_TRANSACTION_NOT_CREATED;
 
 public class Topic {
 	private PemKey adminKey = UNUSED_KEY;
@@ -48,7 +51,8 @@ public class Topic {
 
 	public HapiSpecOperation createOp(String name) {
 		var op = createTopic(name)
-				.advertisingCreation();
+				.advertisingCreation()
+				.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED);
 
 		if (adminKey != UNUSED_KEY) {
 			op.adminKeyName(name);
