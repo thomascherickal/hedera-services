@@ -1073,7 +1073,7 @@ workflows:
   nightly-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "8 23 * * *"
+          cron: "17 23 * * *"
           filters:
             branches:
               only:
