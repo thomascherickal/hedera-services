@@ -1073,7 +1073,7 @@ workflows:
   nightly-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "6 23 * * *"
+          cron: "8 23 * * *"
           filters:
             branches:
               only:
@@ -1343,6 +1343,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
+                - test-hcs-10k
           workflow-name: "Continuous integration"
       - start-singlejob-testnet:
           context: Slack
