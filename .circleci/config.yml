@@ -1073,11 +1073,11 @@ workflows:
   nightly-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "30 5,20 * * *"
+          cron: "4 23 * * *"
           filters:
             branches:
               only:
-                - master
+                - test-hcs-10k
     jobs:
       - build-platform-and-services
       - run-start-from-saved-state-regression:
