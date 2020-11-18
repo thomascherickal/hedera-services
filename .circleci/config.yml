@@ -887,11 +887,11 @@ workflows:
   nightly-basic-suiterunner-regression:
     triggers:
       - schedule:
-          cron: "15 16 * * *"
+          cron: "0 1 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - run-basic-suiterunner-tests:
@@ -907,11 +907,11 @@ workflows:
   weekly-crypto-transfer-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "0 16 * * *"
+          cron: "0 1 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - weekly-run-crypto-transfer-start-from-saved-state-regression:
@@ -927,11 +927,11 @@ workflows:
   weekly-HCS-perf-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "0 12 * * *"
+          cron: "0 6 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - weekly-run-HCS-start-from-saved-state-regression:
@@ -948,11 +948,11 @@ workflows:
   nightly-network-error-regression:
     triggers:
       - schedule:
-          cron: "45 15 * * *"
+          cron: "30 1 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - run-network-error-regression:
@@ -969,11 +969,11 @@ workflows:
   nightly-public-testnet-migration-regression:
     triggers:
           - schedule:
-              cron: "30 6 * * *"
+              cron: "30 1 * * *"
               filters:
                 branches:
                   only:
-                    - rel-v0.9.0-rc.3
+                    - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - run-testnet-migration-regression:
@@ -1012,11 +1012,11 @@ workflows:
   nightly-software-update-regression:
     triggers:
       - schedule:
-          cron: "30 17 * * *"
+          cron: "45 1 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - run-software-update-regression:
@@ -1032,11 +1032,11 @@ workflows:
   nightly-state-recover-regression:
     triggers:
       - schedule:
-          cron: "40 7 * * *"
+          cron: "45 1 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services-temporary
       - run-state-recover-regression:
@@ -1052,11 +1052,11 @@ workflows:
   nightly-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "30 16 * * *"
+          cron: "0 2 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - build-platform-and-services
       - run-start-from-saved-state-regression:
@@ -1072,7 +1072,7 @@ workflows:
   custom-migration:
     triggers:
       - schedule:
-          cron: "0 4 * * *"
+          cron: "0 2 * * *"
           filters:
             branches:
               only:
@@ -1092,11 +1092,11 @@ workflows:
   nightly-simulate-network-outage:
     triggers:
         - schedule:
-            cron: "0 15 * * *"
+            cron: "30 2 * * *"
             filters:
               branches:
                 only:
-                  - rel-v0.9.0-rc.3
+                  - rel-v0.9.0-rc.4
     jobs:
       - fast-build-artifact:
           context: Slack
@@ -1156,11 +1156,11 @@ workflows:
   feature-update-regression:
     triggers:
         - schedule:
-            cron: "0 16 * * *"
+            cron: "30 2 * * *"
             filters:
               branches:
                 only:
-                  - rel-v0.9.0-rc.3
+                  - rel-v0.9.0-rc.4
     jobs:
       - fast-build-artifact:
           context: Slack
@@ -1228,11 +1228,11 @@ workflows:
   nightly-freeze-restart:
     triggers:
       - schedule:
-          cron: "0 18 * * *"
+          cron: "45 2 * * *"
           filters:
             branches:
               only:
-                - rel-v0.9.0-rc.3
+                - rel-v0.9.0-rc.4
     jobs:
       - fast-build-artifact:
           context: Slack
