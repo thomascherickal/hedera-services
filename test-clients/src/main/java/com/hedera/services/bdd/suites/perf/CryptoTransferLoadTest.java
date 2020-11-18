@@ -66,7 +66,7 @@ public class CryptoTransferLoadTest extends LoadTest {
 		Supplier<HapiSpecOperation[]> transferBurst = () -> new HapiSpecOperation[] {
 				cryptoTransfer(tinyBarsFromTo("sender", "receiver", 1L))
 						.noLogging()
-						.payingWith("sender")
+						.payingWith(GENESIS)
 						.suppressStats(true)
 						.hasRetryPrecheckFrom(BUSY, DUPLICATE_TRANSACTION, PLATFORM_TRANSACTION_NOT_CREATED)
 						.deferStatusResolution()
