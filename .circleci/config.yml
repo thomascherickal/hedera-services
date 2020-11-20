@@ -1072,11 +1072,11 @@ workflows:
   nightly-start-from-saved-state-regression:
     triggers:
       - schedule:
-          cron: "30 6 * * *"
+          cron: "40 1,5,9 * * *"
           filters:
             branches:
               only:
-                - master
+                -  00781-D-HapiClient-validation-failure
     jobs:
       - build-platform-and-services
       - run-start-from-saved-state-regression:
@@ -1323,6 +1323,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
+                - 00781-D-HapiClient-validation-failure
           workflow-name: "Continuous integration"
       - start-singlejob-testnet:
           context: Slack
@@ -1868,7 +1869,7 @@ jobs:
             cd /swirlds-platform;
             sed -i -e 's/github.com/services-jrs-regression/g' .gitmodules;
             git submodule update --init --recursive --checkout;
-            cd regression;
+            cd regression; git checkout 00781-D-HapiClient-validation-failure ;
             cd ..;
             mvn --no-transfer-progress clean install -DskipTests;
 
