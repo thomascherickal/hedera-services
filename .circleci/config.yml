@@ -887,11 +887,11 @@ workflows:
   AWS-Daily-Services-Comp-Basic-4N-1C:
     triggers:
       - schedule:
-          cron: "15 4 * * *"
+          cron: "20 15 * * *"
           filters:
             branches:
               only:
-                - master
+                - test-link
     jobs:
       - build-platform-and-services
       - run-basic-suiterunner-tests:
@@ -1363,6 +1363,7 @@ workflows:
               ignore:
                 - /.*-PERF/
                 - /.*-REGRESSION/
+                - test-link
           workflow-name: "Continuous integration"
       - start-singlejob-testnet:
           context: Slack
