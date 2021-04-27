@@ -4,7 +4,7 @@ package com.hedera.services.queries.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,7 @@ package com.hedera.services.queries.token;
  */
 
 import com.hedera.services.context.primitives.StateView;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleToken;
-import com.hedera.services.tokens.TokenStore;
 import com.hedera.services.txns.validation.OptionValidator;
-import com.hedera.services.utils.EntityIdUtils;
-import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.TokenGetInfoQuery;
 import com.hederahashgraph.api.proto.java.TokenGetInfoResponse;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
@@ -39,11 +33,8 @@ import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TokenInfo;
 import com.hederahashgraph.api.proto.java.Transaction;
-import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +59,6 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.never;
 
-@RunWith(JUnitPlatform.class)
 class GetTokenInfoAnswerTest {
 	private Transaction paymentTxn;
 	private String node = "0.0.3";
@@ -252,7 +242,7 @@ class GetTokenInfoAnswerTest {
 		Query query = validQuery(COST_ANSWER, fee, tokenId);
 
 		// expect:
-		assertEquals(paymentTxn, subject.extractPaymentFrom(query).get().getSignedTxn());
+		assertEquals(paymentTxn, subject.extractPaymentFrom(query).get().getBackwardCompatibleSignedTxn());
 	}
 
 	private Query validQuery(ResponseType type, long payment, TokenID id) throws Throwable {

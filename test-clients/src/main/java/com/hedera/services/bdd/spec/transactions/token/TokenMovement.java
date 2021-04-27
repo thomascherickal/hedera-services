@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.transactions.token;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,12 +36,13 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.asId;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.asTokenId;
 
 public class TokenMovement {
 	private final long amount;
 	private final String token;
-	private final Optional<String> sender;
-	private final Optional<String> receiver;
+	private Optional<String> sender;
+	private Optional<String> receiver;
 	private final Optional<List<String>> receivers;
 	private final Optional<Function<HapiApiSpec, String>> senderFn;
 	private final Optional<Function<HapiApiSpec, String>> receiverFn;
@@ -87,9 +88,15 @@ public class TokenMovement {
 
 	public List<Map.Entry<String, Long>> generallyInvolved() {
 		if (sender.isPresent()) {
-			Map.Entry<String, Long> senderEntry = new AbstractMap.SimpleEntry<>(sender.get(), -amount);
+			Map.Entry<String, Long> senderEntry = new AbstractMap.SimpleEntry<>(
+					token + "|" + sender.get(),
+					-amount);
 			return receiver.isPresent()
-					? List.of(senderEntry, new AbstractMap.SimpleEntry<>(receiver.get(), -amount))
+					? List.of(
+							senderEntry,
+					new AbstractMap.SimpleEntry<>(
+							token + "|" + receiver.get(),
+							+amount))
 					: (receivers.isPresent() ? involvedInDistribution(senderEntry) : List.of(senderEntry));
 		}
 		return Collections.emptyList();
@@ -101,22 +108,26 @@ public class TokenMovement {
 		var targets = receivers.get();
 		var perTarget = senderEntry.getValue() / targets.size();
 		for (String target : targets) {
-			all.add(new AbstractMap.SimpleEntry<>(target, -perTarget));
+			all.add(new AbstractMap.SimpleEntry<>(target, perTarget));
 		}
 		return all;
 	}
 
 	public TokenTransferList specializedFor(HapiApiSpec spec) {
 		var scopedTransfers = TokenTransferList.newBuilder();
-		var id = isTrulyToken() ? spec.registry().getTokenID(token) : HBAR_SENTINEL_TOKEN_ID;
+		var id = isTrulyToken() ? asTokenId(token, spec) : HBAR_SENTINEL_TOKEN_ID;
 		scopedTransfers.setToken(id);
 		if (senderFn.isPresent()) {
-			scopedTransfers.addTransfers(adjustment(senderFn.get().apply(spec), -amount, spec));
+			var specialSender = senderFn.get().apply(spec);
+			sender = Optional.of(specialSender);
+			scopedTransfers.addTransfers(adjustment(specialSender, -amount, spec));
 		} else if (sender.isPresent()) {
 			scopedTransfers.addTransfers(adjustment(sender.get(), -amount, spec));
 		}
 		if (receiverFn.isPresent()) {
-			scopedTransfers.addTransfers(adjustment(receiverFn.get().apply(spec), +amount, spec));
+			var specialReceiver = receiverFn.get().apply(spec);
+			receiver = Optional.of(specialReceiver);
+			scopedTransfers.addTransfers(adjustment(specialReceiver, +amount, spec));
 		} else if (receiver.isPresent()) {
 			scopedTransfers.addTransfers(adjustment(receiver.get(), +amount, spec));
 		} else if (receivers.isPresent()) {

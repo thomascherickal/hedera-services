@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,6 @@ import org.apache.logging.log4j.Logger;
 
 public class NodeAccountsCreation {
 	private static final Logger log = LogManager.getLogger(NodeAccountsCreation.class);
-
-	private static long INITIAL_GENESIS_COINS = 5000000000000000000l;
 
 	public static void insertAccount(
 			long balance,

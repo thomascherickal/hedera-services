@@ -4,7 +4,7 @@ package com.hedera.services.keys;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,29 +20,25 @@ package com.hedera.services.keys;
  * ‍
  */
 
-import com.google.protobuf.ByteString;
-import com.hedera.services.sigs.order.HederaSigningOrder;
-import com.hedera.services.sigs.order.SigningOrderResult;
-import com.hedera.services.sigs.order.SigningOrderResultFactory;
-import com.hedera.services.utils.PlatformTxnAccessor;
-import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.hedera.services.legacy.core.jproto.JThresholdKey;
 import com.hedera.services.legacy.crypto.SignatureStatus;
-import com.swirlds.common.crypto.Signature;
+import com.hedera.services.sigs.order.HederaSigningOrder;
+import com.hedera.services.sigs.order.SigningOrderResult;
+import com.hedera.services.sigs.order.SigningOrderResultFactory;
+import com.hedera.services.utils.TxnAccessor;
 import com.swirlds.common.crypto.TransactionSignature;
 import com.swirlds.common.crypto.VerificationStatus;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import static com.hedera.services.keys.DefaultActivationCharacteristics.DEFAULT_ACTIVATION_CHARACTERISTICS;
-import static com.swirlds.common.crypto.VerificationStatus.*;
-import static java.util.Arrays.copyOfRange;
-import static java.util.stream.Collectors.toMap;
+import static com.swirlds.common.crypto.VerificationStatus.INVALID;
+import static com.swirlds.common.crypto.VerificationStatus.VALID;
 
 /**
  * Provides a static method to determine if a Hedera key is <i>active</i> relative to
@@ -52,7 +48,7 @@ import static java.util.stream.Collectors.toMap;
  * @see JKey
  */
 public class HederaKeyActivation {
-	public static final TransactionSignature INVALID_SIG = new InvalidSignature();
+	public static final TransactionSignature INVALID_MISSING_SIG = new InvalidSignature();
 
 	public static final BiPredicate<JKey, TransactionSignature> ONLY_IF_SIG_IS_VALID =
 			(ignoredKey, sig) -> VALID.equals( sig.getSignatureStatus() );
@@ -71,7 +67,7 @@ public class HederaKeyActivation {
 	 * @return whether the payer's Hedera key is active.
 	 */
 	public static boolean payerSigIsActive(
-			PlatformTxnAccessor accessor,
+			TxnAccessor accessor,
 			HederaSigningOrder keyOrder,
 			SigningOrderResultFactory<SignatureStatus> summaryFactory
 	) {
@@ -81,41 +77,6 @@ public class HederaKeyActivation {
 				payerSummary.getPayerKey(),
 				pkToSigMapFrom(accessor.getPlatformTxn().getSignatures()),
 				ONLY_IF_SIG_IS_VALID);
-	}
-
-	/**
-	 * Determines if the given transaction has an set of valid cryptographic signatures that,
-	 * taken together, activate the Hedera keys of non-payer entities required to sign.
-	 *
-	 * @param accessor the txn to evaluate.
-	 * @param keyOrder a resource to determine the non-payer entities' Hedera keys.
-	 * @param summaryFactory a resource to summarize the result of the key determination.
-	 * @return whether the non-payer entities' Hedera keys are active.
-	 */
-	public static boolean otherPartySigsAreActive(
-			PlatformTxnAccessor accessor,
-			HederaSigningOrder keyOrder,
-			SigningOrderResultFactory<SignatureStatus> summaryFactory
-	) {
-		return otherPartySigsAreActive(accessor, keyOrder, summaryFactory, DEFAULT_ACTIVATION_CHARACTERISTICS);
-	}
-
-	public static boolean otherPartySigsAreActive(
-			PlatformTxnAccessor accessor,
-			HederaSigningOrder keyOrder,
-			SigningOrderResultFactory<SignatureStatus> summaryFactory,
-			KeyActivationCharacteristics characteristics
-	) {
-		TransactionBody txn = accessor.getTxn();
-		Function<byte[], TransactionSignature> sigsFn = pkToSigMapFrom(accessor.getPlatformTxn().getSignatures());
-
-		SigningOrderResult<SignatureStatus> othersResult = keyOrder.keysForOtherParties(txn, summaryFactory);
-		for (JKey otherKey : othersResult.getOrderedKeys()) {
-			if (!isActive(otherKey, sigsFn, ONLY_IF_SIG_IS_VALID, characteristics)) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
@@ -165,11 +126,14 @@ public class HederaKeyActivation {
 	 * @return a supplier that produces the backing list sigs by public key.
 	 */
 	public static Function<byte[], TransactionSignature> pkToSigMapFrom(List<TransactionSignature> sigs) {
-		final Map<ByteString, TransactionSignature> pkSigs = sigs
-				.stream()
-				.collect(toMap(s -> ByteString.copyFrom(s.getExpandedPublicKeyDirect()), s -> s, (a, b) -> a));
-
-		return ed25519 -> pkSigs.getOrDefault(ByteString.copyFrom(ed25519), INVALID_SIG);
+		return key -> {
+			for (TransactionSignature sig : sigs) {
+				if (Arrays.equals(key, sig.getExpandedPublicKeyDirect())) {
+					return sig;
+				}
+			}
+			return INVALID_MISSING_SIG;
+		};
 	}
 
 	private static class InvalidSignature extends TransactionSignature {

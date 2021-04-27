@@ -4,7 +4,7 @@ package com.hedera.services.ledger;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,14 +33,16 @@ import com.hedera.services.state.merkle.MerkleAccountTokens;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
-import com.hedera.services.tokens.HederaTokenStore;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.tokens.HederaTokenStore;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.fcqueue.FCQueue;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.Map;
@@ -70,7 +72,7 @@ public class BaseHederaLedgerTest {
 	protected ExpiringCreations creator;
 	protected AccountRecordsHistorian historian;
 	protected TransactionalLedger<AccountID, AccountProperty, MerkleAccount> accountsLedger;
-	protected TransactionalLedger<Map.Entry<AccountID, TokenID>, TokenRelProperty, MerkleTokenRelStatus> tokenRelsLedger;
+	protected TransactionalLedger<Pair<AccountID, TokenID>, TokenRelProperty, MerkleTokenRelStatus> tokenRelsLedger;
 	protected AccountID misc = AccountID.newBuilder().setAccountNum(1_234).build();
 	protected long MISC_BALANCE = 1_234L;
 	protected long RAND_BALANCE = 2_345L;
@@ -109,6 +111,9 @@ public class BaseHederaLedgerTest {
 			}
 
 			@Override
+			public ScheduleID newScheduleId(AccountID sponsor) { return ScheduleID.newBuilder().setScheduleNum(nextId++).build(); }
+
+			@Override
 			public void reclaimLastId() {
 				nextId--;
 			}
@@ -120,7 +125,7 @@ public class BaseHederaLedgerTest {
 	}
 
 	protected FCQueue<ExpirableTxnRecord> asExpirableRecords(long... expiries) {
-		FCQueue<ExpirableTxnRecord> records = new FCQueue<>(ExpirableTxnRecord.LEGACY_PROVIDER);
+		FCQueue<ExpirableTxnRecord> records = new FCQueue<>();
 		for (int i = 0; i < expiries.length; i++) {
 			ExpirableTxnRecord record = new ExpirableTxnRecord();
 			record.setExpiry(expiries[i]);

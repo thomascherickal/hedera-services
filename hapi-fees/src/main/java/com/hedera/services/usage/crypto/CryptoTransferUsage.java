@@ -4,7 +4,7 @@ package com.hedera.services.usage.crypto;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import static com.hedera.services.usage.SingletonEstimatorUtils.ESTIMATOR_UTILS;
 import static com.hederahashgraph.fee.FeeBuilder.BASIC_ENTITY_ID_SIZE;
 
 public class CryptoTransferUsage extends CryptoTxnUsage<CryptoTransferUsage> {
+	private int tokenMultiplier = 1;
+
 	private CryptoTransferUsage(TransactionBody tokenTransactOp, TxnUsageEstimator usageEstimator) {
 		super(tokenTransactOp, usageEstimator);
 	}
@@ -45,6 +47,11 @@ public class CryptoTransferUsage extends CryptoTxnUsage<CryptoTransferUsage> {
 		return this;
 	}
 
+	public CryptoTransferUsage givenTokenMultiplier(int tokenMultiplier) {
+		this.tokenMultiplier = tokenMultiplier;
+		return this;
+	}
+
 	public FeeData get() {
 		var op = this.op.getCryptoTransfer();
 
@@ -52,15 +59,15 @@ public class CryptoTransferUsage extends CryptoTxnUsage<CryptoTransferUsage> {
 		int tokenXfers = 0;
 		long xferBytes = 0;
 		for (TokenTransferList transfer : op.getTokenTransfersList()) {
-			xferBytes += BASIC_ENTITY_ID_SIZE;
-			tokenXfers += transfer.getTransfersCount();
+			xferBytes += tokenMultiplier * BASIC_ENTITY_ID_SIZE;
+			tokenXfers += tokenMultiplier * transfer.getTransfersCount();
 		}
 		xferBytes += (hbarXfers + tokenXfers) * usageProperties.accountAmountBytes();
 		usageEstimator.addBpt(xferBytes);
 		if (hbarXfers > 0) {
 			addRecordRb(hbarXfers * usageProperties.accountAmountBytes());
 		}
-		addCryptoTransfersRecordRb(op.getTokenTransfersCount(), tokenXfers);
+		addTokenTransfersRecordRb(tokenMultiplier * op.getTokenTransfersCount(), tokenXfers);
 
 		return usageEstimator.get();
 	}

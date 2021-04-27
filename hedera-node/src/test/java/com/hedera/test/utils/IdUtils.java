@@ -4,7 +4,7 @@ package com.hedera.test.utils;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ package com.hedera.test.utils;
  * ‍
  */
 
+import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenBalance;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
-import com.hedera.services.state.merkle.MerkleEntityId;
 
 import java.util.stream.Stream;
 
@@ -90,6 +91,15 @@ public class IdUtils {
 				.build();
 	}
 
+	public static ScheduleID asSchedule(String v) {
+		long[] nativeParts = asDotDelimitedLongArray(v);
+		return ScheduleID.newBuilder()
+				.setShardNum(nativeParts[0])
+				.setRealmNum(nativeParts[1])
+				.setScheduleNum(nativeParts[2])
+				.build();
+	}
+
 	static long[] asDotDelimitedLongArray(String s) {
 		String[] parts = s.split("[.]");
 		return Stream.of(parts).mapToLong(Long::valueOf).toArray();
@@ -99,17 +109,11 @@ public class IdUtils {
 		return String.format("%d.%d.%d", account.getShardNum(), account.getRealmNum(), account.getAccountNum());
 	}
 
-	public static TokenBalance tokenBalanceWith(long id, long balance) {
-		return TokenBalance.newBuilder()
-				.setTokenId(IdUtils.asToken("0.0." + id))
-				.setBalance(balance)
-				.build();
-	}
-
-	public static TokenBalance tokenBalanceWith(TokenID id, long balance) {
+	public static TokenBalance tokenBalanceWith(TokenID id, long balance, int decimals) {
 		return TokenBalance.newBuilder()
 				.setTokenId(id)
 				.setBalance(balance)
+				.setDecimals(decimals)
 				.build();
 	}
 

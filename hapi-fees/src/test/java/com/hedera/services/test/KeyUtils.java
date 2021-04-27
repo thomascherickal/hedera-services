@@ -4,7 +4,7 @@ package com.hedera.services.test;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,5 +78,14 @@ public class KeyUtils {
 							.addKeys(Key.newBuilder()
 									.setEd25519(ByteString.copyFrom("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb".getBytes())))
 							.addKeys(B_COMPLEX_KEY)))
+			.build();
+
+	public static KeyList DUMMY_KEY_LIST = KeyList.newBuilder()
+			.addKeys(Key.newBuilder()
+					.setEd25519(ByteString.copyFrom("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".getBytes())))
+			.addKeys(Key.newBuilder()
+					.setEd25519(ByteString.copyFrom("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb".getBytes())))
+			.addKeys(Key.newBuilder()
+					.setEd25519(ByteString.copyFrom("cccccccccccccccccccccccccccccccc".getBytes())))
 			.build();
 }

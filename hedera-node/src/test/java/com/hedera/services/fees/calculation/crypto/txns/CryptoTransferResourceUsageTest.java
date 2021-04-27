@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.crypto.txns;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,26 @@ package com.hedera.services.fees.calculation.crypto.txns;
  * ‍
  */
 
+import com.hedera.services.config.MockGlobalDynamicProps;
 import com.hedera.services.context.primitives.StateView;
-import com.hedera.services.fees.calculation.UsageEstimatorUtils;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.usage.SigUsage;
 import com.hedera.services.usage.crypto.CryptoTransferUsage;
-import com.hederahashgraph.api.proto.java.FeeComponents;
 import com.hederahashgraph.api.proto.java.FeeData;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.fee.SigValueObj;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.function.BiFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.BDDMockito.mock;
 
-@RunWith(JUnitPlatform.class)
 class CryptoTransferResourceUsageTest {
 	private CryptoTransferResourceUsage subject;
 
@@ -52,13 +50,16 @@ class CryptoTransferResourceUsageTest {
 	int numSigs = 10, sigsSize = 100, numPayerKeys = 3;
 	SigValueObj obj = new SigValueObj(numSigs, numPayerKeys, sigsSize);
 	SigUsage sigUsage = new SigUsage(numSigs, sigsSize, numPayerKeys);
+	FeeData expected;
 
 	CryptoTransferUsage usage;
+	GlobalDynamicProperties props = new MockGlobalDynamicProps();
 	BiFunction<TransactionBody, SigUsage, CryptoTransferUsage> factory;
 
 	@BeforeEach
 	private void setup() throws Throwable {
 		view = mock(StateView.class);
+		expected = mock(FeeData.class);
 
 		cryptoTransferTxn = mock(TransactionBody.class);
 		given(cryptoTransferTxn.hasCryptoTransfer()).willReturn(true);
@@ -70,12 +71,13 @@ class CryptoTransferResourceUsageTest {
 		given(factory.apply(cryptoTransferTxn, sigUsage)).willReturn(usage);
 
 		usage = mock(CryptoTransferUsage.class);
-		given(usage.get()).willReturn(MOCK_CRYPTO_TRANSFER_USAGE);
+		given(usage.givenTokenMultiplier(anyInt())).willReturn(usage);
+		given(usage.get()).willReturn(expected);
 
 		CryptoTransferResourceUsage.factory = factory;
 		given(factory.apply(cryptoTransferTxn, sigUsage)).willReturn(usage);
 
-		subject = new CryptoTransferResourceUsage();
+		subject = new CryptoTransferResourceUsage(props);
 	}
 
 	@Test
@@ -89,22 +91,9 @@ class CryptoTransferResourceUsageTest {
 	public void delegatesToCorrectEstimate() throws Exception {
 		// expect:
 		assertEquals(
-				MOCK_CRYPTO_TRANSFER_USAGE,
+				expected,
 				subject.usageGiven(cryptoTransferTxn, obj, view));
+		// and:
+		verify(usage).givenTokenMultiplier(props.feesTokenTransferUsageMultiplier());
 	}
-
-	public static final FeeData MOCK_CRYPTO_TRANSFER_USAGE = UsageEstimatorUtils.defaultPartitioning(
-			FeeComponents.newBuilder()
-					.setMin(1)
-					.setMax(1_000_000)
-					.setConstant(2)
-					.setBpt(2)
-					.setVpt(2)
-					.setRbh(2)
-					.setSbh(2)
-					.setGas(2)
-					.setTv(2)
-					.setBpr(2)
-					.setSbpr(2)
-					.build(), 2);
 }

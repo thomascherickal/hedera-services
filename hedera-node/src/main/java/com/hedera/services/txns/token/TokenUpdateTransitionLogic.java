@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ package com.hedera.services.txns.token;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.state.merkle.MerkleToken;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.txns.TransitionLogic;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -38,11 +38,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.hedera.services.tokens.TokenStore.MISSING_TOKEN;
+import static com.hedera.services.store.tokens.TokenStore.MISSING_TOKEN;
 import static com.hedera.services.txns.validation.TokenListChecks.checkKeys;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TREASURY_ACCOUNT_FOR_TOKEN;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_IS_IMMUTABLE;
@@ -176,7 +177,11 @@ public class TokenUpdateTransitionLogic implements TransitionLogic {
 			return INVALID_TOKEN_ID;
 		}
 
-		var validity = OK;
+		var validity = !op.hasMemo() ? OK : validator.memoCheck(op.getMemo().getValue());
+		if (validity != OK) {
+			return validity;
+		}
+
 
 		var hasNewSymbol = op.getSymbol().length() > 0;
 		if (hasNewSymbol) {

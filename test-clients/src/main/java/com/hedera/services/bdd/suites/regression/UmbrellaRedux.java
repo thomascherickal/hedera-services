@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.regression;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.runWithProvider;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hedera.services.bdd.suites.regression.RegressionProviderFactory.factoryFrom;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -78,17 +80,18 @@ public class UmbrellaRedux extends HapiApiSuite {
 								.balance(UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE)
 								.withRecharging()
 								.via("createUniquePayer"),
-						UtilVerbs.sleepFor(10000)
-
+						sleepFor(10000)
 				).when(
 						getTxnRecord("createUniquePayer").logged()
 				).then(
 						withOpContext((spec, opLog) -> configureFromCi(spec)),
-						runWithProvider(factoryFrom(props::get))
+						sourcing( () -> runWithProvider(factoryFrom(props::get))
 								.lasting(duration::get, unit::get)
 								.maxOpsPerSec(maxOpsPerSec::get)
 								.maxPendingOps(maxPendingOps::get)
 								.backoffSleepSecs(backoffSleepSecs::get)
+
+						)
 		);
 	}
 
@@ -114,6 +117,9 @@ public class UmbrellaRedux extends HapiApiSuite {
 		}
 		if (ciProps.has("statusTimeoutSecs")) {
 			statusTimeoutSecs.set(ciProps.getInteger("statusTimeoutSecs"));
+		}
+		if (ciProps.has("secondsWaitingServerUp")) {
+			statusTimeoutSecs.set(ciProps.getInteger("secondsWaitingServerUp"));
 		}
 	}
 

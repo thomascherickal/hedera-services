@@ -4,7 +4,7 @@ package com.hedera.services.usage;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,14 @@ import static com.hederahashgraph.fee.FeeBuilder.BASIC_RECEIPT_SIZE;
 import static com.hederahashgraph.fee.FeeBuilder.BASIC_TX_RECORD_SIZE;
 import static com.hederahashgraph.fee.FeeBuilder.FEE_MATRICES_CONST;
 import static com.hederahashgraph.fee.FeeBuilder.INT_SIZE;
-import static com.hederahashgraph.fee.FeeBuilder.RECIEPT_STORAGE_TIME_SEC;
+import static com.hederahashgraph.fee.FeeBuilder.RECEIPT_STORAGE_TIME_SEC;
 
 public enum SingletonEstimatorUtils implements EstimatorUtils {
 	ESTIMATOR_UTILS;
 
 	@Override
 	public long baseNetworkRbs() {
-		return BASIC_RECEIPT_SIZE * RECIEPT_STORAGE_TIME_SEC;
+		return BASIC_RECEIPT_SIZE * RECEIPT_STORAGE_TIME_SEC;
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public enum SingletonEstimatorUtils implements EstimatorUtils {
 				.setVpt(sigUsage.numSigs())
 				.setBpt(baseBodyBytes(txn) + sigUsage.sigsSize());
 		var estimate = new UsageEstimate(base);
-		estimate.addRbs(baseRecordBytes(txn) * RECIEPT_STORAGE_TIME_SEC);
+		estimate.addRbs(baseRecordBytes(txn) * RECEIPT_STORAGE_TIME_SEC);
 		return estimate;
 	}
 

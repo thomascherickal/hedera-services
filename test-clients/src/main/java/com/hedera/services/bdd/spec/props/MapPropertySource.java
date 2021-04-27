@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.props;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import static java.util.Map.*;
 public class MapPropertySource implements HapiPropertySource {
 	private static final Logger log = LogManager.getLogger(MapPropertySource.class);
 	private static final Set<String> KEYS_TO_CENSOR = Set.of(
-		"startupAccounts.literal"
+		"startupAccounts.literal", "default.payer.pemKeyPassphrase"
 	);
 
 	private final Map props;

@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.apache.commons.codec.binary.Hex;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,54 +51,10 @@ public class SolidityLog implements SelfSerializable {
 	private List<byte[]> topics = Collections.emptyList();
 
 	static DomainSerdes serdes = new DomainSerdes();
-	static EntityId.Provider legacyIdProvider = EntityId.LEGACY_PROVIDER;
 
 	public static final int MAX_DATA_BYTES = 32 * 1024;
 	public static final int MAX_BLOOM_BYTES = 256;
 	public static final int MAX_TOPIC_BYTES = 1024;
-
-	public static final Provider LEGACY_PROVIDER = new Provider();
-
-	@Deprecated
-	public static class Provider {
-		public SolidityLog deserialize(DataInputStream in) throws IOException {
-			var log = new SolidityLog();
-
-			in.readLong();
-			in.readLong();
-			if (in.readBoolean()) {
-				log.contractId = legacyIdProvider.deserialize(in);
-			}
-
-			int numBloomBytes = in.readInt();
-			if (numBloomBytes > 0) {
-				log.bloom = new byte[numBloomBytes];
-				in.readFully(log.bloom);
-			}
-
-			int numDataBytes = in.readInt();
-			if (numDataBytes > 0) {
-				log.data = new byte[numDataBytes];
-				in.readFully(log.data);
-			}
-
-			int numTopics = in.readInt();
-			if (numTopics > 0) {
-				log.topics = new LinkedList<>();
-				for (int i = 0; i < numTopics; i++) {
-					int numTopicBytes = in.readInt();
-					if (numTopicBytes > 0) {
-						byte[] topic = new byte[numTopicBytes];
-						in.readFully(topic);
-						log.topics.add(topic);
-					} else {
-						log.topics.add(MISSING_BYTES);
-					}
-				}
-			}
-			return log;
-		}
-	}
 
 	public SolidityLog() { }
 
@@ -223,7 +178,7 @@ public class SolidityLog implements SelfSerializable {
 
 	public static SolidityLog fromGrpc(ContractLoginfo grpc) {
 		return new SolidityLog(
-				EntityId.ofNullableContractId(grpc.hasContractID() ? grpc.getContractID() : null),
+				grpc.hasContractID() ? EntityId.fromGrpcContractId(grpc.getContractID()) : null,
 				grpc.getBloom().isEmpty() ? MISSING_BYTES : grpc.getBloom().toByteArray(),
 				grpc.getTopicList().stream().map(ByteString::toByteArray).collect(toList()),
 				grpc.getData().isEmpty() ? MISSING_BYTES : grpc.getData().toByteArray());

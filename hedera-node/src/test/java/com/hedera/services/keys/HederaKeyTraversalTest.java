@@ -4,7 +4,7 @@ package com.hedera.services.keys;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,7 @@ import com.hedera.test.factories.keys.KeyTree;
 import com.hedera.services.legacy.core.jproto.JKey;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +36,6 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static com.hedera.test.factories.keys.NodeFactory.*;
 
-@RunWith(JUnitPlatform.class)
 public class HederaKeyTraversalTest {
 	static KeyTree kt;
 

@@ -4,7 +4,7 @@ package com.hedera.services.sigs.utils;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,9 @@ import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.hedera.services.legacy.crypto.SignatureStatusCode;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import static com.hedera.test.factories.txns.SystemDeleteFactory.*;
 import static com.hedera.test.factories.txns.PlatformTxnFactory.from;
 
-@RunWith(JUnitPlatform.class)
 public class StatusUtilsTest {
 	@Test
 	public void usesTxnIdForStatus() throws Throwable {

@@ -4,7 +4,7 @@ package com.hedera.services.legacy.handler;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Arrays;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FREEZE_TRANSACTION_BODY;
 import static com.hederahashgraph.builder.RequestBuilder.getTransactionReceipt;
 import static com.swirlds.common.CommonUtils.hex;
@@ -60,7 +56,7 @@ import static com.swirlds.common.CommonUtils.hex;
  * 		transactions. Documentation available at index.html#proto.FreezeTransactionBody
  */
 public class FreezeHandler {
-	public static Logger log = LogManager.getLogger(FreezeHandler.class);
+	private static final Logger log = LogManager.getLogger(FreezeHandler.class);
 
 	private final Platform platform;
 	private final HederaFs hfs;
@@ -68,7 +64,6 @@ public class FreezeHandler {
 
 	private static String TARGET_DIR = "./";
 	private static String TEMP_DIR = "./temp";
-	private static String TEMP_SDK_DIR = TEMP_DIR + File.separator + "sdk";
 	private static String DELETE_FILE = TEMP_DIR + File.separator + "delete.txt";
 	private static String CMD_SCRIPT = "exec.sh";
 	private static String FULL_SCRIPT_PATH = TEMP_DIR + File.separator + CMD_SCRIPT;
@@ -110,8 +105,13 @@ public class FreezeHandler {
 					freezeBody.getStartMin(),
 					freezeBody.getEndHour(),
 					freezeBody.getEndMin());
-		} catch (IllegalArgumentException ex) {
-			log.warn("FreezeHandler - freeze fails. {}", ex.getMessage());
+		} catch (IllegalArgumentException platformEx) {
+			log.warn("Platform.setFreezeTime rejected args [startHour={},startMin={},endHour={},endMin={}] with '{}'",
+					freezeBody.getStartHour(),
+					freezeBody.getStartMin(),
+					freezeBody.getEndHour(),
+					freezeBody.getEndMin(),
+					platformEx.getMessage());
 			receipt = getTransactionReceipt(INVALID_FREEZE_TRANSACTION_BODY, exchange.activeRates());
 		}
 

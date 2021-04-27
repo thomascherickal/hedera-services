@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.queries.meta;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,12 @@ package com.hedera.services.bdd.spec.queries.meta;
  */
 
 import com.google.common.base.MoreObjects;
+import com.google.protobuf.ByteString;
+import com.hedera.services.bdd.spec.HapiApiSpec;
+import com.hedera.services.bdd.spec.assertions.ErroringAsserts;
 import com.hedera.services.bdd.spec.assertions.ErroringAssertsProvider;
+import com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts;
+import com.hedera.services.bdd.spec.queries.HapiQueryOp;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
@@ -32,24 +37,24 @@ import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionGetRecordQuery;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
-import com.hedera.services.bdd.spec.HapiApiSpec;
-import com.hedera.services.bdd.spec.assertions.ErroringAsserts;
-import com.hedera.services.bdd.spec.assertions.TransactionRecordAsserts;
-import com.hedera.services.bdd.spec.queries.HapiQueryOp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.LongConsumer;
 
+import static com.hedera.services.bdd.spec.assertions.AssertUtils.rethrowSummaryError;
 import static com.hedera.services.bdd.spec.queries.QueryUtils.answerCostHeader;
 import static com.hedera.services.bdd.spec.queries.QueryUtils.answerHeader;
-import static com.hedera.services.bdd.spec.assertions.AssertUtils.rethrowSummaryError;
+import static com.hedera.services.bdd.suites.crypto.CryptoTransferSuite.sdec;
+import static com.hedera.services.bdd.spec.transactions.schedule.HapiScheduleCreate.correspondingScheduledTxnId;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
 
 public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 	private static final Logger log = LogManager.getLogger(HapiGetTxnRecord.class);
@@ -57,16 +62,23 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 	private static final TransactionID defaultTxnId = TransactionID.getDefaultInstance();
 
 	String txn;
+	boolean scheduled = false;
 	boolean assertNothing = false;
 	boolean useDefaultTxnId = false;
 	boolean requestDuplicates = false;
+	boolean shouldBeTransferFree = false;
+	boolean assertOnlyPriority = false;
+	boolean assertNothingAboutHashes = false;
+	boolean lookupScheduledFromRegistryId = false;
 	Optional<TransactionID> explicitTxnId = Optional.empty();
 	Optional<TransactionRecordAsserts> priorityExpectations = Optional.empty();
 	Optional<BiConsumer<TransactionRecord, Logger>> format = Optional.empty();
+	Optional<String> creationName = Optional.empty();
 	Optional<String> saveTxnRecordToRegistry = Optional.empty();
 	Optional<String> registryEntry = Optional.empty();
 	Optional<String> topicToValidate = Optional.empty();
 	Optional<byte[]> lastMessagedSubmitted = Optional.empty();
+	Optional<LongConsumer> priceConsumer = Optional.empty();
 	private Optional<ErroringAssertsProvider<List<TransactionRecord>>> duplicateExpectations = Optional.empty();
 
 	public HapiGetTxnRecord(String txn) {
@@ -86,13 +98,45 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 		return this;
 	}
 
+	public HapiGetTxnRecord scheduled() {
+		scheduled = true;
+		return this;
+	}
+
+	public HapiGetTxnRecord assertingOnlyPriority() {
+		assertOnlyPriority = true;
+		return this;
+	}
+
+	public HapiGetTxnRecord scheduledBy(String creation) {
+		scheduled = true;
+		creationName = Optional.of(creation);
+		lookupScheduledFromRegistryId = true;
+		return this;
+	}
+
 	public HapiGetTxnRecord andAnyDuplicates() {
 		requestDuplicates = true;
 		return this;
 	}
 
+	public HapiGetTxnRecord assertingNothingAboutHashes() {
+		assertNothingAboutHashes = true;
+		return this;
+	}
+
 	public HapiGetTxnRecord assertingNothing() {
 		assertNothing = true;
+		return this;
+	}
+
+	public HapiGetTxnRecord providingFeeTo(LongConsumer priceConsumer) {
+		this.priceConsumer = Optional.of(priceConsumer);
+		return this;
+	}
+
+	public HapiGetTxnRecord showsNoTransfers() {
+		shouldBeTransferFree = true;
 		return this;
 	}
 
@@ -206,9 +250,20 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 		}
 		TransactionRecord actualRecord = response.getTransactionGetRecord().getTransactionRecord();
 		assertPriority(spec, actualRecord);
+		if (scheduled || assertOnlyPriority) {
+			return;
+		}
 		assertDuplicates(spec);
-		assertTransactionHash(spec, actualRecord);
-		assertTopicRunningHash(spec, actualRecord);
+		if (!assertNothingAboutHashes) {
+			assertTransactionHash(spec, actualRecord);
+			assertTopicRunningHash(spec, actualRecord);
+		}
+		if (shouldBeTransferFree) {
+			Assert.assertEquals(
+					"Unexpected transfer list!",
+					0,
+					actualRecord.getTokenTransferListsCount());
+		}
 	}
 
 	@Override
@@ -220,8 +275,14 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 			if (format.isPresent()) {
 				format.get().accept(record, log);
 			} else {
-				log.info("Record: " + record);
+				var fee = record.getTransactionFee();
+				var rates = spec.ratesProvider();
+				var priceInUsd = sdec(rates.toUsdWithActiveRates(fee), 4);
+				log.info("Record (charged ${}): {}", priceInUsd,  record);
 			}
+		}
+		if (response.getTransactionGetRecord().getHeader().getNodeTransactionPrecheckCode() == OK) {
+			priceConsumer.ifPresent(pc -> pc.accept(record.getTransactionFee()));
 		}
 		if (registryEntry.isPresent()) {
 			spec.registry().saveContractList(
@@ -231,7 +292,7 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 					registryEntry.get() + "CallResult",
 					record.getContractCallResult().getCreatedContractIDsList());
 		}
-		if(saveTxnRecordToRegistry.isPresent()) {
+		if (saveTxnRecordToRegistry.isPresent()) {
 			spec.registry().saveTransactionRecord(saveTxnRecordToRegistry.get(), record);
 		}
 	}
@@ -247,6 +308,15 @@ public class HapiGetTxnRecord extends HapiQueryOp<HapiGetTxnRecord> {
 		TransactionID txnId = useDefaultTxnId
 				? defaultTxnId
 				: explicitTxnId.orElseGet(() -> spec.registry().getTxnId(txn));
+		if (lookupScheduledFromRegistryId) {
+			txnId = spec.registry().getTxnId(correspondingScheduledTxnId(creationName.get()));
+		} else {
+			if (scheduled) {
+				txnId = txnId.toBuilder()
+						.setScheduled(true)
+						.build();
+			}
+		}
 		TransactionGetRecordQuery getRecordQuery = TransactionGetRecordQuery.newBuilder()
 				.setHeader(costOnly ? answerCostHeader(payment) : answerHeader(payment))
 				.setTransactionID(txnId)

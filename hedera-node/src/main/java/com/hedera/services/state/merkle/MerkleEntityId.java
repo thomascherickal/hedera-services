@@ -4,7 +4,7 @@ package com.hedera.services.state.merkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,16 @@ package com.hedera.services.state.merkle;
 import com.google.common.base.MoreObjects;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.swirlds.common.FCMKey;
-import com.swirlds.common.FastCopyable;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.common.merkle.utility.AbstractMerkleLeaf;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 public class MerkleEntityId extends AbstractMerkleLeaf implements FCMKey {
@@ -69,21 +67,8 @@ public class MerkleEntityId extends AbstractMerkleLeaf implements FCMKey {
 		return new MerkleEntityId(grpc.getShardNum(), grpc.getRealmNum(), grpc.getContractNum());
 	}
 
-	@Deprecated
-	public static class Provider implements SerializedObjectProvider {
-		@Override
-		public FastCopyable deserialize(DataInputStream in) throws IOException {
-			var id = new MerkleEntityId();
-
-			in.readLong();
-			in.readLong();
-
-			id.realm = in.readLong();
-			id.shard = in.readLong();
-			id.num = in.readLong();
-
-			return id;
-		}
+	public static MerkleEntityId fromScheduleId(ScheduleID grpc) {
+		return new MerkleEntityId(grpc.getShardNum(), grpc.getRealmNum(), grpc.getScheduleNum());
 	}
 
 	/* --- MerkleLeaf --- */
@@ -144,18 +129,6 @@ public class MerkleEntityId extends AbstractMerkleLeaf implements FCMKey {
 		return new MerkleEntityId(shard, realm, num);
 	}
 
-	@Override
-	@Deprecated
-	public void copyFrom(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	@Deprecated
-	public void copyFromExtra(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
-	}
-
 	/* --- Bean --- */
 	public long getShard() {
 		return shard;
@@ -207,6 +180,14 @@ public class MerkleEntityId extends AbstractMerkleLeaf implements FCMKey {
 				.setShardNum(shard)
 				.setRealmNum(realm)
 				.setTokenNum(num)
+				.build();
+	}
+
+	public ScheduleID toScheduleId() {
+		return ScheduleID.newBuilder()
+				.setShardNum(shard)
+				.setRealmNum(realm)
+				.setScheduleNum(num)
 				.build();
 	}
 }

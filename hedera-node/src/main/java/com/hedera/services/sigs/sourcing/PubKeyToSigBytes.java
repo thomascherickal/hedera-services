@@ -4,7 +4,7 @@ package com.hedera.services.sigs.sourcing;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ package com.hedera.services.sigs.sourcing;
  * ‍
  */
 
-import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hederahashgraph.api.proto.java.Signature;
 import com.hederahashgraph.api.proto.java.SignatureMap;
 import com.hederahashgraph.api.proto.java.Transaction;
 
 import java.util.List;
+
+import static com.hedera.services.legacy.proto.utils.CommonUtils.extractSignatureMapOrUseDefault;
 
 /**
  * Defines a type that is a source of the cryptographic signatures associated to
@@ -50,6 +51,8 @@ import java.util.List;
  * @author Michael Tinker
  */
 public interface PubKeyToSigBytes {
+	byte[] EMPTY_SIG = {};
+
 	/**
 	 * Return the cryptographic signature associated to a given public key in some
 	 * context (presumably the creation of a {@link com.swirlds.common.crypto.Signature}).
@@ -90,7 +93,7 @@ public interface PubKeyToSigBytes {
 	 * @return a source of the raw signatures associated to the payer for the txn.
 	 */
 	static PubKeyToSigBytes forPayer(Transaction signedTxn) {
-		return from(CommonUtils.extractSignatureMapOrUseDefault(signedTxn));
+		return from(extractSignatureMapOrUseDefault(signedTxn));
 	}
 
 	/**

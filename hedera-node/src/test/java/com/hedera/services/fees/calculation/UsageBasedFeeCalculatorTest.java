@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ package com.hedera.services.fees.calculation;
  */
 
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.fees.FeeMultiplierSource;
 import com.hedera.services.fees.HbarCentExchange;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.utils.SignedTxnAccessor;
 import com.hedera.test.factories.keys.KeyTree;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
+import com.hedera.test.utils.IdUtils;
+import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ExchangeRate;
 import com.hederahashgraph.api.proto.java.FeeComponents;
 import com.hederahashgraph.api.proto.java.FeeData;
@@ -33,23 +36,35 @@ import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
+import com.hederahashgraph.exception.InvalidTxBodyException;
 import com.hederahashgraph.fee.FeeBuilder;
 import com.hederahashgraph.fee.FeeObject;
 import com.hederahashgraph.fee.SigValueObj;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static com.hedera.services.fees.calculation.AwareFcfsUsagePrices.DEFAULT_USAGE_PRICES;
 import static com.hedera.test.factories.txns.CryptoCreateFactory.newSignedCryptoCreate;
+import static com.hedera.test.factories.txns.CryptoTransferFactory.newSignedCryptoTransfer;
+import static com.hedera.test.factories.txns.ContractCreateFactory.newSignedContractCreate;
+import static com.hedera.test.factories.txns.ContractCallFactory.newSignedContractCall;
+import static com.hedera.test.factories.txns.FileCreateFactory.newSignedFileCreate;
+import static com.hedera.test.factories.txns.TinyBarsFromTo.tinyBarsFromTo;
+import static com.hedera.test.utils.IdUtils.asAccountString;
+import static com.hederahashgraph.api.proto.java.HederaFunctionality.ContractCall;
+import static com.hederahashgraph.api.proto.java.HederaFunctionality.ContractCreate;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoCreate;
 import static com.hederahashgraph.api.proto.java.ResponseType.ANSWER_ONLY;
+import static com.hederahashgraph.fee.FeeBuilder.FEE_DIVISOR_FACTOR;
+import static com.hederahashgraph.fee.FeeBuilder.getTinybarsFromTinyCents;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.any;
@@ -59,10 +74,10 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.willThrow;
 
-@RunWith(JUnitPlatform.class)
 class UsageBasedFeeCalculatorTest {
 	FeeComponents mockFees = FeeComponents.newBuilder()
 			.setMax(1_234_567L)
+			.setGas(5_000_000L)
 			.setBpr(1_000_000L)
 			.setBpt(2_000_000L)
 			.setRbh(3_000_000L)
@@ -83,12 +98,17 @@ class UsageBasedFeeCalculatorTest {
 	QueryResourceUsageEstimator incorrectQueryEstimator;
 	Function<HederaFunctionality, List<TxnResourceUsageEstimator>> txnUsageEstimators;
 
+	long balance = 1_234_567L;
+	AccountID payer = IdUtils.asAccount("0.0.75231");
+	AccountID receiver = IdUtils.asAccount("0.0.86342");
 	UsageBasedFeeCalculator subject;
 	/* Has nine simple keys. */
 	KeyTree complexKey = TxnHandlingScenario.COMPLEX_KEY_ACCOUNT_KT;
 	JKey payerKey;
 	Transaction signedTxn;
 	SignedTxnAccessor accessor;
+
+	AtomicLong suggestedMultiplier = new AtomicLong(1L);
 
 	@BeforeEach
 	private void setup() throws Throwable {
@@ -97,6 +117,7 @@ class UsageBasedFeeCalculatorTest {
 		payerKey = complexKey.asJKey();
 		exchange = mock(HbarCentExchange.class);
 		signedTxn = newSignedCryptoCreate()
+				.balance(balance)
 				.payerKt(complexKey)
 				.txnValidStart(at)
 				.get();
@@ -113,8 +134,114 @@ class UsageBasedFeeCalculatorTest {
 		subject = new UsageBasedFeeCalculator(
 				exchange,
 				usagePrices,
+				new NestedMultiplierSource(),
 				List.of(incorrectQueryEstimator, correctQueryEstimator),
 				txnUsageEstimators);
+	}
+
+	@Test
+	public void estimatesContractCallPayerBalanceChanges() throws Throwable {
+		// setup:
+		long gas = 1_234L, sent = 5_432L;
+		signedTxn = newSignedContractCall()
+				.payer(asAccountString(payer))
+				.gas(gas)
+				.sending(sent)
+				.txnValidStart(at)
+				.get();
+		accessor = new SignedTxnAccessor(signedTxn);
+
+		given(exchange.rate(at)).willReturn(currentRate);
+		given(usagePrices.pricesGiven(ContractCall, at)).willReturn(currentPrices);
+		// and:
+		long expectedGasPrice =
+				getTinybarsFromTinyCents(currentRate, mockFees.getGas() / FEE_DIVISOR_FACTOR);
+
+		// expect:
+		assertEquals(-(gas * expectedGasPrice + sent), subject.estimatedNonFeePayerAdjustments(accessor, at));
+	}
+
+	@Test
+	public void estimatesCryptoCreatePayerBalanceChanges() throws Throwable {
+		// expect:
+		assertEquals(-balance, subject.estimatedNonFeePayerAdjustments(accessor, at));
+	}
+
+	@Test
+	public void estimatesContractCreatePayerBalanceChanges() throws Throwable {
+		// setup:
+		long gas = 1_234L, initialBalance = 5_432L;
+		signedTxn = newSignedContractCreate()
+				.payer(asAccountString(payer))
+				.gas(gas)
+				.initialBalance(initialBalance)
+				.txnValidStart(at)
+				.get();
+		accessor = new SignedTxnAccessor(signedTxn);
+
+		given(exchange.rate(at)).willReturn(currentRate);
+		given(usagePrices.pricesGiven(ContractCreate, at)).willReturn(currentPrices);
+		// and:
+		long expectedGasPrice =
+				getTinybarsFromTinyCents(currentRate, mockFees.getGas() / FEE_DIVISOR_FACTOR);
+
+		// expect:
+		assertEquals(-(gas * expectedGasPrice + initialBalance), subject.estimatedNonFeePayerAdjustments(accessor, at));
+	}
+
+	@Test
+	public void estimatesMiscNoNetChange() throws Throwable {
+		// setup:
+		signedTxn = newSignedFileCreate()
+				.payer(asAccountString(payer))
+				.txnValidStart(at)
+				.get();
+		accessor = new SignedTxnAccessor(signedTxn);
+
+		// expect:
+		assertEquals(0L, subject.estimatedNonFeePayerAdjustments(accessor, at));
+	}
+
+	@Test
+	public void estimatesCryptoTransferPayerBalanceChanges() throws Throwable {
+		// setup:
+		long sent = 1_234L;
+		signedTxn = newSignedCryptoTransfer()
+				.payer(asAccountString(payer))
+				.transfers(tinyBarsFromTo(asAccountString(payer), asAccountString(receiver), sent))
+				.txnValidStart(at)
+				.get();
+		accessor = new SignedTxnAccessor(signedTxn);
+
+		// expect:
+		assertEquals(-sent, subject.estimatedNonFeePayerAdjustments(accessor, at));
+	}
+
+	@Test
+	public void estimatesFutureGasPriceInTinybars() {
+		given(exchange.rate(at)).willReturn(currentRate);
+		given(usagePrices.pricesGiven(CryptoCreate, at)).willReturn(currentPrices);
+		// and:
+		long expected = getTinybarsFromTinyCents(currentRate, mockFees.getGas() / FEE_DIVISOR_FACTOR);
+
+		// when:
+		long actual = subject.estimatedGasPriceInTinybars(CryptoCreate, at);
+
+		// then:
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void computesActiveGasPriceInTinybars() {
+		given(exchange.activeRate()).willReturn(currentRate);
+		// and:
+		long expected = getTinybarsFromTinyCents(currentRate, mockFees.getGas() / FEE_DIVISOR_FACTOR);
+
+		// when:
+		long actual = subject.activeGasPriceInTinybars();
+
+		// then:
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -127,7 +254,7 @@ class UsageBasedFeeCalculatorTest {
 	}
 
 	@Test
-	public void throwsIseOnBadScheduleInFcfs() throws Exception {
+	public void throwsIseOnBadScheduleInFcfs() {
 		willThrow(IllegalStateException.class).given(usagePrices).loadPriceSchedules();
 
 		// expect:
@@ -135,10 +262,29 @@ class UsageBasedFeeCalculatorTest {
 	}
 
 	@Test
-	public void failsWithIaeSansApplicableUsageCalculator() {
-		// expect:
+	public void failsWithIseGivenApplicableButUnusableCalculator() throws InvalidTxBodyException {
+		// setup:
+		SigValueObj expectedSigUsage = new SigValueObj(
+				FeeBuilder.getSignatureCount(signedTxn),
+				9,
+				FeeBuilder.getSignatureSize(signedTxn));
+
+		given(correctOpEstimator.applicableTo(accessor.getTxn())).willReturn(true);
+		given(txnUsageEstimators.apply(CryptoCreate)).willReturn(List.of(correctOpEstimator));
+		given(correctOpEstimator.usageGiven(
+				argThat(accessor.getTxn()::equals),
+				argThat(factory.apply(expectedSigUsage)),
+				argThat(view::equals))).willThrow(InvalidTxBodyException.class);
+
+		// when:
 		assertThrows(IllegalArgumentException.class, () -> subject.computeFee(accessor, payerKey, view));
-		assertThrows(IllegalArgumentException.class,
+	}
+
+	@Test
+	public void failsWithNseeSansApplicableUsageCalculator() {
+		// expect:
+		assertThrows(NoSuchElementException.class, () -> subject.computeFee(accessor, payerKey, view));
+		assertThrows(NoSuchElementException.class,
 				() -> subject.computePayment(query, currentPrices, view, at, Collections.emptyMap()));
 	}
 
@@ -178,6 +324,34 @@ class UsageBasedFeeCalculatorTest {
 
 		// when:
 		FeeObject fees = subject.estimatePayment(query, currentPrices, view, at, ANSWER_ONLY);
+
+		// then:
+		assertEquals(fees.getNodeFee(), expectedFees.getNodeFee());
+		assertEquals(fees.getNetworkFee(), expectedFees.getNetworkFee());
+		assertEquals(fees.getServiceFee(), expectedFees.getServiceFee());
+	}
+
+	@Test
+	public void usesMultiplierAsExpected() throws Exception {
+		// setup:
+		long multiplier = 5L;
+		SigValueObj expectedSigUsage = new SigValueObj(
+				FeeBuilder.getSignatureCount(signedTxn),
+				9,
+				FeeBuilder.getSignatureSize(signedTxn));
+		FeeObject expectedFees = FeeBuilder.getFeeObject(currentPrices, resourceUsage, currentRate, multiplier);
+		suggestedMultiplier.set(multiplier);
+
+		given(correctOpEstimator.applicableTo(accessor.getTxn())).willReturn(true);
+		given(txnUsageEstimators.apply(CryptoCreate)).willReturn(List.of(correctOpEstimator));
+		given(correctOpEstimator.usageGiven(
+				argThat(accessor.getTxn()::equals),
+				argThat(factory.apply(expectedSigUsage)),
+				argThat(view::equals))).willReturn(resourceUsage);
+		given(exchange.activeRate()).willReturn(currentRate);
+
+		// when:
+		FeeObject fees = subject.computeFee(accessor, payerKey, view);
 
 		// then:
 		assertEquals(fees.getNodeFee(), expectedFees.getNodeFee());
@@ -273,4 +447,31 @@ class UsageBasedFeeCalculatorTest {
 			expectedSigUsage.getSignatureSize() == sigUsage.getSignatureSize()
 					&& expectedSigUsage.getPayerAcctSigCount() == sigUsage.getPayerAcctSigCount()
 					&& expectedSigUsage.getSignatureSize() == sigUsage.getSignatureSize();
+
+	private class NestedMultiplierSource implements FeeMultiplierSource {
+		@Override
+		public long currentMultiplier() {
+			return suggestedMultiplier.get();
+		}
+
+		@Override
+		public void resetExpectations() {
+			/* No-op */
+		}
+
+		@Override
+		public void updateMultiplier(Instant consensusNow) {
+			/* No-op. */
+		}
+
+		@Override
+		public void resetCongestionLevelStarts(Instant[] savedStartTimes) {
+			/* No-op. */
+		}
+
+		@Override
+		public Instant[] congestionLevelStarts() {
+			return new Instant[0];
+		}
+	}
 }

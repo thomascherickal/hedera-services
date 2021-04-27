@@ -4,7 +4,7 @@ package com.hedera.services.legacy.handler;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,42 +20,36 @@ package com.hedera.services.legacy.handler;
  * ‍
  */
 
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.config.AccountNumbers;
 import com.hedera.services.context.CurrentPlatformStatus;
 import com.hedera.services.context.domain.process.TxnValidityAndFeeReq;
-import com.hedera.services.context.domain.security.PermissionedAccountsRange;
+import com.hedera.services.context.domain.security.HapiOpPermissions;
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.exceptions.UnknownHederaFunctionality;
 import com.hedera.services.fees.FeeCalculator;
 import com.hedera.services.fees.FeeExemptions;
-import com.hedera.services.fees.HbarCentExchange;
-import com.hedera.services.fees.calculation.UsagePricesProvider;
-import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.exception.InvalidAccountIDException;
 import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureCountMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureTypeMismatchException;
-import com.hedera.services.legacy.utils.TransactionValidationUtils;
 import com.hedera.services.queries.validation.QueryFeeCheck;
 import com.hedera.services.records.RecordCache;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.verification.PrecheckVerifier;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.throttling.FunctionalityThrottling;
 import com.hedera.services.throttling.TransactionThrottling;
 import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.txns.validation.PureValidation;
 import com.hedera.services.txns.validation.TransferListChecks;
+import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.utils.SignedTxnAccessor;
-import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
-import com.hederahashgraph.api.proto.java.ContractCallTransactionBody;
-import com.hederahashgraph.api.proto.java.ContractCreateTransactionBody;
-import com.hederahashgraph.api.proto.java.FeeData;
-import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
@@ -63,26 +57,22 @@ import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
-import com.hederahashgraph.fee.FeeBuilder;
 import com.hederahashgraph.fee.FeeObject;
 import com.swirlds.common.Platform;
 import com.swirlds.fcmap.FCMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static com.hedera.services.context.domain.security.PermissionFileUtils.permissionFileKeyForQuery;
-import static com.hedera.services.context.domain.security.PermissionFileUtils.permissionFileKeyForTxn;
 import static com.hedera.services.state.merkle.MerkleEntityId.fromAccountId;
 import static com.hedera.services.utils.MiscUtils.activeHeaderFrom;
+import static com.hedera.services.utils.MiscUtils.functionOf;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BUSY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
@@ -97,9 +87,9 @@ import static com.swirlds.common.PlatformStatus.ACTIVE;
 
 @Deprecated
 public class TransactionHandler {
-  public static final String GET_TOPIC_INFO_QUERY_NAME = "getTopicInfo";
   public static final Predicate<AccountID> IS_THROTTLE_EXEMPT =
           id -> id.getAccountNum() >= 1 && id.getAccountNum() <= 100L;
+  public static final int MESSAGE_MAX_DEPTH = 50;
 
   private EnumSet<ResponseType> UNSUPPORTED_RESPONSE_TYPES = EnumSet.of(ANSWER_STATE_PROOF, COST_ANSWER_STATE_PROOF);
 
@@ -107,11 +97,8 @@ public class TransactionHandler {
   private RecordCache recordCache;
   private PrecheckVerifier precheckVerifier;
   private Supplier<FCMap<MerkleEntityId, MerkleAccount>> accounts;
-  private FunctionalityThrottling throttling;
   private AccountID nodeAccount;
   private TransactionThrottling txnThrottling;
-  private UsagePricesProvider usagePrices;
-  private HbarCentExchange exchange;
   private FeeCalculator fees;
   private FeeExemptions exemptions;
   private Supplier<StateView> stateView;
@@ -120,14 +107,54 @@ public class TransactionHandler {
   private AccountNumbers accountNums;
   private SystemOpPolicies systemOpPolicies;
   private CurrentPlatformStatus platformStatus;
+  private HapiOpPermissions hapiOpPermissions;
+
+  public static boolean validateTxDepth(Transaction transaction) {
+        return getDepth(transaction) <= MESSAGE_MAX_DEPTH;
+    }
+
+  public static boolean validateTxBodyDepth(TransactionBody transactionBody) {
+        return getDepth(transactionBody) < MESSAGE_MAX_DEPTH;
+    }
+
+  public static int getDepth(final GeneratedMessageV3 message) {
+        Map<Descriptors.FieldDescriptor, Object> fields = message.getAllFields();
+        int depth = 0;
+        for (var field : fields.values()) {
+          if (field instanceof GeneratedMessageV3) {
+            GeneratedMessageV3 fieldMessage = (GeneratedMessageV3) field;
+            depth = Math.max(depth, getDepth(fieldMessage) + 1);
+          } else if (field instanceof List) {
+            for (Object ele : (List) field) {
+              if (ele instanceof GeneratedMessageV3) {
+                depth = Math.max(depth, getDepth((GeneratedMessageV3) ele) + 1);
+              }
+            }
+          }
+        }
+        return depth;
+    }
+
+  public static boolean validateTxSize(Transaction transaction) {
+        return transaction.toByteArray().length <= Platform.getTransactionMaxBytes();
+    }
+
+  public static boolean validateQueryHeader(QueryHeader queryHeader, boolean hasPayment) {
+        boolean returnFlag = true;
+        if (queryHeader == null || queryHeader.getResponseType() == null) {
+            returnFlag = false;
+        } else if (hasPayment) {
+            returnFlag = queryHeader.hasPayment();
+        }
+        return returnFlag;
+    }
 
   public void setBasicPrecheck(BasicPrecheck basicPrecheck) {
     this.basicPrecheck = basicPrecheck;
   }
 
-  public void setThrottling(FunctionalityThrottling throttling) {
-    this.throttling = throttling;
-    this.txnThrottling = new TransactionThrottling(throttling);
+  public void setFees(FeeCalculator fees) {
+    this.fees = fees;
   }
 
   public TransactionHandler(
@@ -135,8 +162,6 @@ public class TransactionHandler {
           Supplier<FCMap<MerkleEntityId, MerkleAccount>> accounts,
           AccountID nodeAccount,
           PrecheckVerifier precheckVerifier,
-          UsagePricesProvider usagePrices,
-          HbarCentExchange exchange,
           FeeCalculator fees,
           Supplier<StateView> stateView,
           BasicPrecheck basicPrecheck,
@@ -144,12 +169,12 @@ public class TransactionHandler {
           AccountNumbers accountNums,
           SystemOpPolicies systemOpPolicies,
           FeeExemptions exemptions,
-          CurrentPlatformStatus platformStatus
+          CurrentPlatformStatus platformStatus,
+          FunctionalityThrottling throttling,
+          HapiOpPermissions hapiOpPermissions
   ) {
   	this.fees = fees;
   	this.stateView = stateView;
-    this.exchange = exchange;
-    this.usagePrices = usagePrices;
     this.recordCache = recordCache;
     this.accounts = accounts;
     this.nodeAccount = nodeAccount;
@@ -160,7 +185,7 @@ public class TransactionHandler {
     this.systemOpPolicies = systemOpPolicies;
     this.exemptions = exemptions;
     this.platformStatus = platformStatus;
-    throttling = function -> false;
+    this.hapiOpPermissions = hapiOpPermissions;
     txnThrottling = new TransactionThrottling(throttling);
   }
 
@@ -172,12 +197,13 @@ public class TransactionHandler {
           AccountNumbers accountNums,
           SystemOpPolicies systemOpPolicies,
           FeeExemptions exemptions,
-          CurrentPlatformStatus platformStatus
+          CurrentPlatformStatus platformStatus,
+          HapiOpPermissions hapiOpPermissions
   ) {
     this(recordCache, verifier, accounts, nodeAccount,
+            null,
             null, null, null, null,
-            null, null, null, null,
-            accountNums, systemOpPolicies, exemptions, platformStatus);
+            accountNums, systemOpPolicies, exemptions, platformStatus, hapiOpPermissions);
   }
 
   public TransactionHandler(
@@ -186,34 +212,30 @@ public class TransactionHandler {
           Supplier<FCMap<MerkleEntityId, MerkleAccount>> accounts,
           AccountID nodeAccount,
           TransactionThrottling txnThrottling,
-          UsagePricesProvider usagePrices,
-          HbarCentExchange exchange,
           FeeCalculator fees,
           Supplier<StateView> stateView,
           BasicPrecheck basicPrecheck,
           QueryFeeCheck queryFeeCheck,
-          FunctionalityThrottling throttling,
           AccountNumbers accountNums,
           SystemOpPolicies systemOpPolicies,
           FeeExemptions exemptions,
-          CurrentPlatformStatus platformStatus
+          CurrentPlatformStatus platformStatus,
+          HapiOpPermissions hapiOpPermissions
   ) {
     this.fees = fees;
     this.stateView = stateView;
-    this.exchange = exchange;
     this.recordCache = recordCache;
     this.precheckVerifier = precheckVerifier;
     this.accounts = accounts;
     this.nodeAccount = nodeAccount;
     this.basicPrecheck = basicPrecheck;
     this.txnThrottling = txnThrottling;
-    this.usagePrices = usagePrices;
     this.queryFeeCheck = queryFeeCheck;
-    this.throttling = throttling;
     this.accountNums = accountNums;
     this.systemOpPolicies = systemOpPolicies;
     this.exemptions = exemptions;
     this.platformStatus = platformStatus;
+    this.hapiOpPermissions = hapiOpPermissions;
   }
 
   public ResponseCodeEnum nodePaymentValidity(Transaction signedTxn, long queryFee) {
@@ -226,82 +248,9 @@ public class TransactionHandler {
     }
   }
 
-  /**
-   * Method to validate Fee and Submit Transaction used only for query header payment
-   */
-  public ResponseCodeEnum validateScheduledFee(
-          HederaFunctionality function,
-          Transaction transaction,
-          long scheduledFee
-  ) {
-    ResponseCodeEnum validationCode = OK;
-    if (scheduledFee > 0) {
-      validationCode = validateTransactionPreConsensus(transaction, true).getValidity();
-      if (validationCode != OK) {
-        log.debug("Pre Consensus validation failed.");
-        return validationCode;
-      }
-      validationCode = nodePaymentValidity(transaction, scheduledFee);
-    }
-    boolean isThrottleExempt = false;
-	try {
-	  TransactionBody txn = com.hedera.services.legacy.proto.utils.CommonUtils.extractTransactionBody(transaction);
-	  isThrottleExempt = IS_THROTTLE_EXEMPT.test(txn.getTransactionID().getAccountID());
-	} catch (Exception ignore) { }
-
-	if (!isThrottleExempt && throttling.shouldThrottle(function)) {
-      validationCode = ResponseCodeEnum.BUSY;
-    }
-    return validationCode;
-  }
-
   public boolean isAccountExist(AccountID acctId) {
     MerkleEntityId merkleEntityId = new MerkleEntityId(acctId.getShardNum(), acctId.getRealmNum(), acctId.getAccountNum());
     return accounts.get().get(merkleEntityId) != null;
-  }
-
-  /**
-   * @param trBody body of the transaction
-   * @return ResponseCodeEnum.CONTRACT_GAS_NEGATIVE if this is a contract creation or call and the
-   * gas is negative, ResponseCodeEnum.CONTRACT_VALUE_NEGATIVE if a contract create / call with
-   * negative initial balance / value, else OK.
-   */
-  private ResponseCodeEnum validateContractPositiveValues(TransactionBody trBody) {
-    long gas = 0;
-    long value = 0;
-    ResponseCodeEnum returnCode = OK;
-    if (trBody.hasContractCreateInstance()) {
-      gas = trBody.getContractCreateInstance().getGas();
-      value = trBody.getContractCreateInstance().getInitialBalance();
-    } else if (trBody.hasContractCall()) {
-      gas = trBody.getContractCall().getGas();
-      value = trBody.getContractCall().getAmount();
-    }
-    if (gas < 0) {
-      returnCode = ResponseCodeEnum.CONTRACT_NEGATIVE_GAS;
-    } else if (value < 0) {
-      returnCode = ResponseCodeEnum.CONTRACT_NEGATIVE_VALUE;
-    }
-    return returnCode;
-  }
-
-  /**
-   * @param trBody body of the transaction
-   * @return ResponseCodeEnum.MEMO_TOO_LONG if this is a contract creation or update and the memo is
-   * longer than 100 characters, else OK.
-   */
-  private ResponseCodeEnum validateContractMemoSize(TransactionBody trBody) {
-    String memo = null;
-    ResponseCodeEnum returnCode = OK;
-    if (trBody.hasContractCreateInstance()) {
-      memo = trBody.getContractCreateInstance().getMemo();
-    } else if (trBody.hasContractUpdateInstance()) {
-      memo = trBody.getContractUpdateInstance().getMemo();
-    }
-    if (memo != null && memo.length() > 100) {
-      returnCode = ResponseCodeEnum.MEMO_TOO_LONG;
-    }
-    return returnCode;
   }
 
   /**
@@ -328,26 +277,12 @@ public class TransactionHandler {
     }
   }
 
-  /**
-   * Validates if given transaction is permitted for payer account based on api-permission.property
-   * file
-   *
-   * @return NOT_SUPPORTED if permission is not granted OK otherwise
-   */
   private ResponseCodeEnum validateApiPermission(TransactionBody txn) {
-    var permissionKey = permissionFileKeyForTxn(txn);
-    if (!StringUtils.isEmpty(permissionKey)) {
-      var payer = txn.getTransactionID().getAccountID();
-      if (accountNums.isSuperuser(payer.getAccountNum())) {
-        return OK;
-      } else {
-        PermissionedAccountsRange accountRange = PropertiesLoader.getApiPermission().get(permissionKey);
-        if (accountRange != null) {
-        	return accountRange.contains(payer.getAccountNum()) ? OK : NOT_SUPPORTED;
-        }
-      }
+    try {
+      return hapiOpPermissions.permissibilityOf(functionOf(txn), txn.getTransactionID().getAccountID());
+    } catch (UnknownHederaFunctionality unknownHederaFunctionality) {
+      return NOT_SUPPORTED;
     }
-    return NOT_SUPPORTED;
   }
 
   private TxnValidityAndFeeReq validateTransactionFeeCoverage(
@@ -365,50 +300,24 @@ public class TransactionHandler {
       if (isAccountExist(payerAccount)) {
         Long payerAccountBalance = Optional.ofNullable(accounts.get().get(fromAccountId(payerAccount)))
                 .map(MerkleAccount::getBalance)
-                .orElse(null);
+                .orElse(0L);
         long suppliedFee = txn.getTransactionFee();
-        long payerChangeDuringTxn = !txn.hasCryptoTransfer() ? 0L :
-            txn.getCryptoTransfer().getTransfers().getAccountAmountsList()
-                    .stream()
-                    .filter(aa -> aa.getAccountID().equals(payerAccount))
-                    .mapToLong(AccountAmount::getAmount)
-					.sum();
-        if (suppliedFee > (payerAccountBalance + Math.min(0L, payerChangeDuringTxn))) {
-          returnCode = ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
-        }
 
-        if (returnCode == OK) {
-          try {
-            JKey payerKey = accounts.get().get(fromAccountId(payerAccount)).getKey();
-            Timestamp at = txn.getTransactionID().getTransactionValidStart();
-            FeeObject txnFee = fees.estimateFee(accessor, payerKey, stateView.get(), at);
-            fee = txnFee.getNetworkFee() + txnFee.getNodeFee() + txnFee.getServiceFee();
-          } catch (Exception e) {
-            log.error("Could not calculate fee for transaction. " + e);
-            returnCode = ResponseCodeEnum.FAIL_FEE;
-          }
+        Timestamp at = txn.getTransactionID().getTransactionValidStart();
+        try {
+          JKey payerKey = accounts.get().get(fromAccountId(payerAccount)).getKey();
+          FeeObject txnFee = fees.estimateFee(accessor, payerKey, stateView.get(), at);
+          fee = txnFee.getNetworkFee() + txnFee.getNodeFee() + txnFee.getServiceFee();
+        } catch (Exception e) {
+          log.warn("Could not calculate fee for transaction", e);
+          returnCode = ResponseCodeEnum.FAIL_FEE;
         }
         if (returnCode == OK) {
           if (suppliedFee < fee) {
             returnCode = ResponseCodeEnum.INSUFFICIENT_TX_FEE;
             feeRequired = fee;
-          } else if (payerAccountBalance < fee) {
+          } else if (payerAccountBalance + Math.min(0L, fees.estimatedNonFeePayerAdjustments(accessor, at)) < fee) {
             returnCode = ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
-          } else if (txn.hasContractCreateInstance()) {
-            ContractCreateTransactionBody createBody = txn.getContractCreateInstance();
-            long gasInTransacton = createBody.getGas();
-            long gasCost = gasInTransacton * getGasPrice(HederaFunctionality.ContractCreate);
-            long balance = createBody.getInitialBalance();
-            if (payerAccountBalance < (fee + gasCost + balance)) {
-              returnCode = ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
-            }
-          } else if (txn.hasContractCall()) {
-            ContractCallTransactionBody callBody = txn.getContractCall();
-            long gasCost = callBody.getGas() * getGasPrice(HederaFunctionality.ContractCall);
-            long amount = callBody.getAmount();
-            if (payerAccountBalance < (fee + gasCost + amount)) {
-              returnCode = ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
-            }
           }
         }
       } else {
@@ -418,17 +327,6 @@ public class TransactionHandler {
       returnCode = ResponseCodeEnum.PAYER_ACCOUNT_NOT_FOUND;
     }
     return new TxnValidityAndFeeReq(returnCode, feeRequired);
-  }
-
-  public long getGasPrice(HederaFunctionality function) {
-    Timestamp at = Timestamp.newBuilder()
-            .setSeconds(System.currentTimeMillis() / 1000)
-            .build();
-
-    FeeData prices = usagePrices.pricesGiven(function, at);
-    long feeInTinyCents = prices.getServicedata().getGas() / 1000;
-    long feeInTinyBars = FeeBuilder.getTinybarsFromTinyCents(exchange.rate(at), feeInTinyCents);
-    return Math.max(feeInTinyBars, 1L);
   }
 
   private ResponseCodeEnum validateTransactionContents(Transaction transaction) {
@@ -452,7 +350,7 @@ public class TransactionHandler {
       return new TxnValidityAndFeeReq(ResponseCodeEnum.PLATFORM_NOT_ACTIVE);
     }
 
-    if (!TransactionValidationUtils.validateTxSize(transaction)) {
+    if (!validateTxSize(transaction)) {
       if (log.isDebugEnabled()) {
         log.debug("Size of the transaction exceeds transactionMaxBytes: "
             + Platform.getTransactionMaxBytes());
@@ -460,7 +358,7 @@ public class TransactionHandler {
       return new TxnValidityAndFeeReq(ResponseCodeEnum.TRANSACTION_OVERSIZE);
     }
 
-    if (!TransactionValidationUtils.validateTxDepth(transaction)) {
+    if (!validateTxDepth(transaction)) {
       log.debug("Request transaction has too many layers.");
       return new TxnValidityAndFeeReq(ResponseCodeEnum.TRANSACTION_TOO_MANY_LAYERS);
     }
@@ -475,7 +373,7 @@ public class TransactionHandler {
       returnCode = INVALID_TRANSACTION_BODY;
     }
 
-    if (returnCode == OK && !TransactionValidationUtils.validateTxBodyDepth(txn)) {
+    if (returnCode == OK && !validateTxBodyDepth(txn)) {
       return new TxnValidityAndFeeReq(ResponseCodeEnum.TRANSACTION_TOO_MANY_LAYERS);
     }
 
@@ -542,29 +440,16 @@ public class TransactionHandler {
       returnCode = validateTransactionThrottling(txn);
     }
 
-    if (returnCode == OK) {
-      returnCode = validateContractPositiveValues(txn);
-    }
-
-    if (returnCode == OK) {
-      returnCode = validateContractMemoSize(txn);
-    }
-
     return new TxnValidityAndFeeReq(returnCode, feeRequired);
   }
 
-  /**
-   * Method to check query validations based on QueryCase from request
-   *
-   * @return validationCode
-   */
   public ResponseCodeEnum validateQuery(Query query, boolean hasPayment) {
     if (hasPayment && platformStatus.get() != ACTIVE) {
       return ResponseCodeEnum.PLATFORM_NOT_ACTIVE;
     }
 
     QueryHeader header = activeHeaderFrom(query).orElse(QueryHeader.getDefaultInstance());
-    if (!TransactionValidationUtils.validateQueryHeader(header, hasPayment)) {
+    if (!validateQueryHeader(header, hasPayment)) {
       return ResponseCodeEnum.MISSING_QUERY_HEADER;
     }
     if (UNSUPPORTED_RESPONSE_TYPES.contains(header.getResponseType())) {
@@ -579,22 +464,9 @@ public class TransactionHandler {
       return INVALID_TRANSACTION_BODY;
     }
 
-    ResponseCodeEnum permissionStatus = NOT_SUPPORTED;
-    var queryName = permissionFileKeyForQuery(query);
-    if (!StringUtils.isEmpty(queryName)) {
-      AccountID payer = body.getTransactionID().getAccountID();
-      if (accountNums.isSuperuser(payer.getAccountNum())) {
-        permissionStatus = OK;
-      } else {
-        PermissionedAccountsRange accountRange = PropertiesLoader.getApiPermission().get(queryName);
-        if (accountRange != null) {
-          long payerNum = body.getTransactionID().getAccountID().getAccountNum();
-          permissionStatus = accountRange.contains(payerNum) ? OK : NOT_SUPPORTED;
-        }
-      }
-    }
-
-    return permissionStatus;
+    var queryOp = MiscUtils.functionalityOfQuery(query);
+    AccountID payer = body.getTransactionID().getAccountID();
+    return queryOp.map(op -> hapiOpPermissions.permissibilityOf(op, payer)).orElse(NOT_SUPPORTED);
   }
 
   public boolean verifySignature(Transaction signedTxn) throws Exception {
@@ -606,18 +478,7 @@ public class TransactionHandler {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public List<ExpirableTxnRecord> getAllTransactionRecordFCM(MerkleEntityId merkleEntityId) {
-    try {
-      MerkleAccount account = accounts.get().get(merkleEntityId);
-      if (account != null) {
-        return account.recordList();
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (ConcurrentModificationException cme) {
-      log.error("Queried records are being modified by another thread!", cme);
-      throw cme;
-    }
+  public void setHapiOpPermissions(HapiOpPermissions hapiOpPermissions) {
+    this.hapiOpPermissions = hapiOpPermissions;
   }
 }

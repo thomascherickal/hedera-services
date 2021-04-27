@@ -19,6 +19,411 @@ commands:
             pip3 -q install matplotlib;
             sudo apt-get install -y python3-setuptools;
             pip3 install awscli;
+      - run:
+          name: Install gcloud cli
+          command: |
+            apt-get update || apt-get update;
+            curl https://sdk.cloud.google.com > install.sh;
+            bash install.sh --disable-prompts;
+      - run:
+          name: Authenticate gcloud cli
+          command: |
+            echo 'export PATH=/root/google-cloud-sdk/bin:$PATH' >> /root/.bashrc;
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc;
+            source /root/google-cloud-sdk/path.bash.inc;
+            echo $GCLOUD_SERVICE_KEY > /tmp/gcloud-service-key.json;
+            gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json;
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID};
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE};
+            sudo apt-get install gcc python3-dev python3-setuptools -y;
+            sudo pip3 uninstall crcmod;
+            sudo pip3 install --no-cache-dir -U crcmod;
+
+
+
+  ######################################################################################################################
+  # Command Name:                     gcp_storage_rsync
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       src                         the source local or remote path, mandatory
+  #       dest                        the destination local or remote path, mandatory
+  #
+  #
+  # Description:
+  #
+  #   Copies files or folders (recursively) from the path specified by `src` parameter to the path specified by the
+  #   `dest` parameter. The paths specified by both the `src` and `dest` parameters may be local or remote paths.
+  #
+  #   This command uses a differential rsync and will only transfer new or changed files.
+  #
+  #   Example Supported Paths:
+  #       - /home/myPath
+  #       - /home/myPath/file.txt
+  #       - gs://my-bucket/folder
+  #       - gs://my-bucket/file.txt
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available or no CRC32 system library is available.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #
+  ######################################################################################################################
+  gcp_storage_rsync:
+    parameters:
+      src:
+        type: string
+      dest:
+        type: string
+    steps:
+      - run:
+          name: "GCP Storage RSync [Source: '<< parameters.src >>', Destination: '<< parameters.dest >>']"
+          command: |
+            set -x;
+            cd /swirlds-platform/regression
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc;
+            gsutil -m rsync -r -d "<< parameters.src >>" "<< parameters.dest >>"
+
+  ######################################################################################################################
+  # Command Name:                     gcp_import_credentials
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       username_variable           the name of the bash environment variable holding the user name, optional
+  #       keyfile_variable            the name of the bash environment variable holding the key file, optional
+  #       project_variable            the name of the bash environment variable holding the project name, optional
+  #
+  #
+  # Description:
+  #
+  #   Imports the gcloud keypair defined in the CircleCI environment variables specified by the
+  #   `username_variable`, `keyfile_variable`, and `project_variable` parameters.
+  #   The default variable names `GCP_USER_NAME`, `GCP_KEY_FILE`, and `GCP_PROJECT_ID` will be used if not specified.
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available or the environment variable is not
+  #         properly formatted.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #
+  ######################################################################################################################
+  gcp_import_credentials:
+    parameters:
+      username_variable:
+        type: string
+        default: "GCP_USER_NAME"
+      keyfile_variable:
+        type: string
+        default: "GCP_KEY_FILE"
+      project_variable:
+        type: string
+        default: "GCP_PROJECT_ID"
+    steps:
+      - run:
+          name: Import the Google Cloud Service  Account
+          command: |
+            set -x
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc
+            echo "${<< parameters.keyfile_variable >>}" > "/tmp/gcloud_account_key.json"
+            set -x
+            gcloud auth activate-service-account "${<< parameters.username_variable >>}" --key-file="/tmp/gcloud_account_key.json" --project="${<< parameters.project_variable >>}"
+
+
+  ######################################################################################################################
+  # Command Name:                     jrs_history_retrieve
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       bucket_name                 the name of the GCP bucket containing the JRS summary history files, mandatory
+  #       summary_path                the local path of the JRS summary history files, mandatory
+  #
+  #
+  # Description:
+  #
+  #   Retrieves the JRS Summary History files from prior runs using a combination of CircleCI caching and GCP bucket
+  #   storage as specified by the `bucket_name` parameter. The local summary history path specified by the
+  #   `summary_path` parameter will be created if it does not exist.
+  #
+  #   The GCP bucket should be a dedicated storage bucket that must only contain JRS summary history files.
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available or no CRC32 system library is available.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #
+  ######################################################################################################################
+  jrs_history_retrieve:
+    parameters:
+      bucket_name:
+        type: string
+      summary_path:
+        type: string
+    steps:
+      - run:
+          name: Ensure JRS Summary Folder Exists
+          command: |
+            set -x
+            cd /swirlds-platform/regression
+            if [[ ! -d "<< parameters.summary_path >>" ]]; then
+              mkdir -p "<< parameters.summary_path >>"
+            fi
+      - restore_cache:
+          name: Restoring JRS Summary History Cache
+          keys:
+            - v1-jrs-summary-history-{{ epoch }}
+            - v1-jrs-summary-history-
+      - gcp_storage_rsync:
+          src: "gs://<< parameters.bucket_name >>/"
+          dest: "<< parameters.summary_path >>"
+
+
+  ######################################################################################################################
+  # Command Name:                     jrs_history_store
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       bucket_name                 the name of the GCP bucket containing the JRS summary history files, mandatory
+  #       summary_path                the local path of the JRS summary history files, mandatory
+  #
+  #
+  # Description:
+  #
+  #   Saves the JRS Summary History files from the current run using a combination of CircleCI caching and GCP bucket
+  #   storage as specified by the `bucket_name` parameter. The local summary history path specified by the
+  #   `summary_path` parameter must exist.
+  #
+  #   The GCP bucket should be a dedicated storage bucket that must only contain JRS summary history files.
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available or no CRC32 system library is available.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #
+  ######################################################################################################################
+  jrs_history_store:
+    parameters:
+      bucket_name:
+        type: string
+      summary_path:
+        type: string
+    steps:
+      - save_cache:
+          name: Saving JRS Summary History Cache
+          key: v1-jrs-summary-history-{{ epoch }}
+          paths:
+            - << parameters.summary_path >>
+          when: always
+      - gcp_storage_rsync:
+          src: "<< parameters.summary_path >>"
+          dest: "gs://<< parameters.bucket_name >>/"
+
+
+  ######################################################################################################################
+  # Command Name:                     jrs_results_store
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       bucket_name                 the name of the GCP bucket containing the JRS regression results, mandatory
+  #       result_path                 the local path of the JRS regression result files, mandatory
+  #
+  #
+  # Description:
+  #
+  #   Saves the JRS Regression result files from the current run to the GCP bucket storage as specified by the
+  #   `bucket_name` parameter. The local result path specified by the `result_path` parameter must exist.
+  #
+  #   The GCP bucket should be a dedicated storage bucket that must only contain JRS Regression result files.
+  #
+  #   The final path used to the store the result files in the GCP bucket is as follows:
+  #       - gs://${BUCKET_NAME}/${JRS_USER}/${JRS_BRANCH}
+  #
+  #   The ${JRS_USER} variable will default to a value of `hedera-services-automation` if not otherwise provided by CircleCI.
+  #   This will be the case with all nightly or other jobs run via the CircleCI cron scheduler. All nightly automated
+  #   regression runs should have results stored under this default username.
+  #
+  #   The ${JRS_BRANCH} variable will be set to the actual branch name provided by the ${CIRCLE_BRANCH} variable, if
+  #   available, otherwise it will default to the tag name specified by the ${CIRCLE_TAG} variable, if available. If
+  #   neither the ${CIRCLE_BRANCH} or ${CIRCLE_TAG} values are available then then CircleCI job name provided by the
+  #   ${CIRCLE_JOB} variable will be used.
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available or no CRC32 system library is available.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #
+  ######################################################################################################################
+  jrs_results_store:
+    parameters:
+      bucket_name:
+        type: string
+      result_path:
+        type: string
+    steps:
+      - run:
+          name: Saving JRS Regression Results
+          command: |
+            set -x
+            cd /swirlds-platform/regression;
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc;
+
+            if [[ ! -d "<< parameters.result_path >>" ]]; then exit 13; fi
+
+            if [[ -z "${CIRCLE_USERNAME}" ]]; then
+              JRS_USER="hedera-services-automation"
+            else
+              JRS_USER="${CIRCLE_USERNAME}"
+            fi
+
+            if [[ -z "${CIRCLE_BRANCH}" ]]; then
+              if [[ -n "${CIRCLE_TAG}" ]]; then
+                JRS_BRANCH="${CIRCLE_TAG}"
+              else
+                JRS_BRANCH="${CIRCLE_JOB}"
+              fi
+            else
+              JRS_BRANCH="${CIRCLE_BRANCH}"
+            fi
+
+            gsutil -m rsync -r "<< parameters.result_path >>" "gs://<< parameters.bucket_name >>/${JRS_USER}/${JRS_BRANCH}/"
+
+            tar -czvf /results.tar.gz  /swirlds-platform/regression/<< parameters.result_path >>
+          when: always
+
+
+
+  ######################################################################################################################
+  # Command Name:                     jrs_regression_execute
+  # Command Version:                  1.0
+  #
+  # Parameters:
+  #       config_file                 the relative path to the JRS regression config, mandatory
+  #       regression_path             the local path to the regression folder, optional (default: "regression")
+  #       slack_results_channel       the slack test results channel override, optional (default: "")
+  #       slack_summary_channel       the slack summary channel override, optional (default: "")
+  #
+  #
+  # Description:
+  #
+  #   Executes the JRS regression run using the provided `config_file` parameter. The `config_file` parameter is treated
+  #   as a path relative to the `regression_path` parameter. The `regression_path` parameter may be either a path
+  #   relative to the current working directory or an absolute path.
+  #
+  #   The optional `slack_results_channel` and `slack_summary_channel` parameters allow using an alternate slack channel
+  #   for the respective notification types. If one or both of these are provided, then the related setting in the JSON
+  #   files will be ignored.
+  #
+  #   This command depends on the following CircleCI Context environment variables:
+  #     - JRS_SSH_USER_NAME:  the username associated with the `JRS_SSH_KEY_FILE` used by JRS to connect to the remote instances
+  #     - JRS_SSH_KEY_FILE:   the base64 encoded private SSH key used by JRS to connect to remote instances
+  #     - JRS_WEB_HOSTNAME:   the IP address or hostname of the JRS web server
+  #     - JRS_WEB_PORT:       the port number on which the JRS web server is listening
+  #
+  #
+  #   NOTE: The build will fail if the `gcloud` command is not available.
+  #
+  # Command Requirements:
+  #   - gcloud (>= 323.0.0)
+  #   - openjdk (>= 12.0.2)
+  #
+  ######################################################################################################################
+  jrs_regression_execute:
+    parameters:
+      config_file:
+        type: string
+      regression_path:
+        type: string
+        default: "regression"
+      slack_results_channel:
+        type: string
+        default: ""
+      slack_summary_channel:
+        type: string
+        default: ""
+      hedera_services_path:
+        type: string
+        default: "/repo"
+      continuous_integration:
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: Configure JRS Regression Keys
+          command: |
+            set -x
+            cp ~/.ssh/id_rsa_e7a63e343ed8fe642c7fb657450344ac /tmp/jrs-ssh-keyfile
+            cp "/tmp/jrs-ssh-keyfile" "/tmp/jrs-ssh-keyfile.pem"
+            chmod 0600 /tmp/jrs-ssh-keyfile*
+            ssh-keygen -p -N "" -m pem -f "/tmp/jrs-ssh-keyfile.pem"
+            ssh-keygen -y -f "/tmp/jrs-ssh-keyfile" > "/tmp/jrs-ssh-keyfile.pub"
+
+      - run:
+          name: "Execute JRS Regression (<< parameters.config_file >>)"
+          command: |
+            set -x
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc;
+            cd /swirlds-platform
+            REGRESSION_PATH="<< parameters.regression_path >>"
+            if [[ ! -d "${REGRESSION_PATH}" ]]; then exit 15; fi
+
+            if [[ -z "${CIRCLE_USERNAME}" ]]; then
+              JRS_USER="hedera-services-automation"
+            else
+              JRS_USER="${CIRCLE_USERNAME}"
+            fi
+
+            if [[ -z "${CIRCLE_BRANCH}" ]]; then
+              if [[ -n "${CIRCLE_TAG}" ]]; then
+                JRS_BRANCH="${CIRCLE_TAG}"
+              else
+                JRS_BRANCH="${CIRCLE_JOB}"
+              fi
+            else
+              JRS_BRANCH="${CIRCLE_BRANCH}"
+            fi
+
+            JRS_OPTIONS=""
+            SLACK_SUMMARY="<< parameters.slack_summary_channel >>"
+            SLACK_RESULTS="<< parameters.slack_results_channel >>"
+
+            if [[ -n "${SLACK_SUMMARY}" ]]; then
+              JRS_OPTIONS="${JRS_OPTIONS} -Djrs.circleci.slack.summary=${SLACK_SUMMARY}"
+            fi
+
+            if [[ -n "${SLACK_RESULTS}" ]]; then
+              JRS_OPTIONS="${JRS_OPTIONS} -Djrs.circleci.slack.results=${SLACK_RESULTS}"
+            fi
+
+            CI_PARAMETERS=""
+            if [[ "<< parameters.continuous_integration >>" == "true" ]]; then
+              CI_PARAMETERS="${CI_PARAMETERS} $CIRCLE_USERNAME $CIRCLE_BUILD_URL"
+            fi
+
+            pushd "${REGRESSION_PATH}" > /dev/null 2>&1
+              CONFIG_PATH="<< parameters.config_file >>"
+              if [[ ! -f "${CONFIG_PATH}" ]]; then
+                echo
+                echo "Configuration File '${CONFIG_PATH}' does not exist......"
+                echo
+                exit 20
+              fi
+
+              if [[ -z "${JAVA_OPTS}" ]]; then
+                JAVA_OPTS="-Xmx4g"
+              fi
+
+              java ${JAVA_OPTS} \
+              -Djrs.circleci=true \
+              -Djrs.circleci.user="${JRS_USER}" \
+              -Djrs.circleci.branch="${JRS_BRANCH}" \
+              -Djrs.circleci.ssh.login="${JRS_SSH_USER_NAME}" \
+              -Djrs.circleci.ssh.keyfile="/tmp/jrs-ssh-keyfile" \
+              ${JRS_OPTIONS} \
+              -Dlog4j.configurationFile=log4j2-jrs.xml \
+              -Dspring.output.ansi.enabled=ALWAYS \
+              -jar regression.jar "${CONFIG_PATH}" "<< parameters.hedera_services_path >>" ${CI_PARAMETERS}
+            popd > /dev/null 2>&1
+          no_output_timeout: 30m
+
   ensure-env-vars:
     description: Ensure the builtin CircleCI env vars are available
     steps:
@@ -32,7 +437,7 @@ commands:
       workflow-name:
         description: name of the workflow
         type: string
-        default: "continuous integration"
+        default: "continuous-integration"
       slack-channel:
         description: name of the slack channel to send report to
         type: string
@@ -116,6 +521,8 @@ commands:
           dsl-args: "RecordStreamValidation"
           ci-properties-map: "recordStreamsDir=/repo/recordstreams"
 
+# insight py is removed from services repo and is stages in platform regression repo.
+# we no longer use this job for publishing stats.
   publish-platform-stats:
     description: Generate the insight.py PDF and publish it (e.g. to Slack)
     parameters:
@@ -510,6 +917,22 @@ commands:
             /repo/.circleci/scripts/trap-failable-for-tf-cleanup.sh \
                 '/repo/.circleci/scripts/scan-logs-for-iss.sh \
                     << parameters.iss-pattern-sh >>'
+
+  run-jrs-experiment:
+    description: Run JRS experiment json
+    parameters:
+      experiment-name:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Run experiment << parameters.experiment-name >>.json
+          no_output_timeout: 30m
+          command: |
+            cd /swirlds-platform/regression;
+            source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc;
+            ./regression_services_circleci.sh configs/services/suites/daily/<< parameters.experiment-name >>.json /repo
+
   run-eet-suites:
     description: Run end-to-end tests
     parameters:
@@ -839,6 +1262,7 @@ commands:
 
 executors:
   build-executor:
+    resource_class: xlarge
     parameters:
       workflow-name:
         type: string
@@ -884,127 +1308,173 @@ executors:
     working_directory: /repo
 
 workflows:
-  AWS-Daily-Services-Comp-Basic-4N-1C:
+  GCP-Daily-Services-Crypto-Update-5N-1C:
     triggers:
       - schedule:
-          cron: "15 4 * * *"
+          cron: "35 4 * * *"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-basic-suiterunner-tests:
+      - jrs-regression:
           context: Slack
+          result_path: results/5N_1C/Update
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Crypto-Update-5N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Comp-Basic-4N-1C"
 
-  AWS-Daily-Services-Crypto-Update-5N-1C:
+  GCP-Weekly-Services-Crypto-Restart-Performance-15N-15C:
     triggers:
       - schedule:
-          cron: "30 4 * * *"
+          cron: "5 5 * * 6"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-update-node-tests:
+      - jrs-regression:
+          runtime: build-executor
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/15N_15C/
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-Crypto-Restart-Performance-15N-15C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Crypto-Update-5N-1C"
-
-  AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C:
+  GCP-Weekly-Services-MixedOps-Restart-Performance-20N-20C:
     triggers:
       - schedule:
-          cron: "0 5 * * 6,0"
+          cron: "0 2 * * 3"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - weekly-run-crypto-transfer-start-from-saved-state-regression:
+      - jrs-regression:
+          runtime: build-executor
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/20N_20C/
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-MixedOps-Restart-Performance-20N-20C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C"
 
-  AWS-Weekly-Services-HCS-Restart-Performance-15N-15C:
+  GCP-Weekly-Services-HCS-Restart-Performance-15N-15C:
     triggers:
       - schedule:
-          cron: "0 10 * * 6,0"
+          cron: "5 10 * * 6"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - weekly-run-HCS-start-from-saved-state-regression:
+      - jrs-regression:
+          runtime: build-executor
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/15N_15C/
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-HCS-Restart-Performance-15N-15C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Weekly-Services-HCS-Restart-Performance-15N-15C"
 
-
-  AWS-Daily-Services-Comp-NetError-4N-1C:
+  GCP-Weekly-Services-HTS-Restart-Performance-15N-15C:
     triggers:
       - schedule:
-          cron: "15 5 * * *"
+          cron: "5 15 * * 6"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-network-error-regression:
+      - jrs-regression:
+          runtime: build-executor
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/15N_15C/
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-HTS-Restart-Performance-15N-15C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Comp-NetError-4N-1C"
 
-# This workflow will be running normally in master branch on a daily basis
-  AWS-Daily-Services-Crypto-Migration-4N-1C:
+  GCP-Daily-Services-Comp-NetError-4N-1C:
     triggers:
-          - schedule:
-              cron: "30 5 * * *"
-              filters:
-                branches:
-                  only:
-                    - master
+      - schedule:
+          cron: "20 5 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - build-platform-and-services
-      - run-testnet-migration-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/4N_1C/NetError
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Comp-NetError-4N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Crypto-Migration-4N-1C"
+
+  # This workflow will be running normally in master branch on a daily basis
+
+  GCP-Daily-Services-Crypto-Migration-5N-1C:
+    triggers:
+      - schedule:
+          cron: "35 5 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services
+      - update-start-up-key:
+          requires:
+            - build-platform-and-services
+      - jrs-regression:
+          context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/5N_1C/Migration
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Crypto-Migration-5N-1C"
+          requires:
+            - update-start-up-key
+          pre-steps:
+            - install-tools
+            - attach_workspace:
+                at: /
 
 # The mainnet migration test needs to be run in a 13-node test network.
 # Enable this workflow to run on a daily only when a new release branch is tagged and branched.
@@ -1029,27 +1499,30 @@ workflows:
                 at: /
           workflow-name: "nightly-mainnet-migration-regression"
 
-  AWS-Daily-Services-Crypto-Restart-4N-1C:
+  GCP-Daily-Services-Crypto-Restart-4N-1C:
     triggers:
       - schedule:
-          cron: "0 6 * * *"
+          cron: "5 6 * * *"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-software-update-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/4N_1C/Restart
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Crypto-Restart-4N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Crypto-Restart-4N-1C"
 
-  AWS-Daily-Services-Recovery-4N-1C:
+  GCP-Daily-Services-Account-Balances-client-validation-6N-1C:
     triggers:
       - schedule:
           cron: "30 6 * * *"
@@ -1059,75 +1532,181 @@ workflows:
                 - master
     jobs:
       - build-platform-and-services
-      - run-state-recover-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/6N_1C/BalanceValid
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Balances-Validation-6N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Recovery-4N-1C"
 
-  AWS-Daily-Services-Comp-Basic-Performance-4N-4C:
+  GCP-Weekly-Services-NetDelay-15N-1C:
     triggers:
       - schedule:
-          cron: "30 5 * * *"
+          cron: "0 5 * * 6"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-performance-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/15N_1C/NetDelay
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-Comp-NetDelay-15N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Comp-Basic-Performance-4N-4C"
 
-  AWS-Daily-Services-Comp-Restart-Performance-6N-6C:
+  GCP-Daily-Services-Recovery-4N-1C:
     triggers:
       - schedule:
-          cron: "30 6 * * *"
+          cron: "35 6 * * *"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-start-from-saved-state-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/4N_1C/Recovery
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Recovery-4N-1C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Comp-Restart-Performance-6N-6C"
 
-  AWS-Daily-Services-Comp-Reconnect-4N-1C:
+  GCP-Weekly-Services-Query-Restart-Performance-6N-6C:
     triggers:
       - schedule:
-          cron: "0 7 * * *"
+          cron: "0 6 * * 2"
           filters:
             branches:
               only:
                 - master
     jobs:
       - build-platform-and-services
-      - run-reconnect-regression:
+      - jrs-regression:
           context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/6N_6C/QueryPerf
+          config_type: "weekly"
+          workflow-name: "GCP-Weekly-Services-Query-Restart-Performance-6N-6C"
           requires:
             - build-platform-and-services
           pre-steps:
             - install-tools
             - attach_workspace:
                 at: /
-          workflow-name: "AWS-Daily-Services-Comp-Reconnect-4N-1C"
+
+
+  GCP-Daily-Services-Comp-Restart-Performance-Hotspot-6N-6C:
+    triggers:
+      - schedule:
+          cron: "35 6 * * 3,0"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services
+      - jrs-regression:
+          context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/6N_6C/Performance
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Comp-Restart-Performance-Hotspot-6N-6C"
+          requires:
+            - build-platform-and-services
+          pre-steps:
+            - install-tools
+            - attach_workspace:
+                at: /
+
+  GCP-Daily-Services-Comp-Restart-Performance-Random-6N-6C:
+    triggers:
+      - schedule:
+          cron: "30 4 * * 3,0"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services
+      - jrs-regression:
+          context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/6N_6C/Performance
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Comp-Restart-Performance-Random-6N-6C"
+          requires:
+            - build-platform-and-services
+          pre-steps:
+            - install-tools
+            - attach_workspace:
+                at: /
+
+
+  GCP-Daily-Services-HTS-Restart-Performance-6N-6C:
+    triggers:
+      - schedule:
+          cron: "30 8 * * 3,0"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services
+      - jrs-regression:
+          context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/6N_6C/Performance
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-HTS-Restart-Performance-6N-6C"
+          requires:
+            - build-platform-and-services
+          pre-steps:
+            - install-tools
+            - attach_workspace:
+                at: /
+
+  GCP-Daily-Services-Comp-Reconnect-4N-1C:
+    triggers:
+      - schedule:
+          cron: "5 7 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build-platform-and-services
+      - jrs-regression:
+          context: Slack
+          regression_path: /swirlds-platform/regression
+          result_path: results/4N_1C/Reconnect
+          config_type: "daily"
+          workflow-name: "GCP-Daily-Services-Comp-Reconnect-4N-1C"
+          requires:
+            - build-platform-and-services
+          pre-steps:
+            - install-tools
+            - attach_workspace:
+                at: /
 
   nightly-simulate-network-outage:
     triggers:
@@ -1146,7 +1725,7 @@ workflows:
           requires:
             - fast-build-artifact
           workflow-name: "nightly-simulate-network-outage"
-          infra-branch: services-with-platform070
+          infra-branch: hashgraph-hedera-services
       - run-accessory-tests:
           context: Slack
           requires:
@@ -1214,7 +1793,7 @@ workflows:
           requires:
             - fast-build-artifact
           workflow-name: "feature-update-regression"
-          infra-branch: services-with-platform070
+          infra-branch: hashgraph-hedera-services
           post-steps:
             - save-this-job-client-logs:
                 workflow-name: "feature-update-regression"
@@ -1283,7 +1862,7 @@ workflows:
           requires:
             - fast-build-artifact
           workflow-name: freeze restart
-          infra-branch: services-with-platform070
+          infra-branch: hashgraph-hedera-services
       - run-umbrella-freeze-restart-test:
           context: Slack
           name: freeze-restart-first-round
@@ -1354,23 +1933,24 @@ workflows:
       - aws-summary:
           context: Slack
 
-  continuous-integration:
-    jobs:
-      - build-artifact:
-          context: SonarCloud
+  nightly-comprehensive-functional-regression:
+    triggers:
+      - schedule:
+          cron: "15 4 * * *"
           filters:
             branches:
-              ignore:
-                - /.*-PERF/
-                - /.*-REGRESSION/
-          workflow-name: "Continuous integration"
+              only:
+                - master
+    jobs:
+      - fast-build-artifact:
+          context: Slack
+          workflow-name: "nightly-comprehensive-functional-regression"
       - start-singlejob-testnet:
           context: Slack
           requires:
-            - build-artifact
-          workflow-name: "Continuous integration"
-          infra-branch: services-with-platform070
-      - run-token-scenarios:
+            - fast-build-artifact
+          workflow-name: "nightly-comprehensive-functional-regression"
+      - run-comprehensive-functional-test:
           context: Slack
           requires:
             - start-singlejob-testnet
@@ -1380,51 +1960,54 @@ workflows:
             - ensure-testnet-for-reruns
           post-steps:
             - cleanup-rerun-testnet-if-present
-          workflow-name: "Continuous integration"
-      - run-file-scenarios:
-          context: Slack
-          requires:
-            - run-token-scenarios
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
-          post-steps:
-            - cleanup-rerun-testnet-if-present
-          workflow-name: "Continuous integration"
-      - run-consensus-and-crypto-scenarios:
-          context: Slack
-          requires:
-            - run-file-scenarios
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - run: /repo/.circleci/scripts/echo-env.sh
-            - ensure-testnet-for-reruns
-          post-steps:
-            - cleanup-rerun-testnet-if-present
-          workflow-name: "Continuous integration"
-      - run-smart-contract-scenarios:
-          context: Slack
-          requires:
-            - run-consensus-and-crypto-scenarios
-          pre-steps:
-            - attach_workspace:
-                at: /
-            - ensure-testnet-for-reruns
-          post-steps:
-            - send-report-to-slack:
-                workflow-name: "Continuous integration"
-                status: Passed
-            - cleanup-rerun-testnet-if-present
-          workflow-name: "Continuous integration"
+          workflow-name: "nightly-comprehensive-functional-regression"
+
       - cleanup-singlejob-testnet:
           context: Slack
           requires:
-            - run-smart-contract-scenarios
+            - run-comprehensive-functional-test
           pre-steps:
             - attach_workspace:
                 at: /
+
+  continuous-integration-gcp:
+      jobs:
+        - build-artifact:
+            name: "artifact-build"
+            context: SonarCloud
+            filters:
+              branches:
+                ignore:
+                  - /.*-PERF/
+            workflow-name: "Continuous-integration"
+        - build-platform-and-services:
+            context: SonarCloud
+            requires:
+              - artifact-build
+            workflow-name: "Continuous-integration-GCP"
+        - javadoc-generation:
+            context: Slack
+            requires:
+              - build-platform-and-services
+            pre-steps:
+              - attach_workspace:
+                  at: /
+        - jrs-regression:
+            context: Slack
+            regression_path: /swirlds-platform/regression
+            result_path: results/4N_1C/CI
+            config_type: "ci"
+            workflow-name: "GCP-Commit-Services-Comp-Basic-4N-1C"
+            name: "run-continuous-integration-gcp"
+            continuous_integration: true
+            slack_results_channel: "hedera-cicd"
+            slack_summary_channel: "hedera-cicd"
+            requires:
+              - javadoc-generation
+            pre-steps:
+              - install-tools
+              - attach_workspace:
+                  at: /
 jobs:
   start-singlejob-testnet:
     parameters:
@@ -1554,7 +2137,7 @@ jobs:
           name: mvn install
           command: |
             /repo/.circleci/scripts/trap-failure-report.sh \
-               'mvn --no-transfer-progress clean install -DskipTests | tee /repo/test-clients/output/hapi-client.log'
+               'mvn --no-transfer-progress clean install -DskipTests -PdevSetup | tee /repo/test-clients/output/hapi-client.log'
       - run:
           name: Upload built artifacts to S3 (for Ansible download)
           command: |
@@ -1582,132 +2165,6 @@ jobs:
             - root/.m2
             - repo/hedera-node
 
-  run-basic-suiterunner-tests:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Run various suites in SuiteRunner
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Comp-Basic-4N-1C.json /repo
-
-      - run:
-          name: Sync results of SuiteRunner suites to AWS
-          command: |
-              aws s3 sync /swirlds-platform/regression/results/4N_1C/Basic/ s3://hedera-service-regression-jrs;
-              tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/Basic/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-update-node-tests:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name: << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Run update node test
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Crypto-Update-5N-1C.json /repo
-
-      - run:
-          name: Sync results of update node tests to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/5N_1C/Update/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/5N_1C/Update/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-performance-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Performance regression
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Comp-Basic-Performance-4N-4C.json /repo
-
-      - run:
-          name: Sync results of performance regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_4C/Performance/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_4C/Performance/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-network-error-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Run network error regression tests
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Comp-NetError-4N-1C.json /repo
-
-      - run:
-          name: Sync results of network error regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_1C/NetError/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/NetError/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-testnet-migration-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Modify Payer account for Public testnet Migration test
-          command: |
-            echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
-
-      - run:
-          name: Run Public testnet Migration test
-          command: |
-            cd /repo ; mvn --no-transfer-progress clean install -DskipTests;
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Crypto-Migration-4N-1C.json /repo
-
-      - run:
-          name: Sync results of public testnet migration test to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_1C/Migration/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/Migration/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
   run-mainnet-migration-regression:
     parameters:
       workflow-name:
@@ -1726,183 +2183,48 @@ jobs:
       - run:
           name: Run Mainnet Migration test
           command: |
-            cd /repo ; mvn --no-transfer-progress clean install -DskipTests;
+            cd /repo ; mvn --no-transfer-progress clean install -DskipTests -PdevSetup;
             cd /swirlds-platform/regression;
             ./regression_services_circleci.sh configs/services/daily/13N_13C/AWS-Services-Daily-MainnetMigration-13N-1C.json /repo
 
       - run:
           name: Sync results of mainnet migration test to AWS
           command: |
+            cd /swirlds-platform/regression/results/; find . -type d -name data -prune -exec rm -rf {} \;
             aws s3 sync /swirlds-platform/regression/results/ s3://hedera-service-regression-jrs;
             tar -czvf /results.tar.gz  /swirlds-platform/regression/results/*
 
       - store_artifacts:
           path: /results.tar.gz
 
-  run-software-update-regression:
+  update-start-up-key:
     parameters:
       workflow-name:
         type: string
         default: ""
     executor:
       name: build-executor
-      workflow-name:  << parameters.workflow-name >>
     steps:
-      - run:
-          name: Run Software Update regression tests
-          no_output_timeout: 30m
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Crypto-Restart-4N-1C.json /repo
-
-      - run:
-          name: Sync results of software update regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_1C/Restart/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/Restart/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-state-recover-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name: << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Run state recover regression tests
-          no_output_timeout: 30m
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Recovery-4N-1C.json /repo
-
-      - run:
-          name: Sync results of state recover regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_1C/Recovery/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/Recovery/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-start-from-saved-state-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name: << parameters.workflow-name >>
-    steps:
+      - attach_workspace:
+          at: /
       - run:
           name: Modify Payer account for Public testnet start from saved state test
           command: |
             echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
-      - run:
-          name: Run start from saved state regression tests
-          no_output_timeout: 30m
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Comp-Restart-Performance-6N-6C.json /repo
+      - persist_to_workspace:
+          root: /
+          paths:
+            - repo/
+            - swirlds-platform/
 
-      - run:
-          name: Sync results of software update regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/6N_6C/Performance/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/6N_6C/Performance/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  run-reconnect-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
+  javadoc-generation:
     executor:
       name: build-executor
-      workflow-name: << parameters.workflow-name >>
     steps:
       - run:
-          name: Run reconnect regression tests
-          no_output_timeout: 30m
+          name: Generate javadocs
           command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/daily/AWS-Daily-Services-Comp-Reconnect-4N-1C.json /repo
-
-      - run:
-          name: Sync results of reconnect regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/4N_1C/Reconnect/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/4N_1C/Reconnect/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  weekly-run-crypto-transfer-start-from-saved-state-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name: << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Modify Payer account for Public testnet start from saved state test
-          command: |
-            echo -n "$KEY_DevTestNetTreasury";    echo -n /repo/test-clients/src/main/resource/StartUpAccount.txt;
-#            echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
-      - run:
-          name: Run start from saved state regression tests
-          no_output_timeout: 120m
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-Crypto-Restart-Performance-15N-15C.json /repo
-
-      - run:
-          name: Sync results of software update regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/15N_15C/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/15N_15C/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
-  weekly-run-HCS-start-from-saved-state-regression:
-    parameters:
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: build-executor
-      workflow-name: << parameters.workflow-name >>
-    steps:
-      - run:
-          name: Modify Payer account for Public testnet start from saved state test
-          command: |
-            echo -n "$KEY_DevTestNetTreasury";    echo -n /repo/test-clients/src/main/resource/StartUpAccount.txt;
-#            echo -n "$KEY_DevTestNetTreasury" > /repo/test-clients/src/main/resource/StartUpAccount.txt;
-      - run:
-          name: Run start from saved state regression tests
-          no_output_timeout: 180m
-          command: |
-            cd /swirlds-platform/regression;
-            ./regression_services_circleci.sh configs/services/suites/weekly/AWS-Weekly-Services-HCS-Restart-Performance-15N-15C.json /repo
-
-      - run:
-          name: Sync results of software update regression to AWS
-          command: |
-            aws s3 sync /swirlds-platform/regression/results/15N_15C/ s3://hedera-service-regression-jrs;
-            tar -czvf /results.tar.gz  /swirlds-platform/regression/results/15N_15C/*
-
-      - store_artifacts:
-          path: /results.tar.gz
-
+            cd /repo; export JAVA_HOME="/usr/local/java/jdk-12.0.2"; mvn javadoc:javadoc
 
   build-platform-and-services:
     parameters:
@@ -1923,7 +2245,7 @@ jobs:
       - run:
           name: Build hedera-services repo
           command: |
-                mvn --no-transfer-progress clean install -DskipTests
+                mvn --no-transfer-progress clean install -DskipTests -PdevSetup;
       - run:
           name: Checkout swirlds-platform repos and build
           command: |
@@ -2000,170 +2322,6 @@ jobs:
             cat /dev/null > /repo/test-clients/output/hapi-client.log
       - run: /repo/.circleci/scripts/echo-env.sh
       - accessory-test-common-steps
-
-  run-consensus-and-crypto-scenarios:
-    parameters:
-      runner:
-        type: executor
-        default: ci-test-executor
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: ci-test-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run-eet-suites:
-          dsl-args: "SignedTransactionBytesRecordsSuite"
-      - run-eet-suites:
-          dsl-args: "TopicCreateSpecs"
-      - run-eet-suites:
-          dsl-args: "TopicUpdateSpecs -TLS=on"
-          node-terraform-index: 1
-          node-account: 4
-      - run-eet-suites:
-          dsl-args: "TopicDeleteSpecs"
-      - run-eet-suites:
-          dsl-args: "SubmitMessageSpecs"
-      - run-eet-suites:
-          dsl-args: "HCSTopicFragmentationSuite -TLS=alternate"
-      - run-eet-suites:
-          dsl-args: "TopicGetInfoSpecs"
-      - run-eet-suites:
-          dsl-args: "BucketThrottlingSpec"
-      - run-eet-suites:
-          dsl-args: "ControlAccountsExemptForUpdates"
-      - run-eet-suites:
-          dsl-args: "CryptoTransferSuite"
-      - run-eet-suites:
-          dsl-args: "CryptoUpdateSuite -TLS=on"
-      - run-eet-suites:
-          dsl-args: "CryptoTransferSuite"
-      - run-eet-suites:
-          dsl-args: "CryptoRecordSanityChecks"
-      - run-eet-suites:
-          dsl-args: "SuperusersAreNeverThrottled"
-
-  run-token-scenarios:
-    parameters:
-      runner:
-        type: executor
-        default: ci-test-executor
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: ci-test-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run-eet-suites:
-          dsl-args: "TokenAssociationSpecs"
-      - run-eet-suites:
-          dsl-args: "TokenCreateSpecs"
-      - run-eet-suites:
-          dsl-args: "TokenUpdateSpecs"
-      - run-eet-suites:
-          dsl-args: "TokenDeleteSpecs"
-      - run-eet-suites:
-          dsl-args: "TokenManagementSpecs"
-      - run-eet-suites:
-          dsl-args: "TokenTransactSpecs"
-
-  run-file-scenarios:
-    parameters:
-      runner:
-        type: executor
-        default: ci-test-executor
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: ci-test-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run-eet-suites:
-          dsl-args: "FileCreateSuite"
-      - run-eet-suites:
-          dsl-args: "FileAppendSuite"
-      - run-eet-suites:
-          dsl-args: "FileUpdateSuite"
-      - run-eet-suites:
-          dsl-args: "ProtectedFilesUpdateSuite"
-      - run-eet-suites:
-          dsl-args: "PermissionSemanticsSpec"
-      - run-eet-suites:
-          dsl-args: "ExchangeRateControlSuite"
-      - run-eet-suites:
-          dsl-args: "SysDelSysUndelSpec"
-      - run-eet-suites:
-          dsl-args: "ExchangeRateControlSuite"
-      - run-eet-suites:
-          dsl-args: "UpdateFailuresSpec"
-      - run-eet-suites:
-          dsl-args: "QueryFailuresSpec"
-      - run-eet-suites:
-          dsl-args: "FileRecordSanityChecks"
-      - run-eet-suites:
-          dsl-args: "FetchSystemFiles"
-      - run:
-          name: cat /repo/test-clients/remote-system-files/appProperties.txt
-          command: |
-            cat /repo/test-clients/remote-system-files/appProperties.txt
-
-      - run-eet-suites:
-          dsl-args: "VersionInfoSpec"
-
-  run-smart-contract-scenarios:
-    parameters:
-      runner:
-        type: executor
-        default: ci-test-executor
-      workflow-name:
-        type: string
-        default: ""
-    executor:
-      name: ci-test-executor
-      workflow-name:  << parameters.workflow-name >>
-    steps:
-      - run-eet-suites:
-          dsl-args: "NewOpInConstructorSpecs"
-      - run-eet-suites:
-          dsl-args: "MultipleSelfDestructsAreSafe"
-      - postgres-get-counts
-      - run-eet-suites:
-          dsl-args: "ContractCallSuite -TLS=on"
-      - postgres-verify-counts:
-          expected-difference: 17
-      - run-eet-suites:
-          dsl-args: "ContractCallLocalSuite -TLS=on"
-      - run-eet-suites:
-          dsl-args: "ContractUpdateSuite -TLS=on"
-      - run-eet-suites:
-          dsl-args: "ContractDeleteSuite -TLS=on"
-      - run-eet-suites:
-          dsl-args: "ChildStorageSpecs -TLS=on"
-      - run-eet-suites:
-          dsl-args: "BigArraySpec -TLS=on"
-      - run-eet-suites:
-          dsl-args: "SmartContractInlineAssemblySpec -TLS=on"
-      - run-eet-suites:
-          dsl-args: "OCTokenSpec -TLS=on"
-      - run-eet-suites:
-          dsl-args: "CharacterizationSuite -TLS=on"
-      - run-eet-suites:
-          dsl-args: "SmartContractFailFirstSpec -TLS=on"
-      - run-eet-suites:
-          dsl-args: "SmartContractSelfDestructSpec -TLS=on"
-      - run-eet-suites:
-          dsl-args: "ChildStorageSpecs"
-      - run-eet-suites:
-          dsl-args: "-A DeprecatedContractKeySpecs"
-      - run-eet-suites:
-          dsl-args: "ThresholdRecordCreationSpecs"
-      - run-eet-suites:
-          dsl-args: "ContractRecordSanityChecks"
-      - run-eet-suites:
-          dsl-args: "ContractGetBytecodeSuite"
 
   run-umbrella-freeze-restart-test:
     parameters:
@@ -2378,3 +2536,198 @@ jobs:
           name: Show logs after HGCApp restart
           command: |
             /repo/.circleci/scripts/show_logs.sh
+
+  run-comprehensive-functional-test:
+    parameters:
+      runner:
+        type: executor
+        default: ci-test-executor
+      workflow-name:
+        type: string
+        default: ""
+    executor:
+      name: ci-test-executor
+      workflow-name:  << parameters.workflow-name >>
+    steps:
+      - run-eet-suites:
+          dsl-args: "BucketAndLegacyThrottlingSpec"
+      - run-eet-suites:
+          dsl-args: "ControlAccountsExemptForUpdates"
+      - run-eet-suites:
+          dsl-args: "TopicCreateSpecs"
+      - run-eet-suites:
+          dsl-args: "SubmitMessageSpecs"
+      - run-eet-suites:
+          dsl-args: "TopicUpdateSpecs"
+      - run-eet-suites:
+          dsl-args: "TopicGetInfoSpecs"
+      - run-eet-suites:
+          dsl-args: "CryptoCreateSuite -TLS=on"
+      - run-eet-suites:
+          dsl-args: "CryptoRecordSanityChecks -TLS=on"
+      - run-eet-suites:
+          dsl-args: "SignedTransactionBytesRecordsSuite -TLS=on"
+      - run-eet-suites:
+          dsl-args: "SuperusersAreNeverThrottled"
+      - run-eet-suites:
+          dsl-args: "FileRecordSanityChecks"
+      - run-eet-suites:
+          dsl-args: "VersionInfoSpec"
+      - run-eet-suites:
+          dsl-args: "PermissionSemanticsSpec"
+      - run-eet-suites:
+          dsl-args: "SysDelSysUndelSpec"
+      - run-eet-suites:
+          dsl-args: "NewOpInConstructorSpecs"
+      - run-eet-suites:
+          dsl-args: "MultipleSelfDestructsAreSafe"
+      - run-eet-suites:
+          dsl-args: "FetchSystemFiles"
+      - run-eet-suites:
+          dsl-args: "ChildStorageSpecs"
+      - run-eet-suites:
+          dsl-args: "DeprecatedContractKeySpecs"
+      - run-eet-suites:
+          dsl-args: "ThresholdRecordCreationSpecs"
+      - run-eet-suites:
+          dsl-args: "ContractRecordSanityChecks"
+      - run-eet-suites:
+          dsl-args: "TopicDeleteSpecs"
+      - run-eet-suites:
+          dsl-args: "ProtectedFilesUpdateSuite"
+      - run-eet-suites:
+          dsl-args: "TokenCreateSpecs"
+      - run-eet-suites:
+          dsl-args: "TokenUpdateSpecs"
+      - run-eet-suites:
+          dsl-args: "TokenDeleteSpecs"
+      - run-eet-suites:
+          dsl-args: "TokenTransactSpecs"
+      - run-eet-suites:
+          dsl-args: "TokenManagementSpecs"
+      - run-eet-suites:
+          dsl-args: "TokenAssociationSpecs"
+      - run-eet-suites:
+          dsl-args: "CannotDeleteSystemEntitiesSuite"
+      - run-eet-suites:
+          dsl-args: "UmbrellaRedux"
+
+
+
+  ######################################################################################################################
+  # Job Name:                     jrs_regression
+  # Job Version:                  1.0
+  # Target Operating Systems:     Ubuntu 18.04 (bionic), Ubuntu 20.04 (focal), CentOS 7, CentOS 8
+  #
+  # Parameters:
+  #       runtime                 a CircleCI executor reference used to control the OpenJDK and other tool versions
+  #
+  #
+  # Description:
+  #
+  #   Description goes here
+  #
+  #
+  #
+  # Executor Requirements:
+  #   - git (>= 2.17.1)
+  #   - wget (>= 1.19.4)
+  #   - zip (>= 3.0)
+  #   - unzip (>= 3.0)
+  #   - gzip (>= 1.6)
+  #   - tar (>= 1.29)
+  #   - haveged (>= 1.9.1)
+  #   - maven (>= 3.6.1)
+  #   - openjdk (>= 12.0.2)
+  #   - postgresql-server (>= 10.9)
+  #   - gcloud-sdk (>= 323.0.0)
+  #
+  # References:
+  #   - OpenJDK:          https://jdk.java.net/
+  #   - Maven:            https://maven.apache.org/
+  #
+  ######################################################################################################################
+  jrs-regression:
+    parameters:
+      runtime:
+        type: string
+        default: ci-test-executor
+      config_type:
+        type: string
+      config_file:
+        type: string
+        default: ""
+      regression_path:
+        type: string
+        default: "regression"
+      result_path:
+        type: string
+        default: "regression/results"
+      result_bucket:
+        type: string
+        default: "hedera-services-jrs-test-results"
+      summary_path:
+        type: string
+        default: "summaryHistory"
+      summary_bucket:
+        type: string
+        default: "hedera-services-jrs-summary-history/summaryHistory"
+      automated_run:
+        type: boolean
+        default: true
+      slack_results_channel:
+        type: string
+        default: "hedera-regression"
+      slack_summary_channel:
+        type: string
+        default: "hedera-regression-summary"
+      workflow-name:
+        type: string
+        default: ""
+      hedera_services_path:
+        type: string
+        default: "/repo"
+      continuous_integration:
+        type: boolean
+        default: false
+    executor:
+      name: << parameters.runtime >>
+      workflow-name:  << parameters.workflow-name >>
+    steps:
+      - gcp_import_credentials:
+         username_variable: GCLOUD_SERVICE_ACCOUNT_NAME
+         keyfile_variable: GCLOUD_SERVICE_KEY
+         project_variable: GOOGLE_PROJECT_ID
+      - add_ssh_keys:
+          fingerprints:
+            - "96:47:c4:5c:e7:45:06:c5:26:a5:85:ef:41:22:2f:d6"
+            - "14:21:e9:81:1f:ae:df:ec:11:60:4a:49:e0:b9:bb:58"
+            - "e7:a6:3e:34:3e:d8:fe:64:2c:7f:b6:57:45:03:44:ac"
+      - when:
+          condition: << parameters.automated_run >>
+          steps:
+            - run:
+                name: setup env
+                command: |
+                  source /root/.bashrc; source /root/google-cloud-sdk/completion.bash.inc; source /root/google-cloud-sdk/path.bash.inc;
+            - jrs_history_retrieve:
+                bucket_name: << parameters.summary_bucket >>
+                summary_path: << parameters.summary_path >>
+      - jrs_regression_execute:
+          config_file: configs/services/suites/<< parameters.config_type >>/<<parameters.workflow-name>>.json
+          regression_path: << parameters.regression_path >>
+          slack_results_channel: << parameters.slack_results_channel >>
+          slack_summary_channel: << parameters.slack_summary_channel >>
+          hedera_services_path: << parameters.hedera_services_path >>
+          continuous_integration: << parameters.continuous_integration >>
+      - when:
+          condition: << parameters.automated_run >>
+          steps:
+            - jrs_history_store:
+                bucket_name: << parameters.summary_bucket >>
+                summary_path: << parameters.summary_path >>
+      - jrs_results_store:
+          bucket_name: << parameters.result_bucket >>
+          result_path: << parameters.result_path >>
+      - store_artifacts:
+          path: /results.tar.gz

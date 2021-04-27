@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.fees;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,12 @@ public class FeeCalculator {
 
 	final private HapiSpecSetup setup;
 	final private Map<HederaFunctionality, FeeData> opFeeData = new HashMap<>();
-	final FeeBuilder fees = new FeeBuilder();
 	final private FeesAndRatesProvider provider;
+
+	private long fixedFee = Long.MIN_VALUE;
+	private boolean usingFixedFee = false;
+
+	private int tokenTransferUsageMultiplier = 1;
 
 	public FeeCalculator(HapiSpecSetup setup, FeesAndRatesProvider provider) {
 		this.setup = setup;
@@ -52,14 +56,20 @@ public class FeeCalculator {
 	}
 
 	public void init() {
+		if (setup.useFixedFee()) {
+			usingFixedFee = true;
+			fixedFee = setup.fixedFee();
+			return;
+		}
 		FeeSchedule feeSchedule = provider.currentSchedule();
 		feeSchedule.getTransactionFeeScheduleList().stream().forEach(feeData -> {
 			opFeeData.put(feeData.getHederaFunctionality(), feeData.getFeeData());
 		});
+		tokenTransferUsageMultiplier = setup.feesTokenTransferUsageMultiplier();
 	}
 
 	public long maxFeeTinyBars() {
-		return Arrays
+		return usingFixedFee ? fixedFee : Arrays
 				.stream(HederaFunctionality.values())
 				.mapToLong(op ->
 						Optional.ofNullable(
@@ -72,12 +82,14 @@ public class FeeCalculator {
 	}
 
 	public long forOp(HederaFunctionality op, FeeData knownActivity) {
+		if (usingFixedFee) {
+			return fixedFee;
+		}
 		try {
 			FeeData activityPrices = opFeeData.get(op);
-			long feeTinyHbars = fees.getTotalFeeforRequest(activityPrices, knownActivity, provider.rates());
-			return feeTinyHbars;
+			return getTotalFeeforRequest(activityPrices, knownActivity, provider.rates());
 		} catch (Throwable t) {
-			log.warn("Unable to calculate fee for op " + op + ", using max fee!", t);
+			log.warn("Unable to calculate fee for op {}, using max fee!", op, t);
 		}
 		return maxFeeTinyBars();
 	}
@@ -90,13 +102,18 @@ public class FeeCalculator {
 	public long forActivityBasedOp(
 			HederaFunctionality op,
 			ActivityMetrics metricsCalculator,
-			Transaction txn, int numPayerSigs) throws Throwable {
+			Transaction txn,
+			int numPayerSigs
+	) throws Throwable {
 		FeeData activityMetrics = metricsFor(txn, numPayerSigs, metricsCalculator);
 		return forOp(op, activityMetrics);
 	}
 
 	private FeeData metricsFor(
-			Transaction txn, int numPayerSigs, ActivityMetrics metricsCalculator) throws Throwable {
+			Transaction txn,
+			int numPayerSigs,
+			ActivityMetrics metricsCalculator
+	) throws Throwable {
 		SigValueObj sigUsage = sigUsageGiven(txn, numPayerSigs);
 		TransactionBody body = CommonUtils.extractTransactionBody(txn);
 		return metricsCalculator.compute(body, sigUsage);
@@ -106,5 +123,9 @@ public class FeeCalculator {
 		int size = getSignatureSize(txn);
 		int totalNumSigs = getSignatureCount(txn);
 		return new SigValueObj(totalNumSigs, numPayerSigs, size);
+	}
+
+	public int tokenTransferUsageMultiplier() {
+		return tokenTransferUsageMultiplier;
 	}
 }

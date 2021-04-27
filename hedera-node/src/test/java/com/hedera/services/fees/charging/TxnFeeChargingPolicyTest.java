@@ -4,7 +4,7 @@ package com.hedera.services.fees.charging;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ package com.hedera.services.fees.charging;
  */
 
 import com.hedera.services.context.properties.GlobalDynamicProperties;
-import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.FeeExemptions;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.utils.SignedTxnAccessor;
+import com.hedera.services.utils.TxnAccessor;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
@@ -32,21 +32,26 @@ import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.fee.FeeObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
+import static com.hedera.services.fees.TxnFeeType.NETWORK;
+import static com.hedera.services.fees.TxnFeeType.NODE;
+import static com.hedera.services.fees.TxnFeeType.SERVICE;
+import static com.hedera.services.fees.charging.ItemizableFeeCharging.NETWORK_FEE;
 import static com.hedera.services.fees.charging.ItemizableFeeCharging.NETWORK_NODE_SERVICE_FEES;
 import static com.hedera.services.fees.charging.ItemizableFeeCharging.NODE_FEE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static com.hedera.services.fees.charging.ItemizableFeeCharging.NETWORK_FEE;
+import static com.hedera.services.fees.charging.ItemizableFeeCharging.SERVICE_FEE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.BDDMockito.*;
-import static com.hedera.services.fees.TxnFeeType.*;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.longThat;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 class TxnFeeChargingPolicyTest {
 	private TxnFeeChargingPolicy subject = new TxnFeeChargingPolicy();
 	private final long node = 1, network = 2, service = 3;
@@ -96,7 +101,44 @@ class TxnFeeChargingPolicyTest {
 	}
 
 	@Test
-	public void liveFireDiscountWorks() {
+	public void liveFireWorksForTriggered() {
+		// setup:
+		TransactionBody txn = mock(TransactionBody.class);
+		AccountID submittingNode = IdUtils.asAccount("0.0.3");
+		AccountID payer = IdUtils.asAccount("0.0.1001");
+		AccountID funding = IdUtils.asAccount("0.0.98");
+		HederaLedger ledger = mock(HederaLedger.class);
+		GlobalDynamicProperties properties = mock(GlobalDynamicProperties.class);
+		SignedTxnAccessor accessor = mock(SignedTxnAccessor.class);
+		charging = new ItemizableFeeCharging(ledger, new NoExemptions(), properties);
+
+		given(ledger.getBalance(any())).willReturn(Long.MAX_VALUE);
+		given(properties.fundingAccount()).willReturn(funding);
+		given(txn.getTransactionFee()).willReturn(10L);
+		given(accessor.getTxn()).willReturn(txn);
+
+		given(accessor.getPayer()).willReturn(payer);
+
+		// when:
+		charging.resetFor(accessor, submittingNode);
+		ResponseCodeEnum outcome = subject.applyForTriggered(charging, fee);
+
+		// then:
+		verify(ledger).doTransfer(payer, funding, service);
+		verify(ledger, never()).doTransfer(
+				argThat(payer::equals),
+				argThat(funding::equals),
+				longThat(l -> l == network));
+		verify(ledger, never()).doTransfer(
+				argThat(payer::equals),
+				argThat(submittingNode::equals),
+				longThat(l -> l == node));
+		// and:
+		assertEquals(OK, outcome);
+	}
+
+	@Test
+	public void liveFireDiscountWorksForDuplicate() {
 		// setup:
 		TransactionBody txn = mock(TransactionBody.class);
 		AccountID submittingNode = IdUtils.asAccount("0.0.3");
@@ -132,7 +174,7 @@ class TxnFeeChargingPolicyTest {
 
 	private static class NoExemptions implements FeeExemptions {
 		@Override
-		public boolean hasExemptPayer(SignedTxnAccessor accessor) {
+		public boolean hasExemptPayer(TxnAccessor accessor) {
 			return false;
 		}
 	}
@@ -201,6 +243,38 @@ class TxnFeeChargingPolicyTest {
 		verify(charging).chargePayerUpTo(NODE_FEE);
 		// and:
 		assertEquals(INSUFFICIENT_TX_FEE, outcome);
+	}
+
+	@Test
+	public void requiresWillingToPayServiceWhenTriggeredTxn() {
+		given(charging.isPayerWillingToCover(SERVICE_FEE)).willReturn(false);
+
+		// when:
+		ResponseCodeEnum outcome = subject.applyForTriggered(charging, fee);
+
+		// then:
+		verify(charging).setFor(SERVICE, service);
+		// and:
+		verify(charging).isPayerWillingToCover(SERVICE_FEE);
+		// and:
+		assertEquals(INSUFFICIENT_TX_FEE, outcome);
+	}
+
+	@Test
+	public void requiresAbleToPayServiceWhenTriggeredTxn() {
+		given(charging.isPayerWillingToCover(SERVICE_FEE)).willReturn(true);
+		given(charging.canPayerAfford(SERVICE_FEE)).willReturn(false);
+
+		// when:
+		ResponseCodeEnum outcome = subject.applyForTriggered(charging, fee);
+
+		// then:
+		verify(charging).setFor(SERVICE, service);
+		// and:
+		verify(charging).isPayerWillingToCover(SERVICE_FEE);
+		verify(charging).canPayerAfford(SERVICE_FEE);
+		// and:
+		assertEquals(INSUFFICIENT_PAYER_BALANCE, outcome);
 	}
 
 	@Test

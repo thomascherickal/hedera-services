@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,29 +20,30 @@ package com.hedera.services.state.submerkle;
  * ‍
  */
 
+import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 public class EntityIdTest {
 	long shard = 1L, realm = 2L, num = 3L;
 
 	SerializableDataInputStream in;
 	SerializableDataOutputStream out;
+
+	MerkleEntityId merkleId = new MerkleEntityId(shard, realm, num);
 
 	FileID fileId = FileID.newBuilder()
 			.setShardNum(shard)
@@ -68,6 +69,11 @@ public class EntityIdTest {
 			.setShardNum(shard)
 			.setRealmNum(realm)
 			.setTokenNum(num)
+			.build();
+	ScheduleID scheduleId = ScheduleID.newBuilder()
+			.setShardNum(shard)
+			.setRealmNum(realm)
+			.setScheduleNum(num)
 			.build();
 
 	EntityId subject;
@@ -126,33 +132,19 @@ public class EntityIdTest {
 	@Test
 	public void factoriesWork() {
 		// expect:
-		assertNull(EntityId.ofNullableFileId(null));
-		assertNull(EntityId.ofNullableAccountId(null));
-		assertNull(EntityId.ofNullableContractId(null));
-		assertNull(EntityId.ofNullableTopicId(null));
-		assertNull(EntityId.ofNullableTokenId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcAccountId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcFileId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcTopicId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcTokenId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcScheduleId(null));
+		assertThrows(IllegalArgumentException.class, () -> EntityId.fromGrpcContractId(null));
 		// and:
-		assertEquals(subject, EntityId.ofNullableAccountId(accountId));
-		assertEquals(subject, EntityId.ofNullableContractId(contractId));
-		assertEquals(subject, EntityId.ofNullableTopicId(topicId));
-		assertEquals(subject, EntityId.ofNullableFileId(fileId));
-		assertEquals(subject, EntityId.ofNullableTokenId(tokenId));
-	}
-
-	@Test
-	public void legacyProviderWorks() throws IOException {
-		given(in.readLong())
-				.willReturn(5L)
-				.willReturn(4L)
-				.willReturn(shard)
-				.willReturn(realm)
-				.willReturn(num);
-
-		// when:
-		var readSubject = EntityId.LEGACY_PROVIDER.deserialize(in);
-
-		// then:
-		assertEquals(subject, readSubject);
+		assertEquals(subject, EntityId.fromGrpcAccountId(accountId));
+		assertEquals(subject, EntityId.fromGrpcContractId(contractId));
+		assertEquals(subject, EntityId.fromGrpcTopicId(topicId));
+		assertEquals(subject, EntityId.fromGrpcFileId(fileId));
+		assertEquals(subject, EntityId.fromGrpcTokenId(tokenId));
+		assertEquals(subject, EntityId.fromGrpcScheduleId(scheduleId));
 	}
 
 	@Test
@@ -199,5 +191,7 @@ public class EntityIdTest {
 		assertEquals(accountId, subject.toGrpcAccountId());
 		assertEquals(contractId, subject.toGrpcContractId());
 		assertEquals(tokenId, subject.toGrpcTokenId());
+		assertEquals(scheduleId, subject.toGrpcScheduleId());
+		assertEquals(merkleId, subject.asMerkle());
 	}
 }

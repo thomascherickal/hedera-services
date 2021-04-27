@@ -4,7 +4,7 @@ package com.hedera.test.factories.accounts;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class MerkleAccountFactory {
 	public MerkleAccount get() {
 		MerkleAccount value = new MerkleAccount();
 		memo.ifPresent(s -> value.setMemo(s));
-		proxy.ifPresent(p -> value.setProxy(EntityId.ofNullableAccountId(p)));
+		proxy.ifPresent(p -> value.setProxy(EntityId.fromGrpcAccountId(p)));
 		balance.ifPresent(b -> { try { value.setBalance(b); } catch (Exception ignore) {} });
 		deleted.ifPresent(b -> value.setDeleted(b));
 		accountKeys.ifPresent(k -> value.setKey(k));

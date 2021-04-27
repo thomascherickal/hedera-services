@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.contract;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,8 +105,21 @@ public class ContractCallSuite extends HapiApiSuite {
 				payableSuccess(),
 				depositSuccess(),
 				depositDeleteSuccess(),
-				multipleDepositSuccess()
+				multipleDepositSuccess(),
+				multipleSelfDestructsAreSafe()
 		);
+	}
+
+	private HapiApiSpec multipleSelfDestructsAreSafe() {
+		return defaultHapiSpec("MultipleSelfDestructsAreSafe")
+				.given(
+						fileCreate("bytecode").path(ContractResources.FUSE_BYTECODE_PATH),
+						contractCreate("fuse").bytecode("bytecode")
+				).when(
+						contractCall("fuse", ContractResources.LIGHT_ABI).via("lightTxn")
+				).then(
+						getTxnRecord("lightTxn").logged()
+				);
 	}
 
 	HapiApiSpec fridayThe13thSpec() {
@@ -123,7 +136,7 @@ public class ContractCallSuite extends HapiApiSuite {
 						newKeyNamed("initialAdminKey").shape(initialKeyShape),
 						newKeyNamed("newAdminKey").shape(newKeyShape),
 						cryptoCreate("payer")
-								.balance(10 * A_HUNDRED_HBARS),
+								.balance(10 * ONE_HUNDRED_HBARS),
 						fileCreate("bytecode")
 								.path(ContractResources.SIMPLE_STORAGE_BYTECODE_PATH)
 								.payingWith("payer")
@@ -135,7 +148,7 @@ public class ContractCallSuite extends HapiApiSuite {
 						contractCreate("contract")
 								.payingWith("payer")
 								.adminKey("initialAdminKey")
-								.memo(INITIAL_MEMO)
+								.entityMemo(INITIAL_MEMO)
 								.bytecode("bytecode"),
 						getContractInfo("contract")
 								.payingWith("payer")

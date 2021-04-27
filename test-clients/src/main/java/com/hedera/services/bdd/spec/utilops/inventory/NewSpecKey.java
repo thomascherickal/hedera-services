@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops.inventory;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.keys.KeyGenerator;
 import com.hedera.services.bdd.spec.keys.KeyLabel;
 import com.hedera.services.bdd.spec.keys.SigControl;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,31 +38,45 @@ import static com.hedera.services.bdd.spec.keys.KeyFactory.KeyType;
 public class NewSpecKey extends UtilOp {
 	static final Logger log = LogManager.getLogger(NewSpecKey.class);
 
+	private boolean verboseLoggingOn = false;
 	private final String name;
 	private Optional<KeyType> type = Optional.empty();
 	private Optional<SigControl> shape = Optional.empty();
 	private Optional<KeyLabel> labels = Optional.empty();
+	private Optional<KeyGenerator> generator = Optional.empty();
 
 	public NewSpecKey(String name) {
 		this.name = name;
+	}
+
+	public NewSpecKey logged() {
+		verboseLoggingOn = true;
+		return this;
 	}
 
 	public NewSpecKey type(KeyType toGen) {
 		type = Optional.of(toGen);
 		return this;
 	}
+
 	public NewSpecKey shape(SigControl control) {
 		shape = Optional.of(control);
 		return this;
 	}
+
 	public NewSpecKey labels(KeyLabel kl) {
 		labels = Optional.of(kl);
 		return this;
 	}
 
+	public NewSpecKey generator(KeyGenerator gen) {
+		generator = Optional.of(gen);
+		return this;
+	}
+
 	@Override
 	protected boolean submitOp(HapiApiSpec spec) throws Throwable {
-		KeyGenerator keyGen = KeyExpansion::genSingleEd25519KeyByteEncodePubKey;
+		KeyGenerator keyGen = generator.orElse(KeyExpansion::genSingleEd25519KeyByteEncodePubKey);
 		Key key;
 		if (shape.isPresent()) {
 			if (labels.isPresent()) {
@@ -73,6 +88,15 @@ public class NewSpecKey extends UtilOp {
 			key = spec.keys().generate(type.orElse(KeyType.SIMPLE), keyGen);
 		}
 		spec.registry().saveKey(name, key);
+		if (verboseLoggingOn) {
+			if (type.orElse(KeyType.SIMPLE) == KeyType.SIMPLE) {
+				log.info("Created simple '{}' w/ Ed25519 public key {}",
+						name,
+						Hex.encodeHexString(key.getEd25519().toByteArray()));
+			} else {
+				log.info("Created a complex key...");
+			}
+		}
 		return false;
 	}
 

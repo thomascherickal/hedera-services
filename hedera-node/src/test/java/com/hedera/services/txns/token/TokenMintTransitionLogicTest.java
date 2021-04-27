@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ package com.hedera.services.txns.token;
  */
 
 import com.hedera.services.context.TransactionContext;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.TokenID;
@@ -29,8 +31,6 @@ import com.hederahashgraph.api.proto.java.TokenMintTransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
@@ -47,7 +47,6 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 import static org.mockito.Mockito.never;
 
-@RunWith(JUnitPlatform.class)
 class TokenMintTransitionLogicTest {
 	long amount = 123L;
 	private TokenID id = IdUtils.asToken("1.2.3");
@@ -55,6 +54,7 @@ class TokenMintTransitionLogicTest {
 	private TokenStore tokenStore;
 	private TransactionContext txnCtx;
 	private PlatformTxnAccessor accessor;
+	private MerkleToken token;
 
 	private TransactionBody tokenMintTxn;
 	private TokenMintTransitionLogic subject;
@@ -63,6 +63,7 @@ class TokenMintTransitionLogicTest {
 	private void setup() {
 		tokenStore = mock(TokenStore.class);
 		accessor = mock(PlatformTxnAccessor.class);
+		token = mock(MerkleToken.class);
 
 		txnCtx = mock(TransactionContext.class);
 
@@ -108,6 +109,7 @@ class TokenMintTransitionLogicTest {
 		// then:
 		verify(tokenStore).mint(id, amount);
 		verify(txnCtx).setStatus(SUCCESS);
+		verify(txnCtx).setNewTotalSupply(amount);
 	}
 
 	@Test
@@ -174,6 +176,8 @@ class TokenMintTransitionLogicTest {
 		given(accessor.getTxn()).willReturn(tokenMintTxn);
 		given(txnCtx.accessor()).willReturn(accessor);
 		given(tokenStore.resolve(id)).willReturn(id);
+		given(tokenStore.get(id)).willReturn(token);
+		given(token.totalSupply()).willReturn(amount);
 	}
 
 	private void givenMissingToken() {

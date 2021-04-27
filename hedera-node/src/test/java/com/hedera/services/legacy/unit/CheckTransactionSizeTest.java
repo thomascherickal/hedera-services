@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package com.hedera.services.legacy.unit;
  */
 
 import com.google.protobuf.ByteString;
-import com.hedera.services.legacy.utils.TransactionValidationUtils;
+import com.hedera.services.legacy.handler.TransactionHandler;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.swirlds.common.Platform;
 import com.swirlds.common.internal.SettingsCommon;
@@ -41,7 +41,7 @@ public class CheckTransactionSizeTest {
 		byte[] bytes = new byte[Platform.getTransactionMaxBytes()];
 		Transaction transaction = Transaction.newBuilder().setBodyBytes(ByteString.copyFrom(bytes)).build();
 		assert Platform.getTransactionMaxBytes() < transaction.toByteArray().length;
-		Assert.assertFalse(TransactionValidationUtils.validateTxSize(transaction));
+		Assert.assertFalse(TransactionHandler.validateTxSize(transaction));
 	}
 
 	@Test
@@ -51,6 +51,6 @@ public class CheckTransactionSizeTest {
 		byte[] bytes = new byte[Platform.getTransactionMaxBytes() - 30];
 		Transaction transaction = Transaction.newBuilder().setBodyBytes(ByteString.copyFrom(bytes)).build();
 		assert Platform.getTransactionMaxBytes() > transaction.toByteArray().length;
-		Assert.assertTrue(TransactionValidationUtils.validateTxSize(transaction));
+		Assert.assertTrue(TransactionHandler.validateTxSize(transaction));
 	}
 }

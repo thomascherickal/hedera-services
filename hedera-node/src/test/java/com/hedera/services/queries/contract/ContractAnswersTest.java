@@ -4,7 +4,7 @@ package com.hedera.services.queries.contract;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,32 @@ package com.hedera.services.queries.contract;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class ContractAnswersTest {
 	GetBytecodeAnswer getBytecodeAnswer = mock(GetBytecodeAnswer.class);
 	GetContractInfoAnswer getContractInfoAnswer = mock(GetContractInfoAnswer.class);
 	GetContractRecordsAnswer getContractRecordsAnswer = mock(GetContractRecordsAnswer.class);
+	ContractCallLocalAnswer contractCallLocalAnswer = mock(ContractCallLocalAnswer.class);
+	GetBySolidityIdAnswer getBySolidityIdAnswer = mock(GetBySolidityIdAnswer.class);
 
 	ContractAnswers subject;
 
 	@Test
 	public void hasExpectedAnswers() {
 		// given:
-		subject = new ContractAnswers(getBytecodeAnswer, getContractInfoAnswer, getContractRecordsAnswer);
+		subject = new ContractAnswers(
+				getBytecodeAnswer,
+				getContractInfoAnswer,
+				getBySolidityIdAnswer,
+				getContractRecordsAnswer,
+				contractCallLocalAnswer);
 
 		// then:
 		assertSame(getBytecodeAnswer, subject.getBytecode());
 		assertSame(getContractInfoAnswer, subject.getContractInfo());
 		assertSame(getContractRecordsAnswer, subject.getContractRecords());
+		assertSame(contractCallLocalAnswer, subject.contractCallLocal());
+		assertSame(getBySolidityIdAnswer, subject.getBySolidityId());
 	}
 }

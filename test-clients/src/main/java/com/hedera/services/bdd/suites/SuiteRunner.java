@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ package com.hedera.services.bdd.suites;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecSetup;
 import com.hedera.services.bdd.suites.consensus.ChunkingSuite;
-import com.hedera.services.bdd.suites.consensus.ConsensusThrottlesSuite;
 import com.hedera.services.bdd.suites.consensus.SubmitMessageSuite;
 import com.hedera.services.bdd.suites.consensus.TopicCreateSuite;
 import com.hedera.services.bdd.suites.consensus.TopicDeleteSuite;
@@ -46,44 +45,63 @@ import com.hedera.services.bdd.suites.crypto.CryptoCreateForSuiteRunner;
 import com.hedera.services.bdd.suites.crypto.CryptoCreateSuite;
 import com.hedera.services.bdd.suites.crypto.CryptoDeleteSuite;
 import com.hedera.services.bdd.suites.crypto.CryptoGetInfoRegression;
+import com.hedera.services.bdd.suites.crypto.CryptoTransferSuite;
 import com.hedera.services.bdd.suites.crypto.CryptoUpdateSuite;
 import com.hedera.services.bdd.suites.crypto.QueryPaymentSuite;
+import com.hedera.services.bdd.suites.fees.CongestionPricingSuite;
 import com.hedera.services.bdd.suites.fees.SpecialAccountsAreExempted;
 import com.hedera.services.bdd.suites.file.ExchangeRateControlSuite;
 import com.hedera.services.bdd.suites.file.FetchSystemFiles;
 import com.hedera.services.bdd.suites.file.FileAppendSuite;
+import com.hedera.services.bdd.suites.file.FileCreateSuite;
 import com.hedera.services.bdd.suites.file.FileDeleteSuite;
 import com.hedera.services.bdd.suites.file.FileUpdateSuite;
 import com.hedera.services.bdd.suites.file.PermissionSemanticsSpec;
 import com.hedera.services.bdd.suites.file.ProtectedFilesUpdateSuite;
+import com.hedera.services.bdd.suites.file.ValidateNewAddressBook;
 import com.hedera.services.bdd.suites.file.negative.UpdateFailuresSpec;
 import com.hedera.services.bdd.suites.file.positive.SysDelSysUndelSpec;
+import com.hedera.services.bdd.suites.freeze.CryptoTransferThenFreezeTest;
 import com.hedera.services.bdd.suites.freeze.FreezeSuite;
 import com.hedera.services.bdd.suites.freeze.SimpleFreezeOnly;
 import com.hedera.services.bdd.suites.freeze.UpdateServerFiles;
-import com.hedera.services.bdd.suites.issues.Issue2144Spec;
-import com.hedera.services.bdd.suites.issues.IssueXXXXSpec;
+import com.hedera.services.bdd.suites.regression.SteadyStateThrottlingCheck;
+import com.hedera.services.bdd.suites.throttling.ThrottleDefValidationSuite;
+import com.hedera.services.bdd.suites.throttling.PrivilegedOpsSuite;
 import com.hedera.services.bdd.suites.meta.VersionInfoSpec;
+import com.hedera.services.bdd.suites.misc.CannotDeleteSystemEntitiesSuite;
 import com.hedera.services.bdd.suites.misc.ConsensusQueriesStressTests;
 import com.hedera.services.bdd.suites.misc.ContractQueriesStressTests;
 import com.hedera.services.bdd.suites.misc.CryptoQueriesStressTests;
 import com.hedera.services.bdd.suites.misc.FileQueriesStressTests;
 import com.hedera.services.bdd.suites.misc.OneOfEveryTransaction;
 import com.hedera.services.bdd.suites.misc.ZeroStakeNodeTest;
+import com.hedera.services.bdd.suites.perf.AccountBalancesClientSaveLoadTest;
 import com.hedera.services.bdd.suites.perf.ContractCallLoadTest;
+import com.hedera.services.bdd.suites.perf.CreateTopicPerfSuite;
+import com.hedera.services.bdd.suites.perf.CryptoCreatePerfSuite;
 import com.hedera.services.bdd.suites.perf.CryptoTransferLoadTest;
+import com.hedera.services.bdd.suites.perf.FileContractMemoPerfSuite;
 import com.hedera.services.bdd.suites.perf.FileUpdateLoadTest;
 import com.hedera.services.bdd.suites.perf.HCSChunkingRealisticPerfSuite;
+import com.hedera.services.bdd.suites.perf.MixedOpsLoadTest;
+import com.hedera.services.bdd.suites.perf.MixedOpsMemoPerfSuite;
 import com.hedera.services.bdd.suites.perf.MixedTransferAndSubmitLoadTest;
 import com.hedera.services.bdd.suites.perf.MixedTransferCallAndSubmitLoadTest;
+import com.hedera.services.bdd.suites.misc.MixedOpsTransactionsSuite;
+import com.hedera.services.bdd.suites.perf.QueryOnlyLoadTest;
+import com.hedera.services.bdd.suites.perf.ReadyToRunScheduledXfersLoad;
 import com.hedera.services.bdd.suites.perf.SubmitMessageLoadTest;
-import com.hedera.services.bdd.suites.reconnect.CreateAccountsBeforeReconnect;
+import com.hedera.services.bdd.suites.perf.TokenRelStatusChanges;
+import com.hedera.services.bdd.suites.perf.TokenTransferBasicLoadTest;
 import com.hedera.services.bdd.suites.perf.TokenTransfersLoadProvider;
 import com.hedera.services.bdd.suites.reconnect.CheckUnavailableNode;
+import com.hedera.services.bdd.suites.reconnect.CreateAccountsBeforeReconnect;
 import com.hedera.services.bdd.suites.reconnect.CreateFilesBeforeReconnect;
 import com.hedera.services.bdd.suites.reconnect.CreateTopicsBeforeReconnect;
 import com.hedera.services.bdd.suites.reconnect.MixedValidationsAfterReconnect;
-import com.hedera.services.bdd.suites.reconnect.SubmitMessagesBeforeReconnect;
+import com.hedera.services.bdd.suites.reconnect.SubmitMessagesForReconnect;
+import com.hedera.services.bdd.suites.reconnect.UpdateAllProtectedFilesDuringReconnect;
 import com.hedera.services.bdd.suites.reconnect.UpdateApiPermissionsDuringReconnect;
 import com.hedera.services.bdd.suites.reconnect.ValidateApiPermissionStateAfterReconnect;
 import com.hedera.services.bdd.suites.reconnect.ValidateAppPropertiesStateAfterReconnect;
@@ -94,11 +112,17 @@ import com.hedera.services.bdd.suites.records.ContractRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.CryptoRecordsSanityCheckSuite;
 import com.hedera.services.bdd.suites.records.DuplicateManagementTest;
 import com.hedera.services.bdd.suites.records.FileRecordsSanityCheckSuite;
-import com.hedera.services.bdd.suites.records.SignedTransactionBytesRecordsSuite;
 import com.hedera.services.bdd.suites.records.RecordCreationSuite;
+import com.hedera.services.bdd.suites.records.SignedTransactionBytesRecordsSuite;
+import com.hedera.services.bdd.suites.regression.AddWellKnownEntities;
+import com.hedera.services.bdd.suites.regression.JrsRestartTestTemplate;
 import com.hedera.services.bdd.suites.regression.UmbrellaRedux;
+import com.hedera.services.bdd.suites.schedule.ScheduleCreateSpecs;
+import com.hedera.services.bdd.suites.schedule.ScheduleDeleteSpecs;
+import com.hedera.services.bdd.suites.schedule.ScheduleExecutionSpecs;
+import com.hedera.services.bdd.suites.schedule.ScheduleRecordSpecs;
+import com.hedera.services.bdd.suites.schedule.ScheduleSignSpecs;
 import com.hedera.services.bdd.suites.streaming.RecordStreamValidation;
-import com.hedera.services.bdd.suites.throttling.BucketThrottlingSpec;
 import com.hedera.services.bdd.suites.token.TokenAssociationSpecs;
 import com.hedera.services.bdd.suites.token.TokenCreateSpecs;
 import com.hedera.services.bdd.suites.token.TokenDeleteSpecs;
@@ -129,6 +153,7 @@ import java.util.stream.Stream;
 
 import static com.hedera.services.bdd.spec.HapiSpecSetup.NodeSelection.FIXED;
 import static com.hedera.services.bdd.spec.HapiSpecSetup.TlsConfig.OFF;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.isIdLiteral;
 import static com.hedera.services.bdd.suites.HapiApiSuite.FinalOutcome;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.groupingBy;
@@ -141,18 +166,19 @@ public class SuiteRunner {
 	private static final int SUITE_NAME_WIDTH = 32;
 
 	private static final HapiSpecSetup.TlsConfig DEFAULT_TLS_CONFIG = OFF;
-	private static final HapiSpecSetup.TxnConfig DEFAULT_TXN_CONFIG = HapiSpecSetup.TxnConfig.ALTERNATE;
+	private static final HapiSpecSetup.TxnProtoStructure DEFAULT_TXN_CONFIG = HapiSpecSetup.TxnProtoStructure.ALTERNATE;
 	private static final HapiSpecSetup.NodeSelection DEFAULT_NODE_SELECTOR = FIXED;
 
 	private static final int EXPECTED_DEV_NETWORK_SIZE = 3;
 	private static final int EXPECTED_CI_NETWORK_SIZE = 4;
-	private static final String DEFAULT_PAYER_ID = "2";
+	private static final String DEFAULT_PAYER_ID = "0.0.2";
 
 	public static int expectedNetworkSize = EXPECTED_DEV_NETWORK_SIZE;
 
 	static final Map<String, HapiApiSuite[]> CATEGORY_MAP = new HashMap<>() {{
-		/* CI jobs */
+		/* Convenience entries, uncomment locally to run CI jobs */
 //		put("CiConsensusAndCryptoJob", aof(
+//				new SignedTransactionBytesRecordsSuite(),
 //				new DuplicateManagementTest(),
 //				new TopicCreateSuite(),
 //				new TopicUpdateSuite(),
@@ -160,19 +186,26 @@ public class SuiteRunner {
 //				new SubmitMessageSuite(),
 //				new ChunkingSuite(),
 //				new TopicGetInfoSuite(),
-//				new ConsensusThrottlesSuite(),
 //				new BucketThrottlingSpec(),
 //				new SpecialAccountsAreExempted(),
 //				new CryptoTransferSuite(),
+//				new CryptoUpdateSuite(),
 //				new CryptoRecordsSanityCheckSuite(),
-//				new Issue2144Spec()));
-		put("CiTokenJob", aof(
-				new TokenAssociationSpecs(),
-				new TokenUpdateSpecs(),
-				new TokenCreateSpecs(),
-				new TokenDeleteSpecs(),
-				new TokenManagementSpecs(),
-				new TokenTransactSpecs()));
+//				new PrivilegedOpsSuite(),
+//				new CannotDeleteSystemEntitiesSuite()));
+//		put("CiScheduleJob", aof(
+//				new ScheduleDeleteSpecs(),
+//				new ScheduleExecutionSpecs(),
+//				new ScheduleCreateSpecs(),
+//				new ScheduleSignSpecs(),
+//				new ScheduleRecordSpecs()));
+//		put("CiTokenJob", aof(
+//				new TokenAssociationSpecs(),
+//				new TokenUpdateSpecs(),
+//				new TokenCreateSpecs(),
+//				new TokenDeleteSpecs(),
+//				new TokenManagementSpecs(),
+//				new TokenTransactSpecs()));
 //		put("CiFileJob", aof(
 //				new FileRecordsSanityCheckSuite(),
 //				new VersionInfoSpec(),
@@ -199,8 +232,17 @@ public class SuiteRunner {
 //				new RecordCreationSuite()));
 		/* Umbrella Redux */
 		put("UmbrellaRedux", aof(new UmbrellaRedux()));
+		/* Regression saved state management helpers */
+		put("AddWellKnownEntities", aof(new AddWellKnownEntities()));
+		/* JRS restart tests */
+		put("RestartWithScheduledEntities", aof(new JrsRestartTestTemplate()));
 		/* Load tests. */
+		put("QueryOnlyLoadTest", aof(new QueryOnlyLoadTest()));
+		put("TokenTransfersBasicLoadTest", aof(new TokenTransferBasicLoadTest()));
+		put("AccountBalancesLoadTest", aof(new AccountBalancesClientSaveLoadTest()));
 		put("TokenTransfersLoad", aof(new TokenTransfersLoadProvider()));
+		put("ReadyToRunScheduledXfersLoad", aof(new ReadyToRunScheduledXfersLoad()));
+		put("TokenRelChangesLoad", aof(new TokenRelStatusChanges()));
 		put("FileUpdateLoadTest", aof(new FileUpdateLoadTest()));
 		put("ContractCallLoadTest", aof(new ContractCallLoadTest()));
 		put("SubmitMessageLoadTest", aof(new SubmitMessageLoadTest()));
@@ -208,10 +250,14 @@ public class SuiteRunner {
 		put("MixedTransferAndSubmitLoadTest", aof(new MixedTransferAndSubmitLoadTest()));
 		put("MixedTransferCallAndSubmitLoadTest", aof(new MixedTransferCallAndSubmitLoadTest()));
 		put("HCSChunkingRealisticPerfSuite", aof(new HCSChunkingRealisticPerfSuite()));
+		put("CryptoCreatePerfSuite", aof(new CryptoCreatePerfSuite()));
+		put("CreateTopicPerfSuite", aof(new CreateTopicPerfSuite()));
+		put("MixedOpsMemoPerfSuite", aof(new MixedOpsMemoPerfSuite()));
+		put("FileContractMemoPerfSuite", aof(new FileContractMemoPerfSuite()));
 		/* Functional tests - RECONNECT */
 		put("CreateAccountsBeforeReconnect", aof(new CreateAccountsBeforeReconnect()));
 		put("CreateTopicsBeforeReconnect", aof(new CreateTopicsBeforeReconnect()));
-		put("SubmitMessagesBeforeReconnect", aof(new SubmitMessagesBeforeReconnect()));
+		put("SubmitMessagesForReconnect", aof(new SubmitMessagesForReconnect()));
 		put("CreateFilesBeforeReconnect", aof(new CreateFilesBeforeReconnect()));
 		put("CheckUnavailableNode", aof(new CheckUnavailableNode()));
 		put("MixedValidationsAfterReconnect", aof(new MixedValidationsAfterReconnect()));
@@ -221,6 +267,7 @@ public class SuiteRunner {
 		put("ValidateAppPropertiesStateAfterReconnect", aof(new ValidateAppPropertiesStateAfterReconnect()));
 		put("ValidateFeeScheduleStateAfterReconnect", aof(new ValidateFeeScheduleStateAfterReconnect()));
 		put("ValidateExchangeRateStateAfterReconnect", aof(new ValidateExchangeRateStateAfterReconnect()));
+		put("UpdateAllProtectedFilesDuringReconnect", aof(new UpdateAllProtectedFilesDuringReconnect()));
 		/* Functional tests - CONSENSUS */
 		put("TopicCreateSpecs", aof(new TopicCreateSuite()));
 		put("TopicDeleteSpecs", aof(new TopicDeleteSuite()));
@@ -228,9 +275,9 @@ public class SuiteRunner {
 		put("SubmitMessageSpecs", aof(new SubmitMessageSuite()));
 		put("HCSTopicFragmentationSuite", aof(new ChunkingSuite()));
 		put("TopicGetInfoSpecs", aof(new TopicGetInfoSuite()));
-		put("ConsensusThrottlesSpecs", aof(new ConsensusThrottlesSuite()));
 		put("ConsensusQueriesStressTests", aof(new ConsensusQueriesStressTests()));
 		/* Functional tests - FILE */
+		put("FileCreateSuite", aof(new FileCreateSuite()));
 		put("FileAppendSuite", aof(new FileAppendSuite()));
 		put("FileUpdateSuite", aof(new FileUpdateSuite()));
 		put("FileDeleteSuite", aof(new FileDeleteSuite()));
@@ -238,6 +285,12 @@ public class SuiteRunner {
 		put("ExchangeRateControlSuite", aof(new ExchangeRateControlSuite()));
 		put("PermissionSemanticsSpec", aof(new PermissionSemanticsSpec()));
 		put("FileQueriesStressTests", aof(new FileQueriesStressTests()));
+		/* Functional tests - SCHEDULE */
+		put("ScheduleCreateSpecs", aof(new ScheduleCreateSpecs()));
+		put("ScheduleSignSpecs", aof(new ScheduleSignSpecs()));
+		put("ScheduleRecordSpecs", aof(new ScheduleRecordSpecs()));
+		put("ScheduleDeleteSpecs", aof(new ScheduleDeleteSpecs()));
+		put("ScheduleExecutionSpecs", aof(new ScheduleExecutionSpecs()));
 		/* Functional tests - TOKEN */
 		put("TokenCreateSpecs", aof(new TokenCreateSpecs()));
 		put("TokenUpdateSpecs", aof(new TokenUpdateSpecs()));
@@ -246,6 +299,7 @@ public class SuiteRunner {
 		put("TokenManagementSpecs", aof(new TokenManagementSpecs()));
 		put("TokenAssociationSpecs", aof(new TokenAssociationSpecs()));
 		/* Functional tests - CRYPTO */
+		put("CryptoTransferSuite", aof(new CryptoTransferSuite()));
 		put("CryptoDeleteSuite", aof(new CryptoDeleteSuite()));
 		put("CryptoCreateSuite", aof(new CryptoCreateSuite()));
 		put("CryptoUpdateSuite", aof(new CryptoUpdateSuite()));
@@ -255,7 +309,6 @@ public class SuiteRunner {
 		/* Functional tests - CONTRACTS */
 		put("NewOpInConstructorSpecs", aof(new NewOpInConstructorSuite()));
 		put("DeprecatedContractKeySpecs", aof(new DeprecatedContractKeySuite()));
-		put("MultipleSelfDestructsAreSafe", aof(new IssueXXXXSpec()));
 		put("ContractQueriesStressTests", aof(new ContractQueriesStressTests()));
 		put("ChildStorageSpecs", aof(new ChildStorageSpec()));
 		put("ContractCallLocalSuite", aof(new ContractCallLocalSuite()));
@@ -281,13 +334,16 @@ public class SuiteRunner {
 		put("ControlAccountsExemptForUpdates", aof(new SpecialAccountsAreExempted()));
 		/* System files. */
 		put("FetchSystemFiles", aof(new FetchSystemFiles()));
+		put("CannotDeleteSystemEntitiesSuite", aof(new CannotDeleteSystemEntitiesSuite()));
 		/* Throttling */
-		put("BucketThrottlingSpec", aof(new BucketThrottlingSpec()));
+		put("ThrottleDefValidationSuite", aof(new ThrottleDefValidationSuite()));
+		put("CongestionPricingSuite", aof(new CongestionPricingSuite()));
+		put("SteadyStateThrottlingCheck", aof(new SteadyStateThrottlingCheck()));
 		/* Network metadata. */
 		put("VersionInfoSpec", aof(new VersionInfoSpec()));
 		put("FreezeSuite", aof(new FreezeSuite()));
 		/* Authorization. */
-		put("SuperusersAreNeverThrottled", aof(new Issue2144Spec()));
+		put("PrivilegedOpsSuite", aof(new PrivilegedOpsSuite()));
 		put("SysDelSysUndelSpec", aof(new SysDelSysUndelSpec()));
 		/* Freeze and update */
 		put("UpdateServerFiles", aof(new UpdateServerFiles()));
@@ -297,6 +353,12 @@ public class SuiteRunner {
 		/* Query payment validation */
 		put("QueryPaymentSuite", aof(new QueryPaymentSuite()));
 		put("SimpleFreezeOnly", aof(new SimpleFreezeOnly()));
+		/* Transfer then freeze */
+		put("CryptoTransferThenFreezeTest", aof(new CryptoTransferThenFreezeTest()));
+		put("MixedOpsTransactionsSuite", aof(new MixedOpsTransactionsSuite()));
+		put("MixedOpsLoadTest", aof(new MixedOpsLoadTest()));
+		/* Validate new AddressBook */
+		put("ValidateNewAddressBook", aof(new ValidateNewAddressBook()));
 	}};
 
 	static boolean runAsync;
@@ -332,6 +394,12 @@ public class SuiteRunner {
 					NETWORK_SIZE_ARG,
 					"" + EXPECTED_CI_NETWORK_SIZE).split("=")[1]);
 			var otherOverrides = arbitraryOverrides(effArgs);
+			// For HTS perf regression test, we need to know the number of clients to distribute
+			// the creation of the test tokens and token associations to each client.
+			// For current perf test setup, this number will be the size of test network.
+			if(!otherOverrides.containsKey("totalClients")) {
+				otherOverrides.put("totalClients", "" + expectedNetworkSize);
+			}
 			createPayerAccount(System.getenv("NODES"), args[1]);
 			HapiApiSpec.runInCiMode(
 					System.getenv("NODES"),
@@ -374,6 +442,9 @@ public class SuiteRunner {
 			Thread.sleep(r.nextInt(5000));
 			new CryptoCreateForSuiteRunner(nodes, defaultNode).runSuiteAsync();
 			Thread.sleep(2000);
+			if(!isIdLiteral(payerId)){
+				payerId = DEFAULT_PAYER_ID;
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -450,6 +521,7 @@ public class SuiteRunner {
 				globalPassFlag &= result.failedSuites.isEmpty();
 			}
 		});
+		log.info("============== SuiteRunner finished ==============");
 	}
 
 	private static boolean categoryLeaksState(HapiApiSuite[] suites) {

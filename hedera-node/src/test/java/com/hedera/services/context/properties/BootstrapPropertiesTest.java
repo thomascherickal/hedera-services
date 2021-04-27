@@ -4,7 +4,7 @@ package com.hedera.services.context.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,18 @@ package com.hedera.services.context.properties;
  * ‍
  */
 
+import com.hedera.services.fees.calculation.CongestionMultipliers;
+import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
+import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoCreate;
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class BootstrapPropertiesTest {
 	BootstrapProperties subject = new BootstrapProperties();
 
@@ -56,8 +57,6 @@ class BootstrapPropertiesTest {
 			entry("bootstrap.genesisPemPassphrase.path", "TBD"),
 			entry("bootstrap.genesisPem.path", "TBD"),
 			entry("bootstrap.hapiPermissions.path", "data/config/api-permission.properties"),
-			entry("bootstrap.ledger.nodeAccounts.initialBalance", 0L),
-			entry("bootstrap.ledger.systemAccounts.initialBalance", 0L),
 			entry("bootstrap.networkProperties.path", "data/config/application.properties"),
 			entry("bootstrap.rates.currentHbarEquiv", 1),
 			entry("bootstrap.rates.currentCentEquiv", 12),
@@ -66,6 +65,7 @@ class BootstrapPropertiesTest {
 			entry("bootstrap.rates.nextCentEquiv", 15),
 			entry("bootstrap.rates.nextExpiry", 4102444800L),
 			entry("bootstrap.system.entityExpiry", 4102444800L),
+			entry("bootstrap.throttleDefsJson.resource", "throttles.json"),
 			entry("accounts.addressBookAdmin", 55L),
 			entry("balances.exportDir.path", "/opt/hgcapp/accountBalances/"),
 			entry("balances.exportEnabled", true),
@@ -76,27 +76,36 @@ class BootstrapPropertiesTest {
 			entry("accounts.feeSchedulesAdmin", 56L),
 			entry("accounts.freezeAdmin", 58L),
 			entry("accounts.systemAdmin", 50L),
-			entry("accounts.systemAdmin.firstManaged", 51L),
-			entry("accounts.systemAdmin.lastManaged", 80L),
 			entry("accounts.systemDeleteAdmin", 59L),
 			entry("accounts.systemUndeleteAdmin", 60L),
 			entry("accounts.treasury", 2L),
 			entry("contracts.defaultLifetime", 7890000L),
+			entry("contracts.localCall.estRetBytes", 32),
 			entry("contracts.maxGas", 300000),
 			entry("contracts.maxStorageKb", 1024),
+			entry("dev.onlyDefaultNodeListens", true),
+			entry("dev.defaultListeningNodeAccount", "0.0.3"),
+			entry("fees.percentCongestionMultipliers", CongestionMultipliers.from("90,10x,95,25x,99,100x")),
+			entry("fees.minCongestionPeriod", 60),
 			entry("files.addressBook", 101L),
-			entry("files.diskFsBaseDir.path", "data/diskFs/"),
 			entry("files.networkProperties", 121L),
 			entry("files.exchangeRates", 112L),
 			entry("files.feeSchedules", 111L),
 			entry("files.hapiPermissions", 122L),
+			entry("files.throttleDefinitions", 123L),
 			entry("files.nodeDetails", 102L),
 			entry("files.softwareUpdateZip", 150L),
 			entry("grpc.port", 50211),
 			entry("grpc.tlsPort", 50212),
+			entry("hedera.accountsExportPath", "data/onboard/exportedAccount.txt"),
+			entry("hedera.exportAccountsOnStartup", false),
 			entry("hedera.numReservedSystemEntities", 1_000L),
 			entry("hedera.profiles.active", Profile.PROD),
 			entry("hedera.realm", 0L),
+			entry("hedera.recordStream.logDir", "/opt/hgcapp/recordStreams"),
+			entry("hedera.recordStream.logPeriod", 2L),
+			entry("hedera.recordStream.isEnabled", true),
+			entry("hedera.recordStream.queueCapacity", 5000),
 			entry("hedera.shard", 0L),
 			entry("hedera.transaction.maxMemoUtf8Bytes", 100),
 			entry("hedera.transaction.minValidDuration", 15L),
@@ -109,17 +118,34 @@ class BootstrapPropertiesTest {
 			entry("ledger.transfers.maxLen", 10),
 			entry("ledger.tokenTransfers.maxLen", 10),
 			entry("ledger.totalTinyBarFloat", 5000000000000000000L),
+			entry("ledger.autoRenewPeriod.maxDuration", 8000001L),
+			entry("ledger.autoRenewPeriod.minDuration", 6999999L),
+			entry("ledger.schedule.txExpiryTimeSecs", 1800),
+			entry("netty.mode", Profile.PROD),
+			entry("netty.prod.flowControlWindow", 10240),
+			entry("netty.prod.maxConcurrentCalls", 10),
+			entry("netty.prod.maxConnectionAge", 15L),
+			entry("netty.prod.maxConnectionAgeGrace", 5L),
+			entry("netty.prod.maxConnectionIdle", 10L),
+			entry("netty.prod.keepAliveTime", 10L),
+			entry("netty.prod.keepAliveTimeout", 3L),
+			entry("netty.tlsCrt.path", "hedera.crt"),
+			entry("netty.tlsKey.path", "hedera.key"),
 			entry("precheck.account.maxLookupRetries", 10),
 			entry("precheck.account.lookupRetryBackoffIncrementMs", 10),
+			entry("queries.blob.lookupRetries", 3),
 			entry("tokens.maxPerAccount", 1_000),
-			entry("tokens.maxSymbolLength", 100),
-			entry("tokens.maxTokenNameLength",100),
+			entry("tokens.maxSymbolUtf8Bytes", 100),
+			entry("tokens.maxTokenNameUtf8Bytes",100),
 			entry("files.maxSizeKb", 1024),
+			entry("fees.tokenTransferUsageMultiplier", 380),
 			entry("cache.records.ttl", 180),
 			entry("rates.intradayChangeLimitPercent", 25),
+			entry("scheduling.whitelist", Set.of(CryptoCreate, HederaFunctionality.CryptoTransfer)),
 			entry("stats.runningAvgHalfLifeSecs", 10.0),
 			entry("stats.hapiOps.speedometerUpdateIntervalMs", 3_000L),
-			entry("stats.speedometerHalfLifeSecs", 10.0)
+			entry("stats.speedometerHalfLifeSecs", 10.0),
+			entry("consensus.message.maxBytesAllowed", 1024)
 	);
 
 	@BeforeEach

@@ -4,7 +4,7 @@ package com.hedera.services.sigs.metadata.lookups;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,8 @@ import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
 import static com.hedera.test.factories.keys.NodeFactory.ed25519;
 
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
@@ -49,7 +47,6 @@ import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.BDDMockito.*;
 import static com.hedera.test.factories.accounts.MerkleAccountFactory.*;
 
-@RunWith(JUnitPlatform.class)
 public class RetryingFCMapAccountLookupTest {
 	private NodeLocalProperties properties;
 	private MiscRunningAvgs runningAvgs;

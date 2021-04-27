@@ -4,7 +4,7 @@ package com.hedera.services.txns.consensus;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class TopicCreateTransitionLogic implements TransitionLogic {
 					op.hasAdminKey() ? JKey.mapKey(op.getAdminKey()) : null,
 					op.hasSubmitKey() ? JKey.mapKey(op.getSubmitKey()) : null,
 					op.getAutoRenewPeriod().getSeconds(),
-					op.hasAutoRenewAccount() ? EntityId.ofNullableAccountId(op.getAutoRenewAccount()) : null,
+					op.hasAutoRenewAccount() ? EntityId.fromGrpcAccountId(op.getAutoRenewAccount()) : null,
 					new RichInstant(expirationTime.getEpochSecond(), expirationTime.getNano()));
 
 			var newEntityId = entityIdSource.newAccountId(payerAccountId);
@@ -147,11 +147,10 @@ public class TopicCreateTransitionLogic implements TransitionLogic {
 	 */
 	private ResponseCodeEnum validatePreStateTransition() {
 		var op = transactionContext.accessor().getTxn().getConsensusCreateTopic();
-		ResponseCodeEnum validationResult;
 
-		if (!validator.isValidEntityMemo(op.getMemo())) {
-			validationResult = MEMO_TOO_LONG;
-		} else if (op.hasSubmitKey() && !validator.hasGoodEncoding(op.getSubmitKey())) {
+		ResponseCodeEnum validationResult = validator.memoCheck(op.getMemo());
+
+		if (op.hasSubmitKey() && !validator.hasGoodEncoding(op.getSubmitKey())) {
 			validationResult = BAD_ENCODING;
 		} else if (!op.hasAutoRenewPeriod()) {
 			validationResult = INVALID_RENEWAL_PERIOD;
@@ -163,8 +162,6 @@ public class TopicCreateTransitionLogic implements TransitionLogic {
 		} else if (op.hasAutoRenewAccount() && !op.hasAdminKey()) {
 			// If present, the autoRenewAccount's key must have signed transaction (see HederaSigningOrder).
 			validationResult = AUTORENEW_ACCOUNT_NOT_ALLOWED;
-		} else {
-			validationResult = OK;
 		}
 
 		return validationResult;

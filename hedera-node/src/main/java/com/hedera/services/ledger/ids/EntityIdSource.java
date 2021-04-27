@@ -4,7 +4,7 @@ package com.hedera.services.ledger.ids;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package com.hedera.services.ledger.ids;
 
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 
 /**
@@ -53,6 +54,14 @@ public interface EntityIdSource {
 	 * @return an appropriate id to use
 	 */
 	TokenID newTokenId(AccountID sponsor);
+
+	/**
+	 * Returns the {@link ScheduleID} to use for a new scheduled entity with the given sponsor.
+	 *
+	 * @param sponsor the sponsor of the new scheduled entity.
+	 * @return an appropriate id to use
+	 */
+	ScheduleID newScheduleId(AccountID sponsor);
 
 	/**
 	 * Reclaims the last id issued.

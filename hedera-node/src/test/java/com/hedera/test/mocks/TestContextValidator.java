@@ -4,7 +4,7 @@ package com.hedera.test.mocks;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,19 @@ import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransferList;
-import com.hedera.services.legacy.config.PropertiesLoader;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.swirlds.fcmap.FCMap;
 import org.apache.commons.codec.binary.StringUtils;
 
 import java.util.List;
 
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+
 public enum TestContextValidator implements OptionValidator {
 	TEST_VALIDATOR;
+
+	public static final long CONSENSUS_NOW = 1_234_567L;
 
 	@Override
 	public boolean hasGoodEncoding(Key key) {
@@ -46,13 +50,7 @@ public enum TestContextValidator implements OptionValidator {
 
 	@Override
 	public boolean isValidExpiry(Timestamp expiry) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean isValidEntityMemo(String memo) {
-		var maxUtf8Bytes = 100;
-		return (null == memo) || (StringUtils.getBytesUtf8(memo).length <= maxUtf8Bytes);
+		return expiry.getSeconds() > CONSENSUS_NOW;
 	}
 
 	@Override
@@ -98,5 +96,10 @@ public enum TestContextValidator implements OptionValidator {
 	@Override
 	public ResponseCodeEnum tokenNameCheck(String name) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ResponseCodeEnum memoCheck(String cand) {
+		return cand.length() <= 100 ? OK : MEMO_TOO_LONG;
 	}
 }

@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.crypto;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,11 +50,14 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileCreate;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateChargedUsd;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BAD_ENCODING;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TX_FEE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.KEY_REQUIRED;
 
 public class CryptoCreateSuite extends HapiApiSuite {
@@ -82,9 +85,39 @@ public class CryptoCreateSuite extends HapiApiSuite {
 				createAnAccountInvalidNestedThresholdKey(),
 				createAnAccountThresholdKeyWithInvalidThreshold(),
 				createAnAccountInvalidED25519(),
-				invalidDurationGetsMeaningfulResponse(),
-				xferRequiresCrypto()
+				syntaxChecksAreAsExpected(),
+				xferRequiresCrypto(),
+				usdFeeAsExpected()
 		);
+	}
+
+	/* Prior to 0.13.0, a "canonical" CryptoCreate (one sig, 3 month auto-renew) cost 1¢. */
+	private HapiApiSpec usdFeeAsExpected() {
+		double preV13PriceUsd = 0.01, v13PriceUsd = 0.05;
+
+		return defaultHapiSpec("usdFeeAsExpected")
+				.given(
+						cryptoCreate("civilian")
+				).when(
+						cryptoCreate("neverToBe")
+								.balance(0L)
+								.memo("")
+								.entityMemo("")
+								.autoRenewSecs(THREE_MONTHS_IN_SECONDS)
+								.payingWith("civilian")
+								.feeUsd(preV13PriceUsd)
+								.hasPrecheck(INSUFFICIENT_TX_FEE),
+						cryptoCreate("ok")
+								.balance(0L)
+								.via("txn")
+								.memo("")
+								.entityMemo("")
+								.autoRenewSecs(THREE_MONTHS_IN_SECONDS)
+								.signedBy("civilian")
+								.payingWith("civilian")
+				).then(
+						validateChargedUsd("txn", v13PriceUsd)
+				);
 	}
 
 	private HapiApiSpec xferRequiresCrypto() {
@@ -108,12 +141,15 @@ public class CryptoCreateSuite extends HapiApiSuite {
 				);
 	}
 
-	public HapiApiSpec invalidDurationGetsMeaningfulResponse() {
-		return defaultHapiSpec("InvalidDurationGetsMeaningfulResponse")
+	public HapiApiSpec syntaxChecksAreAsExpected() {
+		return defaultHapiSpec("SyntaxChecksAreAsExpected")
 				.given().when().then(
 						cryptoCreate("broken")
 								.autoRenewSecs(1L)
-								.hasPrecheck(AUTORENEW_DURATION_NOT_IN_RANGE)
+								.hasPrecheck(AUTORENEW_DURATION_NOT_IN_RANGE),
+						cryptoCreate("alsoBroken")
+								.entityMemo(ZERO_BYTE_MEMO)
+								.hasPrecheck(INVALID_ZERO_BYTE_IN_STRING)
 				);
 	}
 

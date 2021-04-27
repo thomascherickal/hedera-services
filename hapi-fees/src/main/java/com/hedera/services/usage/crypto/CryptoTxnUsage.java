@@ -3,7 +3,7 @@ package com.hedera.services.usage.crypto;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public abstract class CryptoTxnUsage<T extends CryptoTxnUsage<T>> extends TxnUsa
 		super(cryptoOp, usageEstimator);
 	}
 
-	void addCryptoTransfersRecordRb(int numTokens, int numTransfers) {
+	void addTokenTransfersRecordRb(int numTokens, int numTransfers) {
 		addRecordRb(tokenEntitySizes.bytesUsedToRecordTokenTransfers(numTokens, numTransfers));
 	}
 }

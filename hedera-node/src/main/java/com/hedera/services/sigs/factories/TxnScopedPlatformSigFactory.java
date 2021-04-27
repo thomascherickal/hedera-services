@@ -4,7 +4,7 @@ package com.hedera.services.sigs.factories;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import com.swirlds.common.crypto.TransactionSignature;
 
 /**
  * Defines a type of {@link com.swirlds.common.crypto.TransactionSignature} factory that does not
- * require the {@code byte[]} data to sign, because it is assumed to be scoped
- * to a gRPC transaction.
+ * require the {@code byte[]} data to sign, because it is assumed to be scoped to a gRPC transaction.
  *
  * @author Michael Tinker
  */
 public interface TxnScopedPlatformSigFactory {
 	/**
-	 * Returns a {@link com.swirlds.common.crypto.TransactionSignature} on the scoped transaction.
+	 * Returns a {@link com.swirlds.common.crypto.TransactionSignature} for the scoped transaction.
 	 *
 	 * @param publicKey
 	 * 		the public key to use in creating the platform sig.

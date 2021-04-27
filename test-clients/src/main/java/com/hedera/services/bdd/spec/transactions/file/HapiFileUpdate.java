@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.transactions.file;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,32 @@ package com.hedera.services.bdd.spec.transactions.file;
 import com.google.common.base.MoreObjects;
 import com.google.common.io.Files;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.StringValue;
+import com.hedera.services.bdd.spec.HapiApiSpec;
+import com.hedera.services.bdd.spec.fees.FeeCalculator;
 import com.hedera.services.bdd.spec.queries.file.HapiGetFileContents;
+import com.hedera.services.bdd.spec.queries.file.HapiGetFileInfo;
+import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
+import com.hedera.services.bdd.spec.transactions.TxnFactory;
+import com.hedera.services.bdd.spec.transactions.TxnUtils;
 import com.hedera.services.bdd.suites.HapiApiSuite;
-import com.hedera.services.legacy.proto.utils.CommonUtils;
+import com.hedera.services.usage.file.ExtantFileContext;
 import com.hederahashgraph.api.proto.java.ExchangeRateSet;
+import com.hederahashgraph.api.proto.java.FileGetInfoResponse;
+import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.FileUpdateTransactionBody;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
+import com.hederahashgraph.api.proto.java.Response;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
+import com.hederahashgraph.api.proto.java.TransactionReceipt;
 import com.hederahashgraph.api.proto.java.TransactionResponse;
-import com.hedera.services.bdd.spec.HapiApiSpec;
-import com.hedera.services.bdd.spec.fees.FeeCalculator;
-import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
-import com.hedera.services.bdd.spec.transactions.TxnFactory;
-import com.hedera.services.bdd.spec.transactions.TxnUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -62,8 +68,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileContents;
-import static com.hedera.services.bdd.spec.transactions.TxnUtils.currExpiry;
+import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.suFrom;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
+import static com.hedera.services.bdd.suites.HapiApiSuite.ONE_HBAR;
 import static java.util.Collections.EMPTY_MAP;
 import static java.util.Collections.EMPTY_SET;
 
@@ -79,6 +87,7 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 	private final String file;
 	private OptionalLong expiryExtension = OptionalLong.empty();
 	private Optional<Long> lifetimeSecs = Optional.empty();
+	private Optional<String> newMemo = Optional.empty();
 	private Optional<String> newWaclKey = Optional.empty();
 	private Optional<String> newContentsPath = Optional.empty();
 	private Optional<String> literalNewContents = Optional.empty();
@@ -87,6 +96,9 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 	private Optional<Set<String>> propDeletions = Optional.empty();
 	private Optional<Map<String, String>> propOverrides = Optional.empty();
 	private Optional<Function<HapiApiSpec, ByteString>> contentFn = Optional.empty();
+
+	Optional<Consumer<FileID>> preUpdateCb = Optional.empty();
+	Optional<Consumer<ResponseCodeEnum>> postUpdateCb = Optional.empty();
 
 	public HapiFileUpdate(String file) {
 		this.file = file;
@@ -109,6 +121,11 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 
 	public HapiFileUpdate extendingExpiryBy(long secs) {
 		expiryExtension = OptionalLong.of(secs);
+		return this;
+	}
+
+	public HapiFileUpdate entityMemo(String explicit) {
+		newMemo = Optional.of(explicit);
 		return this;
 	}
 
@@ -185,13 +202,25 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 		useBadlyEncodedWacl = true;
 		return this;
 	}
+
 	public HapiFileUpdate useEmptyWacl() {
 		useEmptyWacl = true;
 		return this;
 	}
 
+	public HapiFileUpdate alertingPre(Consumer<FileID> preCb) {
+		preUpdateCb = Optional.of(preCb);
+		return this;
+	}
+
+	public HapiFileUpdate alertingPost(Consumer<ResponseCodeEnum> postCb) {
+		postUpdateCb = Optional.of(postCb);
+		return this;
+	}
+
 	@Override
 	protected void updateStateOf(HapiApiSpec spec) throws Throwable {
+		postUpdateCb.ifPresent(cb -> cb.accept(actualStatus));
 		if (actualStatus != ResponseCodeEnum.SUCCESS) {
 			return;
 		}
@@ -212,7 +241,6 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 		if (verboseLoggingOn) {
 			log.info("Updated file  {} with ID {}.", file, lastReceipt.getFileID());
 		}
-
 	}
 
 	@Override
@@ -271,11 +299,13 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 				.<FileUpdateTransactionBody, FileUpdateTransactionBody.Builder>body(
 						FileUpdateTransactionBody.class, builder -> {
 							builder.setFileID(fid);
+							newMemo.ifPresent(s -> builder.setMemo(StringValue.newBuilder().setValue(s).build()));
 							wacl.ifPresent(k -> builder.setKeys(k.getKeyList()));
 							newContents.ifPresent(b -> builder.setContents(b));
 							newLifetime.ifPresent(s -> builder.setExpirationTime(TxnFactory.expiryGiven(s)));
 						}
 				);
+		preUpdateCb.ifPresent(cb -> cb.accept(fid));
 		return builder -> builder.setFileUpdate(opBody);
 	}
 
@@ -351,28 +381,33 @@ public class HapiFileUpdate extends HapiTxnOp<HapiFileUpdate> {
 
 	@Override
 	protected long feeFor(HapiApiSpec spec, Transaction txn, int numPayerKeys) throws Throwable {
-		Timestamp newExpiry = TxnFactory.expiryGiven(lifetimeSecs.orElse(spec.setup().defaultExpirationSecs()));
-		Timestamp oldExpiry = bestKnownCurrentExpiry(spec);
-		final Timestamp expiry = TxnUtils.inConsensusOrder(oldExpiry, newExpiry) ? newExpiry : oldExpiry;
-		FeeCalculator.ActivityMetrics metricsCalc = (txBody, sigUsage) ->
-				fileFees.getFileUpdateTxFeeMatrices(txBody, expiry, sigUsage);
-		var saferTxnBuilder = CommonUtils.extractTransactionBody(txn).toBuilder();
-		saferTxnBuilder.getFileUpdateBuilder().setContents(RANDOM_4K);
-		final var saferTxn = txn.toBuilder().setBodyBytes(saferTxnBuilder.build().toByteString()).build();
-		return spec.fees().forActivityBasedOp(HederaFunctionality.FileUpdate, metricsCalc, saferTxn, numPayerKeys);
+		try {
+			final FileGetInfoResponse.FileInfo info = lookupInfo(spec);
+			FeeCalculator.ActivityMetrics metricsCalc = (_txn, svo) -> {
+				var ctx = ExtantFileContext.newBuilder()
+						.setCurrentExpiry(info.getExpirationTime().getSeconds())
+						.setCurrentMemo(info.getMemo())
+						.setCurrentWacl(info.getKeys())
+						.setCurrentSize(info.getSize())
+						.build();
+				return fileOpsUsage.fileUpdateUsage(_txn, suFrom(svo), ctx);
+			};
+			return spec.fees().forActivityBasedOp(HederaFunctionality.FileUpdate, metricsCalc, txn, numPayerKeys);
+		} catch (Throwable ignore) {
+			return ONE_HBAR;
+		}
 	}
 
-	private Timestamp bestKnownCurrentExpiry(HapiApiSpec spec) throws Throwable {
-		Timestamp oldExpiry = null;
-		if (spec.registry().hasTimestamp(file)) {
-			oldExpiry = spec.registry().getTimestamp(file);
+	private FileGetInfoResponse.FileInfo lookupInfo(HapiApiSpec spec) throws Throwable {
+		HapiGetFileInfo subOp = getFileInfo(file).noLogging().fee(ONE_HBAR);
+		Optional<Throwable> error = subOp.execFor(spec);
+		if (error.isPresent()) {
+			if (!loggingOff) {
+				log.warn("Unable to look up current file info!", error.get());
+			}
+			throw error.get();
 		}
-		if (oldExpiry == null) {
-			oldExpiry = payer.isPresent()
-					? currExpiry(file, spec, payerToUse(payer.get(), spec))
-					: currExpiry(file, spec);
-		}
-		return oldExpiry;
+		return subOp.getResponse().getFileGetInfo().getFileInfo();
 	}
 
 	@Override

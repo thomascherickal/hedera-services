@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,12 @@ import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleTopic;
-import com.hedera.services.utils.SignedTxnAccessor;
+import com.hedera.services.utils.TxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
-import com.hederahashgraph.api.proto.java.ResponseCode;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TokenTransferList;
@@ -51,7 +50,6 @@ import java.util.List;
 public interface OptionValidator {
 	boolean hasGoodEncoding(Key key);
 	boolean isValidExpiry(Timestamp expiry);
-	boolean isValidEntityMemo(String memo);
 	boolean isValidTxnDuration(long duration);
 	boolean isValidAutoRenewPeriod(Duration autoRenewPeriod);
 	boolean isAcceptableTransfersLength(TransferList accountAmounts);
@@ -59,6 +57,7 @@ public interface OptionValidator {
 	ResponseCodeEnum queryableTopicStatus(TopicID id, FCMap<MerkleEntityId, MerkleTopic> topics);
 	ResponseCodeEnum tokenSymbolCheck(String symbol);
 	ResponseCodeEnum tokenNameCheck(String name);
+	ResponseCodeEnum memoCheck(String cand);
 	ResponseCodeEnum isAcceptableTokenTransfersLength(List<TokenTransferList> tokenTransferLists);
 
 	default ResponseCodeEnum queryableAccountStatus(AccountID id, FCMap<MerkleEntityId, MerkleAccount> accounts) {
@@ -87,7 +86,7 @@ public interface OptionValidator {
 		return amount >= 0;
 	}
 
-	default ResponseCodeEnum chronologyStatus(SignedTxnAccessor accessor, Instant consensusTime) {
+	default ResponseCodeEnum chronologyStatus(TxnAccessor accessor, Instant consensusTime) {
 		return PureValidation.chronologyStatus(
 				consensusTime,
 				asCoercedInstant(accessor.getTxnId().getTransactionValidStart()),

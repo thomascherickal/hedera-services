@@ -4,7 +4,7 @@ package com.hedera.services.txns.file;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,12 +38,10 @@ import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
+import com.hedera.services.files.HFileMeta;
 import com.hedera.services.legacy.core.jproto.JKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.time.Instant;
@@ -57,16 +55,19 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURA
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_EXPIRATION_TIME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_WACL;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class FileCreateTransitionLogicTest {
-	enum ValidProperty { KEY, EXPIRY, CONTENTS }
+	enum ValidProperty { KEY, EXPIRY, CONTENTS, MEMO }
 
+	String memo = "Originally I thought";
 	long lifetime = 1_234_567L;
 	long txnValidDuration = 180;
 	long now = Instant.now().getEpochSecond();
@@ -79,7 +80,7 @@ class FileCreateTransitionLogicTest {
 	KeyTree waclSkeleton = TxnHandlingScenario.MISC_FILE_WACL_KT;
 	Key wacl = waclSkeleton.asKey();
 	JKey hederaWacl;
-	JFileInfo attr;
+	HFileMeta attr;
 	byte[] contents = "STUFF".getBytes();
 
 	TransactionID txnId;
@@ -95,7 +96,7 @@ class FileCreateTransitionLogicTest {
 	@BeforeEach
 	private void setup() throws Throwable {
 		hederaWacl = waclSkeleton.asJKey();
-		attr = new JFileInfo(false, hederaWacl, expiry);
+		attr = new HFileMeta(false, hederaWacl, expiry);
 
 		accessor = mock(PlatformTxnAccessor.class);
 		txnCtx = mock(TransactionContext.class);
@@ -104,6 +105,7 @@ class FileCreateTransitionLogicTest {
 		validator = mock(OptionValidator.class);
 		given(validator.isValidAutoRenewPeriod(expectedDuration)).willReturn(true);
 		given(validator.hasGoodEncoding(wacl)).willReturn(true);
+		given(validator.memoCheck(any())).willReturn(OK);
 
 		subject = new FileCreateTransitionLogic(hfs, validator, txnCtx);
 	}
@@ -135,10 +137,24 @@ class FileCreateTransitionLogicTest {
 				argThat(bytes -> Arrays.equals(contents, bytes)),
 				argThat(info ->
 						info.getWacl().toString().equals(hederaWacl.toString()) &&
-						info.getExpirationTimeSeconds() == expiry),
+						info.getExpiry() == expiry &&
+						memo.equals(info.getMemo())),
 				argThat(genesis::equals));
 		inOrder.verify(txnCtx).setCreated(created);
 		inOrder.verify(txnCtx).setStatus(SUCCESS);
+	}
+
+	@Test
+	public void syntaxCheckTestsMemo() {
+		givenTxnCtxCreating(EnumSet.allOf(ValidProperty.class));
+		given(validator.memoCheck(memo)).willReturn(INVALID_ZERO_BYTE_IN_STRING);
+
+		// when:
+		var syntaxCheck = subject.syntaxCheck();
+		var status = syntaxCheck.apply(fileCreateTxn);
+
+		// expect:
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, status);
 	}
 
 	@Test
@@ -179,7 +195,7 @@ class FileCreateTransitionLogicTest {
 				argThat(bytes -> Arrays.equals(contents, bytes)),
 				argThat(info ->
 						info.getWacl().toString().equals(StateView.EMPTY_WACL.toString()) &&
-								info.getExpirationTimeSeconds() == expiry),
+								info.getExpiry() == expiry),
 				argThat(genesis::equals));
 		verify(txnCtx).setStatus(SUCCESS);
 	}
@@ -232,6 +248,9 @@ class FileCreateTransitionLogicTest {
 		}
 		if (validProps.contains(ValidProperty.EXPIRY)) {
 			op.setExpirationTime(MiscUtils.asTimestamp(Instant.ofEpochSecond(expiry)));
+		}
+		if (validProps.contains(ValidProperty.MEMO)) {
+			op.setMemo(memo);
 		}
 
 		txnId = TransactionID.newBuilder()

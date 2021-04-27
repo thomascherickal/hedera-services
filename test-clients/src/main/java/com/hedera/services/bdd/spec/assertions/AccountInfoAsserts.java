@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.assertions;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,6 +93,13 @@ public class AccountInfoAsserts extends BaseErroringAssertsProvider<AccountInfo>
 		return this;
 	}
 
+	public AccountInfoAsserts memo(String memo) {
+		registerProvider((spec, o) -> {
+			Assert.assertEquals("Bad memo!", memo, ((AccountInfo)o).getMemo());
+		});
+		return this;
+	}
+
 	public AccountInfoAsserts balance(Function<HapiApiSpec, Function<Long, Optional<String>>> dynamicCondition) {
 		registerProvider((spec, o) -> {
 			Function<Long, Optional<String>> expectation = dynamicCondition.apply(spec);
@@ -175,6 +182,14 @@ public class AccountInfoAsserts extends BaseErroringAssertsProvider<AccountInfo>
 		registerProvider((spec, o) -> {
 			Assert.assertEquals("Bad auto-renew period!",
 					period, ((AccountInfo)o).getAutoRenewPeriod().getSeconds());
+		});
+		return this;
+	}
+
+	public AccountInfoAsserts totalAssociatedTokens(int n) {
+		registerProvider((spec, o) -> {
+			Assert.assertEquals("Bad num associated tokens!",
+					n, ((AccountInfo)o).getTokenRelationshipsCount());
 		});
 		return this;
 	}

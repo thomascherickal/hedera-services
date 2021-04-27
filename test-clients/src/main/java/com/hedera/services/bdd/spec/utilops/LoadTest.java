@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.util.OptionalLong;
 import java.util.function.Supplier;
 
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.runLoadTest;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_MEMO_LENGTH;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class LoadTest extends HapiApiSuite {
@@ -43,8 +44,19 @@ public class LoadTest extends HapiApiSuite {
 	public static OptionalInt testDurationMinutes = OptionalInt.empty();
 	public static OptionalInt threadNumber = OptionalInt.empty();
 	public static OptionalInt hcsSubmitMessage = OptionalInt.empty();
-	/** initial balance of payer account used for paying for performance test transactions */
-	public static OptionalLong initialBalance = OptionalLong.of(900_000_000_000L);
+	public static OptionalInt hcsSubmitMessageSizeVar = OptionalInt.empty();
+	/** initial balance of account used as sender for performance test transactions */
+	public static OptionalLong initialBalance = OptionalLong.of(ONE_MILLION_HBARS);
+	public static OptionalInt totalTestAccounts = OptionalInt.empty();
+	public static OptionalInt totalTestTopics = OptionalInt.empty();
+	public static OptionalInt totalTestTokens = OptionalInt.empty();
+	public static OptionalInt durationCreateTokenAssociation = OptionalInt.empty();
+	public static OptionalInt durationTokenTransfer = OptionalInt.empty();
+	public static OptionalInt testTreasureStartAccount = OptionalInt.empty();
+	public static OptionalInt totalTokenAssociations = OptionalInt.empty();
+	public static OptionalInt totalScheduled = OptionalInt.empty();
+	public static OptionalInt totalTestTokenAccounts = OptionalInt.empty();
+	public static OptionalInt memoLength = OptionalInt.of(DEFAULT_MEMO_LENGTH);
 
 	public static int parseArgs(String... args) {
 		int usedArgs = 0;
@@ -78,11 +90,21 @@ public class LoadTest extends HapiApiSuite {
 			usedArgs++;
 		}
 
+		if (args.length > 5) {
+			memoLength = OptionalInt.of(Integer.parseInt(args[5]));
+			log.info("Set Memo Length as " + memoLength.getAsInt());
+			usedArgs++;
+		}
+
 		return usedArgs;
 	}
 
 	public static double getTargetTPS() {
 		return targetTPS.getAsDouble();
+	}
+
+	public static int getMemoLength() {
+		return memoLength.getAsInt();
 	}
 
 	public static int getTestDurationMinutes() {
@@ -94,9 +116,33 @@ public class LoadTest extends HapiApiSuite {
 				.tps(targetTPS.isPresent() ? LoadTest::getTargetTPS : settings::getTps)
 				.tolerance(settings::getTolerancePercentage)
 				.allowedSecsBelow(settings::getAllowedSecsBelow)
-				.setNumberOfThreads(threadNumber.isPresent() ? threadNumber::getAsInt : settings::getThreads)
-				.setHCSSubmitMessageSize(
-						hcsSubmitMessage.isPresent() ? hcsSubmitMessage::getAsInt : settings::getHcsSubmitMessageSize)
+				.setMemoLength(settings::getMemoLength)
+				.setNumberOfThreads(threadNumber.isPresent()
+						? threadNumber::getAsInt : settings::getThreads)
+				.setTotalTestAccounts(totalTestAccounts.isPresent()
+						? totalTestAccounts::getAsInt : settings::getTotalAccounts)
+				.setTotalTestTopics(totalTestTopics.isPresent()
+						? totalTestTopics::getAsInt : settings::getTotalTopics)
+				.setTotalTestTokens(totalTestTokens.isPresent()
+						? totalTestTokens::getAsInt : settings::getTotalTokens)
+				.setDurationCreateTokenAssociation(durationCreateTokenAssociation.isPresent()
+						? durationCreateTokenAssociation::getAsInt : settings::getDurationCreateTokenAssociation)
+				.setDurationTokenTransfer(durationTokenTransfer.isPresent()
+						? durationTokenTransfer::getAsInt : settings::getDurationTokenTransfer)
+				.setTotalTestTokenAccounts(totalTestTokenAccounts.isPresent()
+						? totalTestTokenAccounts::getAsInt : settings::getTotalTestTokenAccounts)
+				.setTotalTestTopics(totalTestTopics.isPresent()
+						? totalTestTopics::getAsInt : settings::getTotalTopics)
+				.setTotalScheduled(totalScheduled.isPresent()
+						? totalScheduled::getAsInt : settings::getTotalScheduled)
+				.setTotalTokenAssociations(totalTokenAssociations.isPresent()
+						? totalTokenAssociations::getAsInt : settings::getTotalTokenAssociations)
+				.setTestTreasureStartAccount(testTreasureStartAccount.isPresent()
+						? testTreasureStartAccount::getAsInt : settings::getTestTreasureStartAccount)
+				.setHCSSubmitMessageSize(hcsSubmitMessage.isPresent()
+						? hcsSubmitMessage::getAsInt : settings::getHcsSubmitMessageSize)
+				.setHCSSubmitMessageSizeVar(hcsSubmitMessageSizeVar.isPresent()
+						? hcsSubmitMessageSizeVar::getAsInt	: settings::getHcsSubmitMessageSizeVar)
 				.lasting(
 						(testDurationMinutes.isPresent() ?
 								LoadTest::getTestDurationMinutes :

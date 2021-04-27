@@ -4,7 +4,7 @@ package com.hedera.services.context.domain.trackers;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,11 @@ public class IssEventInfo {
 	}
 
 	public boolean shouldDumpThisRound() {
-		return remainingRoundsToDump-- > 0;
+		return remainingRoundsToDump > 0;
+	}
+
+	public void decrementRoundsToDump() {
+		remainingRoundsToDump--;
 	}
 
 	public synchronized void alert(Instant roundConsensusTime) {

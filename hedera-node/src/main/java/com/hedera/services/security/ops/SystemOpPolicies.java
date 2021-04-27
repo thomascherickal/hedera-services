@@ -4,7 +4,7 @@ package com.hedera.services.security.ops;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package com.hedera.services.security.ops;
  */
 
 import com.hedera.services.config.EntityNumbers;
-import com.hedera.services.utils.SignedTxnAccessor;
+import com.hedera.services.utils.TxnAccessor;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
@@ -73,7 +73,7 @@ public class SystemOpPolicies {
 		functionPolicies.put(UncheckedSubmit, this::checkUncheckedSubmit);
 	}
 
-	public SystemOpAuthorization check(SignedTxnAccessor accessor) {
+	public SystemOpAuthorization check(TxnAccessor accessor) {
 		return check(accessor.getTxn(), accessor.getFunction());
 	}
 
@@ -152,29 +152,38 @@ public class SystemOpPolicies {
 	private SystemOpAuthorization checkContractUpdate(TransactionBody txn) {
 		var target = txn.getContractUpdateInstance().getContractID();
 		return entityNums.isSystemContract(target)
-				? (canUpdate(payerFor(txn), target.getContractNum()) ? AUTHORIZED : UNAUTHORIZED)
+				? (canPerformNonCryptoUpdate(payerFor(txn), target.getContractNum()) ? AUTHORIZED : UNAUTHORIZED)
 				: UNNECESSARY;
 	}
 
 	private SystemOpAuthorization checkFileUpdate(TransactionBody txn) {
 		var target = txn.getFileUpdate().getFileID();
 		return entityNums.isSystemFile(target)
-				? (canUpdate(payerFor(txn), target.getFileNum()) ? AUTHORIZED : UNAUTHORIZED)
+				? (canPerformNonCryptoUpdate(payerFor(txn), target.getFileNum()) ? AUTHORIZED : UNAUTHORIZED)
 				: UNNECESSARY;
 	}
 
 	private SystemOpAuthorization checkFileAppend(TransactionBody txn) {
 		var target = txn.getFileAppend().getFileID();
 		return entityNums.isSystemFile(target)
-				? (canUpdate(payerFor(txn), target.getFileNum()) ? AUTHORIZED : UNAUTHORIZED)
+				? (canPerformNonCryptoUpdate(payerFor(txn), target.getFileNum()) ? AUTHORIZED : UNAUTHORIZED)
 				: UNNECESSARY;
 	}
 
 	private SystemOpAuthorization checkCryptoUpdate(TransactionBody txn) {
 		var target = txn.getCryptoUpdateAccount().getAccountIDToUpdate();
-		return entityNums.isSystemAccount(target)
-				? (canUpdate(payerFor(txn), target.getAccountNum()) ? AUTHORIZED : UNAUTHORIZED)
-				: UNNECESSARY;
+		if (!entityNums.isSystemAccount(target)) {
+			return UNNECESSARY;
+		} else {
+			var payer = payerFor(txn);
+			if (payer == entityNums.accounts().treasury()) {
+				return AUTHORIZED;
+			} else if (payer == entityNums.accounts().systemAdmin()) {
+				return (target.getAccountNum() == entityNums.accounts().treasury()) ? UNAUTHORIZED : AUTHORIZED;
+			} else {
+				return (target.getAccountNum() == entityNums.accounts().treasury()) ? UNAUTHORIZED : UNNECESSARY;
+			}
+		}
 	}
 
 	private SystemOpAuthorization checkContractDelete(TransactionBody txn) {
@@ -196,51 +205,32 @@ public class SystemOpPolicies {
 		return txn.getTransactionID().getAccountID().getAccountNum();
 	}
 
-	boolean canUpdate(long payerAccount, long systemEntity) {
-		if (payerAccount == entityNums.accounts().treasury()) {
+	boolean canPerformNonCryptoUpdate(long payer, long nonAccountSystemEntity) {
+		if (payer == entityNums.accounts().treasury() || payer == entityNums.accounts().systemAdmin()) {
 			return true;
-		} else if (payerAccount == entityNums.accounts().systemAdmin()) {
-			return canSysAdminUpdate(systemEntity);
-		} else if (payerAccount == systemEntity) {
-			return true;
-		} else if (payerAccount == entityNums.accounts().addressBookAdmin()) {
-			return canAddressBookAdminUpdate(systemEntity);
-		} else if (payerAccount == entityNums.accounts().exchangeRatesAdmin()) {
-			return canExchangeRatesAdminUpdate(systemEntity);
-		} else if (payerAccount == entityNums.accounts().feeSchedulesAdmin()) {
-			return systemEntity == entityNums.files().feeSchedules();
+		} else if (payer == entityNums.accounts().addressBookAdmin()) {
+			return canAddressBookAdminUpdate(nonAccountSystemEntity);
+		} else if (payer == entityNums.accounts().exchangeRatesAdmin()) {
+			return canExchangeRatesAdminUpdate(nonAccountSystemEntity);
+		} else if (payer == entityNums.accounts().feeSchedulesAdmin()) {
+			return nonAccountSystemEntity == entityNums.files().feeSchedules();
+		} else if (payer == entityNums.accounts().freezeAdmin()) {
+			return nonAccountSystemEntity == entityNums.files().softwareUpdateZip();
 		} else {
 			return false;
 		}
 	}
 
 	private boolean canExchangeRatesAdminUpdate(long entity) {
-		return entity == entityNums.files().exchangeRates() || isPropertiesOrPermissions(entity);
+		return entity == entityNums.files().exchangeRates() ||
+				entity == entityNums.files().throttleDefinitions() ||
+				isPropertiesOrPermissions(entity);
 	}
 
 	private boolean canAddressBookAdminUpdate(long entity) {
 		return entity == entityNums.files().addressBook() ||
 				entity == entityNums.files().nodeDetails() ||
-				isPropertiesOrPermissions(entity);
-	}
-
-	private boolean canSysAdminUpdate(long entity) {
-		if (entity < entityNums.accounts().firstManagedBySysAdmin()) {
-			return false;
-		} else {
-			if (entity <= entityNums.accounts().lastManagedBySysAdmin()) {
-				return true;
-			} else {
-				return isNamedSystemFile(entity);
-			}
-		}
-	}
-
-	private boolean isNamedSystemFile(long entity) {
-		return entity == entityNums.files().addressBook() ||
-				entity == entityNums.files().nodeDetails() ||
-				entity == entityNums.files().feeSchedules() ||
-				entity == entityNums.files().exchangeRates() ||
+				entity == entityNums.files().throttleDefinitions() ||
 				isPropertiesOrPermissions(entity);
 	}
 

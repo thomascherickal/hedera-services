@@ -4,7 +4,7 @@ package com.hedera.services.grpc.controllers;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ import org.apache.logging.log4j.Logger;
 
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusCreateTopic;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusDeleteTopic;
+import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusGetTopicInfo;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusSubmitMessage;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.ConsensusUpdateTopic;
-import static com.hederahashgraph.api.proto.java.HederaFunctionality.TokenGetInfo;
 
 public class ConsensusController extends ConsensusServiceGrpc.ConsensusServiceImplBase {
 	private static final Logger log = LogManager.getLogger(ConsensusController.class);
@@ -64,7 +64,7 @@ public class ConsensusController extends ConsensusServiceGrpc.ConsensusServiceIm
 
 	@Override
 	public void getTopicInfo(Query query, StreamObserver<Response> observer) {
-		queryHelper.answer(query, observer, hcsAnswers.topicInfo(), TokenGetInfo);
+		queryHelper.answer(query, observer, hcsAnswers.topicInfo(), ConsensusGetTopicInfo);
 	}
 
 	@Override

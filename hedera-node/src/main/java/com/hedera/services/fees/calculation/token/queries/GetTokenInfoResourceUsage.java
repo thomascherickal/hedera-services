@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.token.queries;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class GetTokenInfoResourceUsage implements QueryResourceUsageEstimator {
 
 	@Override
 	public FeeData usageGiven(Query query, StateView view) {
-		return usageFor(query, view, query.getContractGetInfo().getHeader().getResponseType(), NO_QUERY_CTX);
+		return usageFor(query, view, query.getTokenGetInfo().getHeader().getResponseType(), NO_QUERY_CTX);
 	}
 
 	@Override
@@ -64,35 +64,31 @@ public class GetTokenInfoResourceUsage implements QueryResourceUsageEstimator {
 		return usageFor(
 				query,
 				view,
-				query.getContractGetInfo().getHeader().getResponseType(),
+				query.getTokenGetInfo().getHeader().getResponseType(),
 				Optional.of(queryCtx));
 	}
 
 	private FeeData usageFor(Query query, StateView view, ResponseType type, Optional<Map<String, Object>> queryCtx) {
-		try {
-			var op = query.getTokenGetInfo();
-			var optionalInfo = view.infoForToken(op.getToken());
-			if (optionalInfo.isPresent()) {
-				var info = optionalInfo.get();
-				queryCtx.ifPresent(ctx -> ctx.put(TOKEN_INFO_CTX_KEY, info));
-				var estimate = factory.apply(query)
-						.givenCurrentAdminKey(ifPresent(info, TokenInfo::hasAdminKey, TokenInfo::getAdminKey))
-						.givenCurrentFreezeKey(ifPresent(info, TokenInfo::hasFreezeKey, TokenInfo::getFreezeKey))
-						.givenCurrentWipeKey(ifPresent(info, TokenInfo::hasWipeKey, TokenInfo::getWipeKey))
-						.givenCurrentSupplyKey(ifPresent(info, TokenInfo::hasSupplyKey, TokenInfo::getSupplyKey))
-						.givenCurrentKycKey(ifPresent(info, TokenInfo::hasKycKey, TokenInfo::getKycKey))
-						.givenCurrentName(info.getName())
-						.givenCurrentSymbol(info.getSymbol());
-				if (info.hasAutoRenewAccount()) {
-					estimate.givenCurrentlyUsingAutoRenewAccount();
-				}
-				return estimate.get();
-			} else {
-				return FeeData.getDefaultInstance();
+		var op = query.getTokenGetInfo();
+		var optionalInfo = view.infoForToken(op.getToken());
+		if (optionalInfo.isPresent()) {
+			var info = optionalInfo.get();
+			queryCtx.ifPresent(ctx -> ctx.put(TOKEN_INFO_CTX_KEY, info));
+			var estimate = factory.apply(query)
+					.givenCurrentAdminKey(ifPresent(info, TokenInfo::hasAdminKey, TokenInfo::getAdminKey))
+					.givenCurrentFreezeKey(ifPresent(info, TokenInfo::hasFreezeKey, TokenInfo::getFreezeKey))
+					.givenCurrentWipeKey(ifPresent(info, TokenInfo::hasWipeKey, TokenInfo::getWipeKey))
+					.givenCurrentSupplyKey(ifPresent(info, TokenInfo::hasSupplyKey, TokenInfo::getSupplyKey))
+					.givenCurrentKycKey(ifPresent(info, TokenInfo::hasKycKey, TokenInfo::getKycKey))
+					.givenCurrentName(info.getName())
+					.givenCurrentMemo(info.getMemo())
+					.givenCurrentSymbol(info.getSymbol());
+			if (info.hasAutoRenewAccount()) {
+				estimate.givenCurrentlyUsingAutoRenewAccount();
 			}
-		} catch (Exception e) {
-			log.warn("Usage estimation unexpectedly failed for {}!", query, e);
-			throw new IllegalArgumentException(e);
+			return estimate.get();
+		} else {
+			return FeeData.getDefaultInstance();
 		}
 	}
 

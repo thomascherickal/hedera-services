@@ -4,7 +4,7 @@ package com.hedera.services.files;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ package com.hedera.services.files;
 
 import com.hedera.services.files.store.BytesStoreAdapter;
 import com.hederahashgraph.api.proto.java.FileID;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 public class MetadataMapFactory {
 	private static final Logger log = LogManager.getLogger(MetadataMapFactory.class);
@@ -41,7 +42,7 @@ public class MetadataMapFactory {
 		throw new IllegalStateException();
 	}
 
-	public static Map<FileID, JFileInfo> metaMapFrom(Map<String, byte[]> store) {
+	public static Map<FileID, HFileMeta> metaMapFrom(Map<String, byte[]> store) {
 		return new BytesStoreAdapter<>(
 				FileID.class,
 				MetadataMapFactory::toAttr,
@@ -67,21 +68,25 @@ public class MetadataMapFactory {
 		return String.format(LEGACY_PATH_TEMPLATE, fid.getRealmNum(), fid.getFileNum());
 	}
 
-	static JFileInfo toAttr(byte[] bytes) {
+	static HFileMeta toAttr(byte[] bytes) {
 		try {
-			return (bytes == null) ? null : JFileInfo.deserialize(bytes);
-		} catch (Exception impossible) {
-			log.warn("File attr data not a serialized JFileInfo!", impossible);
-			throw new IllegalArgumentException(impossible);
+			return (bytes == null) ? null : HFileMeta.deserialize(bytes);
+		} catch (Exception internal) {
+			log.warn("Argument 'bytes={}' was not a serialized HFileMeta!", encodeHexString(bytes));
+			throw new IllegalArgumentException(internal);
 		}
 	}
 
-	static byte[] toValueBytes(JFileInfo attr) {
+	static byte[] toValueBytes(HFileMeta attr) {
 		try {
 			return attr.serialize();
-		} catch (Exception impossible) {
-			log.warn("Given JFileInfo cannot be serialized!", impossible);
-			throw new IllegalArgumentException(impossible);
+		} catch (Exception internal) {
+			try {
+				log.warn("Argument 'attr={}' could not be serialized!", attr);
+			} catch (Exception terminal) {
+				log.warn("Argument 'attr' could not be serialized, nor represented as a string!", terminal);
+			}
+			throw new IllegalArgumentException(internal);
 		}
 	}
 }

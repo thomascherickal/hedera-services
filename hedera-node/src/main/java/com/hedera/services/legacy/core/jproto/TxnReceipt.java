@@ -4,7 +4,7 @@ package com.hedera.services.legacy.core.jproto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.hedera.services.state.serdes.DomainSerdes;
 import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.TxnId;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransactionReceipt;
@@ -37,13 +38,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
 import static com.swirlds.common.CommonUtils.getNormalisedStringFromBytes;
-import static org.apache.commons.codec.binary.StringUtils.newStringUtf8;
 
 public class TxnReceipt implements SelfSerializable {
 	private static final Logger log = LogManager.getLogger(TxnReceipt.class);
@@ -51,115 +50,52 @@ public class TxnReceipt implements SelfSerializable {
 	private static final int MAX_STATUS_BYTES = 128;
 	private static final int MAX_RUNNING_HASH_BYTES = 1024;
 
+	static final TxnId MISSING_SCHEDULED_TXN_ID = null;
 	static final byte[] MISSING_RUNNING_HASH = null;
 	static final long MISSING_TOPIC_SEQ_NO = 0L;
 	static final long MISSING_RUNNING_HASH_VERSION = 0L;
 
 	static final int RELEASE_070_VERSION = 1;
 	static final int RELEASE_080_VERSION = 2;
-	static final int MERKLE_VERSION = RELEASE_080_VERSION;
+	static final int RELEASE_090_VERSION = 3;
+	static final int RELEASE_0100_VERSION = 4;
+	static final int RELEASE_0110_VERSION = 5;
+	static final int RELEASE_0120_VERSION = 6;
+	static final int MERKLE_VERSION = RELEASE_0120_VERSION;
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0x65ef569a77dcf125L;
 
 	static DomainSerdes serdes = new DomainSerdes();
-	static EntityId.Provider legacyIdProvider = EntityId.LEGACY_PROVIDER;
-	static ExchangeRates.Provider legacyRatesProvider = ExchangeRates.LEGACY_PROVIDER;
-	public static final TxnReceipt.Provider LEGACY_PROVIDER = new TxnReceipt.Provider();
-
-	@Deprecated
-	public static class Provider {
-		private static final long VERSION_WITHOUT_FINAL_RUNNING_HASH = 3;
-
-		public TxnReceipt deserialize(DataInputStream in) throws IOException {
-			var receipt = new TxnReceipt();
-
-			var version = in.readLong();
-			in.readLong();
-			if (in.readBoolean()) {
-				receipt.accountId = legacyIdProvider.deserialize(in);
-			}
-			if (in.readBoolean()) {
-				receipt.fileId = legacyIdProvider.deserialize(in);
-			}
-			if (in.readBoolean()) {
-				receipt.contractId = legacyIdProvider.deserialize(in);
-			}
-			int numStatusBytes = in.readInt();
-			if (numStatusBytes > 0) {
-				byte[] statusBytes = new byte[numStatusBytes];
-				in.readFully(statusBytes);
-				receipt.status = newStringUtf8(statusBytes);
-			}
-			if (in.readBoolean()) {
-				receipt.exchangeRates = legacyRatesProvider.deserialize(in);
-			}
-
-			if (in.readBoolean()) {
-				receipt.topicId = legacyIdProvider.deserialize(in);
-			}
-			if (in.readBoolean()) {
-				receipt.topicSequenceNumber = in.readLong();
-				int numHashBytes = in.readInt();
-				if (numHashBytes > 0) {
-					receipt.topicRunningHash = new byte[numHashBytes];
-					in.readFully(receipt.topicRunningHash);
-				}
-			}
-			if (version != VERSION_WITHOUT_FINAL_RUNNING_HASH) {
-				receipt.runningHashVersion = in.readLong();
-			}
-
-			return receipt;
-		}
-	}
 
 	long runningHashVersion = MISSING_RUNNING_HASH_VERSION;
 	long topicSequenceNumber = MISSING_TOPIC_SEQ_NO;
 	byte[] topicRunningHash = MISSING_RUNNING_HASH;
+	TxnId scheduledTxnId = MISSING_SCHEDULED_TXN_ID;
 	String status;
 	EntityId accountId;
 	EntityId fileId;
 	EntityId topicId;
 	EntityId tokenId;
 	EntityId contractId;
+	EntityId scheduleId;
 	ExchangeRates exchangeRates;
+	Long newTotalSupply = -1L;
 
 	public TxnReceipt() { }
 
-	public TxnReceipt(
+	TxnReceipt(
 			@Nullable String status,
 			@Nullable EntityId accountId,
 			@Nullable EntityId fileId,
 			@Nullable EntityId contractId,
 			@Nullable EntityId tokenId,
-			@Nullable ExchangeRates exchangeRates,
-			@Nullable EntityId topicId,
-			long topicSequenceNumber,
-			@Nullable byte[] topicRunningHash
-	) {
-		this(
-				status,
-				accountId,
-				fileId,
-				contractId,
-				tokenId,
-				exchangeRates,
-				topicId,
-				topicSequenceNumber,
-				topicRunningHash,
-				MISSING_RUNNING_HASH_VERSION);
-	}
-
-	public TxnReceipt(
-			@Nullable String status,
-			@Nullable EntityId accountId,
-			@Nullable EntityId fileId,
-			@Nullable EntityId contractId,
-			@Nullable EntityId tokenId,
+			@Nullable EntityId scheduleId,
 			@Nullable ExchangeRates exchangeRate,
 			@Nullable EntityId topicId,
 			long topicSequenceNumber,
 			@Nullable byte[] topicRunningHash,
-			long runningHashVersion
+			long runningHashVersion,
+			long newTotalSupply,
+			@Nullable TxnId scheduledTxnId
 	) {
 		this.status = status;
 		this.accountId = accountId;
@@ -168,11 +104,14 @@ public class TxnReceipt implements SelfSerializable {
 		this.exchangeRates = exchangeRate;
 		this.topicId = topicId;
 		this.tokenId = tokenId;
+		this.scheduleId = scheduleId;
 		this.topicSequenceNumber = topicSequenceNumber;
 		this.topicRunningHash = ((topicRunningHash != MISSING_RUNNING_HASH) && (topicRunningHash.length > 0))
 				? topicRunningHash
 				: MISSING_RUNNING_HASH;
 		this.runningHashVersion = runningHashVersion;
+		this.newTotalSupply = newTotalSupply;
+		this.scheduledTxnId = scheduledTxnId;
 	}
 
 	/* --- SelfSerializable --- */
@@ -196,6 +135,7 @@ public class TxnReceipt implements SelfSerializable {
 		serdes.writeNullableSerializable(contractId, out);
 		serdes.writeNullableSerializable(topicId, out);
 		serdes.writeNullableSerializable(tokenId, out);
+		serdes.writeNullableSerializable(scheduleId, out);
 		if (topicRunningHash == MISSING_RUNNING_HASH) {
 			out.writeBoolean(false);
 		} else {
@@ -204,6 +144,8 @@ public class TxnReceipt implements SelfSerializable {
 			out.writeLong(runningHashVersion);
 			out.writeByteArray(topicRunningHash);
 		}
+		out.writeLong(newTotalSupply);
+		serdes.writeNullableSerializable(scheduledTxnId, out);
 	}
 
 	@Override
@@ -217,11 +159,20 @@ public class TxnReceipt implements SelfSerializable {
 		if (version > RELEASE_070_VERSION) {
 			tokenId = serdes.readNullableSerializable(in);
 		}
+		if (version >= RELEASE_0110_VERSION) {
+			scheduleId = serdes.readNullableSerializable(in);
+		}
 		var isSubmitMessageReceipt = in.readBoolean();
 		if (isSubmitMessageReceipt) {
 			topicSequenceNumber = in.readLong();
 			runningHashVersion = in.readLong();
 			topicRunningHash = in.readByteArray(MAX_RUNNING_HASH_BYTES);
+		}
+		if (version > RELEASE_090_VERSION) {
+			newTotalSupply = in.readLong();
+		}
+		if (version >= RELEASE_0120_VERSION) {
+			scheduledTxnId = serdes.readNullableSerializable(in);
 		}
 	}
 
@@ -257,12 +208,24 @@ public class TxnReceipt implements SelfSerializable {
 		return tokenId;
 	}
 
+	public EntityId getScheduleId() {
+		return scheduleId;
+	}
+
 	public long getTopicSequenceNumber() {
 		return topicSequenceNumber;
 	}
 
 	public byte[] getTopicRunningHash() {
 		return topicRunningHash;
+	}
+
+	public long getNewTotalSupply() {
+		return newTotalSupply;
+	}
+
+	public TxnId getScheduledTxnId() {
+		return scheduledTxnId;
 	}
 
 	/* --- Object --- */
@@ -284,7 +247,9 @@ public class TxnReceipt implements SelfSerializable {
 				Objects.equals(topicId, that.topicId) &&
 				Objects.equals(tokenId, that.tokenId) &&
 				Objects.equals(topicSequenceNumber, that.topicSequenceNumber) &&
-				Arrays.equals(topicRunningHash, that.topicRunningHash);
+				Arrays.equals(topicRunningHash, that.topicRunningHash) &&
+				Objects.equals(newTotalSupply, that.newTotalSupply) &&
+				Objects.equals(scheduledTxnId, that.scheduledTxnId);
 	}
 
 	@Override
@@ -292,7 +257,8 @@ public class TxnReceipt implements SelfSerializable {
 		return Objects.hash(
 				runningHashVersion, status,
 				accountId, fileId, contractId, topicId, tokenId,
-				topicSequenceNumber, Arrays.hashCode(topicRunningHash));
+				topicSequenceNumber, Arrays.hashCode(topicRunningHash),
+				newTotalSupply, scheduledTxnId);
 	}
 
 	@Override
@@ -320,6 +286,10 @@ public class TxnReceipt implements SelfSerializable {
 			helper.add("topicRunningHash", Hex.encodeHexString(topicRunningHash));
 			helper.add("runningHashVersion", runningHashVersion);
 		}
+		helper.add("newTotalTokenSupply", newTotalSupply);
+		if (scheduledTxnId != MISSING_SCHEDULED_TXN_ID) {
+			helper.add("scheduledTxnId", scheduledTxnId);
+		}
 		return helper.toString();
 	}
 
@@ -327,25 +297,32 @@ public class TxnReceipt implements SelfSerializable {
 
 	public static TxnReceipt fromGrpc(TransactionReceipt grpc) {
 		String status = grpc.getStatus() != null ? grpc.getStatus().name() : null;
-		EntityId accountId =
-				grpc.hasAccountID() ? EntityId.ofNullableAccountId(grpc.getAccountID()) : null;
-		EntityId jFileID = grpc.hasFileID() ? EntityId.ofNullableFileId(grpc.getFileID()) : null;
-		EntityId jContractID =
-				grpc.hasContractID() ? EntityId.ofNullableContractId(grpc.getContractID()) : null;
-		EntityId topicId = grpc.hasTopicID() ? EntityId.ofNullableTopicId(grpc.getTopicID()) : null;
-		EntityId tokenId = grpc.hasTokenID() ? EntityId.ofNullableTokenId(grpc.getTokenID()) : null;
+		EntityId accountId = grpc.hasAccountID() ? EntityId.fromGrpcAccountId(grpc.getAccountID()) : null;
+		EntityId jFileID = grpc.hasFileID() ? EntityId.fromGrpcFileId(grpc.getFileID()) : null;
+		EntityId jContractID = grpc.hasContractID() ? EntityId.fromGrpcContractId(grpc.getContractID()) : null;
+		EntityId topicId = grpc.hasTopicID() ? EntityId.fromGrpcTopicId(grpc.getTopicID()) : null;
+		EntityId tokenId = grpc.hasTokenID() ? EntityId.fromGrpcTokenId(grpc.getTokenID()) : null;
+		EntityId scheduleId = grpc.hasScheduleID() ? EntityId.fromGrpcScheduleId(grpc.getScheduleID()) : null;
 		long runningHashVersion = Math.max(MISSING_RUNNING_HASH_VERSION, grpc.getTopicRunningHashVersion());
+		long newTotalSupply = grpc.getNewTotalSupply();
+		TxnId scheduledTxnId = grpc.hasScheduledTransactionID()
+				? TxnId.fromGrpc(grpc.getScheduledTransactionID())
+				: MISSING_SCHEDULED_TXN_ID;
+
 		return new TxnReceipt(
 				status,
 				accountId,
 				jFileID,
 				jContractID,
 				tokenId,
+				scheduleId,
 				ExchangeRates.fromGrpc(grpc.getExchangeRate()),
 				topicId,
 				grpc.getTopicSequenceNumber(),
 				grpc.getTopicRunningHash().toByteArray(),
-				runningHashVersion);
+				runningHashVersion,
+				newTotalSupply,
+				scheduledTxnId);
 	}
 
 	public TransactionReceipt toGrpc() {
@@ -376,6 +353,9 @@ public class TxnReceipt implements SelfSerializable {
 		if (txReceipt.getTokenId() != null) {
 			builder.setTokenID(txReceipt.getTokenId().toGrpcTokenId());
 		}
+		if (txReceipt.getScheduleId() != null) {
+			builder.setScheduleID(txReceipt.getScheduleId().toGrpcScheduleId());
+		}
 		if (txReceipt.getExchangeRates() != null) {
 			builder.setExchangeRate(txReceipt.exchangeRates.toGrpc());
 		}
@@ -394,7 +374,68 @@ public class TxnReceipt implements SelfSerializable {
 		if (txReceipt.getRunningHashVersion() != MISSING_RUNNING_HASH_VERSION) {
 			builder.setTopicRunningHashVersion(txReceipt.getRunningHashVersion());
 		}
+		if (txReceipt.getNewTotalSupply() >= 0) {
+			builder.setNewTotalSupply(txReceipt.newTotalSupply);
+		}
+		if (txReceipt.getScheduledTxnId() != MISSING_SCHEDULED_TXN_ID) {
+			builder.setScheduledTransactionID(txReceipt.getScheduledTxnId().toGrpc());
+		}
 		return builder.build();
 	}
 
+	/* These constructors are only used in tests. */
+	TxnReceipt(
+			@Nullable String status,
+			@Nullable EntityId accountId,
+			@Nullable EntityId fileId,
+			@Nullable EntityId contractId,
+			@Nullable EntityId tokenId,
+			@Nullable EntityId scheduleId,
+			@Nullable ExchangeRates exchangeRates,
+			@Nullable EntityId topicId,
+			long topicSequenceNumber,
+			@Nullable byte[] topicRunningHash
+	) {
+		this(
+				status,
+				accountId,
+				fileId,
+				contractId,
+				tokenId,
+				scheduleId,
+				exchangeRates,
+				topicId,
+				topicSequenceNumber,
+				topicRunningHash,
+				MISSING_RUNNING_HASH_VERSION);
+	}
+
+	TxnReceipt(
+			@Nullable String status,
+			@Nullable EntityId accountId,
+			@Nullable EntityId fileId,
+			@Nullable EntityId contractId,
+			@Nullable EntityId tokenId,
+			@Nullable EntityId scheduleId,
+			@Nullable ExchangeRates exchangeRates,
+			@Nullable EntityId topicId,
+			long topicSequenceNumber,
+			@Nullable byte[] topicRunningHash,
+			long    runningHashVersion
+	) {
+		this(
+				status,
+				accountId,
+				fileId,
+				contractId,
+				tokenId,
+				scheduleId,
+				exchangeRates,
+				topicId,
+				topicSequenceNumber,
+				topicRunningHash,
+				runningHashVersion,
+				RELEASE_070_VERSION,
+				MISSING_SCHEDULED_TXN_ID);
+	}
 }

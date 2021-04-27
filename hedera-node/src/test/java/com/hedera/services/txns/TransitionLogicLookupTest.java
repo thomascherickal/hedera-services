@@ -4,7 +4,7 @@ package com.hedera.services.txns;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +40,6 @@ import static com.hedera.test.utils.IdUtils.asAccount;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@RunWith(JUnitPlatform.class)
 class TransitionLogicLookupTest {
 	TransitionLogic a = withApplicability(txn -> txn.getTransactionID().getAccountID().equals(asAccount("0.0.2")));
 	TransitionLogic b = withApplicability(txn -> txn.getTransactionID().getAccountID().equals(asAccount("2.2.0")));

@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit.handler;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,34 @@ package com.hedera.services.legacy.unit.handler;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.config.MockGlobalDynamicProps;
+import com.hedera.services.contracts.sources.LedgerAccountsSource;
+import com.hedera.services.exceptions.NegativeAccountBalanceException;
 import com.hedera.services.fees.HbarCentExchange;
 import com.hedera.services.fees.calculation.FeeCalcUtilsTest;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.ledger.TransactionalLedger;
 import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.ledger.ids.EntityIdSource;
-import com.hedera.services.ledger.properties.ChangeSummaryManager;
 import com.hedera.services.ledger.properties.AccountProperty;
-import com.hedera.services.legacy.unit.FCStorageWrapper;
+import com.hedera.services.ledger.properties.ChangeSummaryManager;
+import com.hedera.services.legacy.TestHelper;
 import com.hedera.services.legacy.handler.SmartContractRequestHandler;
+import com.hedera.services.legacy.unit.FCStorageWrapper;
+import com.hedera.services.legacy.unit.StorageKeyNotFoundException;
 import com.hedera.services.legacy.util.SCEncoding;
-import static com.hedera.services.legacy.util.SCEncoding.*;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.expiry.ExpiringCreations;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.test.mocks.SolidityLifecycleFactory;
 import com.hedera.test.mocks.StorageSourceFactory;
-import com.hedera.test.mocks.TestProperties;
 import com.hedera.test.mocks.TestUsagePricesProvider;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractCallLocalQuery;
@@ -62,27 +70,6 @@ import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import com.hederahashgraph.builder.RequestBuilder;
-import com.hedera.services.legacy.TestHelper;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.submerkle.SequenceNumber;
-import com.hedera.services.state.merkle.MerkleBlobMeta;
-import com.hedera.services.state.merkle.MerkleOptionalBlob;
-import com.hedera.services.exceptions.NegativeAccountBalanceException;
-import com.hedera.services.legacy.unit.StorageKeyNotFoundException;
-import com.hedera.services.state.submerkle.ExchangeRates;
-import com.hedera.services.contracts.sources.LedgerAccountsSource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
 import com.swirlds.fcmap.FCMap;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
@@ -99,12 +86,22 @@ import org.ethereum.util.ByteUtil;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import static com.hedera.services.legacy.util.SCEncoding.GET_MY_VALUE_ABI;
+import static com.hedera.services.legacy.util.SCEncoding.GROW_CHILD_ABI;
+import static com.hedera.services.legacy.util.SCEncoding.encodeVia;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -114,8 +111,6 @@ import static org.mockito.Mockito.mock;
  * @version Junit5 Tests the SmartContractRequestHandler class features
  */
 
-@Disabled
-@RunWith(JUnitPlatform.class)
 public class SmartContractRequestHandlerStorageTest {
   public static final String SIMPLE_STORAGE_BIN = "/testfiles/simpleStorage.bin";
   public static final String CHILD_STORAGE_BIN = "/testfiles/ChildStorage.bin";
@@ -174,8 +169,8 @@ public class SmartContractRequestHandlerStorageTest {
     feeCollAccountId = RequestBuilder.getAccountIdBuild(feeCollAccount, 0l, 0l);
     contractFileId = RequestBuilder.getFileIdBuild(contractFileNumber, 0L, 0L);
 
-    contracts = new FCMap<>(new MerkleEntityId.Provider(), MerkleAccount.LEGACY_PROVIDER);
-    storageMap = new FCMap<>(new MerkleBlobMeta.Provider(), new MerkleOptionalBlob.Provider());
+    contracts = new FCMap<>();
+    storageMap = new FCMap<>();
     createAccount(payerAccountId, 1_000_000_000L);
     createAccount(nodeAccountId, 10_000L);
     createAccount(feeCollAccountId, 10_000L);
@@ -638,70 +633,6 @@ public class SmartContractRequestHandlerStorageTest {
       Assert.fail("Error updating contract: parsing transaction body");
     }
     return body;
-  }
-
-  @Test
-  @DisplayName("UpdateContract: Success")
-  public void updateContract() throws Exception {
-    KeyPair adminKeyPair = new KeyPairGenerator().generateKeyPair();
-    byte[] pubKey = ((EdDSAPublicKey) adminKeyPair.getPublic()).getAbyte();
-    Key adminPubKey = Key.newBuilder().setEd25519(ByteString.copyFrom(pubKey)).build();
-
-    byte[] contractBytes = createFile(SIMPLE_STORAGE_BIN, contractFileId);
-    TransactionBody body = getCreateTransactionBody(0L, 250000L, adminPubKey);
-
-    Instant consensusTime = new Date().toInstant();
-    SequenceNumber seqNumber = new SequenceNumber(contractSequenceNumber);
-    ledger.begin();
-    TransactionRecord record = smartHandler.createContract(body, consensusTime, contractBytes, seqNumber);
-    ledger.commit();
-    ContractID newContractId = record.getReceipt().getContractID();
-
-    String newMemo = "Changed SmartContractMemo";
-    Duration renewalDuration = RequestBuilder.getDuration(50_000);
-    Timestamp expirationTime = RequestBuilder.getTimestamp(Instant.now().plusSeconds(1_000_000_000L));
-
-    body = getUpdateTransactionBody(newContractId, newMemo, renewalDuration, expirationTime);
-    consensusTime = new Date().toInstant();
-    ledger.begin();
-    record = smartHandler.updateContract(body, consensusTime);
-    ledger.commit();
-
-    Assert.assertNotNull(record);
-    Assert.assertNotNull(record.getTransactionID());
-    Assert.assertNotNull(record.getReceipt());
-    var contract = contracts.get(MerkleEntityId.fromContractId(newContractId));
-    Assert.assertEquals(newMemo, contract.getMemo());
-    Assert.assertEquals(renewalDuration.getSeconds(), contract.getAutoRenewSecs());
-    Assert.assertEquals(expirationTime.getSeconds(), contract.getExpiry());
-  }
-
-  @Test
-  @DisplayName("UpdateContract: immutable")
-  public void updateContractImmutable() {
-    byte[] contractBytes = createFile(SIMPLE_STORAGE_BIN, contractFileId);
-    TransactionBody body = getCreateTransactionBody();
-
-    Instant consensusTime = new Date().toInstant();
-    SequenceNumber seqNumber = new SequenceNumber(contractSequenceNumber);
-    ledger.begin();
-    TransactionRecord record = smartHandler.createContract(body, consensusTime, contractBytes, seqNumber);
-    ledger.commit();
-    ContractID newContractId = record.getReceipt().getContractID();
-
-    // Information to change
-    String newMemo = "Changed SmartContractMemo";
-    Duration renewalDuration = RequestBuilder.getDuration(50_000);
-    Timestamp expirationTime = RequestBuilder.getTimestamp(Instant.now().plusSeconds(1_000_000_000L));
-    body = getUpdateTransactionBody(newContractId, newMemo, renewalDuration, expirationTime);
-    consensusTime = new Date().toInstant();
-    ledger.begin();
-    record = smartHandler.updateContract(body, consensusTime);
-    ledger.commit();
-    Assert.assertNotNull(record);
-    Assert.assertNotNull(record.getTransactionID());
-    Assert.assertNotNull(record.getReceipt());
-    Assert.assertEquals(ResponseCodeEnum.MODIFYING_IMMUTABLE_CONTRACT, record.getReceipt().getStatus());
   }
 
   @Test

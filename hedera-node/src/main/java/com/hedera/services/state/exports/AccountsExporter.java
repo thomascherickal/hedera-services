@@ -4,7 +4,7 @@ package com.hedera.services.state.exports;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ import com.hedera.services.state.merkle.MerkleAccount;
 import com.swirlds.fcmap.FCMap;
 
 public interface AccountsExporter {
-	void toFile(FCMap<MerkleEntityId, MerkleAccount> accounts, String path) throws Exception;
+	void toFile(String path, FCMap<MerkleEntityId, MerkleAccount> accounts) throws Exception;
 }

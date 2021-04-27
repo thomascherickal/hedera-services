@@ -4,7 +4,7 @@ package com.hedera.services.ledger;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleAccountTokens;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
 import com.hedera.services.state.submerkle.ExpirableTxnRecord;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.CryptoTransferTransactionBody;
@@ -44,6 +44,7 @@ import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.swirlds.fcqueue.FCQueue;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,7 +65,7 @@ import static com.hedera.services.ledger.properties.AccountProperty.IS_SMART_CON
 import static com.hedera.services.ledger.properties.AccountProperty.RECORDS;
 import static com.hedera.services.ledger.properties.AccountProperty.TOKENS;
 import static com.hedera.services.ledger.properties.TokenRelProperty.TOKEN_BALANCE;
-import static com.hedera.services.tokens.TokenStore.MISSING_TOKEN;
+import static com.hedera.services.store.tokens.TokenStore.MISSING_TOKEN;
 import static com.hedera.services.txns.crypto.CryptoTransferTransitionLogic.tryTransfers;
 import static com.hedera.services.txns.validation.TransferListChecks.isNetZeroAdjustment;
 import static com.hedera.services.utils.EntityIdUtils.readableId;
@@ -99,7 +100,7 @@ public class HederaLedger {
 	private static final Logger log = LogManager.getLogger(HederaLedger.class);
 
 	static final TransactionalLedger<
-			Map.Entry<AccountID, TokenID>,
+			Pair<AccountID, TokenID>,
 			TokenRelProperty,
 			MerkleTokenRelStatus> UNUSABLE_TOKEN_RELS_LEDGER = null;
 
@@ -119,6 +120,7 @@ public class HederaLedger {
 			.comparingLong(FileID::getFileNum)
 			.thenComparingLong(FileID::getShardNum)
 			.thenComparingLong(FileID::getRealmNum);
+
 	private final TokenStore tokenStore;
 	private final EntityIdSource ids;
 	private final TransferList.Builder netTransfers = TransferList.newBuilder();
@@ -129,7 +131,7 @@ public class HederaLedger {
 	final TokenID[] tokensTouched = new TokenID[MAX_CONCEIVABLE_TOKENS_PER_TXN];
 	final Map<TokenID, TransferList.Builder> netTokenTransfers = new HashMap<>();
 	TransactionalLedger<
-			Map.Entry<AccountID, TokenID>,
+			Pair<AccountID, TokenID>,
 			TokenRelProperty,
 			MerkleTokenRelStatus> tokenRelsLedger = UNUSABLE_TOKEN_RELS_LEDGER;
 
@@ -153,7 +155,7 @@ public class HederaLedger {
 	}
 
 	public void setTokenRelsLedger(
-			TransactionalLedger<Map.Entry<AccountID, TokenID>, TokenRelProperty, MerkleTokenRelStatus> tokenRelsLedger
+			TransactionalLedger<Pair<AccountID, TokenID>, TokenRelProperty, MerkleTokenRelStatus> tokenRelsLedger
 	) {
 		this.tokenRelsLedger = tokenRelsLedger;
 	}
@@ -178,6 +180,7 @@ public class HederaLedger {
 	public void commit() {
 		throwIfPendingStateIsInconsistent();
 		historian.addNewRecords();
+		historian.addNewEntities();
 		accountsLedger.commit();
 		if (tokenRelsLedger != UNUSABLE_TOKEN_RELS_LEDGER && tokenRelsLedger.isInTransaction()) {
 			tokenRelsLedger.commit();

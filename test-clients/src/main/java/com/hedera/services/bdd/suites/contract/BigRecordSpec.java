@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.contract;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class BigRecordSpec extends HapiApiSuite {
 
 		return defaultHapiSpec("BigRecord")
 				.given(
-						cryptoCreate("payer").balance( 10 * A_HUNDRED_HBARS),
+						cryptoCreate("payer").balance( 10 * ONE_HUNDRED_HBARS),
 						fileCreate("bytecode")
 								.path(ContractResources.BIG_BIG_BYTECODE_PATH),
 						contractCreate("bigBig")

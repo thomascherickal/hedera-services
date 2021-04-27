@@ -4,7 +4,7 @@ package com.hedera.services.txns.consensus;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package com.hedera.services.txns.consensus;
  */
 
 import com.hedera.services.context.TransactionContext;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.txns.TransitionLogic;
 import com.hedera.services.txns.validation.OptionValidator;
@@ -36,25 +37,35 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOPIC_MESSAGE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CHUNK_NUMBER;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CHUNK_TRANSACTION_ID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MESSAGE_SIZE_TOO_LARGE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
+
 
 public class SubmitMessageTransitionLogic implements TransitionLogic {
-	protected static final Logger log = LogManager.getLogger(SubmitMessageTransitionLogic.class);
+	private static final Logger log = LogManager.getLogger(SubmitMessageTransitionLogic.class);
 
 	private static final Function<TransactionBody, ResponseCodeEnum> SYNTAX_RUBBER_STAMP = ignore -> OK;
 
 	private final OptionValidator validator;
 	private final TransactionContext transactionContext;
 	private final Supplier<FCMap<MerkleEntityId, MerkleTopic>> topics;
+	private final GlobalDynamicProperties globalDynamicProperties;
 
 	public SubmitMessageTransitionLogic(
 			Supplier<FCMap<MerkleEntityId, MerkleTopic>> topics,
 			OptionValidator validator,
-			TransactionContext transactionContext
+			TransactionContext transactionContext,
+			GlobalDynamicProperties globalDynamicProperties
 	) {
 		this.topics = topics;
 		this.validator = validator;
 		this.transactionContext = transactionContext;
+		this.globalDynamicProperties = globalDynamicProperties;
 	}
 
 	@Override
@@ -64,6 +75,11 @@ public class SubmitMessageTransitionLogic implements TransitionLogic {
 
 		if (op.getMessage().isEmpty()) {
 			transactionContext.setStatus(INVALID_TOPIC_MESSAGE);
+			return;
+		}
+
+		if(op.getMessage().size() > globalDynamicProperties.messageMaxBytesAllowed() ) {
+			transactionContext.setStatus(MESSAGE_SIZE_TOO_LARGE);
 			return;
 		}
 

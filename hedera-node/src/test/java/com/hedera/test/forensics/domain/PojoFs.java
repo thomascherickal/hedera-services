@@ -4,7 +4,7 @@ package com.hedera.test.forensics.domain;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,12 @@ package com.hedera.test.forensics.domain;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleOptionalBlob;
 import com.swirlds.common.io.SerializableDataInputStream;
+import com.swirlds.common.merkle.io.MerkleDataInputStream;
 import com.swirlds.fcmap.FCMap;
 
 import java.io.File;
@@ -39,11 +42,10 @@ public class PojoFs {
 	private List<PojoFile> files;
 
 	public static PojoFs fromDisk(String dumpLoc) throws Exception {
-		try (SerializableDataInputStream fin = new SerializableDataInputStream(Files.newInputStream(Path.of(dumpLoc)))) {
-			FCMap<MerkleBlobMeta, MerkleOptionalBlob> fcm = new FCMap<>(new MerkleBlobMeta.Provider(), new MerkleOptionalBlob.Provider());
-			fcm.copyFrom(fin);
-			fcm.copyFromExtra(fin);
-			return from(fcm);
+		try (MerkleDataInputStream in = new MerkleDataInputStream(Files.newInputStream(Path.of(dumpLoc)), false)) {
+			FCMap<MerkleBlobMeta, MerkleOptionalBlob> fcm = in.readMerkleTree(Integer.MAX_VALUE);
+			var pojo = from(fcm);
+			return pojo;
 		}
 	}
 

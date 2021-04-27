@@ -4,7 +4,7 @@ package com.hedera.services.ledger;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTokenRelStatus;
-import com.hedera.services.tokens.HederaTokenStore;
+import com.hedera.services.store.tokens.HederaTokenStore;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
 import com.hedera.test.mocks.TestContextValidator;
 import com.hedera.test.utils.TxnUtils;
@@ -46,8 +46,6 @@ import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.List;
 
@@ -61,7 +59,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 public class HederaLedgerLiveTest extends BaseHederaLedgerTest {
 	long thisSecond = 1_234_567L;
 
@@ -74,8 +71,7 @@ public class HederaLedgerLiveTest extends BaseHederaLedgerTest {
 				() -> new MerkleAccount(),
 				new HashMapBackingAccounts(),
 				new ChangeSummaryManager<>());
-		FCMap<MerkleEntityId, MerkleToken> tokens =
-				new FCMap<>(new MerkleEntityId.Provider(), MerkleToken.LEGACY_PROVIDER);
+		FCMap<MerkleEntityId, MerkleToken> tokens = new FCMap<>();
 		tokenRelsLedger = new TransactionalLedger<>(
 				TokenRelProperty.class,
 				() -> new MerkleTokenRelStatus(),
@@ -167,7 +163,7 @@ public class HederaLedgerLiveTest extends BaseHederaLedgerTest {
 	}
 
 	@Test
-	public void addsRecordsBeforeCommitting() {
+	public void addsRecordsAndEntitiesBeforeCommitting() {
 		// when:
 		subject.begin();
 		AccountID a = subject.create(genesis, 1_000L, new HederaAccountCustomizer().memo("a"));
@@ -175,6 +171,7 @@ public class HederaLedgerLiveTest extends BaseHederaLedgerTest {
 
 		// then:
 		verify(historian).addNewRecords();
+		verify(historian).addNewEntities();
 	}
 
 	@Test

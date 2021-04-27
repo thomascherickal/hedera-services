@@ -4,7 +4,7 @@ package com.hedera.services.txns.file;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
+import org.apache.commons.codec.DecoderException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,15 +41,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.hedera.services.files.TieredHederaFs.firstUnsuccessful;
+import static com.hedera.services.utils.MiscUtils.asFcKeyUnchecked;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BAD_ENCODING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FILE_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNAUTHORIZED;
-import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.max;
 
@@ -106,12 +108,15 @@ public class FileUpdateTransitionLogic implements TransitionLogic {
 			if (!op.getContents().isEmpty()) {
 				replaceResult = Optional.of(hfs.overwrite(target, op.getContents().toByteArray()));
 			}
-			attr.setExpirationTimeSeconds(max(op.getExpirationTime().getSeconds(), attr.getExpirationTimeSeconds()));
+			attr.setExpiry(max(op.getExpirationTime().getSeconds(), attr.getExpiry()));
 
 			Optional<HederaFs.UpdateResult> changeResult = Optional.empty();
 			if (replaceResult.map(HederaFs.UpdateResult::fileReplaced).orElse(TRUE)) {
 				if (op.hasKeys()) {
-					attr.setWacl(mapKey(wrapped(op.getKeys())));
+					attr.setWacl(asFcKeyUnchecked(wrapped(op.getKeys())));
+				}
+				if (op.hasMemo()) {
+					attr.setMemo(op.getMemo().getValue());
 				}
 				changeResult = Optional.of(hfs.setattr(target, attr));
 			}
@@ -130,6 +135,10 @@ public class FileUpdateTransitionLogic implements TransitionLogic {
 	}
 
 	static void mapToStatus(IllegalArgumentException iae, TransactionContext txnCtx) {
+		if (iae.getCause() instanceof DecoderException) {
+			txnCtx.setStatus(BAD_ENCODING);
+			return;
+		}
 		try {
 			var type = TieredHederaFs.IllegalArgumentType.valueOf(iae.getMessage());
 			txnCtx.setStatus(type.suggestedStatus());
@@ -167,6 +176,11 @@ public class FileUpdateTransitionLogic implements TransitionLogic {
 
 	private ResponseCodeEnum validate(TransactionBody fileUpdateTxn) {
 		var op = fileUpdateTxn.getFileUpdate();
+
+		var memoValidity = !op.hasMemo() ? OK : validator.memoCheck(op.getMemo().getValue());
+		if (memoValidity != OK) {
+			return memoValidity;
+		}
 
 		if (op.hasExpirationTime()) {
 			var effectiveDuration = Duration.newBuilder()

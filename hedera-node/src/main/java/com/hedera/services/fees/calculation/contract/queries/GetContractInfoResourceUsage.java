@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.contract.queries;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,23 +69,18 @@ public class GetContractInfoResourceUsage implements QueryResourceUsageEstimator
 	}
 
 	private FeeData usageFor(Query query, StateView view, ResponseType type, Optional<Map<String, Object>> queryCtx) {
-		try {
-			var op = query.getContractGetInfo();
-			var tentativeInfo = view.infoForContract(op.getContractID());
-			if (tentativeInfo.isPresent()) {
-				var info = tentativeInfo.get();
-				queryCtx.ifPresent(ctx -> ctx.put(CONTRACT_INFO_CTX_KEY, info));
-				var estimate = factory.apply(query)
-						.givenCurrentKey(info.getAdminKey())
-						.givenCurrentMemo(info.getMemo())
-						.givenCurrentTokenAssocs(info.getTokenRelationshipsCount());
-				return estimate.get();
-			} else {
-				return FeeData.getDefaultInstance();
-			}
-		} catch (Exception e) {
-			log.warn("Usage estimation unexpectedly failed for {}!", query, e);
-			throw new IllegalArgumentException(e);
+		var op = query.getContractGetInfo();
+		var tentativeInfo = view.infoForContract(op.getContractID());
+		if (tentativeInfo.isPresent()) {
+			var info = tentativeInfo.get();
+			queryCtx.ifPresent(ctx -> ctx.put(CONTRACT_INFO_CTX_KEY, info));
+			var estimate = factory.apply(query)
+					.givenCurrentKey(info.getAdminKey())
+					.givenCurrentMemo(info.getMemo())
+					.givenCurrentTokenAssocs(info.getTokenRelationshipsCount());
+			return estimate.get();
+		} else {
+			return FeeData.getDefaultInstance();
 		}
 	}
 }

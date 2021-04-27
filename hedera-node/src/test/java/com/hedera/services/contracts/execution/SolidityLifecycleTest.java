@@ -4,7 +4,7 @@ package com.hedera.services.contracts.execution;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import org.ethereum.db.ServicesRepositoryRoot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.util.List;
@@ -47,7 +45,6 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MAX_CONTRACT_S
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.RESULT_SIZE_LIMIT_EXCEEDED;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class SolidityLifecycleTest {
 	int maxStorageKb = 4321;
 	long maxResultSize = 4321;

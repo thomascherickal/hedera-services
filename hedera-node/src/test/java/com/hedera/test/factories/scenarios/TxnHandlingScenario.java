@@ -4,7 +4,7 @@ package com.hedera.test.factories.scenarios;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,27 @@ package com.hedera.test.factories.scenarios;
  * ‍
  */
 
+import com.hedera.services.legacy.unit.serialization.HFileMetaSerdeTest;
+import com.hedera.services.state.merkle.MerkleSchedule;
+import com.hedera.services.state.merkle.MerkleScheduleTest;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.files.HederaFs;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.schedule.ScheduleStore;
+import com.hedera.services.store.tokens.TokenStore;
+import com.hedera.services.utils.MiscUtils;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.factories.keys.KeyFactory;
 import com.hedera.test.factories.keys.KeyTree;
 import com.hedera.test.factories.keys.OverlappingKeyGenerator;
-import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.FileGetInfoResponse;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.Key;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
@@ -42,8 +48,9 @@ import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
 import com.hedera.services.state.merkle.MerkleOptionalBlob;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
 import com.swirlds.fcmap.FCMap;
+
+import java.time.Instant;
 
 import static com.hedera.test.factories.keys.KeyTree.withRoot;
 import static org.mockito.BDDMockito.given;
@@ -148,16 +155,17 @@ public interface TxnHandlingScenario {
 		HederaFs hfs = mock(HederaFs.class);
 		given(hfs.exists(MISC_FILE)).willReturn(true);
 		given(hfs.exists(SYS_FILE)).willReturn(true);
-		given(hfs.getattr(MISC_FILE)).willReturn(JFileInfo.convert(MISC_FILE_INFO));
-		given(hfs.getattr(SYS_FILE)).willReturn(JFileInfo.convert(SYS_FILE_INFO));
+		given(hfs.getattr(MISC_FILE)).willReturn(HFileMetaSerdeTest.convert(MISC_FILE_INFO));
+		given(hfs.getattr(SYS_FILE)).willReturn(HFileMetaSerdeTest.convert(SYS_FILE_INFO));
 		given(hfs.exists(IMMUTABLE_FILE)).willReturn(true);
-		given(hfs.getattr(IMMUTABLE_FILE)).willReturn(JFileInfo.convert(IMMUTABLE_FILE_INFO));
+		given(hfs.getattr(IMMUTABLE_FILE)).willReturn(HFileMetaSerdeTest.convert(IMMUTABLE_FILE_INFO));
 		return hfs;
 	}
 
 	default FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage() {
 		@SuppressWarnings("unchecked")
-		FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage = (FCMap<MerkleBlobMeta, MerkleOptionalBlob>)mock(FCMap.class);
+		FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage = (FCMap<MerkleBlobMeta, MerkleOptionalBlob>) mock(
+				FCMap.class);
 
 		return storage;
 	}
@@ -206,7 +214,7 @@ public interface TxnHandlingScenario {
 
 		var kycToken = new MerkleToken(
 				Long.MAX_VALUE, 100, 1,
-				"KycToken","KYCTOKENNAME", false, true,
+				"KycToken", "KYCTOKENNAME", false, true,
 				new EntityId(1, 2, 4));
 		kycToken.setAdminKey(adminKey);
 		kycToken.setKycKey(optionalKycKey);
@@ -240,6 +248,64 @@ public interface TxnHandlingScenario {
 		return tokenStore;
 	}
 
+	default byte[] extantSchedulingBodyBytes() throws Throwable {
+		return MerkleScheduleTest.scheduleCreateTxnWith(
+				Key.getDefaultInstance(),
+				"",
+				MISC_ACCOUNT,
+				MISC_ACCOUNT,
+				MiscUtils.asTimestamp(Instant.ofEpochSecond(1L))
+		)
+				.toByteArray();
+	}
+
+	default ScheduleStore scheduleStore() {
+		var scheduleStore = mock(ScheduleStore.class);
+
+		given(scheduleStore.resolve(KNOWN_SCHEDULE_IMMUTABLE))
+				.willReturn(KNOWN_SCHEDULE_IMMUTABLE);
+		given(scheduleStore.get(KNOWN_SCHEDULE_IMMUTABLE))
+				.willAnswer(inv -> {
+					var entity = MerkleSchedule.from(extantSchedulingBodyBytes(), 1801L);
+					entity.setPayer(MerkleSchedule.UNUSED_PAYER);
+					return entity;
+				});
+
+		given(scheduleStore.resolve(KNOWN_SCHEDULE_WITH_ADMIN))
+				.willReturn(KNOWN_SCHEDULE_WITH_ADMIN);
+		given(scheduleStore.get(KNOWN_SCHEDULE_WITH_ADMIN))
+				.willAnswer(inv -> {
+					var adminKey = SCHEDULE_ADMIN_KT.asJKeyUnchecked();
+					var entity = MerkleSchedule.from(extantSchedulingBodyBytes(), 1801L);
+					entity.setPayer(MerkleSchedule.UNUSED_PAYER);
+					entity.setAdminKey(adminKey);
+					return entity;
+				});
+
+		given(scheduleStore.resolve(KNOWN_SCHEDULE_WITH_EXPLICIT_PAYER))
+				.willReturn(KNOWN_SCHEDULE_WITH_EXPLICIT_PAYER);
+		given(scheduleStore.get(KNOWN_SCHEDULE_WITH_EXPLICIT_PAYER))
+				.willAnswer(inv -> {
+					var entity = MerkleSchedule.from(extantSchedulingBodyBytes(), 1801L);
+					entity.setPayer(EntityId.fromGrpcAccountId(DILIGENT_SIGNING_PAYER));
+					return entity;
+				});
+
+		given(scheduleStore.resolve(KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER))
+				.willReturn(KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER);
+		given(scheduleStore.get(KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER))
+				.willAnswer(inv -> {
+					var entity = MerkleSchedule.from(extantSchedulingBodyBytes(), 1801L);
+					entity.setPayer(EntityId.fromGrpcAccountId(MISSING_ACCOUNT));
+					return entity;
+				});
+
+		given(scheduleStore.resolve(UNKNOWN_SCHEDULE))
+				.willReturn(ScheduleStore.MISSING_SCHEDULE);
+
+		return scheduleStore;
+	}
+
 	String MISSING_ACCOUNT_ID = "1.2.3";
 	AccountID MISSING_ACCOUNT = asAccount(MISSING_ACCOUNT_ID);
 
@@ -254,6 +320,9 @@ public interface TxnHandlingScenario {
 	String MISC_ACCOUNT_ID = "0.0.1339";
 	AccountID MISC_ACCOUNT = asAccount(MISC_ACCOUNT_ID);
 	KeyTree MISC_ACCOUNT_KT = withRoot(ed25519());
+
+	String SYS_ACCOUNT_ID = "0.0.666";
+	AccountID SYS_ACCOUNT = asAccount(SYS_ACCOUNT_ID);
 
 	String DILIGENT_SIGNING_PAYER_ID = "0.0.1340";
 	AccountID DILIGENT_SIGNING_PAYER = asAccount(DILIGENT_SIGNING_PAYER_ID);
@@ -273,13 +342,13 @@ public interface TxnHandlingScenario {
 					ed25519(),
 					list(
 							threshold(2,
-									ed25519(), ed25519(),  ed25519()))));
+									ed25519(), ed25519(), ed25519()))));
 
 	String FROM_OVERLAP_PAYER_ID = "0.0.1343";
-	AccountID FROM_OVERLAP_PAYER = asAccount(FROM_OVERLAP_PAYER_ID);
 	KeyTree FROM_OVERLAP_PAYER_KT = withRoot(threshold(2, ed25519(true), ed25519(true), ed25519(false)));
 
 	KeyTree NEW_ACCOUNT_KT = withRoot(list(ed25519(), threshold(1, ed25519(), ed25519())));
+	KeyTree SYS_ACCOUNT_KT =  withRoot(list(ed25519(), threshold(1, ed25519(), ed25519())));
 	KeyTree LONG_THRESHOLD_KT = withRoot(threshold(1, ed25519(), ed25519(), ed25519(), ed25519()));
 
 	String MISSING_FILE_ID = "1.2.3";
@@ -310,7 +379,6 @@ public interface TxnHandlingScenario {
 	KeyTree SIMPLE_NEW_WACL_KT = withRoot(list(ed25519()));
 
 	String MISSING_CONTRACT_ID = "1.2.3";
-	ContractID MISSING_CONTRACT = asContract(MISSING_CONTRACT_ID);
 
 	String MISC_RECIEVER_SIG_CONTRACT_ID = "0.0.7337";
 	ContractID MISC_RECIEVER_SIG_CONTRACT = asContract(MISC_RECIEVER_SIG_CONTRACT_ID);
@@ -368,4 +436,21 @@ public interface TxnHandlingScenario {
 	KeyTree MISC_TOPIC_SUBMIT_KT = withRoot(ed25519());
 	KeyTree MISC_TOPIC_ADMIN_KT = withRoot(ed25519());
 	KeyTree UPDATE_TOPIC_ADMIN_KT = withRoot(ed25519());
+
+	String KNOWN_SCHEDULE_IMMUTABLE_ID = "0.0.789";
+	ScheduleID KNOWN_SCHEDULE_IMMUTABLE = asSchedule(KNOWN_SCHEDULE_IMMUTABLE_ID);
+
+	String KNOWN_SCHEDULE_WITH_ADMIN_ID = "0.0.456";
+	ScheduleID KNOWN_SCHEDULE_WITH_ADMIN = asSchedule(KNOWN_SCHEDULE_WITH_ADMIN_ID);
+
+	String KNOWN_SCHEDULE_WITH_PAYER_ID = "0.0.456456";
+	ScheduleID KNOWN_SCHEDULE_WITH_EXPLICIT_PAYER = asSchedule(KNOWN_SCHEDULE_WITH_PAYER_ID);
+
+	String KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER_ID = "0.0.654654";
+	ScheduleID KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER = asSchedule(KNOWN_SCHEDULE_WITH_NOW_INVALID_PAYER_ID);
+
+	String UNKNOWN_SCHEDULE_ID = "0.0.123";
+	ScheduleID UNKNOWN_SCHEDULE = asSchedule(UNKNOWN_SCHEDULE_ID);
+
+	KeyTree SCHEDULE_ADMIN_KT = withRoot(ed25519());
 }

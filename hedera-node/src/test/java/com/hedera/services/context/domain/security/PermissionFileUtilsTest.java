@@ -4,7 +4,7 @@ package com.hedera.services.context.domain.security;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ package com.hedera.services.context.domain.security;
  * ‍
  */
 
-import com.hedera.services.exceptions.UnknownHederaFunctionality;
-import com.hedera.services.utils.MiscUtils;
 import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
 import com.hederahashgraph.api.proto.java.ConsensusDeleteTopicTransactionBody;
 import com.hederahashgraph.api.proto.java.ConsensusGetTopicInfoQuery;
@@ -55,6 +53,9 @@ import com.hederahashgraph.api.proto.java.FreezeTransactionBody;
 import com.hederahashgraph.api.proto.java.GetBySolidityIDQuery;
 import com.hederahashgraph.api.proto.java.NetworkGetVersionInfoQuery;
 import com.hederahashgraph.api.proto.java.Query;
+import com.hederahashgraph.api.proto.java.ScheduleCreateTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleDeleteTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleSignTransactionBody;
 import com.hederahashgraph.api.proto.java.SystemDeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.SystemUndeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -62,15 +63,11 @@ import com.hederahashgraph.api.proto.java.TransactionGetFastRecordQuery;
 import com.hederahashgraph.api.proto.java.TransactionGetReceiptQuery;
 import com.hederahashgraph.api.proto.java.TransactionGetRecordQuery;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
-import static com.hedera.services.legacy.handler.TransactionHandler.GET_TOPIC_INFO_QUERY_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.hedera.services.context.domain.security.PermissionFileUtils.permissionFileKeyForTxn;
 import static com.hedera.services.context.domain.security.PermissionFileUtils.permissionFileKeyForQuery;
 
-@RunWith(JUnitPlatform.class)
 class PermissionFileUtilsTest {
 	@Test
 	public void returnsEmptyKeyForBlankTxn() {
@@ -80,6 +77,33 @@ class PermissionFileUtilsTest {
 	@Test
 	public void returnsEmptyKeyForBlankQuery() {
 		assertEquals("", permissionFileKeyForQuery(Query.getDefaultInstance()));
+	}
+
+	@Test
+	public void worksForScheduleCreate() {
+		var op = ScheduleCreateTransactionBody.getDefaultInstance();
+		var txn = TransactionBody.newBuilder()
+				.setScheduleCreate(op)
+				.build();
+		assertEquals(permissionFileKeyForTxn(txn), legacyKeyForTxn(txn));
+	}
+
+	@Test
+	public void worksForScheduleDelete() {
+		var op = ScheduleDeleteTransactionBody.getDefaultInstance();
+		var txn = TransactionBody.newBuilder()
+				.setScheduleDelete(op)
+				.build();
+		assertEquals(permissionFileKeyForTxn(txn), legacyKeyForTxn(txn));
+	}
+
+	@Test
+	public void worksForScheduleSign() {
+		var op = ScheduleSignTransactionBody.getDefaultInstance();
+		var txn = TransactionBody.newBuilder()
+				.setScheduleSign(op)
+				.build();
+		assertEquals(permissionFileKeyForTxn(txn), legacyKeyForTxn(txn));
 	}
 
 	@Test
@@ -424,7 +448,7 @@ class PermissionFileUtilsTest {
 			case GETBYKEY:
 				break;
 			case CONSENSUSGETTOPICINFO:
-				queryBody = GET_TOPIC_INFO_QUERY_NAME;
+				queryBody = "getTopicInfo";
 				break;
 			case GETBYSOLIDITYID:
 				queryBody = "getBySolidityID";
@@ -434,6 +458,9 @@ class PermissionFileUtilsTest {
 				break;
 			case CONTRACTGETINFO:
 				queryBody = "getContractInfo";
+				break;
+			case SCHEDULEGETINFO:
+				queryBody = "getScheduleInfo";
 				break;
 			case CONTRACTGETBYTECODE:
 				queryBody = "contractGetBytecode";
@@ -520,6 +547,12 @@ class PermissionFileUtilsTest {
 			key = "updateTopic";
 		} else if (txn.hasConsensusDeleteTopic()) {
 			key = "deleteTopic";
+		} else if (txn.hasScheduleCreate()) {
+			key = "scheduleCreate";
+		} else if (txn.hasScheduleDelete()) {
+			key = "scheduleDelete";
+		} else if (txn.hasScheduleSign()) {
+			key = "scheduleSign";
 		} else if (txn.hasConsensusSubmitMessage()) {
 			key = "submitMessage";
 		}

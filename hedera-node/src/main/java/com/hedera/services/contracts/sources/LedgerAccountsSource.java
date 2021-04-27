@@ -4,7 +4,7 @@ package com.hedera.services.contracts.sources;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import static com.hedera.services.utils.EntityIdUtils.asContract;
 import static com.hedera.services.utils.EntityIdUtils.asLiteralString;
 
 public class LedgerAccountsSource implements Source<byte[], AccountState> {
-	static Logger log = LogManager.getLogger(LedgerAccountsSource.class);
+	private static final Logger log = LogManager.getLogger(LedgerAccountsSource.class);
 
 	private final HederaLedger ledger;
 	private final GlobalDynamicProperties properties;

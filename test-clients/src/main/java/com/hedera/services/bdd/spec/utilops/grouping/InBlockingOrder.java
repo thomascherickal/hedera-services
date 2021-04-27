@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops.grouping;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,5 +37,14 @@ public class InBlockingOrder extends UtilOp {
 	protected boolean submitOp(HapiApiSpec spec) {
 		allRunFor(spec, ops);
 		return false;
+	}
+
+	public HapiSpecOperation last() {
+		return ops[ops.length - 1];
+	}
+
+	@Override
+	public String toString() {
+		return "InBlockingOrder";
 	}
 }

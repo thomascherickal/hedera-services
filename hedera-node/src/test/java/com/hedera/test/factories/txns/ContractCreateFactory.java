@@ -4,7 +4,7 @@ package com.hedera.test.factories.txns;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ package com.hedera.test.factories.txns;
  * ‍
  */
 
-import com.hedera.test.factories.keys.KeyFactory;
 import com.hedera.test.factories.keys.KeyTree;
 import com.hederahashgraph.api.proto.java.ContractCreateTransactionBody;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
+
+import java.util.OptionalLong;
 
 import static com.hedera.test.factories.keys.NodeFactory.ed25519;
 
@@ -38,6 +39,8 @@ public class ContractCreateFactory extends SignedTxnFactory<ContractCreateFactor
 	private KeyTree adminKt = DEFAULT_ADMIN_KT;
 	private boolean useAdminKey = true;
 	private boolean useDeprecatedAdminKey = false;
+	private OptionalLong gas = OptionalLong.empty();
+	private OptionalLong initialBalance = OptionalLong.empty();
 
 	private ContractCreateFactory() {}
 	public static ContractCreateFactory newSignedContractCreate() {
@@ -62,13 +65,26 @@ public class ContractCreateFactory extends SignedTxnFactory<ContractCreateFactor
 		} else if (useAdminKey) {
 			op.setAdminKey(adminKt.asKey(keyFactory));
 		}
+		gas.ifPresent(op::setGas);
+		initialBalance.ifPresent(op::setInitialBalance);
 		txn.setContractCreateInstance(op);
+	}
+
+	public ContractCreateFactory gas(long amount) {
+		gas = OptionalLong.of(amount);
+		return this;
+	}
+
+	public ContractCreateFactory initialBalance(long amount) {
+		initialBalance = OptionalLong.of(amount);
+		return this;
 	}
 
 	public ContractCreateFactory adminKt(KeyTree adminKt) {
 		this.adminKt = adminKt;
 		return this;
 	}
+
 	public ContractCreateFactory useDeprecatedAdminKey(boolean shouldUse) {
 		useDeprecatedAdminKey = shouldUse;
 		return this;

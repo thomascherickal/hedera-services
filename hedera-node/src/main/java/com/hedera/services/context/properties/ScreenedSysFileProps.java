@@ -4,14 +4,14 @@ package com.hedera.services.context.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,9 @@ package com.hedera.services.context.properties;
  * ‍
  */
 
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.utils.MiscUtils;
+import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +38,6 @@ import java.util.stream.Collectors;
 
 import static com.hedera.services.context.properties.BootstrapProperties.GLOBAL_DYNAMIC_PROPS;
 import static com.hedera.services.context.properties.BootstrapProperties.transformFor;
-import static com.hedera.services.throttling.ThrottlingPropsBuilder.API_THROTTLING_PREFIX;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 import static java.util.Map.entry;
 
@@ -64,17 +66,31 @@ public class ScreenedSysFileProps implements PropertySource {
 			entry("transferListSizeLimit", "ledger.transfers.maxLen"),
 			entry("txMaximumDuration", "hedera.transaction.maxValidDuration"),
 			entry("txMinimumDuration", "hedera.transaction.minValidDuration"),
-			entry("txMinimumRemaining", "hedera.transaction.minValidityBufferSecs")
+			entry("txMinimumRemaining", "hedera.transaction.minValidityBufferSecs"),
+			entry("maximumAutoRenewDuration", "ledger.autoRenewPeriod.maxDuration"),
+			entry("minimumAutoRenewDuration", "ledger.autoRenewPeriod.minDuration"),
+			entry("localCallEstReturnBytes", "contracts.localCall.estRetBytes")
 	);
 	private static Map<String, UnaryOperator<String>> STANDARDIZED_FORMATS = Map.ofEntries(
 			entry("defaultFeeCollectionAccount", legacy -> "" + accountParsedFromString(legacy).getAccountNum()),
 			entry("accountBalanceExportPeriodMinutes", legacy -> "" + (60 * Integer.parseInt(legacy)))
 	);
+	@SuppressWarnings("unchecked")
 	private static Map<String, Predicate<Object>> VALUE_SCREENS = Map.ofEntries(
-			entry("rates.intradayChangeLimitPercent", limitPercent -> (int)limitPercent > 0)
+			entry("rates.intradayChangeLimitPercent", limitPercent -> (int) limitPercent > 0),
+			entry("scheduling.whitelist",
+					whitelist -> ((Set<HederaFunctionality>)whitelist)
+							.stream()
+							.noneMatch(MiscUtils.QUERY_FUNCTIONS::contains)),
+			entry(
+					"tokens.maxSymbolUtf8Bytes",
+					maxUtf8Bytes -> (int) maxUtf8Bytes <= MerkleToken.UPPER_BOUND_SYMBOL_UTF8_BYTES),
+			entry(
+					"tokens.maxTokenNameUtf8Bytes",
+					maxUtf8Bytes -> (int) maxUtf8Bytes <= MerkleToken.UPPER_BOUND_TOKEN_NAME_UTF8_BYTES)
 	);
 
-	Map<String, Object>	from121 = Collections.emptyMap();
+	Map<String, Object> from121 = Collections.emptyMap();
 
 	public void screenNew(ServicesConfigurationList rawProps) {
 		from121 = rawProps.getNameValueList()
@@ -110,8 +126,7 @@ public class ScreenedSysFileProps implements PropertySource {
 	private boolean isValidGlobalDynamic(Setting prop) {
 		var name = prop.getName();
 		var clearlyBelongs = GLOBAL_DYNAMIC_PROPS.contains(name);
-		var isThrottleProp = name.startsWith(API_THROTTLING_PREFIX);
-		if (!clearlyBelongs && !isThrottleProp) {
+		if (!clearlyBelongs) {
 			log.warn(String.format(MISPLACED_PROP_TPL, name));
 		}
 		return clearlyBelongs;

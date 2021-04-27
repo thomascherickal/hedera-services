@@ -4,7 +4,7 @@ package com.hedera.services.state.merkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,14 @@ import com.google.common.base.MoreObjects;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.swirlds.common.FCMKey;
-import com.swirlds.common.FastCopyable;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.common.merkle.utility.AbstractMerkleLeaf;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Map;
 
 public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKey {
 	static final int MERKLE_VERSION = 1;
@@ -43,9 +39,6 @@ public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKe
 
 	private long fromShard, fromRealm, fromNum;
 	private long toShard, toRealm, toNum;
-
-	@Deprecated
-	public static final MerkleEntityAssociation.Provider LEGACY_PROVIDER = new MerkleEntityAssociation.Provider();
 
 	public MerkleEntityAssociation() {
 	}
@@ -62,8 +55,8 @@ public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKe
 		this.toNum = toNum;
 	}
 
-	public static MerkleEntityAssociation fromAccountTokenRel(Map.Entry<AccountID, TokenID> key) {
-		return fromAccountTokenRel(key.getKey(), key.getValue());
+	public static MerkleEntityAssociation fromAccountTokenRel(Pair<AccountID, TokenID> rel) {
+		return fromAccountTokenRel(rel.getLeft(), rel.getRight());
 	}
 
 	public static MerkleEntityAssociation fromAccountTokenRel(AccountID account, TokenID token) {
@@ -72,8 +65,8 @@ public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKe
 				token.getShardNum(), token.getRealmNum(), token.getTokenNum());
 	}
 
-	public Map.Entry<AccountID, TokenID> asAccountTokenRel() {
-		return new AbstractMap.SimpleImmutableEntry<>(
+	public Pair<AccountID, TokenID> asAccountTokenRel() {
+		return Pair.of(
 				AccountID.newBuilder()
 						.setShardNum(fromShard)
 						.setRealmNum(fromRealm)
@@ -84,14 +77,6 @@ public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKe
 						.setRealmNum(toRealm)
 						.setTokenNum(toNum)
 						.build());
-	}
-
-	@Deprecated
-	public static class Provider implements SerializedObjectProvider {
-		@Override
-		public FastCopyable deserialize(DataInputStream in) throws IOException {
-			throw new UnsupportedOperationException();
-		}
 	}
 
 	/* --- MerkleLeaf --- */
@@ -154,18 +139,6 @@ public class MerkleEntityAssociation extends AbstractMerkleLeaf implements FCMKe
 	@Override
 	public MerkleEntityAssociation copy() {
 		return new MerkleEntityAssociation(fromShard, fromRealm, fromNum, toShard, toRealm, toNum);
-	}
-
-	@Override
-	@Deprecated
-	public void copyFrom(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	@Deprecated
-	public void copyFromExtra(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
 	}
 
 	/* --- Bean --- */

@@ -4,7 +4,7 @@ package com.hedera.test.forensics;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ package com.hedera.test.forensics;
  * ‍
  */
 
-import com.hedera.services.legacy.core.jproto.TxnId;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.submerkle.TxnId;
 import com.hedera.services.legacy.core.jproto.TxnReceipt;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleAccountState;
@@ -41,13 +43,10 @@ import com.swirlds.fcmap.internal.FCMTree;
 import com.swirlds.fcqueue.FCQueue;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.List;
 
 @Disabled
-@RunWith(JUnitPlatform.class)
 public class FcmToJsonUtil {
 	final List<String> accountsLocs = List.of(new String[] {
 			"/Users/tinkerm/Dev/iss/stable/node00-logs/data/saved/com.hedera.services" + ".ServicesMain/0/accounts-round38056100.fcm",
@@ -64,6 +63,36 @@ public class FcmToJsonUtil {
 			"/Users/tinkerm/Dev/hgn2/services-hedera/hedera-node/forensics/iss-demo/1/topics-round12.fcm",
 			"/Users/tinkerm/Dev/hgn2/services-hedera/hedera-node/forensics/iss-demo/2/topics-round12.fcm"
 	);
+
+	@Test
+	void convertStorageToJson() throws Exception {
+		String[] round60Locs = {
+//				"/Users/tinkerm/Dev/hgn3/hedera-services/hedera-node/n0-storage-round60.fcm",
+				"/Users/tinkerm/Dev/hgn3/hedera-services/hedera-node/n1-storage-round60.fcm",
+//				"/Users/tinkerm/Dev/hgn3/hedera-services/hedera-node/n2-storage-round60.fcm",
+//				"/Users/tinkerm/Dev/hgn3/hedera-services/hedera-node/n3-storage-round60.fcm",
+		};
+
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(FCMInternalNode.class, FCMInternalNode::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(MerkleLong.class, MerkleLong::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(FCMap.class, FCMap::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(FCMTree.class, FCMTree::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(FCMLeaf.class, FCMLeaf::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(MerkleBlobMeta.class, MerkleBlobMeta::new));
+		ConstructableRegistry.registerConstructable(
+				new ClassConstructorPair(MerkleOptionalBlob.class, MerkleOptionalBlob::new));
+
+		for (String dumpLoc : round60Locs) {
+			System.out.println("Reading " + dumpLoc);
+			PojoFs.fromDisk(dumpLoc).asJsonTo(jsonSuffixed(dumpLoc));
+		}
+	}
 
 	@Test
 	public void convertAccountsToJson() throws Exception {
@@ -100,13 +129,6 @@ public class FcmToJsonUtil {
 
 		for (String dumpLoc : accountsLocs) {
 			PojoLedger.fromDisk(dumpLoc).asJsonTo(jsonSuffixed(dumpLoc));
-		}
-	}
-
-	@Test
-	public void convertStorageToJson() throws Exception {
-		for (String dumpLoc : storageLocs) {
-			PojoFs.fromDisk(dumpLoc).asJsonTo(jsonSuffixed(dumpLoc));
 		}
 	}
 

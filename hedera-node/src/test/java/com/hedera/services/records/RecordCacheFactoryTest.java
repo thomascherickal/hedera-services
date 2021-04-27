@@ -4,7 +4,7 @@ package com.hedera.services.records;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import com.hedera.services.context.properties.PropertySource;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hedera.services.utils.SleepingPause.SLEEPING_PAUSE;
 import static com.hedera.test.utils.IdUtils.asAccount;
@@ -34,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 
-@RunWith(JUnitPlatform.class)
 class RecordCacheFactoryTest {
 	private TransactionID txnIdA = TransactionID.newBuilder()
 			.setAccountID(asAccount("0.0.2"))
@@ -42,7 +39,6 @@ class RecordCacheFactoryTest {
 	private TransactionID txnIdB = TransactionID.newBuilder()
 			.setAccountID(asAccount("2.2.0"))
 			.build();
-	private TransactionRecord record = TransactionRecord.getDefaultInstance();
 
 	private PropertySource properties;
 	private RecordCacheFactory subject;

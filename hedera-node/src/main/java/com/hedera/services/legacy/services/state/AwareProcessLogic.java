@@ -4,14 +4,14 @@ package com.hedera.services.legacy.services.state;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,21 +21,15 @@ package com.hedera.services.legacy.services.state;
  */
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.TextFormat;
 import com.hedera.services.context.ServicesContext;
-import com.hedera.services.legacy.config.PropertiesLoader;
-import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.hedera.services.legacy.crypto.SignatureStatus;
-import com.hedera.services.legacy.utils.TransactionValidationUtils;
+import com.hedera.services.sigs.sourcing.ScopedSigBytesProvider;
 import com.hedera.services.state.logic.ServicesTxnManager;
+import com.hedera.services.stream.RecordStreamObject;
 import com.hedera.services.txns.ProcessLogic;
-import com.hedera.services.txns.diligence.DuplicateClassification;
 import com.hedera.services.utils.PlatformTxnAccessor;
-import com.hederahashgraph.api.proto.java.FileID;
+import com.hedera.services.utils.TxnAccessor;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.TransactionBody;
-import com.hederahashgraph.api.proto.java.TransactionReceipt;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import com.hederahashgraph.fee.FeeObject;
 import com.swirlds.common.Transaction;
@@ -43,78 +37,73 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.EnumSet;
 
-import static com.hedera.services.context.domain.trackers.IssEventStatus.ONGOING_ISS;
-import static com.hedera.services.keys.HederaKeyActivation.otherPartySigsAreActive;
+import static com.hedera.services.keys.HederaKeyActivation.ONLY_IF_SIG_IS_VALID;
 import static com.hedera.services.keys.HederaKeyActivation.payerSigIsActive;
-import static com.hedera.services.keys.RevocationServiceCharacteristics.forTopLevelFile;
 import static com.hedera.services.legacy.crypto.SignatureStatusCode.SUCCESS_VERIFY_ASYNC;
 import static com.hedera.services.sigs.HederaToPlatformSigOps.rationalizeIn;
 import static com.hedera.services.sigs.Rationalization.IN_HANDLE_SUMMARY_FACTORY;
-import static com.hedera.services.sigs.sourcing.DefaultSigBytesProvider.DEFAULT_SIG_BYTES;
 import static com.hedera.services.txns.diligence.DuplicateClassification.BELIEVED_UNIQUE;
 import static com.hedera.services.txns.diligence.DuplicateClassification.DUPLICATE;
-import static com.hedera.services.txns.diligence.DuplicateClassification.NODE_DUPLICATE;
-import static com.hedera.services.utils.EntityIdUtils.readableId;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CONTRACT_FILE_EMPTY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CONTRACT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_NODE_ACCOUNT;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_PAYER_SIGNATURE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SCHEDULE_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE_COUNT_MISMATCHING_KEY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_DURATION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.KEY_PREFIX_MISMATCH;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MODIFYING_IMMUTABLE_CONTRACT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
-import static java.time.ZoneOffset.UTC;
-import static java.time.temporal.ChronoUnit.SECONDS;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SCHEDULED_TRANSACTION_NOT_IN_WHITELIST;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNRESOLVABLE_REQUIRED_SIGNERS;
 
 public class AwareProcessLogic implements ProcessLogic {
-
-	private static final int MEMO_SIZE_LIMIT = 100;
-
-	static Logger log = LogManager.getLogger(AwareProcessLogic.class);
+	private static final Logger log = LogManager.getLogger(AwareProcessLogic.class);
 
 	private static final EnumSet<ResponseCodeEnum> SIG_RATIONALIZATION_ERRORS = EnumSet.of(
 			INVALID_FILE_ID,
 			INVALID_TOKEN_ID,
 			INVALID_ACCOUNT_ID,
+			INVALID_SCHEDULE_ID,
 			INVALID_SIGNATURE,
 			KEY_PREFIX_MISMATCH,
 			INVALID_SIGNATURE_COUNT_MISMATCHING_KEY,
 			MODIFYING_IMMUTABLE_CONTRACT,
-			INVALID_CONTRACT_ID);
-	private final ServicesTxnManager txnManager = new ServicesTxnManager(
-			this::processTxnInCtx,
-			this::addRecordToStream,
-			this::warnOf);
+			INVALID_CONTRACT_ID,
+			UNRESOLVABLE_REQUIRED_SIGNERS,
+			SCHEDULED_TRANSACTION_NOT_IN_WHITELIST);
+
 	private final ServicesContext ctx;
+
+	private final ServicesTxnManager txnManager = new ServicesTxnManager(
+			this::processTxnInCtx, this::addRecordToStream, this::processTriggeredTxnInCtx, this::warnOf);
 
 	public AwareProcessLogic(ServicesContext ctx) {
 		this.ctx = ctx;
-	}
-
-	public static boolean inSameUtcDay(Instant now, Instant then) {
-		return LocalDateTime.ofInstant(now, UTC).getDayOfYear() == LocalDateTime.ofInstant(then, UTC).getDayOfYear();
 	}
 
 	@Override
 	public void incorporateConsensusTxn(Transaction platformTxn, Instant consensusTime, long submittingMember) {
 		try {
 			PlatformTxnAccessor accessor = new PlatformTxnAccessor(platformTxn);
-			if (!txnSanityChecks(accessor, consensusTime, submittingMember)) {
+			Instant timestamp = consensusTime;
+			if (accessor.canTriggerTxn()) {
+				timestamp = timestamp.minusNanos(1);
+			}
+
+			if (!txnSanityChecks(accessor, timestamp, submittingMember)) {
 				return;
 			}
-			txnManager.process(accessor, consensusTime, submittingMember, ctx);
+			txnManager.process(accessor, timestamp, submittingMember, ctx);
+
+			if (ctx.txnCtx().triggeredTxn() != null) {
+				TxnAccessor scopedAccessor = ctx.txnCtx().triggeredTxn();
+				txnManager.process(scopedAccessor, consensusTime, submittingMember, ctx);
+			}
 		} catch (InvalidProtocolBufferException e) {
 			log.warn("Consensus platform txn was not gRPC!", e);
 		}
@@ -123,13 +112,9 @@ public class AwareProcessLogic implements ProcessLogic {
 	private boolean txnSanityChecks(PlatformTxnAccessor accessor, Instant consensusTime, long submittingMember) {
 		var lastHandled = ctx.consensusTimeOfLastHandledTxn();
 		if (lastHandled != null && !consensusTime.isAfter(lastHandled)) {
-			var msg = String.format("Catastrophic invariant failure! " +
-					"Non-increasing consensus time %d.%d versus last-handled %d.%d for: %s",
-					consensusTime.getEpochSecond(),
-					consensusTime.getNano(),
-					lastHandled.getEpochSecond(),
-					lastHandled.getNano(),
-					accessor.getSignedTxn4Log());
+			var msg = String.format(
+					"Catastrophic invariant failure! Non-increasing consensus time %s versus last-handled %s: %s",
+					consensusTime, lastHandled, accessor.getSignedTxn4Log());
 			log.error(msg);
 			return false;
 		}
@@ -147,43 +132,54 @@ public class AwareProcessLogic implements ProcessLogic {
 		doProcess(ctx.txnCtx().accessor(), ctx.txnCtx().consensusTime());
 	}
 
+	private void processTriggeredTxnInCtx() {
+		doTriggeredProcess(ctx.txnCtx().accessor(), ctx.txnCtx().consensusTime());
+	}
+
 	private void warnOf(Exception e, String context) {
 		String tpl = "Possibly CATASTROPHIC failure in {} :: {} ==>> {} ==>>";
 		try {
-			log.warn(
+			log.error(
 					tpl,
 					context,
 					ctx.txnCtx().accessor().getSignedTxn4Log(),
 					ctx.ledger().currentChangeSet(),
 					e);
 		} catch (Exception unexpected) {
-			log.warn("Failure in {} ::", context, e);
-			log.warn("Full details could not be logged!", unexpected);
+			log.error("Failure in {} ::", context, e);
+			log.error("Full details could not be logged!", unexpected);
 		}
 	}
 
 	private void addRecordToStream() {
 		var finalRecord = ctx.recordsHistorian().lastCreatedRecord().get();
-		addForStreaming(ctx.txnCtx().accessor().getSignedTxn(), finalRecord, ctx.txnCtx().consensusTime());
+		addForStreaming(ctx.txnCtx().accessor().getBackwardCompatibleSignedTxn(), finalRecord,
+				ctx.txnCtx().consensusTime());
 	}
 
-	private void doProcess(PlatformTxnAccessor accessor, Instant consensusTime) {
-		/* Side-effects of advancing data-driven clock to consensus time. */
-		updateMidnightRatesIfAppropriateAt(consensusTime);
-		ctx.updateConsensusTimeOfLastHandledTxn(consensusTime);
-		ctx.recordsHistorian().purgeExpiredRecords();
+	private void doTriggeredProcess(TxnAccessor accessor, Instant consensusTime) {
+		ctx.networkCtxManager().advanceConsensusClockTo(consensusTime);
+		ctx.networkCtxManager().prepareForIncorporating(accessor.getFunction());
 
-		if (ctx.issEventInfo().status() == ONGOING_ISS) {
-			var resetPeriod = ctx.properties().getIntProperty("iss.reset.periodSecs");
-			var resetTime = ctx.issEventInfo().consensusTimeOfRecentAlert().get().plus(resetPeriod, SECONDS);
-			if (consensusTime.isAfter(resetTime)) {
-				ctx.issEventInfo().relax();
-			}
+		FeeObject fee = ctx.fees().computeFee(accessor, ctx.txnCtx().activePayerKey(), ctx.currentView());
+		var chargingOutcome = ctx.txnChargingPolicy().applyForTriggered(ctx.charging(), fee);
+		if (chargingOutcome != OK) {
+			ctx.txnCtx().setStatus(chargingOutcome);
+			return;
 		}
 
-		final SignatureStatus sigStatus = rationalizeWithPreConsensusSigs(accessor);
+		process(accessor);
+	}
+
+	private void doProcess(TxnAccessor accessor, Instant consensusTime) {
+		ctx.networkCtxManager().advanceConsensusClockTo(consensusTime);
+		ctx.recordsHistorian().purgeExpiredRecords();
+		ctx.expiries().purgeExpiredEntitiesAt(consensusTime.getEpochSecond());
+
+		var sigStatus = rationalizeWithPreConsensusSigs(accessor);
 		if (hasActivePayerSig(accessor)) {
 			ctx.txnCtx().payerSigIsKnownActive();
+			ctx.networkCtxManager().prepareForIncorporating(accessor.getFunction());
 		}
 
 		FeeObject fee = ctx.fees().computeFee(accessor, ctx.txnCtx().activePayerKey(), ctx.currentView());
@@ -192,11 +188,11 @@ public class AwareProcessLogic implements ProcessLogic {
 		var duplicity = (recentHistory == null)
 				? BELIEVED_UNIQUE
 				: recentHistory.currentDuplicityFor(ctx.txnCtx().submittingSwirldsMember());
-		if (nodeIgnoredDueDiligence(duplicity)) {
+
+		if (ctx.nodeDiligenceScreen().nodeIgnoredDueDiligence(duplicity)) {
 			ctx.txnChargingPolicy().applyForIgnoredDueDiligence(ctx.charging(), fee);
 			return;
 		}
-
 		if (duplicity == DUPLICATE) {
 			ctx.txnChargingPolicy().applyForDuplicate(ctx.charging(), fee);
 			ctx.txnCtx().setStatus(DUPLICATE_TRANSACTION);
@@ -208,48 +204,42 @@ public class AwareProcessLogic implements ProcessLogic {
 			ctx.txnCtx().setStatus(chargingOutcome);
 			return;
 		}
-
 		if (SIG_RATIONALIZATION_ERRORS.contains(sigStatus.getResponseCode())) {
 			ctx.txnCtx().setStatus(sigStatus.getResponseCode());
 			return;
 		}
-
-		if (!hasActiveNonPayerEntitySigs(accessor)) {
+		if (!ctx.activationHelper().areOtherPartiesActive(ONLY_IF_SIG_IS_VALID)) {
 			ctx.txnCtx().setStatus(INVALID_SIGNATURE);
 			return;
 		}
 
+		process(accessor);
+	}
+
+	private void process(TxnAccessor accessor) {
 		var sysAuthStatus = ctx.systemOpPolicies().check(accessor).asStatus();
 		if (sysAuthStatus != OK) {
 			ctx.txnCtx().setStatus(sysAuthStatus);
 			return;
 		}
-
 		var transitionLogic = ctx.transitionLogic().lookupFor(accessor.getFunction(), accessor.getTxn());
-		ResponseCodeEnum opValidity = transitionLogic.isPresent()
-				? transitionLogic.get().syntaxCheck().apply(accessor.getTxn())
-				: TransactionValidationUtils.validateTxSpecificBody(accessor.getTxn(), ctx.validator());
-
+		if (transitionLogic.isEmpty()) {
+			log.warn("Transaction w/o applicable transition logic at consensus :: {}", accessor::getSignedTxn4Log);
+			ctx.txnCtx().setStatus(FAIL_INVALID);
+			return;
+		}
+		var logic = transitionLogic.get();
+		var opValidity = logic.syntaxCheck().apply(accessor.getTxn());
 		if (opValidity != OK) {
 			ctx.txnCtx().setStatus(opValidity);
 			return;
 		}
+		logic.doStateTransition();
 
-		if (transitionLogic.isPresent()) {
-			transitionLogic.get().doStateTransition();
-		} else {
-			TransactionRecord record = processTransaction(accessor.getTxn(), consensusTime);
-			if (record != null && record.isInitialized()) {
-				mapLegacyRecordToTxnCtx(record);
-			} else {
-				log.warn("Legacy process returned null record for {}!", accessor.getTxn());
-			}
-		}
-
-		ctx.opCounters().countHandled(accessor.getFunction());
+		ctx.networkCtxManager().finishIncorporating(accessor.getFunction());
 	}
 
-	private boolean hasActivePayerSig(PlatformTxnAccessor accessor) {
+	private boolean hasActivePayerSig(TxnAccessor accessor) {
 		try {
 			return payerSigIsActive(accessor, ctx.backedKeyOrder(), IN_HANDLE_SUMMARY_FACTORY);
 		} catch (Exception edgeCase) {
@@ -258,73 +248,14 @@ public class AwareProcessLogic implements ProcessLogic {
 		return false;
 	}
 
-	private boolean hasActiveNonPayerEntitySigs(PlatformTxnAccessor accessor) {
-		if (isMeaningfulFileDelete(accessor.getTxn())) {
-			var id = accessor.getTxn().getFileDelete().getFileID();
-			JKey wacl = ctx.hfs().getattr(id).getWacl();
-			return otherPartySigsAreActive(
-					accessor,
-					ctx.backedKeyOrder(),
-					IN_HANDLE_SUMMARY_FACTORY,
-					forTopLevelFile((JKeyList)wacl));
-		} else {
-			return otherPartySigsAreActive(accessor, ctx.backedKeyOrder(), IN_HANDLE_SUMMARY_FACTORY);
-		}
-	}
-
-	private boolean isMeaningfulFileDelete(TransactionBody txn) {
-		if (!txn.hasFileDelete() || !txn.getFileDelete().hasFileID()) {
-			return false;
-		} else {
-			return ctx.hfs().exists(txn.getFileDelete().getFileID());
-		}
-	}
-
-	private boolean nodeIgnoredDueDiligence(DuplicateClassification duplicity) {
-		Instant consensusTime = ctx.txnCtx().consensusTime();
-		PlatformTxnAccessor accessor = ctx.txnCtx().accessor();
-
-		var swirldsMemberAccount = ctx.txnCtx().submittingNodeAccount();
-		var designatedNodeAccount = accessor.getTxn().getNodeAccountID();
-		boolean designatedNodeExists = ctx.backingAccounts().contains(designatedNodeAccount);
-		if (!designatedNodeExists || !swirldsMemberAccount.equals(designatedNodeAccount)) {
-			log.warn("Node {} (Member #{}) submitted a txn designated for {} node {} :: {}",
-					readableId(swirldsMemberAccount),
-					ctx.txnCtx().submittingSwirldsMember(),
-					designatedNodeExists ? "other" : "nonexistent",
-					readableId(designatedNodeAccount),
-					accessor.getSignedTxn4Log());
-			ctx.txnCtx().setStatus(INVALID_NODE_ACCOUNT);
-			return true;
-		}
-
-		if (!ctx.txnCtx().isPayerSigKnownActive()) {
-			ctx.txnCtx().setStatus(INVALID_PAYER_SIGNATURE);
-			return true;
-		}
-
-		if (duplicity == NODE_DUPLICATE) {
-			ctx.txnCtx().setStatus(DUPLICATE_TRANSACTION);
-			return true;
-		}
-
-		long txnDuration = accessor.getTxn().getTransactionValidDuration().getSeconds();
-		if (!ctx.validator().isValidTxnDuration(txnDuration)) {
-			ctx.txnCtx().setStatus(INVALID_TRANSACTION_DURATION);
-			return true;
-		}
-
-		var cronStatus = ctx.validator().chronologyStatus(accessor, consensusTime);
-		if (cronStatus != OK) {
-			ctx.txnCtx().setStatus(cronStatus);
-			return true;
-		}
-
-		return false;
-	}
-
-	private SignatureStatus rationalizeWithPreConsensusSigs(PlatformTxnAccessor accessor) {
-		var sigStatus = rationalizeIn(accessor, ctx.syncVerifier(), ctx.backedKeyOrder(), DEFAULT_SIG_BYTES);
+	private SignatureStatus rationalizeWithPreConsensusSigs(TxnAccessor accessor) {
+		var sigProvider = new ScopedSigBytesProvider(accessor);
+		var sigStatus = rationalizeIn(
+				accessor,
+				ctx.syncVerifier(),
+				ctx.backedKeyOrder(),
+				sigProvider,
+				ctx.sigFactoryCreator()::createScopedFactory);
 		if (!sigStatus.isError()) {
 			if (sigStatus.getStatusCode() == SUCCESS_VERIFY_ASYNC) {
 				ctx.speedometers().cycleAsyncVerifications();
@@ -335,106 +266,13 @@ public class AwareProcessLogic implements ProcessLogic {
 		return sigStatus;
 	}
 
-	private void updateMidnightRatesIfAppropriateAt(Instant dataDrivenNow) {
-		if (shouldUpdateMidnightRatesAt(dataDrivenNow)) {
-			ctx.midnightRates().replaceWith(ctx.exchange().activeRates());
-		}
-	}
-	private boolean shouldUpdateMidnightRatesAt(Instant dataDrivenNow) {
-		return ctx.consensusTimeOfLastHandledTxn() != null &&
-				!inSameUtcDay(ctx.consensusTimeOfLastHandledTxn(), dataDrivenNow);
-	}
-
-	private void mapLegacyRecordToTxnCtx(TransactionRecord legacyRecord) {
-		ctx.txnCtx().setStatus(legacyRecord.getReceipt().getStatus());
-
-		if (legacyRecord.hasContractCallResult()) {
-			ctx.txnCtx().setCallResult(legacyRecord.getContractCallResult());
-		} else if (legacyRecord.hasContractCreateResult()) {
-			ctx.txnCtx().setCreateResult(legacyRecord.getContractCreateResult());
-			if (ctx.txnCtx().status() == SUCCESS) {
-				ctx.txnCtx().setCreated(legacyRecord.getReceipt().getContractID());
-			}
-		}
-	}
-
-	private void addForStreaming(
+	void addForStreaming(
 			com.hederahashgraph.api.proto.java.Transaction grpcTransaction,
 			TransactionRecord transactionRecord,
 			Instant consensusTimeStamp
 	) {
-		if (PropertiesLoader.isEnableRecordStreaming()) {
-			ctx.recordStream().addRecord(grpcTransaction, transactionRecord, consensusTimeStamp);
-		}
-	}
-
-	private TransactionRecord processTransaction(TransactionBody txn, Instant consensusTime) {
-		TransactionRecord record = null;
-		if (txn.hasContractCreateInstance()) {
-			FileID fid = txn.getContractCreateInstance().getFileID();
-			try {
-				if (!ctx.hfs().exists(fid)) {
-					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, INVALID_FILE_ID);
-				} else if(isMemoTooLong(txn.getContractCreateInstance().getMemo())) {
-					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, MEMO_TOO_LONG);
-				} else {
-					byte[] contractByteCode = ctx.hfs().cat(fid);
-					if (contractByteCode.length > 0) {
-						record = ctx.contracts().createContract(txn, consensusTime, contractByteCode, ctx.seqNo());
-					} else {
-						record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, CONTRACT_FILE_EMPTY);
-					}
-				}
-			} catch (Exception e) {
-				log.error("Error during create contract", e);
-			}
-
-		} else if (txn.hasContractCall()) {
-			try {
-				record = ctx.contracts().contractCall(txn, consensusTime, ctx.seqNo());
-			} catch (Exception e) {
-				log.error("Error during create contract", e);
-			}
-		} else if (txn.hasContractUpdateInstance()) {
-			try {
-				if (isMemoTooLong(txn.getContractUpdateInstance().getMemo())) {
-					record = ctx.contracts().getFailureTransactionRecord(txn, consensusTime, MEMO_TOO_LONG);
-				} else {
-					record = ctx.contracts().updateContract(txn, consensusTime);
-				}
-			} catch (Exception e) {
-				log.error("Error during update contract", e);
-			}
-		} else if (txn.hasContractDeleteInstance()) {
-			try {
-				record = ctx.contracts().deleteContract(txn, consensusTime);
-			} catch (Exception e) {
-				log.error("Error during delete contract", e);
-			}
-		} else if (txn.hasSystemDelete() && txn.getSystemDelete().hasContractID()) {
-				record = ctx.contracts().systemDelete(txn, consensusTime);
-		} else if (txn.hasSystemUndelete() && txn.getSystemUndelete().hasContractID()) {
-				record = ctx.contracts().systemUndelete(txn, consensusTime);
-		} else if (txn.hasFreeze()) {
-			record = ctx.freeze().freeze(txn, consensusTime);
-		} else {
-			log.error("API is not implemented");
-			record = TransactionRecord.getDefaultInstance();
-		}
-		if (record.hasReceipt()) {
-			if (!record.getReceipt().hasExchangeRate()) {
-				if(log.isDebugEnabled()) {
-					log.debug("Receipt {} missing rates info!", TextFormat.shortDebugString(record));
-				}
-				TransactionReceipt.Builder receiptBuilder = record.getReceipt().toBuilder();
-				receiptBuilder.setExchangeRate(ctx.exchange().activeRates());
-				record = record.toBuilder().setReceipt(receiptBuilder).build();
-			}
-		}
-		return record;
-	}
-
-	private boolean isMemoTooLong(String memo) {
-		return memo.length() > MEMO_SIZE_LIMIT;
+		var recordStreamObject = new RecordStreamObject(transactionRecord, grpcTransaction, consensusTimeStamp);
+		ctx.updateRecordRunningHash(recordStreamObject.getRunningHash());
+		ctx.recordStreamManager().addRecordStreamObject(recordStreamObject);
 	}
 }

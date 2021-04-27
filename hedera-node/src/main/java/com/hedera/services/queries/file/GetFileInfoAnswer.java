@@ -4,7 +4,7 @@ package com.hedera.services.queries.file;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class GetFileInfoAnswer implements AnswerService {
 
 		ResponseType type = op.getHeader().getResponseType();
 		if (validity != OK) {
-			log.info("FileGetInfo not successful for: validity {}, query {} ", validity.toString(), query.getFileGetInfo().toString());
+			log.debug("FileGetInfo not successful for: validity {}, query {} ", validity, query.getFileGetInfo());
 			response.setHeader(header(validity, type, cost));
 		} else {
 			if (type == COST_ANSWER) {

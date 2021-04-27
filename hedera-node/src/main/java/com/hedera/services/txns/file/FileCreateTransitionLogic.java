@@ -4,14 +4,14 @@ package com.hedera.services.txns.file;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.FileCreateTransactionBody;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
+import com.hedera.services.files.HFileMeta;
 import com.hedera.services.legacy.core.jproto.JKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,13 +39,14 @@ import java.util.function.Predicate;
 
 import static com.hedera.services.txns.file.FileUpdateTransitionLogic.mapToStatus;
 import static com.hedera.services.txns.file.FileUpdateTransitionLogic.wrapped;
+import static com.hedera.services.utils.MiscUtils.asFcKeyUnchecked;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_DURATION_NOT_IN_RANGE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_EXPIRATION_TIME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_WACL;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
-import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
 
 public class FileCreateTransitionLogic implements TransitionLogic {
 	private static final Logger log = LogManager.getLogger(FileCreateTransitionLogic.class);
@@ -109,24 +110,19 @@ public class FileCreateTransitionLogic implements TransitionLogic {
 		return OK;
 	}
 
-	private JFileInfo asAttr(FileCreateTransactionBody op) {
-		JKey wacl;
-		if (op.hasKeys()) {
-			try {
-				wacl = mapKey(wrapped(op.getKeys()));
-			} catch (Exception syntaxViolation) {
-				log.warn("Syntax violation in file creation!", syntaxViolation);
-				throw new IllegalArgumentException(syntaxViolation);
-			}
-		} else {
-			wacl = StateView.EMPTY_WACL;
-		}
+	private HFileMeta asAttr(FileCreateTransactionBody op) {
+		JKey wacl = op.hasKeys() ? asFcKeyUnchecked(wrapped(op.getKeys())) : StateView.EMPTY_WACL;
 
-		return new JFileInfo(false, wacl, op.getExpirationTime().getSeconds());
+		return new HFileMeta(false, wacl, op.getExpirationTime().getSeconds(), op.getMemo());
 	}
 
 	private ResponseCodeEnum validate(TransactionBody fileCreateTxn) {
 		var op = fileCreateTxn.getFileCreate();
+
+		var memoValidity = validator.memoCheck(op.getMemo());
+		if (memoValidity != OK) {
+			return memoValidity;
+		}
 
 		if (!op.hasExpirationTime()) {
 			return INVALID_EXPIRATION_TIME;

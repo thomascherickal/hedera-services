@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.io.DataInputStream;
@@ -43,7 +41,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.inOrder;
 import static org.mockito.BDDMockito.mock;
 
-@RunWith(JUnitPlatform.class)
 class ExchangeRatesTest {
 	private int expCurrentHbarEquiv = 25;
 	private int expCurrentCentEquiv = 1;
@@ -84,24 +81,6 @@ class ExchangeRatesTest {
 
 		// expect:
 		assertFalse(subject.isInitialized());
-	}
-
-	@Test
-	public void legacyProviderWorks() throws IOException {
-		given(din.readBoolean()).willReturn(true);
-		given(din.readLong())
-				.willReturn(-1L).willReturn(-2L)
-				.willReturn(-1L).willReturn(-2L).willReturn(expCurrentExpiry)
-				.willReturn(-1L).willReturn(-2L).willReturn(expNextExpiry);
-		given(din.readInt())
-				.willReturn(expCurrentHbarEquiv).willReturn(expCurrentCentEquiv)
-				.willReturn(expNextHbarEquiv).willReturn(expNextCentEquiv);
-
-		// when:
-		var subjectRead = ExchangeRates.LEGACY_PROVIDER.deserialize(din);
-
-		// then:
-		assertEquals(subject, subjectRead);
 	}
 
 	@Test

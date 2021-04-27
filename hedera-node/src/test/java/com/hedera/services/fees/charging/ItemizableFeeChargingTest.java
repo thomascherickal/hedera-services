@@ -4,7 +4,7 @@ package com.hedera.services.fees.charging;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,9 @@ import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransferList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Set;
 
 import static com.hedera.services.fees.charging.ItemizableFeeCharging.NETWORK_NODE_SERVICE_FEES;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,7 +45,6 @@ import static org.mockito.BDDMockito.*;
 import com.hedera.services.fees.TxnFeeType;
 import static com.hedera.services.fees.TxnFeeType.*;
 
-@RunWith(JUnitPlatform.class)
 class ItemizableFeeChargingTest {
 	long network = 500L, service = 200L, node = 100L;
 
@@ -74,7 +70,7 @@ class ItemizableFeeChargingTest {
 		exemptions = mock(FeeExemptions.class);
 		properties = mock(GlobalDynamicProperties.class);
 
-		given(txn.getNodeAccountID()).willReturn(givenNode);
+		given(txn.getNodeAccountID()).willThrow(IllegalStateException.class);
 		given(accessor.getTxn()).willReturn(txn);
 		given(accessor.getPayer()).willReturn(payer);
 		given(properties.fundingAccount()).willReturn(funding);
@@ -125,7 +121,7 @@ class ItemizableFeeChargingTest {
 	@Test
 	public void doesntRecordSelfPayments() {
 		givenKnownFeeAmounts();
-		given(accessor.getPayer()).willReturn(givenNode);
+		given(accessor.getPayer()).willReturn(submittingNode);
 
 		// when:
 		subject.chargePayer(EnumSet.of(NODE));
@@ -216,7 +212,7 @@ class ItemizableFeeChargingTest {
 	public void itemizesWhenNodeIsPayer() {
 		givenKnownFeeAmounts();
 		given(ledger.getBalance(any())).willReturn(Long.MAX_VALUE);
-		given(accessor.getPayer()).willReturn(givenNode);
+		given(accessor.getPayer()).willReturn(submittingNode);
 
 		// when:
 		subject.chargePayer(NETWORK_NODE_SERVICE_FEES);
@@ -228,9 +224,9 @@ class ItemizableFeeChargingTest {
 				itemizedFees.getAccountAmountsList(),
 				contains(
 						aa(funding, network),
-						aa(givenNode, -network),
+						aa(submittingNode, -network),
 						aa(funding, service),
-						aa(givenNode, -service)));
+						aa(submittingNode, -service)));
 	}
 
 	@Test
@@ -249,7 +245,7 @@ class ItemizableFeeChargingTest {
 				contains(
 						aa(funding, network),
 						aa(payer, -network),
-						aa(givenNode, node),
+						aa(submittingNode, node),
 						aa(payer, -node),
 						aa(funding, service),
 						aa(payer, -service)));
@@ -269,7 +265,7 @@ class ItemizableFeeChargingTest {
 		// then:
 		verify(ledger).doTransfer(participant, funding, network);
 		verify(ledger).doTransfer(participant, funding, service);
-		verify(ledger).doTransfer(participant, givenNode, node);
+		verify(ledger).doTransfer(participant, submittingNode, node);
 		// and:
 		assertTrue(subject.submittingNodeFeesCharged.isEmpty());
 		assertTrue(subject.payerFeesCharged.isEmpty());
@@ -285,7 +281,7 @@ class ItemizableFeeChargingTest {
 		// then:
 		verify(ledger).doTransfer(payer, funding, network);
 		verify(ledger).doTransfer(payer, funding, service);
-		verify(ledger).doTransfer(payer, givenNode, node);
+		verify(ledger).doTransfer(payer, submittingNode, node);
 		// and:
 		assertEquals(network, subject.payerFeesCharged.get(NETWORK).longValue());
 		assertEquals(service, subject.payerFeesCharged.get(SERVICE).longValue());
@@ -304,7 +300,7 @@ class ItemizableFeeChargingTest {
 
 		// then:
 		verify(ledger).doTransfer(payer, funding, network);
-		verify(ledger).doTransfer(payer, givenNode, node / 2);
+		verify(ledger).doTransfer(payer, submittingNode, node / 2);
 		// and:
 		assertEquals(network, subject.payerFeesCharged.get(NETWORK).longValue());
 		assertEquals(node / 2, subject.payerFeesCharged.get(NODE).longValue());

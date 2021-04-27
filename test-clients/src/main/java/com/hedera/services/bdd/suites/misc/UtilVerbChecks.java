@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.misc;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,11 @@ import java.util.concurrent.TimeUnit;
 import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountInfo;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
+import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.ensureDissociated;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.makeFree;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withLiveNode;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoGetInfo;
@@ -49,6 +54,7 @@ public class UtilVerbChecks extends HapiApiSuite {
 		return List.of(new HapiApiSpec[] {
 //						testLivenessTimeout(),
 						testMakingFree(),
+//						testDissociation(),
 				}
 		);
 	}
@@ -71,6 +77,25 @@ public class UtilVerbChecks extends HapiApiSuite {
 				);
 	}
 
+	private HapiApiSpec testDissociation() {
+		return defaultHapiSpec("TestDissociation")
+				.given(
+						cryptoCreate("t"),
+						tokenCreate("a").treasury("t"),
+						tokenCreate("b").treasury("t"),
+						cryptoCreate("somebody"),
+						tokenAssociate("somebody", "a", "b"),
+						cryptoTransfer(moving(1, "a").between("t", "somebody")),
+						cryptoTransfer(moving(2, "b").between("t", "somebody"))
+				).when(
+						ensureDissociated("somebody", List.of("a", "b"))
+				).then(
+						getAccountInfo("somebody")
+								.hasNoTokenRelationship("a")
+								.hasNoTokenRelationship("b")
+				);
+	}
+
 	private HapiApiSpec testLivenessTimeout() {
 		return defaultHapiSpec("TestLivenessTimeout")
 				.given().when().then(
@@ -80,6 +105,7 @@ public class UtilVerbChecks extends HapiApiSuite {
 								.sleepingBetweenRetriesFor(10)
 				);
 	}
+
 
 	@Override
 	protected Logger getResultsLogger() {

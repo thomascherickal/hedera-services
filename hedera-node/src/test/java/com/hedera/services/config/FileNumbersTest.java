@@ -4,7 +4,7 @@ package com.hedera.services.config;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,12 @@ import com.hedera.services.context.properties.PropertySource;
 import com.hedera.test.utils.IdUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class FileNumbersTest {
 	PropertySource properties;
 	HederaNumbers hederaNumbers;
@@ -54,6 +51,7 @@ class FileNumbersTest {
 		given(properties.getLongProperty("files.feeSchedules")).willReturn(111L);
 		given(properties.getLongProperty("files.exchangeRates")).willReturn(112L);
 		given(properties.getLongProperty("files.softwareUpdateZip")).willReturn(150L);
+		given(properties.getLongProperty("files.throttleDefinitions")).willReturn(123L);
 
 		given(properties.getLongProperty("hedera.numReservedSystemEntities")).willReturn(1_000L);
 
@@ -70,6 +68,7 @@ class FileNumbersTest {
 		assertEquals(121, subject.applicationProperties());
 		assertEquals(122, subject.apiPermissions());
 		assertEquals(150, subject.softwareUpdateZip());
+		assertEquals(123, subject.throttleDefinitions());
 	}
 
 	@Test

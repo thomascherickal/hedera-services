@@ -4,14 +4,14 @@ package com.hedera.services.bdd.spec.utilops;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,6 +54,7 @@ public class ProviderRun extends UtilOp {
 	private static final int DEFAULT_BACKLOG_SLEEPOFF_SECS = 1;
 	private static final long DEFAULT_DURATION = 30;
 	private static final TimeUnit DEFAULT_UNIT = TimeUnit.SECONDS;
+	private static final int DEFAULT_TOTAL_OPS_TO_SUBMIT = -1;
 
 	private final Function<HapiApiSpec, OpProvider> providerFn;
 	private IntSupplier maxOpsPerSecSupplier = () -> DEFAULT_MAX_OPS_PER_SEC;
@@ -61,6 +62,8 @@ public class ProviderRun extends UtilOp {
 	private IntSupplier backoffSleepSecsSupplier = () -> DEFAULT_BACKLOG_SLEEPOFF_SECS;
 	private LongSupplier durationSupplier = () -> DEFAULT_DURATION;
 	private Supplier<TimeUnit> unitSupplier = () -> DEFAULT_UNIT;
+	private IntSupplier totalOpsToSubmit = () -> DEFAULT_TOTAL_OPS_TO_SUBMIT;
+
 	private Map<HederaFunctionality, AtomicInteger> counts = new HashMap<>();
 
 	public ProviderRun(Function<HapiApiSpec, OpProvider> providerFn) {
@@ -71,6 +74,11 @@ public class ProviderRun extends UtilOp {
 	public ProviderRun lasting(LongSupplier durationSupplier, Supplier<TimeUnit> unitSupplier) {
 		this.unitSupplier = unitSupplier;
 		this.durationSupplier = durationSupplier;
+		return this;
+	}
+
+	public ProviderRun totalOpsToSumbit(IntSupplier totalOpsSupplier) {
+		this.totalOpsToSubmit = totalOpsSupplier;
 		return this;
 	}
 
@@ -104,6 +112,8 @@ public class ProviderRun extends UtilOp {
 		TimeUnit unit = unitSupplier.get();
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
+		final var remainingOpsToSubmit = new AtomicInteger(totalOpsToSubmit.getAsInt());
+		final boolean fixedOpSubmission = (remainingOpsToSubmit.get() < 0) ? false : true;
 		int submittedSoFar = 0;
 		long durationMs = unit.toMillis(duration);
 		long logIncrementMs = durationMs / 100;
@@ -124,6 +134,7 @@ public class ProviderRun extends UtilOp {
 				if (delta != lastDeltaLogged) {
 					log.info(delta + " "
 							+ unit.toString().toLowerCase()
+							+ (fixedOpSubmission ? (" or " + remainingOpsToSubmit + " ops ") : "")
 							+ " left in test - "
 							+ submittedSoFar
 							+ " ops submitted so far ("
@@ -136,9 +147,19 @@ public class ProviderRun extends UtilOp {
 				}
 			}
 
+			if (fixedOpSubmission && remainingOpsToSubmit.get() <= 0) {
+				if (numPending > 0) {
+					continue;
+				}
+				log.info("Finished submission of total {} operations", totalOpsToSubmit.getAsInt());
+				break;
+			}
 			if (numPending < MAX_PENDING_OPS) {
 				HapiSpecOperation[] burst = IntStream
-						.range(0, Math.min(MAX_N, MAX_OPS_PER_SEC - opsThisSecond.get()))
+						.range(0, Math.min(MAX_N,
+								fixedOpSubmission ? Math.min(remainingOpsToSubmit.get(),
+										MAX_OPS_PER_SEC - opsThisSecond.get())
+										: MAX_OPS_PER_SEC - opsThisSecond.get()))
 						.mapToObj(ignore -> provider.get())
 						.flatMap(Optional::stream)
 						.peek(op -> counts.get(op.type()).getAndIncrement())
@@ -146,13 +167,17 @@ public class ProviderRun extends UtilOp {
 				if (burst.length > 0) {
 					allRunFor(spec, inParallel(burst));
 					submittedSoFar += burst.length;
+					if (fixedOpSubmission) {
+						remainingOpsToSubmit.getAndAdd(-burst.length);
+					}
 					opsThisSecond.getAndAdd(burst.length);
 				}
 			} else {
 				log.warn("Now " + numPending + " ops pending; backing off for " + BACKOFF_SLEEP_SECS + "s!");
 				try {
 					Thread.sleep(BACKOFF_SLEEP_SECS * 1_000L);
-				} catch (InterruptedException ignore) { }
+				} catch (InterruptedException ignore) {
+				}
 			}
 		}
 
@@ -160,8 +185,8 @@ public class ProviderRun extends UtilOp {
 				.stream()
 				.filter(entry -> entry.getValue().get() > 0)
 				.collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
-		log.info("Final breakdown of *provided* ops: "  + finalCounts);
-		log.info("Final breakdown of *resolved* statuses: "  + spec.finalizedStatusCounts());
+		log.info("Final breakdown of *provided* ops: " + finalCounts);
+		log.info("Final breakdown of *resolved* statuses: " + spec.finalizedStatusCounts());
 
 
 		return false;

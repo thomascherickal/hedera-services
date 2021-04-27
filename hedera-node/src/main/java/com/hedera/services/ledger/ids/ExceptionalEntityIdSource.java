@@ -4,7 +4,7 @@ package com.hedera.services.ledger.ids;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package com.hedera.services.ledger.ids;
 
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 
 public enum ExceptionalEntityIdSource implements EntityIdSource {
@@ -41,6 +42,9 @@ public enum ExceptionalEntityIdSource implements EntityIdSource {
 	public TokenID newTokenId(AccountID sponsor) {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public ScheduleID newScheduleId(AccountID sponsor) { throw  new UnsupportedOperationException(); }
 
 	@Override
 	public void reclaimLastId() {

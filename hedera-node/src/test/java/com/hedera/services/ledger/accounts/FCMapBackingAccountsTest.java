@@ -4,7 +4,7 @@ package com.hedera.services.ledger.accounts;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.hedera.services.state.merkle.MerkleAccount;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.util.Collections;
@@ -40,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 import static com.hedera.test.utils.IdUtils.asAccount;
 
-@RunWith(JUnitPlatform.class)
 class FCMapBackingAccountsTest {
 	private final AccountID a = asAccount("1.2.3");
 	private final AccountID b = asAccount("3.2.1");

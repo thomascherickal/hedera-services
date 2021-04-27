@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.infrastructure.providers.ops.crypto;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RandomAccount implements OpProvider {
 	public static final int DEFAULT_CEILING_NUM = 100;
-	static final long INITIAL_BALANCE = 1_000_000_000L;
+	public static final long INITIAL_BALANCE = 1_000_000_000L;
 	static final long SEND_THRESHOLD = INITIAL_BALANCE / 50;
 
 	private int ceilingNum = DEFAULT_CEILING_NUM;

@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.reconnect;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import static com.hedera.services.bdd.spec.HapiApiSpec.customHapiSpec;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withLiveNode;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
@@ -62,11 +63,13 @@ public class ValidateDuplicateTransactionAfterReconnect extends HapiApiSuite {
 						sleepFor(Duration.ofSeconds(25).toMillis()),
 						getAccountBalance(GENESIS)
 								.setNode("0.0.6")
-								.unavailableNode()
+								.unavailableNode(),
+						fileUpdate(APP_PROPERTIES)
+								.payingWith(GENESIS)
+								.overridingProps(Map.of("ledger.keepRecordsInState", "true"))
 				)
 				.when(
 						cryptoCreate("repeatedTransaction")
-								.payingWith(MASTER)
 								.validDurationSecs(180)
 								.via(transactionId),
 						getAccountBalance(GENESIS)
@@ -84,7 +87,6 @@ public class ValidateDuplicateTransactionAfterReconnect extends HapiApiSuite {
 								.loggingAvailabilityEvery(10)
 								.sleepingBetweenRetriesFor(5),
 						cryptoCreate("repeatedTransaction")
-								.payingWith(MASTER)
 								.txnId(transactionId)
 								.validDurationSecs(180)
 								.hasPrecheck(DUPLICATE_TRANSACTION)

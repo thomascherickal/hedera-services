@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops.streams;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class RecordStreamVerification extends UtilOp {
 
 	@Override
 	protected boolean submitOp(HapiApiSpec spec) throws Throwable {
-		NodeAddressBook addressBook = downloadBook(spec);
+		var addressBook = downloadBook(spec);
 		NodeSignatureVerifier verifier = new NodeSignatureVerifier(addressBook);
 		Set<String> uniqRecordFiles = allRecordFilesFor(verifier.nodes());
 		Map<String, List<File>> sigFilesAvail = uniqRecordFiles

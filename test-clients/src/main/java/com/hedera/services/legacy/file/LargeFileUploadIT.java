@@ -4,7 +4,7 @@ package com.hedera.services.legacy.file;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class LargeFileUploadIT extends FileServiceIT {
 
 //		String filePath = "spring-core-4.2.0.RELEASE-1mb-jar"; 
 //		String filePath = "overview-frame.html"; 
-    String filePath = "octoken.bin";
+    String filePath = "contract/bytecodes/octoken.bin";
     localPath = UPLOAD_PATH + filePath;
 
     uploadFile(genesisAccountID, localPath, tester.getGenesisPrivateKeyList());

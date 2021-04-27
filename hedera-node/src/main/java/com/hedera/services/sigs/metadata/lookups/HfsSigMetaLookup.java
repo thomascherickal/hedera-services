@@ -4,7 +4,7 @@ package com.hedera.services.sigs.metadata.lookups;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import static com.hedera.services.sigs.order.KeyOrderingFailure.MISSING_FILE;
  * @author Michael Tinker
  */
 public class HfsSigMetaLookup implements FileSigMetaLookup {
-	public static Logger log = LogManager.getLogger(HfsSigMetaLookup.class);
+	private static final Logger log = LogManager.getLogger(HfsSigMetaLookup.class);
 
 	private final HederaFs hfs;
 

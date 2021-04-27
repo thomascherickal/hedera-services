@@ -4,7 +4,7 @@ package com.hedera.services.stats;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ public class ServicesStatsConfig {
 	static final String SPEEDOMETER_ANSWERED_DESC_TPL = "number of %s answered per second";
 	static final String SPEEDOMETER_SUBMITTED_DESC_TPL = "number of %s submitted per second";
 
-	public static final String FREEZE_METRIC = "freeze";
 	public static final String SYSTEM_DELETE_METRIC = "systemDelete";
 	public static final String SYSTEM_UNDELETE_METRIC = "systemUndelete";
 }

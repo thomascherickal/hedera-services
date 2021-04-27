@@ -4,7 +4,7 @@ package com.hedera.services.context.domain.security;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import static com.hederahashgraph.api.proto.java.Query.QueryCase.TRANSACTIONGETF
 import com.hederahashgraph.api.proto.java.TransactionBody;
 
 import java.util.EnumMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.hedera.services.utils.MiscUtils.functionalityOfQuery;
 import static com.hedera.services.utils.MiscUtils.functionOf;
@@ -35,6 +37,7 @@ import static com.hederahashgraph.api.proto.java.HederaFunctionality.*;
 
 public class PermissionFileUtils {
 	private static final EnumMap<HederaFunctionality, String> permissionKeys = new EnumMap<>(HederaFunctionality.class);
+	static final Map<String, HederaFunctionality> legacyKeys;
 
 	public static String permissionFileKeyForTxn(TransactionBody txn) {
 		try {
@@ -88,6 +91,9 @@ public class PermissionFileUtils {
 		permissionKeys.put(SystemUndelete, "systemUndelete");
 		permissionKeys.put(Freeze, "freeze");
 		permissionKeys.put(UncheckedSubmit, "uncheckedSubmit");
+		permissionKeys.put(ScheduleCreate, "scheduleCreate");
+		permissionKeys.put(ScheduleDelete, "scheduleDelete");
+		permissionKeys.put(ScheduleSign, "scheduleSign");
 		/* Queries */
 		permissionKeys.put(ConsensusGetTopicInfo, "getTopicInfo");
 		permissionKeys.put(GetBySolidityID, "getBySolidityID");
@@ -105,5 +111,9 @@ public class PermissionFileUtils {
 		permissionKeys.put(TransactionGetRecord, "getTxRecordByTxID");
 		permissionKeys.put(GetVersionInfo, "getVersionInfo");
 		permissionKeys.put(TokenGetInfo, "tokenGetInfo");
+		permissionKeys.put(ScheduleGetInfo, "scheduleGetInfo");
+
+		legacyKeys = permissionKeys.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 	}
 }

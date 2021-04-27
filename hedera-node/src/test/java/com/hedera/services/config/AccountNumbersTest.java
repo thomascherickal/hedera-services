@@ -4,7 +4,7 @@ package com.hedera.services.config;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.hedera.services.context.properties.PropertySource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class AccountNumbersTest {
 	PropertySource properties;
 	AccountNumbers subject;
@@ -46,8 +43,6 @@ class AccountNumbersTest {
 		given(properties.getLongProperty("accounts.systemDeleteAdmin")).willReturn(59L);
 		given(properties.getLongProperty("accounts.systemUndeleteAdmin")).willReturn(60L);
 		given(properties.getLongProperty("accounts.systemAdmin")).willReturn(50L);
-		given(properties.getLongProperty("accounts.systemAdmin.firstManaged")).willReturn(51L);
-		given(properties.getLongProperty("accounts.systemAdmin.lastManaged")).willReturn(80L);
 		given(properties.getLongProperty("accounts.treasury")).willReturn(2L);
 
 		subject = new AccountNumbers(properties);
@@ -64,8 +59,6 @@ class AccountNumbersTest {
 		assertEquals(57, subject.exchangeRatesAdmin());
 		assertEquals(59, subject.systemDeleteAdmin());
 		assertEquals(60, subject.systemUndeleteAdmin());
-		assertEquals(51, subject.firstManagedBySysAdmin());
-		assertEquals(80, subject.lastManagedBySysAdmin());
 	}
 
 	@Test

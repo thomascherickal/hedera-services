@@ -4,7 +4,7 @@ package com.hedera.services.usage.crypto.entities;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,23 +21,19 @@ package com.hedera.services.usage.crypto.entities;
  */
 
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
-
 
 import static com.hederahashgraph.fee.FeeBuilder.BOOL_SIZE;
 import static com.hederahashgraph.fee.FeeBuilder.LONG_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.hedera.services.usage.crypto.entities.CryptoEntitySizes.*;
 
-@RunWith(JUnitPlatform.class)
 class CryptoEntitySizesTest {
 	CryptoEntitySizes subject = CRYPTO_ENTITY_SIZES;
 
 	@Test
 	public void knowsExpectedFixedBytes() {
 		// expect:
-		assertEquals(3 * BOOL_SIZE + 3 * LONG_SIZE, subject.fixedBytesInAccountRepr());
+		assertEquals(3 * BOOL_SIZE + 5 * LONG_SIZE, subject.fixedBytesInAccountRepr());
 	}
 
 	@Test

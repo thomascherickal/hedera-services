@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.infrastructure;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,15 @@ import com.google.protobuf.ByteString;
 import com.hedera.services.bdd.spec.HapiPropertySource;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hedera.services.bdd.spec.HapiSpecSetup;
+import com.hedera.services.bdd.spec.infrastructure.listeners.TokenAccountRegistryRel;
 import com.hedera.services.bdd.spec.infrastructure.meta.ActionableContractCall;
 import com.hedera.services.bdd.spec.infrastructure.meta.ActionableContractCallLocal;
 import com.hedera.services.bdd.spec.infrastructure.meta.SupportedContract;
 import com.hedera.services.bdd.spec.stats.OpObs;
 import com.hedera.services.bdd.spec.stats.ThroughputObs;
 import com.hedera.services.bdd.suites.HapiApiSuite;
+import com.hedera.services.legacy.core.HexUtils;
+import com.hedera.services.legacy.core.KeyPairObj;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
 import com.hederahashgraph.api.proto.java.ConsensusUpdateTopicTransactionBody;
@@ -40,17 +43,23 @@ import com.hederahashgraph.api.proto.java.FileGetInfoResponse;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
+import com.hederahashgraph.api.proto.java.SchedulableTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransactionID;
-import com.hedera.services.legacy.core.HexUtils;
-import com.hedera.services.legacy.core.KeyPairObj;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,9 +69,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static com.hedera.services.bdd.spec.HapiPropertySource.asAccountString;
+import static com.hedera.services.bdd.spec.HapiPropertySource.asScheduleString;
 import static com.hedera.services.bdd.spec.HapiPropertySource.asTokenString;
 import static com.hedera.services.bdd.spec.keys.KeyFactory.firstStartupKp;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 public class HapiSpecRegistry {
 	static final Logger log = LogManager.getLogger(HapiSpecRegistry.class);
@@ -93,6 +105,8 @@ public class HapiSpecRegistry {
 		saveKey(setup.systemDeleteAdminName(), asKeyList(genesisKey));
 		saveAccountId(setup.systemUndeleteAdminName(), setup.systemUndeleteAdmin());
 		saveKey(setup.systemUndeleteAdminName(), asKeyList(genesisKey));
+		saveAccountId(setup.freezeAdminName(), setup.freezeAdminId());
+		saveKey(setup.freezeAdminName(), asKeyList(genesisKey));
 
 		/* (system file 1) :: Address Book */
 		saveFileId(setup.addressBookName(), setup.addressBookId());
@@ -121,6 +135,9 @@ public class HapiSpecRegistry {
 		/* (system 7) :: Update Feature */
 		saveFileId(setup.updateFeatureName(), setup.updateFeatureId());
 		saveKey(setup.updateFeatureName(), asKeyList(genesisKey));
+		/* (system 8) :: Throttle Definitions */
+		saveFileId(setup.throttleDefinitionsName(), setup.throttleDefinitionsId());
+		saveKey(setup.throttleDefinitionsName(), asKeyList(genesisKey));
 		/* Migration :: File */
 		saveFileId(setup.migrationFileName(), setup.migrationFileID());
 		saveKey(setup.migrationFileName(), asKeyList(genesisKey));
@@ -226,7 +243,7 @@ public class HapiSpecRegistry {
 	}
 
 	public boolean hasTimestamp(String label) {
-		return hasVia(this::getTimestamp, label);
+		return registry.containsKey(full(label, Timestamp.class));
 	}
 
 	public Timestamp getTimestamp(String label) {
@@ -251,10 +268,24 @@ public class HapiSpecRegistry {
 		remove(name + "Admin", Key.class);
 	}
 
-	public void saveAdminKey(String name, Key key) { put(name + "Admin", key, Key.class); }
+	public void saveAdminKey(String name, Key key) {
+		put(name + "Admin", key, Key.class);
+	}
+
+	public boolean hasAdminKey(String name) {
+		return has(name + "Admin", Key.class);
+	}
 
 	public void saveFreezeKey(String name, Key key) {
 		put(name + "Freeze", key, Key.class);
+	}
+
+	public boolean hasFreezeKey(String name) {
+		return has(name + "Freeze", Key.class);
+	}
+
+	public void forgetFreezeKey(String name) {
+		remove(name + "Freeze", Key.class);
 	}
 
 	public void saveExpiry(String name, Long value) {
@@ -265,12 +296,36 @@ public class HapiSpecRegistry {
 		put(name + "Supply", key, Key.class);
 	}
 
+	public boolean hasSupplyKey(String name) {
+		return has(name + "Supply", Key.class);
+	}
+
 	public void saveWipeKey(String name, Key key) {
 		put(name + "Wipe", key, Key.class);
 	}
 
+	public boolean hasWipeKey(String name) {
+		return has(name + "Wipe", Key.class);
+	}
+
+	public void forgetWipeKey(String name) {
+		remove(name + "Wipe", Key.class);
+	}
+
+	public void forgetSupplyKey(String name) {
+		remove(name + "Supply", Key.class);
+	}
+
+	public boolean hasKycKey(String name) {
+		return has(name + "Kyc", Key.class);
+	}
+
 	public void saveKycKey(String name, Key key) {
 		put(name + "Kyc", key, Key.class);
+	}
+
+	public void forgetKycKey(String name) {
+		remove(name + "Kyc", Key.class);
 	}
 
 	public void saveSymbol(String token, String symbol) {
@@ -281,12 +336,28 @@ public class HapiSpecRegistry {
 		put(token + "Name", name, String.class);
 	}
 
+	public void saveMemo(String entity, String memo) {
+		put(entity + "Memo", memo, String.class);
+	}
+
+	public String getMemo(String entity) {
+		return get(entity + "Memo", String.class);
+	}
+
 	public String getSymbol(String token) {
 		return get(token + "Symbol", String.class);
 	}
 
+	public void forgetSymbol(String token) {
+		remove(token + "Symbol", String.class);
+	}
+
 	public String getName(String token) {
 		return get(token + "Name", String.class);
+	}
+
+	public void forgetName(String token) {
+		remove(token + "Name", String.class);
 	}
 
 	public Key getKey(String name) {
@@ -313,7 +384,7 @@ public class HapiSpecRegistry {
 		return get(name + "Kyc", Key.class);
 	}
 
-	public Long getTokenExpiry(String name) { return get(name + "Expiry", Long.class); }
+	public Long getExpiry(String name) { return get(name + "Expiry", Long.class); }
 
 	public boolean hasKey(String name) {
 		return hasVia(this::getKey, name);
@@ -322,8 +393,7 @@ public class HapiSpecRegistry {
 	public void removeKey(String name) {
 		try {
 			remove(name, Key.class);
-		} catch (Exception ignore) {
-		}
+		} catch (Exception ignore) { }
 	}
 
 	public void saveTopicMeta(String name, ConsensusCreateTopicTransactionBody meta, Long approxConsensusTime) {
@@ -438,6 +508,14 @@ public class HapiSpecRegistry {
 		}
 	}
 
+	public void saveScheduledTxn(String name, SchedulableTransactionBody scheduledTxn) {
+		put(name, scheduledTxn);
+	}
+
+	public SchedulableTransactionBody getScheduledTxn(String name) {
+		return get(name, SchedulableTransactionBody.class);
+	}
+
 	public void saveTxnId(String name, TransactionID txnId) {
 		put(name, txnId);
 	}
@@ -451,9 +529,46 @@ public class HapiSpecRegistry {
 		put(asAccountString(id), name);
 	}
 
+	public void saveScheduleId(String name, ScheduleID id) {
+		put(name, id);
+		put(asScheduleString(id), name);
+	}
+
+	public ScheduleID getScheduleId(String name) {
+		return get(name, ScheduleID.class);
+	}
+
 	public void saveTokenId(String name, TokenID id) {
 		put(name, id);
 		put(asTokenString(id), name);
+	}
+
+	public void forgetTokenId(String name) {
+		try {
+			var id = getTokenID(name);
+			remove(name, TokenID.class);
+			remove(asTokenString(id), String.class);
+		} catch (Throwable ignore) {}
+	}
+
+	public void saveTokenRel(String account, String token) {
+		put(tokenRelKey(account, token), new TokenAccountRegistryRel(token, account));
+	}
+
+	private String tokenRelKey(String account, String token) {
+		return account + "|" + token;
+	}
+
+	public void saveTreasury(String token, String treasury) {
+		put(token + "Treasury", treasury);
+	}
+
+	public void forgetTreasury(String token) {
+		remove(token + "Treasury", String.class);
+	}
+
+	public String getTreasury(String token) {
+		return get(token + "Treasury", String.class);
 	}
 
 	public void setRecharging(String account, long amount) {
@@ -491,6 +606,10 @@ public class HapiSpecRegistry {
 
 	public Integer getRechargingWindow(String account) {
 		return getOrElse(account + "RechargeWindow", Integer.class, ZERO);
+	}
+
+	public boolean hasTokenId(String name) {
+		return hasVia(this::getTokenID, name);
 	}
 
 	public boolean hasAccountId(String name) {
@@ -563,7 +682,7 @@ public class HapiSpecRegistry {
 	}
 
 	public boolean hasContractId(String name) {
-		return hasVia(this::getContractId, name);
+		return registry.containsKey(full(name, ContractID.class));
 	}
 
 	public void removeContractId(String name) {
@@ -692,6 +811,10 @@ public class HapiSpecRegistry {
 			throw new RegistryNotFound("Missing " + type.getSimpleName() + " '" + name + "'!");
 		}
 		return type.cast(v);
+	}
+
+	private <T> boolean has(String name, Class<T> type) {
+		return registry.containsKey(full(name, type));
 	}
 
 	private synchronized <T> T getOrElse(String name, Class<T> type, T defaultValue) {

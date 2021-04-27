@@ -4,7 +4,7 @@ package com.hedera.services.context.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,7 @@ public class PropUtils {
 			ThrowingStreamProvider fileStreamProvider,
 			Logger log
 	) {
-		InputStream fin;
-		try {
-			fin = fileStreamProvider.newInputStream(loc);
+		try (InputStream fin = fileStreamProvider.newInputStream(loc)) {
 			intoProps.load(fin);
 		} catch (IOException ignore) {
 			log.info("No overrides present at {}.", loc);

@@ -4,7 +4,7 @@ package com.hedera.services.test;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ package com.hedera.services.test;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenBalance;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
@@ -80,6 +81,15 @@ public class IdUtils {
 				.setShardNum(nativeParts[0])
 				.setRealmNum(nativeParts[1])
 				.setTokenNum(nativeParts[2])
+				.build();
+	}
+
+	public static ScheduleID asSchedule(String v) {
+		long[] nativeParts = asDotDelimitedLongArray(v);
+		return ScheduleID.newBuilder()
+				.setShardNum(nativeParts[0])
+				.setRealmNum(nativeParts[1])
+				.setScheduleNum(nativeParts[2])
 				.build();
 	}
 

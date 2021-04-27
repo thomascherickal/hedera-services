@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
@@ -56,7 +54,6 @@ import static org.mockito.BDDMockito.verify;
 import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.BDDMockito.willThrow;
 
-@RunWith(JUnitPlatform.class)
 class SolidityFnResultTest {
 	long gasUsed = 1_234;
 	byte[] result = "abcdefgh".getBytes();
@@ -71,8 +68,6 @@ class SolidityFnResultTest {
 
 	DomainSerdes serdes;
 	DataInputStream din;
-	EntityId.Provider idProvider;
-	SolidityLog.Provider logProvider;
 	SerializableDataInputStream in;
 
 	SolidityFnResult subject;
@@ -82,8 +77,6 @@ class SolidityFnResultTest {
 		din = mock(DataInputStream.class);
 		in = mock(SerializableDataInputStream.class);
 		serdes = mock(DomainSerdes.class);
-		idProvider = mock(EntityId.Provider.class);
-		logProvider = mock(SolidityLog.Provider.class);
 
 		subject = new SolidityFnResult(
 				contractId,
@@ -95,15 +88,11 @@ class SolidityFnResultTest {
 				createdContractIds);
 
 		SolidityFnResult.serdes = serdes;
-		SolidityFnResult.legacyIdProvider = idProvider;
-		SolidityFnResult.legacyLogProvider = logProvider;
 	}
 
 	@AfterEach
 	public void cleanup() {
 		SolidityFnResult.serdes = new DomainSerdes();
-		SolidityFnResult.legacyIdProvider = EntityId.LEGACY_PROVIDER;
-		SolidityFnResult.legacyLogProvider = SolidityLog.LEGACY_PROVIDER;
 	}
 
 	@Test
@@ -262,51 +251,6 @@ class SolidityFnResultTest {
 		// expect;
 		assertEquals(SolidityFnResult.MERKLE_VERSION, subject.getVersion());
 		assertEquals(SolidityFnResult.RUNTIME_CONSTRUCTABLE_ID, subject.getClassId());
-	}
-
-	@Test
-	public void legacyProviderWorks() throws IOException {
-		// setup:
-		var readCount = new AtomicInteger(0);
-
-		given(din.readLong())
-				.willReturn(3L)
-				.willReturn(2L)
-				.willReturn(gasUsed);
-		given(din.readBoolean())
-				.willReturn(true);
-		given(din.readInt())
-				.willReturn(result.length)
-				.willReturn(error.length())
-				.willReturn(bloom.length)
-				.willReturn(logs.size())
-				.willReturn(createdContractIds.size());
-		given(logProvider.deserialize(din))
-				.willReturn(logs.get(0))
-				.willReturn(logs.get(1));
-		given(idProvider.deserialize(din))
-				.willReturn(contractId)
-				.willReturn(createdContractIds.get(0))
-				.willReturn(createdContractIds.get(1));
-
-		willAnswer(invoke -> {
-			byte[] arg = invoke.getArgument(0);
-			int whichRead = readCount.getAndIncrement();
-			if (whichRead == 0) {
-				System.arraycopy(result, 0, arg, 0, result.length);
-			} else if (whichRead == 1) {
-				System.arraycopy(error.getBytes(), 0, arg, 0, error.length());
-			} else {
-				System.arraycopy(bloom, 0, arg, 0, bloom.length);
-			}
-			return null;
-		}).given(din).readFully(any());
-
-		// when:
-		var readSubject = SolidityFnResult.LEGACY_PROVIDER.deserialize(din);
-
-		// then:
-		assertEquals(subject, readSubject);
 	}
 
 	public static SolidityLog logFrom(int s) {

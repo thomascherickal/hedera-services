@@ -4,7 +4,7 @@ package com.hedera.services.context.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ package com.hedera.services.context.properties;
  */
 
 import com.hedera.services.config.HederaNumbers;
+import com.hedera.services.fees.calculation.CongestionMultipliers;
 import com.hederahashgraph.api.proto.java.AccountID;
+import com.hederahashgraph.api.proto.java.CryptoCreate;
+import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnitPlatform.class)
 class GlobalDynamicPropertiesTest {
 	static final String[] balanceExportPaths = new String[] {
 			"/opt/hgcapp/accountBalances",
@@ -43,6 +45,8 @@ class GlobalDynamicPropertiesTest {
 	PropertySource properties;
 
 	HederaNumbers numbers;
+	CongestionMultipliers oddCongestion = CongestionMultipliers.from("90,11x,95,27x,99,103x");
+	CongestionMultipliers evenCongestion = CongestionMultipliers.from("90,10x,95,25x,99,100x");
 	GlobalDynamicProperties subject;
 
 	@BeforeEach
@@ -63,7 +67,7 @@ class GlobalDynamicPropertiesTest {
 		// expect:
 		assertFalse(subject.shouldKeepRecordsInState());
 		assertEquals(1, subject.maxTokensPerAccount());
-		assertEquals(2, subject.maxTokenSymbolLength());
+		assertEquals(2, subject.maxTokenSymbolUtf8Bytes());
 		assertEquals(3L, subject.maxAccountNum());
 		assertEquals(6, subject.maxFileSizeKb());
 		assertEquals(accountWith(1L, 2L, 7L), subject.fundingAccount());
@@ -83,6 +87,15 @@ class GlobalDynamicPropertiesTest {
 		assertEquals(20, subject.minValidityBuffer());
 		assertEquals(21, subject.maxGas());
 		assertEquals(22L, subject.defaultContractLifetime());
+		assertEquals(23, subject.feesTokenTransferUsageMultiplier());
+		assertEquals(24, subject.maxAutoRenewDuration());
+		assertEquals(25, subject.minAutoRenewDuration());
+		assertEquals(26, subject.localCallEstRetBytes());
+		assertEquals(27, subject.scheduledTxExpiryTimeSecs());
+		assertEquals(28, subject.messageMaxBytesAllowed());
+		assertEquals(Set.of(HederaFunctionality.CryptoTransfer), subject.schedulingWhitelist());
+		assertEquals(oddCongestion, subject.congestionMultipliers());
+		assertEquals(29, subject.feesMinCongestionPeriod());
 	}
 
 	@Test
@@ -95,7 +108,7 @@ class GlobalDynamicPropertiesTest {
 		// expect:
 		assertTrue(subject.shouldKeepRecordsInState());
 		assertEquals(2, subject.maxTokensPerAccount());
-		assertEquals(3, subject.maxTokenSymbolLength());
+		assertEquals(3, subject.maxTokenSymbolUtf8Bytes());
 		assertEquals(4L, subject.maxAccountNum());
 		assertEquals(7, subject.maxFileSizeKb());
 		assertEquals(accountWith(1L, 2L, 8L), subject.fundingAccount());
@@ -115,11 +128,20 @@ class GlobalDynamicPropertiesTest {
 		assertEquals(21, subject.minValidityBuffer());
 		assertEquals(22, subject.maxGas());
 		assertEquals(23L, subject.defaultContractLifetime());
+		assertEquals(24, subject.feesTokenTransferUsageMultiplier());
+		assertEquals(25, subject.maxAutoRenewDuration());
+		assertEquals(26, subject.minAutoRenewDuration());
+		assertEquals(27, subject.localCallEstRetBytes());
+		assertEquals(28, subject.scheduledTxExpiryTimeSecs());
+		assertEquals(29, subject.messageMaxBytesAllowed());
+		assertEquals(Set.of(HederaFunctionality.CryptoCreate), subject.schedulingWhitelist());
+		assertEquals(evenCongestion, subject.congestionMultipliers());
+		assertEquals(30, subject.feesMinCongestionPeriod());
 	}
 
 	private void givenPropsWithSeed(int i) {
 		given(properties.getIntProperty("tokens.maxPerAccount")).willReturn(i);
-		given(properties.getIntProperty("tokens.maxSymbolLength")).willReturn(i + 1);
+		given(properties.getIntProperty("tokens.maxSymbolUtf8Bytes")).willReturn(i + 1);
 		given(properties.getBooleanProperty("ledger.keepRecordsInState")).willReturn((i % 2) == 0);
 		given(properties.getLongProperty("ledger.maxAccountNum")).willReturn((long)i + 2);
 		given(properties.getIntProperty("files.maxSizeKb")).willReturn(i + 5);
@@ -140,6 +162,18 @@ class GlobalDynamicPropertiesTest {
 		given(properties.getIntProperty("hedera.transaction.minValidityBufferSecs")).willReturn(i + 19);
 		given(properties.getIntProperty("contracts.maxGas")).willReturn(i + 20);
 		given(properties.getLongProperty("contracts.defaultLifetime")).willReturn(i + 21L);
+		given(properties.getIntProperty("fees.tokenTransferUsageMultiplier")).willReturn(i + 22);
+		given(properties.getLongProperty("ledger.autoRenewPeriod.maxDuration")).willReturn(i + 23L);
+		given(properties.getLongProperty("ledger.autoRenewPeriod.minDuration")).willReturn(i + 24L);
+		given(properties.getIntProperty("contracts.localCall.estRetBytes")).willReturn(i + 25);
+		given(properties.getIntProperty("ledger.schedule.txExpiryTimeSecs")).willReturn(i + 26);
+		given(properties.getIntProperty("consensus.message.maxBytesAllowed")).willReturn(i + 27);
+		given(properties.getFunctionsProperty("scheduling.whitelist")).willReturn(i % 2 == 0
+				? Set.of(HederaFunctionality.CryptoCreate)
+				: Set.of(HederaFunctionality.CryptoTransfer));
+		given(properties.getCongestionMultiplierProperty("fees.percentCongestionMultipliers"))
+				.willReturn(i % 2 == 0 ? evenCongestion : oddCongestion);
+		given(properties.getIntProperty("fees.minCongestionPeriod")).willReturn(i + 28);
 	}
 
 	private AccountID accountWith(long shard, long realm, long num) {

@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ package com.hedera.services.txns.token;
  * ‍
  */
 
+import com.google.protobuf.StringValue;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.merkle.MerkleToken;
 import com.hedera.services.state.submerkle.EntityId;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.utils.IdUtils;
@@ -37,8 +38,6 @@ import com.hederahashgraph.api.proto.java.TokenUpdateTransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -54,6 +53,7 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TREASURY_ACCOUNT_FOR_TOKEN;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_WIPE_KEY;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_IS_IMMUTABLE;
@@ -70,7 +70,6 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 class TokenUpdateTransitionLogicTest {
 	long thisSecond = 1_234_567L;
 	private Instant now = Instant.ofEpochSecond(thisSecond);
@@ -101,7 +100,7 @@ class TokenUpdateTransitionLogicTest {
 
 		token = mock(MerkleToken.class);
 		given(token.adminKey()).willReturn(Optional.of(adminKey));
-		given(token.treasury()).willReturn(EntityId.ofNullableAccountId(oldTreasury));
+		given(token.treasury()).willReturn(EntityId.fromGrpcAccountId(oldTreasury));
 		given(store.resolve(target)).willReturn(target);
 		given(store.get(target)).willReturn(token);
 		given(store.associationExists(newTreasury, target)).willReturn(true);
@@ -336,6 +335,14 @@ class TokenUpdateTransitionLogicTest {
 	}
 
 	@Test
+	public void rejectsExcessiveMemo() {
+		givenValidTxnCtx();
+
+		// expect:
+		assertEquals(OK, subject.syntaxCheck().apply(tokenUpdateTxn));
+	}
+
+	@Test
 	public void rejectsMissingToken() {
 		givenMissingToken();
 
@@ -403,6 +410,15 @@ class TokenUpdateTransitionLogicTest {
 	}
 
 	@Test
+	public void rejectsInvalidMemo() {
+		givenValidTxnCtx();
+		given(validator.memoCheck(any())).willReturn(INVALID_ZERO_BYTE_IN_STRING);
+
+		// expect:
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, subject.syntaxCheck().apply(tokenUpdateTxn));
+	}
+
+	@Test
 	public void rejectsInvalidFreezeKey() {
 		givenInvalidFreezeKey();
 
@@ -428,6 +444,7 @@ class TokenUpdateTransitionLogicTest {
 				.setTokenUpdate(TokenUpdateTransactionBody.newBuilder()
 						.setSymbol(symbol)
 						.setName(name)
+						.setMemo(StringValue.newBuilder().setValue("FATALITY").build())
 						.setToken(target));
 		if (withNewTreasury) {
 			builder.getTokenUpdateBuilder()
@@ -492,5 +509,6 @@ class TokenUpdateTransitionLogicTest {
 	private void withAlwaysValidValidator() {
 		given(validator.tokenNameCheck(any())).willReturn(OK);
 		given(validator.tokenSymbolCheck(any())).willReturn(OK);
+		given(validator.memoCheck(any())).willReturn(OK);
 	}
 }

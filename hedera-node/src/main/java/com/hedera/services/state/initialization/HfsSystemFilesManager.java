@@ -4,7 +4,7 @@ package com.hedera.services.state.initialization;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,12 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.config.FileNumbers;
 import com.hedera.services.context.properties.PropertySource;
+import com.hedera.services.files.HFileMeta;
 import com.hedera.services.files.TieredHederaFs;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.legacy.core.jproto.JKeyList;
+import com.hedera.services.files.SysFileCallbacks;
+import com.hedera.services.sysfiles.serdes.ThrottlesJsonToProtoSerde;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hederahashgraph.api.proto.java.CurrentAndNextFeeSchedule;
@@ -32,20 +37,20 @@ import com.hederahashgraph.api.proto.java.ExchangeRate;
 import com.hederahashgraph.api.proto.java.ExchangeRateSet;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.NodeAddress;
-import com.hederahashgraph.api.proto.java.NodeAddressBook;
+import com.hederahashgraph.api.proto.java.ServiceEndpoint;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
+import com.hederahashgraph.api.proto.java.ThrottleDefinitions;
 import com.hederahashgraph.api.proto.java.TimestampSeconds;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
-import com.hedera.services.legacy.core.jproto.JKey;
-import com.hedera.services.legacy.core.jproto.JKeyList;
 import com.swirlds.common.Address;
-import com.swirlds.common.AddressBook;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import com.swirlds.common.AddressBook;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
@@ -63,6 +68,7 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 	private static final String PERMISSIONS_TAG = "API permissions";
 	private static final String EXCHANGE_RATES_TAG = "exchange rates";
 	private static final String FEE_SCHEDULES_TAG = "fee schedules";
+	private static final String THROTTLE_DEFINITIONS_TAG = "throttle definitions";
 
 	private JKey systemKey;
 	private boolean filesLoaded = false;
@@ -71,10 +77,7 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 	private final PropertySource properties;
 	private final TieredHederaFs hfs;
 	private final Supplier<JKey> keySupplier;
-	private final Consumer<ExchangeRateSet> ratesCb;
-	private final Consumer<CurrentAndNextFeeSchedule> schedulesCb;
-	private final Consumer<ServicesConfigurationList> propertiesCb;
-	private final Consumer<ServicesConfigurationList> permissionsCb;
+	private SysFileCallbacks callbacks;
 
 	public HfsSystemFilesManager(
 			AddressBook currentBook,
@@ -82,31 +85,24 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 			PropertySource properties,
 			TieredHederaFs hfs,
 			Supplier<JKey> keySupplier,
-			Consumer<ExchangeRateSet> ratesCb,
-			Consumer<CurrentAndNextFeeSchedule> schedulesCb,
-			Consumer<ServicesConfigurationList> propertiesCb,
-			Consumer<ServicesConfigurationList> permissionsCb
+			SysFileCallbacks callbacks
 	) {
 		this.hfs = hfs;
+		this.callbacks = callbacks;
 		this.properties = properties;
 		this.currentBook = currentBook;
 		this.fileNumbers = fileNumbers;
 		this.keySupplier = keySupplier;
-
-		this.ratesCb = ratesCb;
-		this.schedulesCb = schedulesCb;
-		this.propertiesCb = propertiesCb;
-		this.permissionsCb = permissionsCb;
 	}
 
 	@Override
 	public void createAddressBookIfMissing() {
-		writeFromBookIfMissing(fileNumbers.addressBook(), this::bioAndIpv4Contents);
+		writeFromBookIfMissing(fileNumbers.addressBook(), this::platformAddressBookToGrpc);
 	}
 
 	@Override
 	public void createNodeDetailsIfMissing() {
-		writeFromBookIfMissing(fileNumbers.nodeDetails(), this::bioAndPubKeyContents);
+		writeFromBookIfMissing(fileNumbers.nodeDetails(), this::platformAddressBookToGrpc);
 	}
 
 	@Override
@@ -115,7 +111,7 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 				fileNumbers.apiPermissions(),
 				PERMISSIONS_TAG,
 				"bootstrap.hapiPermissions.path",
-				permissionsCb);
+				callbacks.permissionsCb());
 	}
 
 	@Override
@@ -124,7 +120,7 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 				fileNumbers.applicationProperties(),
 				PROPERTIES_TAG,
 				"bootstrap.networkProperties.path",
-				propertiesCb);
+				callbacks.propertiesCb());
 	}
 
 	@Override
@@ -132,7 +128,7 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 		loadProtoWithSupplierFallback(
 				fileNumbers.exchangeRates(),
 				EXCHANGE_RATES_TAG,
-				ratesCb,
+				callbacks.exchangeRatesCb(),
 				ExchangeRateSet::parseFrom,
 				() -> defaultRates().toByteArray());
 	}
@@ -142,18 +138,33 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 		loadProtoWithSupplierFallback(
 				fileNumbers.feeSchedules(),
 				FEE_SCHEDULES_TAG,
-				schedulesCb,
+				callbacks.feeSchedulesCb(),
 				CurrentAndNextFeeSchedule::parseFrom,
 				() -> defaultSchedules().toByteArray());
 	}
 
 	@Override
-	public void setFilesLoaded() {
+	public void loadThrottleDefinitions() {
+		loadProtoWithSupplierFallback(
+				fileNumbers.throttleDefinitions(),
+				THROTTLE_DEFINITIONS_TAG,
+				callbacks.throttlesCb(),
+				ThrottleDefinitions::parseFrom,
+				() -> defaultThrottles().toByteArray());
+	}
+
+	@Override
+	public void setObservableFilesLoaded() {
 		filesLoaded = true;
 	}
 
 	@Override
-	public boolean areFilesLoaded() {
+	public void setObservableFilesNotLoaded() {
+		filesLoaded = false;
+	}
+
+	@Override
+	public boolean areObservableFilesLoaded() {
 		return filesLoaded;
 	}
 
@@ -193,13 +204,13 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 		try {
 			rawProps = loader.get();
 		} catch (Exception e) {
-			log.error("Failed to read bootstrap {}, unable to continue!", resource);
+			log.error("Failed to read bootstrap {}, unable to continue!", resource, e);
 			throw new IllegalStateException(e);
 		}
 		materialize(disFid, systemFileInfo(), rawProps);
 	}
 
-	private void materialize(FileID fid, JFileInfo info, byte[] contents) {
+	private void materialize(FileID fid, HFileMeta info, byte[] contents) {
 		hfs.getMetadata().put(fid, info);
 		if (fileNumbers.softwareUpdateZip() == fid.getFileNum()) {
 			hfs.diskFs().put(fid, contents);
@@ -243,27 +254,31 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 	}
 
 	private byte[] asSerializedConfig(String resource, String propsLoc) throws IOException {
-		var jutilProps = new Properties();
-		jutilProps.load(Files.newInputStream(Paths.get(propsLoc)));
-		var config = ServicesConfigurationList.newBuilder();
-		var sb = new StringBuilder(String.format("Bootstrapping network %s from '%s':", resource, propsLoc));
-		jutilProps.entrySet()
-				.stream()
-				.sorted(Comparator.comparing(entry -> String.valueOf(entry.getKey())))
-				.peek(entry -> sb.append(String.format(
-						"\n  %s=%s",
-						String.valueOf(entry.getKey()),
-						String.valueOf(entry.getValue()))))
-				.forEach(entry ->
-						config.addNameValue(Setting.newBuilder()
-								.setName(String.valueOf(entry.getKey()))
-								.setValue(String.valueOf(entry.getValue()))));
-		log.info(sb.toString());
-		return config.build().toByteArray();
+		try (InputStream fin = Files.newInputStream(Paths.get(propsLoc))) {
+			var jutilProps = new Properties();
+			jutilProps.load(fin);
+			var config = ServicesConfigurationList.newBuilder();
+			var sb = new StringBuilder(String.format("Bootstrapping network %s from '%s':", resource, propsLoc));
+			jutilProps.entrySet()
+					.stream()
+					.sorted(Comparator.comparing(entry -> String.valueOf(entry.getKey())))
+					.peek(entry -> sb.append(String.format(
+							"\n  %s=%s",
+							String.valueOf(entry.getKey()),
+							String.valueOf(entry.getValue()))))
+					.forEach(entry ->
+							config.addNameValue(Setting.newBuilder()
+									.setName(String.valueOf(entry.getKey()))
+									.setValue(String.valueOf(entry.getValue()))));
+			log.info(sb.toString());
+			return config.build().toByteArray();
+		} catch (NoSuchFileException ignore) {
+			return ServicesConfigurationList.getDefaultInstance().toByteArray();
+		}
 	}
 
-	private JFileInfo systemFileInfo() {
-		return new JFileInfo(
+	private HFileMeta systemFileInfo() {
+		return new HFileMeta(
 				false,
 				new JKeyList(List.of(masterKey())),
 				properties.getLongProperty("bootstrap.system.entityExpiry"));
@@ -276,38 +291,31 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 		}
 	}
 
-	private byte[] bioAndIpv4Contents() {
-		var basics = NodeAddressBook.newBuilder();
+	private byte[] platformAddressBookToGrpc() {
+		var basics = com.hederahashgraph.api.proto.java.NodeAddressBook.newBuilder();
 		LongStream.range(0, currentBook.getSize())
 				.mapToObj(currentBook::getAddress)
-				.map(address ->
-						basicBioEntryFrom(address)
-								.setIpAddress(ByteString.copyFromUtf8(ipString(address.getAddressExternalIpv4())))
-								.build())
+				.map(address ->	basicBioEntryFrom(address).build())
 				.forEach(basics::addNodeAddress);
 		return basics.build().toByteArray();
 	}
 
-	private byte[] bioAndPubKeyContents() {
-		var details = NodeAddressBook.newBuilder();
-		LongStream.range(0, currentBook.getSize())
-				.mapToObj(currentBook::getAddress)
-				.map(address ->
-						basicBioEntryFrom(address)
-								.setRSAPubKey(MiscUtils.commonsBytesToHex(address.getSigPublicKey().getEncoded()))
-								.build())
-				.forEach(details::addNodeAddress);
-		return details.build().toByteArray();
-	}
-
 	private NodeAddress.Builder basicBioEntryFrom(Address address) {
 		var builder = NodeAddress.newBuilder()
+				.setIpAddress(ByteString.copyFromUtf8(ipString(address.getAddressExternalIpv4())))
+				.setPortno(address.getPortExternalIpv4())
+				.setRSAPubKey(MiscUtils.commonsBytesToHex(address.getSigPublicKey().getEncoded()))
 				.setNodeId(address.getId())
+				.setStake(address.getStake())
 				.setMemo(ByteString.copyFromUtf8(address.getMemo()));
+		var serviceEndpoint = ServiceEndpoint.newBuilder()
+				.setIpAddressV4(ByteString.copyFrom(address.getAddressExternalIpv4()))
+				.setPort(address.getPortExternalIpv4());
+		builder.addServiceEndpoint(serviceEndpoint);
 		try {
 			builder.setNodeAccountId(EntityIdUtils.accountParsedFromString(address.getMemo()));
-		} catch (Exception ignore) {
-			log.warn(ignore.getMessage());
+		} catch (Exception e) {
+			log.warn("Address for node {} had memo {}, not a parseable account!", address.getId(), address.getMemo());
 		}
 		return builder;
 	}
@@ -316,6 +324,13 @@ public class HfsSystemFilesManager implements SystemFilesManager {
 		var resource = properties.getStringProperty("bootstrap.feeSchedulesJson.resource");
 
 		return loadFeeScheduleFromJson(resource);
+	}
+
+	private ThrottleDefinitions defaultThrottles() throws Exception {
+		var resource = properties.getStringProperty("bootstrap.throttleDefsJson.resource");
+		try (InputStream in = HfsSystemFilesManager.class.getClassLoader().getResourceAsStream(resource)) {
+			return ThrottlesJsonToProtoSerde.loadProtoDefs(in);
+		}
 	}
 
 	private ExchangeRateSet defaultRates() {

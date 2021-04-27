@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.keys.deterministic;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class Bip0032 {
 		return ((KeyParameter)gen.generateDerivedParameters(KEY_SIZE)).getKey();
 	}
 
-	public static byte[] ed25519PrivateKeyFrom(
+	public static byte[] privateKeyFrom(
 			byte[] seed
 	) throws NoSuchAlgorithmException, InvalidKeyException, ShortBufferException {
 		final byte[] buf = new byte[64];

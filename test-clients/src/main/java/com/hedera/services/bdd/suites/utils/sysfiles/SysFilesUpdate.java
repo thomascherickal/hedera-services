@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.utils.sysfiles;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,11 @@ import com.hedera.services.bdd.suites.HapiApiSuite;
 import com.hedera.services.bdd.suites.utils.keypairs.Ed25519KeyStore;
 import com.hedera.services.bdd.suites.utils.keypairs.SpecUtils;
 import com.hedera.services.bdd.suites.utils.sysfiles.serdes.JutilPropsToSvcCfgBytes;
+import com.hederahashgraph.api.proto.java.NodeAddressBook;
 import com.hederahashgraph.api.proto.java.CurrentAndNextFeeSchedule;
 import com.hederahashgraph.api.proto.java.ExchangeRateSet;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.NodeAddress;
-import com.hederahashgraph.api.proto.java.NodeAddressBook;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
 import com.hedera.services.legacy.core.AccountKeyListObj;
@@ -83,6 +83,8 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FEE_SCHEDULE_F
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 
 public class SysFilesUpdate extends HapiApiSuite {
+	static final String CRTS_DIR = "certs";
+	static final String RSA_PUBKEYS_DIR = "pubkeys";
 	private static final Logger log = LogManager.getLogger(SysFilesUpdate.class);
 
 	final static long TINYBARS_PER_HBAR = 100_000_000L;
@@ -137,11 +139,11 @@ public class SysFilesUpdate extends HapiApiSuite {
 			SystemFile.API_PERMISSIONS, API_PERMISSIONS));
 
 	static EnumMap<SystemFile, Function<BookEntryPojo, Stream<NodeAddress>>> updateConverters = new EnumMap<>(Map.of(
-			SystemFile.ADDRESS_BOOK, BookEntryPojo::toAddressBookEntries,
-			SystemFile.NODE_DETAILS, BookEntryPojo::toNodeDetailsEntry));
+			SystemFile.ADDRESS_BOOK, BookEntryPojo::toGrpcStream,
+			SystemFile.NODE_DETAILS, BookEntryPojo::toGrpcStream));
 
 	static Pattern nodeCertPattern = Pattern.compile(".*node(\\d+)[.]crt");
-	static Pattern pubKeyPattern = Pattern.compile(".*node(\\d+).]der");
+	static Pattern pubKeyPattern = Pattern.compile(".*node(\\d+)[.]der");
 
 	public static void main(String... args) throws IOException {
 		parse(args);
@@ -223,7 +225,7 @@ public class SysFilesUpdate extends HapiApiSuite {
 				).then(
 						cryptoUpdate(accountToReKey)
 								.key("replacementKey")
-								.signedBy(GENESIS, "existingKey", "replacementKey")
+								.signedBy(DEFAULT_PAYER, "existingKey", "replacementKey")
 				);
 	}
 
@@ -255,7 +257,7 @@ public class SysFilesUpdate extends HapiApiSuite {
 		try {
 			if (BOOK_FILES.contains(target)) {
 				AddressBookPojo pojoBook = mapper.readValue(new File(readableFile), AddressBookPojo.class);
-				NodeAddressBook.Builder addressBook = NodeAddressBook.newBuilder();
+				var addressBook = NodeAddressBook.newBuilder();
 				pojoBook.getEntries().stream()
 						.flatMap(updateConverters.get(target))
 						.forEach(addressBook::addNodeAddress);
@@ -316,10 +318,10 @@ public class SysFilesUpdate extends HapiApiSuite {
 						withOpContext((spec, opLog) -> {
 							if (toUpload.length < (6 * 1024)) {
 								var singleOp = fileUpdate(registryNames.get(target))
-										.payingWith(GENESIS)
+										.payingWith(DEFAULT_PAYER)
 										.fee(feeToOffer())
 										.contents(toUpload)
-										.signedBy(GENESIS, DEFAULT_SYSFILE_KEY);
+										.signedBy(DEFAULT_PAYER, DEFAULT_SYSFILE_KEY);
 								CustomSpecAssert.allRunFor(spec, singleOp);
 							} else {
 								int n = 0;
@@ -332,13 +334,13 @@ public class SysFilesUpdate extends HapiApiSuite {
 												.fee(feeToOffer())
 												.wacl("insurance")
 												.contents(thisChunk)
-												.signedBy(GENESIS, DEFAULT_SYSFILE_KEY)
+												.signedBy(DEFAULT_PAYER, DEFAULT_SYSFILE_KEY)
 												.hasKnownStatusFrom(SUCCESS, FEE_SCHEDULE_FILE_PART_UPLOADED);
 									} else {
 										subOp = fileAppend(registryNames.get(target))
 												.fee(feeToOffer())
 												.content(thisChunk)
-												.signedBy(GENESIS, DEFAULT_SYSFILE_KEY)
+												.signedBy(DEFAULT_PAYER, DEFAULT_SYSFILE_KEY)
 												.hasKnownStatusFrom(SUCCESS, FEE_SCHEDULE_FILE_PART_UPLOADED);
 									}
 									CustomSpecAssert.allRunFor(spec, subOp);
@@ -532,7 +534,7 @@ public class SysFilesUpdate extends HapiApiSuite {
 	}
 
 	private static void dumpAvailPubKeys() throws IOException {
-		var pubKeysDirDir = new File(BookEntryPojo.RSA_PUBKEYS_DIR);
+		var pubKeysDirDir = new File(RSA_PUBKEYS_DIR);
 		if (!pubKeysDirDir.exists()) {
 			System.out.println(
 					String.format("Missing dir '%s/', rsaPubKey fields cannot be auto-generated with '!'"));
@@ -544,13 +546,16 @@ public class SysFilesUpdate extends HapiApiSuite {
 			var matcher = pubKeyPattern.matcher(pubKeyLoc.toString());
 			matcher.matches();
 			long nodeId = Long.valueOf(matcher.group(1));
-			System.out.println(String.format("From '%s', %s", pubKeyLoc, BookEntryPojo.asHexEncodedDerPubKey(nodeId)));
+			System.out.println(String.format(
+					"From '%s', %s",
+					pubKeyLoc,
+					BookEntryPojo.asHexEncodedDerPubKey(RSA_PUBKEYS_DIR, nodeId)));
 		}
 
 	}
 
 	private static void dumpAvailCerts() throws IOException {
-		var certsDir = new File(BookEntryPojo.CRTS_DIR);
+		var certsDir = new File(CRTS_DIR);
 		if (!certsDir.exists()) {
 			System.out.println(
 					String.format("Missing dir '%s/', certHash fields cannot be auto-generated with '!'"));
@@ -562,19 +567,20 @@ public class SysFilesUpdate extends HapiApiSuite {
 			var matcher = nodeCertPattern.matcher(crtLoc.toString());
 			matcher.matches();
 			long nodeId = Long.valueOf(matcher.group(1));
-			System.out.println(String.format("From '%s', %s", crtLoc, BookEntryPojo.asHexEncodedSha384HashFor(nodeId)));
+			System.out.println(String.format("From '%s', %s", crtLoc,
+					BookEntryPojo.asHexEncodedSha384HashFor(CRTS_DIR, nodeId)));
 		}
 
 	}
 
 	private static List<Path> allPubKeyPaths() throws IOException {
-		return java.nio.file.Files.walk(Paths.get(BookEntryPojo.RSA_PUBKEYS_DIR))
+		return java.nio.file.Files.walk(Paths.get(RSA_PUBKEYS_DIR))
 				.filter(path -> path.toString().endsWith(".der"))
 				.collect(Collectors.toList());
 	}
 
 	private static List<Path> allCertFiles() throws IOException {
-		return java.nio.file.Files.walk(Paths.get(BookEntryPojo.CRTS_DIR))
+		return java.nio.file.Files.walk(Paths.get(CRTS_DIR))
 				.filter(path -> path.toString().endsWith(".crt"))
 				.collect(Collectors.toList());
 	}

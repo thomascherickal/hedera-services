@@ -4,7 +4,7 @@ package com.hedera.services.fees.charging;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.hedera.services.fees.FeeExemptions;
 import com.hedera.services.fees.TxnFeeType;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.utils.SignedTxnAccessor;
+import com.hedera.services.utils.TxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TransferList;
@@ -51,13 +52,13 @@ import static com.hedera.services.fees.TxnFeeType.*;
 public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements TxnScopedFeeCharging {
 	public static EnumSet<TxnFeeType> NODE_FEE = EnumSet.of(NODE);
 	public static EnumSet<TxnFeeType> NETWORK_FEE = EnumSet.of(NETWORK);
+	public static EnumSet<TxnFeeType> SERVICE_FEE = EnumSet.of(SERVICE);
 	public static EnumSet<TxnFeeType> NETWORK_NODE_SERVICE_FEES = EnumSet.of(NETWORK, NODE, SERVICE);
 
 	private HederaLedger ledger;
 
 	private final GlobalDynamicProperties properties;
 
-	AccountID node;
 	AccountID funding;
 	AccountID submittingNode;
 	EnumMap<TxnFeeType, Long> payerFeesCharged = new EnumMap<>(TxnFeeType.class);
@@ -90,10 +91,9 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 		return Optional.ofNullable(submittingNodeFeesCharged.get(fee)).orElse(0L);
 	}
 
-	public void resetFor(SignedTxnAccessor accessor, AccountID submittingNode) {
+	public void resetFor(TxnAccessor accessor, AccountID submittingNode) {
 		super.resetFor(accessor);
 
-		node = accessor.getTxn().getNodeAccountID();
 		funding = properties.fundingAccount();
 		this.submittingNode = submittingNode;
 
@@ -119,11 +119,10 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	public TransferList itemizedFees() {
 		TransferList.Builder fees = TransferList.newBuilder();
 
-		if (!submittingNodeFeesCharged.isEmpty()) {
+		AccountID payer = accessor.getPayer();
+		if (!payer.equals(submittingNode) && !submittingNodeFeesCharged.isEmpty()) {
 			includeIfCharged(NETWORK, submittingNode, submittingNodeFeesCharged, fees);
 		} else {
-			AccountID payer = accessor.getPayer();
-
 			includeIfCharged(NETWORK, payer, payerFeesCharged, fees);
 			includeIfCharged(NODE, payer, payerFeesCharged, fees);
 			includeIfCharged(SERVICE, payer, payerFeesCharged, fees);
@@ -139,7 +138,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 			TransferList.Builder fees
 	) {
 		if (feesCharged.containsKey(fee)) {
-			AccountID receiver = (fee == NODE) ? node : funding;
+			AccountID receiver = (fee == NODE) ? submittingNode : funding;
 			fees.addAllAccountAmounts(receiverFirst(source, receiver, feesCharged.get(fee)));
 		}
 	}
@@ -176,7 +175,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	public void chargePayerUpTo(EnumSet<TxnFeeType> fees) {
 		pay(
 				fees,
-				() -> chargeUpTo(accessor.getPayer(), node, NODE),
+				() -> chargeUpTo(accessor.getPayer(), submittingNode, NODE),
 				(fee) -> chargeUpTo(accessor.getPayer(), funding, fee));
 	}
 
@@ -184,7 +183,7 @@ public class ItemizableFeeCharging extends FieldSourcedFeeScreening implements T
 	public void chargeParticipant(AccountID participant, EnumSet<TxnFeeType> fees) {
 		pay(
 				fees,
-				() -> charge(participant, node, NODE),
+				() -> charge(participant, submittingNode, NODE),
 				fee -> charge(participant, funding, fee));
 	}
 

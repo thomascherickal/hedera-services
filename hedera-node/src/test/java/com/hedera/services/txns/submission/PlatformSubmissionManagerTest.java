@@ -4,7 +4,7 @@ package com.hedera.services.txns.submission;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import com.hederahashgraph.api.proto.java.UncheckedSubmitBody;
 import com.swirlds.common.Platform;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import static com.hedera.test.utils.IdUtils.asAccount;
@@ -48,7 +46,6 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 class PlatformSubmissionManagerTest {
 	TransactionID txnId = TransactionID.newBuilder().setAccountID(asAccount("0.0.2")).build();
 	TransactionID uncheckedTxnId = TransactionID.newBuilder().setAccountID(asAccount("1.0.2")).build();

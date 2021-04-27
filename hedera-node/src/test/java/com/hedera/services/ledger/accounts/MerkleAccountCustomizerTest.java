@@ -4,7 +4,7 @@ package com.hedera.services.ledger.accounts;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,11 @@ package com.hedera.services.ledger.accounts;
 
 import com.hedera.services.ledger.properties.AccountProperty;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.hedera.services.ledger.accounts.AccountCustomizer.Option;
 
-@RunWith(JUnitPlatform.class)
 public class MerkleAccountCustomizerTest {
 	HederaAccountCustomizer subject = new HederaAccountCustomizer();
 

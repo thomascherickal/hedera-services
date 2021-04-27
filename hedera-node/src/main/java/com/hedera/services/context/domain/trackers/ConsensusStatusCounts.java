@@ -4,7 +4,7 @@ package com.hedera.services.context.domain.trackers;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ConsensusStatusCounts {
-	public static Logger log = LogManager.getLogger(ConsensusStatusCounts.class);
+	private static final Logger log = LogManager.getLogger(ConsensusStatusCounts.class);
 
 	private final ObjectMapper om;
 	EnumMap<ResponseCodeEnum, EnumMap<HederaFunctionality, AtomicInteger>> counts =

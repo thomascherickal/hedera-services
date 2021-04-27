@@ -4,7 +4,7 @@ package com.hedera.services.queries.contract;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,22 @@ package com.hedera.services.queries.contract;
 public class ContractAnswers {
 	private final GetBytecodeAnswer getBytecode;
 	private final GetContractInfoAnswer getContractInfo;
+	private final GetBySolidityIdAnswer getBySolidityIdAnswer;
+	private final ContractCallLocalAnswer contractCallLocal;
 	private final GetContractRecordsAnswer getContractRecords;
 
 	public ContractAnswers(
 			GetBytecodeAnswer getBytecode,
 			GetContractInfoAnswer getContractInfo,
-			GetContractRecordsAnswer getContractRecords
+			GetBySolidityIdAnswer getBySolidityIdAnswer,
+			GetContractRecordsAnswer getContractRecords,
+			ContractCallLocalAnswer contractCallLocal
 	) {
 		this.getBytecode = getBytecode;
 		this.getContractRecords = getContractRecords;
 		this.getContractInfo = getContractInfo;
+		this.getBySolidityIdAnswer = getBySolidityIdAnswer;
+		this.contractCallLocal = contractCallLocal;
 	}
 
 	public GetContractInfoAnswer getContractInfo() {
@@ -45,5 +51,13 @@ public class ContractAnswers {
 
 	public GetContractRecordsAnswer getContractRecords() {
 		return getContractRecords;
+	}
+
+	public ContractCallLocalAnswer contractCallLocal() {
+		return contractCallLocal;
+	}
+
+	public GetBySolidityIdAnswer getBySolidityId() {
+		return getBySolidityIdAnswer;
 	}
 }

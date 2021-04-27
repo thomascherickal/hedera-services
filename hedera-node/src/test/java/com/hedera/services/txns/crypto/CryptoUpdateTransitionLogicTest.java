@@ -4,7 +4,7 @@ package com.hedera.services.txns.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package com.hedera.services.txns.crypto;
  */
 
 import com.google.protobuf.BoolValue;
-import com.google.protobuf.UInt64Value;
+import com.google.protobuf.StringValue;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.exceptions.DeletedAccountException;
 import com.hedera.services.exceptions.MissingAccountException;
@@ -45,8 +45,6 @@ import com.hedera.services.state.submerkle.EntityId;
 import com.hedera.services.legacy.core.jproto.JKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import static com.hedera.services.ledger.accounts.AccountCustomizer.Option.*;
@@ -60,17 +58,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.*;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
-@RunWith(JUnitPlatform.class)
 public class CryptoUpdateTransitionLogicTest {
 	final private Key key = SignedTxnFactory.DEFAULT_PAYER_KT.asKey();
 	final private long autoRenewPeriod = 100_001L;
-	final private long sendThresh = 49_000L;
-	final private long receiveThresh = 51_001L;
 	final private AccountID proxy = AccountID.newBuilder().setAccountNum(4_321L).build();
 	final private AccountID payer = AccountID.newBuilder().setAccountNum(1_234L).build();
 	final private AccountID target = AccountID.newBuilder().setAccountNum(9_999L).build();
 
 	private long expiry;
+	private String memo = "Not since life began";
 	private boolean useLegacyFields;
 	private Instant consensusTime;
 	private HederaLedger ledger;
@@ -112,7 +108,7 @@ public class CryptoUpdateTransitionLogicTest {
 		// and:
 		EnumMap<AccountProperty, Object> changes = captor.getValue().getChanges();
 		assertEquals(1, changes.size());
-		assertEquals(EntityId.ofNullableAccountId(proxy), changes.get(AccountProperty.PROXY));
+		assertEquals(EntityId.fromGrpcAccountId(proxy), changes.get(AccountProperty.PROXY));
 	}
 
 
@@ -175,6 +171,24 @@ public class CryptoUpdateTransitionLogicTest {
 	}
 
 	@Test
+	public void updatesMemoIfPresent() throws Throwable {
+		// setup:
+		ArgumentCaptor<HederaAccountCustomizer> captor = ArgumentCaptor.forClass(HederaAccountCustomizer.class);
+
+		givenValidTxnCtx(EnumSet.of(MEMO));
+
+		// when:
+		subject.doStateTransition();
+
+		// then:
+		verify(ledger).customize(argThat(target::equals), captor.capture());
+		// and:
+		EnumMap<AccountProperty, Object> changes = captor.getValue().getChanges();
+		assertEquals(1, changes.size());
+		assertEquals(memo, changes.get(AccountProperty.MEMO));
+	}
+
+	@Test
 	public void updatesAutoRenewIfPresent() throws Throwable {
 		// setup:
 		ArgumentCaptor<HederaAccountCustomizer> captor = ArgumentCaptor.forClass(HederaAccountCustomizer.class);
@@ -227,6 +241,15 @@ public class CryptoUpdateTransitionLogicTest {
 	@Test
 	public void rejectsInvalidKey() {
 		rejectsKey(emptyKey());
+	}
+
+	@Test
+	public void rejectsInvalidMemo() {
+		givenValidTxnCtx(EnumSet.of(MEMO));
+		given(validator.memoCheck(memo)).willReturn(MEMO_TOO_LONG);
+
+		// expect:
+		assertEquals(MEMO_TOO_LONG, subject.syntaxCheck().apply(cryptoUpdateTxn));
 	}
 
 	@Test
@@ -321,6 +344,7 @@ public class CryptoUpdateTransitionLogicTest {
 	private void givenValidTxnCtx() {
 		givenValidTxnCtx(EnumSet.of(
 				KEY,
+				MEMO,
 				PROXY,
 				EXPIRY,
 				IS_RECEIVER_SIG_REQUIRED,
@@ -330,6 +354,9 @@ public class CryptoUpdateTransitionLogicTest {
 
 	private void givenValidTxnCtx(EnumSet<AccountCustomizer.Option> updating) {
 		CryptoUpdateTransactionBody.Builder op = CryptoUpdateTransactionBody.newBuilder();
+		if (updating.contains(MEMO)) {
+			op.setMemo(StringValue.newBuilder().setValue(memo).build());
+		}
 		if (updating.contains(KEY)) {
 			op.setKey(key);
 		}
@@ -367,5 +394,6 @@ public class CryptoUpdateTransitionLogicTest {
 		given(validator.isValidAutoRenewPeriod(any())).willReturn(true);
 		given(validator.isValidExpiry(any())).willReturn(true);
 		given(validator.hasGoodEncoding(any())).willReturn(true);
+		given(validator.memoCheck(any())).willReturn(OK);
 	}
 }

@@ -4,7 +4,7 @@ package com.hedera.services.files.store;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 import static java.util.stream.Collectors.toSet;
 
 public class FcBlobsBytesStore extends AbstractMap<String, byte[]> {
-	public static Logger log = LogManager.getLogger(FcBlobsBytesStore.class);
+	private static final Logger log = LogManager.getLogger(FcBlobsBytesStore.class);
 
 	private final Function<byte[], MerkleOptionalBlob> blobFactory;
 	private final Supplier<FCMap<MerkleBlobMeta, MerkleOptionalBlob>> pathedBlobs;

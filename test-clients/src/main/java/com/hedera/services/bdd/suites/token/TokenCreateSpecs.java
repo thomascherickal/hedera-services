@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.token;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,15 +45,17 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
+import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenDelete;
 import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.recordSystemProperty;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sourcing;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 public class TokenCreateSpecs extends HapiApiSuite {
 	private static final Logger log = LogManager.getLogger(TokenCreateSpecs.class);
 
 	private static String TOKEN_TREASURY = "treasury";
-	private static final int MAX_NAME_LENGTH = 100;
 	private static final long A_HUNDRED_SECONDS = 100;
 
 	public static void main(String... args) {
@@ -62,14 +65,15 @@ public class TokenCreateSpecs extends HapiApiSuite {
 	@Override
 	protected List<HapiApiSpec> getSpecsInSuite() {
 		return List.of(new HapiApiSpec[] {
+						creationValidatesMemo(),
+						creationValidatesName(),
 						creationValidatesSymbol(),
 						treasuryHasCorrectBalance(),
 						creationRequiresAppropriateSigs(),
+						creationRequiresAppropriateSigsHappyPath(),
 						initialSupplyMustBeSane(),
-						numAccountsAllowedIsDynamic(),
 						creationYieldsExpectedToken(),
 						creationSetsExpectedName(),
-						creationValidatesName(),
 						creationValidatesTreasuryAccount(),
 						autoRenewValidationWorks(),
 						creationWithoutKYCSetsCorrectStatus(),
@@ -77,8 +81,18 @@ public class TokenCreateSpecs extends HapiApiSuite {
 						creationValidatesFreezeDefaultWithNoFreezeKey(),
 						creationSetsCorrectExpiry(),
 						creationHappyPath(),
+						numAccountsAllowedIsDynamic(),
+						worksAsExpectedWithDefaultTokenId(),
 				}
 		);
+	}
+
+
+	private HapiApiSpec worksAsExpectedWithDefaultTokenId() {
+		return defaultHapiSpec("WorksAsExpectedWithDefaultTokenId")
+				.given().when().then(
+						getTokenInfo("0.0.0").hasCostAnswerPrecheck(INVALID_TOKEN_ID)
+				);
 	}
 
 	public HapiApiSpec autoRenewValidationWorks() {
@@ -166,6 +180,7 @@ public class TokenCreateSpecs extends HapiApiSuite {
 	}
 
 	public HapiApiSpec creationHappyPath() {
+		String memo = "JUMP";
 		String saltedName = salted("primary");
 		return defaultHapiSpec("CreationHappyPath")
 				.given(
@@ -178,6 +193,7 @@ public class TokenCreateSpecs extends HapiApiSuite {
 						newKeyNamed("wipeKey")
 				).when(
 						tokenCreate("primary")
+								.entityMemo(memo)
 								.name(saltedName)
 								.treasury(TOKEN_TREASURY)
 								.autoRenewAccount("autoRenewAccount")
@@ -200,16 +216,17 @@ public class TokenCreateSpecs extends HapiApiSuite {
 						getTokenInfo("primary")
 								.logged()
 								.hasRegisteredId("primary")
+								.hasEntityMemo(memo)
 								.hasName(saltedName)
 								.hasTreasury(TOKEN_TREASURY)
 								.hasAutoRenewPeriod(A_HUNDRED_SECONDS)
 								.hasValidExpiry()
 								.hasDecimals(1)
-								.hasAdminKey("adminKey")
-								.hasFreezeKey("freezeKey")
-								.hasKycKey("kycKey")
-								.hasSupplyKey("supplyKey")
-								.hasWipeKey("wipeKey")
+								.hasAdminKey("primary")
+								.hasFreezeKey("primary")
+								.hasKycKey("primary")
+								.hasSupplyKey("primary")
+								.hasWipeKey("primary")
 								.hasTotalSupply(500)
 								.hasAutoRenewAccount("autoRenewAccount"),
 						getAccountInfo(TOKEN_TREASURY)
@@ -267,20 +284,37 @@ public class TokenCreateSpecs extends HapiApiSuite {
 				);
 	}
 
+	public HapiApiSpec creationValidatesMemo() {
+		return defaultHapiSpec("CreationValidatesMemo")
+				.given().when().then(
+						tokenCreate("primary")
+								.entityMemo("N\u0000!!!")
+								.hasPrecheck(INVALID_ZERO_BYTE_IN_STRING)
+				);
+	}
+
 	public HapiApiSpec creationValidatesName() {
-		String longName = "a".repeat(MAX_NAME_LENGTH + 1);
+		AtomicInteger maxUtf8Bytes = new AtomicInteger();
+
 		return defaultHapiSpec("CreationValidatesName")
 				.given(
-						cryptoCreate(TOKEN_TREASURY).balance(0L)
-				).when( ).then(
+						cryptoCreate(TOKEN_TREASURY).balance(0L),
+						recordSystemProperty("tokens.maxTokenNameUtf8Bytes", Integer::parseInt, maxUtf8Bytes::set)
+				).when().then(
 						tokenCreate("primary")
 								.name("")
 								.logged()
 								.hasPrecheck(MISSING_TOKEN_NAME),
 						tokenCreate("primary")
-								.name(longName)
+								.name("T\u0000ken")
 								.logged()
-								.hasPrecheck(TOKEN_NAME_TOO_LONG)
+								.hasPrecheck(INVALID_ZERO_BYTE_IN_STRING),
+						sourcing(() -> tokenCreate("tooLong")
+								.name(TxnUtils.nAscii(maxUtf8Bytes.get() + 1))
+								.hasPrecheck(TOKEN_NAME_TOO_LONG)),
+						sourcing(() -> tokenCreate("tooLongAgain")
+								.name(nCurrencySymbols(maxUtf8Bytes.get() / 3 + 1))
+								.hasPrecheck(TOKEN_NAME_TOO_LONG))
 				);
 	}
 
@@ -290,43 +324,59 @@ public class TokenCreateSpecs extends HapiApiSuite {
 
 		return defaultHapiSpec("NumAccountsAllowedIsDynamic")
 				.given(
+						newKeyNamed("admin"),
 						cryptoCreate(TOKEN_TREASURY).balance(0L)
 				).when(
 						fileUpdate(APP_PROPERTIES)
 								.payingWith(ADDRESS_BOOK_CONTROL)
-								.overridingProps(Map.of( "tokens.maxPerAccount", "" + MONOGAMOUS_NETWORK)),
-						tokenCreate(salted("primary"))
+								.overridingProps(Map.of("tokens.maxPerAccount", "" + MONOGAMOUS_NETWORK)),
+						tokenCreate("primary")
+								.adminKey("admin")
 								.treasury(TOKEN_TREASURY),
-						tokenCreate(salted("secondary"))
+						tokenCreate("secondaryFails")
+								.treasury(TOKEN_TREASURY)
+								.hasKnownStatus(TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED),
+						tokenDelete("primary"),
+						/* Deleted tokens still count against your max allowed associations. */
+						tokenCreate("secondaryFailsAgain")
 								.treasury(TOKEN_TREASURY)
 								.hasKnownStatus(TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED)
 				).then(
 						fileUpdate(APP_PROPERTIES)
 								.payingWith(ADDRESS_BOOK_CONTROL)
 								.overridingProps(Map.of(
-								"tokens.maxPerAccount", "" + ADVENTUROUS_NETWORK
-						)),
-						tokenCreate(salted("secondary")).treasury(TOKEN_TREASURY)
+										"tokens.maxPerAccount", "" + ADVENTUROUS_NETWORK
+								)),
+						tokenCreate("secondary").treasury(TOKEN_TREASURY)
 				);
 	}
 
 	public HapiApiSpec creationValidatesSymbol() {
-		String firstToken = "FIRSTMOVER" + TxnUtils.randomUppercase(5);
-		String reallyLongSymbol = IntStream.range(0, 101).mapToObj(ignore -> "A").collect(Collectors.joining());
+		AtomicInteger maxUtf8Bytes = new AtomicInteger();
 
 		return defaultHapiSpec("CreationValidatesSymbol")
 				.given(
-						cryptoCreate(TOKEN_TREASURY).balance(0L)
-				).when(
+						cryptoCreate(TOKEN_TREASURY).balance(0L),
+						recordSystemProperty("tokens.maxSymbolUtf8Bytes", Integer::parseInt, maxUtf8Bytes::set)
+				).when().then(
 						tokenCreate("missingSymbol")
 								.symbol("")
 								.hasPrecheck(MISSING_TOKEN_SYMBOL),
-						tokenCreate("tooLong")
-								.symbol(reallyLongSymbol)
-								.hasPrecheck(TOKEN_SYMBOL_TOO_LONG),
-						tokenCreate("firstMoverAdvantage")
-								.symbol(firstToken)
-				).then();
+						tokenCreate("primary")
+								.name("T\u0000ken")
+								.logged()
+								.hasPrecheck(INVALID_ZERO_BYTE_IN_STRING),
+						sourcing(() -> tokenCreate("tooLong")
+								.symbol(TxnUtils.nAscii(maxUtf8Bytes.get() + 1))
+								.hasPrecheck(TOKEN_SYMBOL_TOO_LONG)),
+						sourcing(() -> tokenCreate("tooLongAgain")
+								.symbol(nCurrencySymbols(maxUtf8Bytes.get() / 3 + 1))
+								.hasPrecheck(TOKEN_SYMBOL_TOO_LONG))
+				);
+	}
+
+	private String nCurrencySymbols(int n) {
+		return IntStream.range(0, n).mapToObj(ignore -> "€").collect(Collectors.joining());
 	}
 
 	public HapiApiSpec creationRequiresAppropriateSigs() {
@@ -352,6 +402,22 @@ public class TokenCreateSpecs extends HapiApiSuite {
 				);
 	}
 
+	public HapiApiSpec creationRequiresAppropriateSigsHappyPath() {
+		return defaultHapiSpec("CreationRequiresAppropriateSigsHappyPath")
+				.given(
+						cryptoCreate("payer"),
+						cryptoCreate(TOKEN_TREASURY).balance(0L),
+						newKeyNamed("adminKey")
+				).when().then(
+						tokenCreate("shouldWork")
+								.treasury(TOKEN_TREASURY)
+								.payingWith("payer")
+								.adminKey("adminKey")
+								.signedBy(TOKEN_TREASURY, "payer", "adminKey")
+								.hasKnownStatus(SUCCESS)
+				);
+	}
+
 	public HapiApiSpec creationValidatesTreasuryAccount() {
 		return defaultHapiSpec("CreationValidatesTreasuryAccount")
 				.given(
@@ -367,7 +433,7 @@ public class TokenCreateSpecs extends HapiApiSuite {
 
 	public HapiApiSpec initialSupplyMustBeSane() {
 		return defaultHapiSpec("InitialSupplyMustBeSane")
-				.given( ).when( ).then(
+				.given().when().then(
 						tokenCreate("sinking")
 								.initialSupply(-1L)
 								.hasPrecheck(INVALID_TOKEN_INITIAL_SUPPLY),

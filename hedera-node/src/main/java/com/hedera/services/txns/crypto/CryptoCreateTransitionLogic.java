@@ -4,14 +4,14 @@ package com.hedera.services.txns.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,12 +32,11 @@ import com.hederahashgraph.api.proto.java.CryptoCreateTransactionBody;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hedera.services.legacy.core.jproto.JKey;
-import org.apache.commons.codec.DecoderException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.hedera.services.utils.MiscUtils.asFcKeyUnchecked;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
-import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -85,28 +84,25 @@ public class CryptoCreateTransitionLogic implements TransitionLogic {
 		} catch (InsufficientFundsException ife) {
 			txnCtx.setStatus(INSUFFICIENT_PAYER_BALANCE);
 		} catch (Exception e) {
+			log.warn("Avoidable exception!", e);
 			txnCtx.setStatus(FAIL_INVALID);
 		}
 	}
 
-	HederaAccountCustomizer asCustomizer(CryptoCreateTransactionBody op) {
-		JKey key;
+	private HederaAccountCustomizer asCustomizer(CryptoCreateTransactionBody op) {
 		long autoRenewPeriod = op.getAutoRenewPeriod().getSeconds();
 		long expiry = txnCtx.consensusTime().getEpochSecond() + autoRenewPeriod;
 
-		try {
-			key = mapKey(op.getKey());
-		} catch (Exception syntaxViolation) {
-			log.warn("Syntax violation in doStateTransition!", syntaxViolation);
-			throw new IllegalArgumentException(syntaxViolation);
-		}
+		/* Note that {@code this.validate(TransactionBody)} will have rejected any txn with an invalid key. */
+		JKey key = asFcKeyUnchecked(op.getKey());
 		HederaAccountCustomizer customizer = new HederaAccountCustomizer()
 				.key(key)
+				.memo(op.getMemo())
 				.expiry(expiry)
 				.autoRenewPeriod(autoRenewPeriod)
 				.isReceiverSigRequired(op.getReceiverSigRequired());
 		if (op.hasProxyAccountID()) {
-			customizer.proxy(EntityId.ofNullableAccountId(op.getProxyAccountID()));
+			customizer.proxy(EntityId.fromGrpcAccountId(op.getProxyAccountID()));
 		}
 		return customizer;
 	}
@@ -124,27 +120,23 @@ public class CryptoCreateTransitionLogic implements TransitionLogic {
 	public ResponseCodeEnum validate(TransactionBody cryptoCreateTxn) {
 		CryptoCreateTransactionBody op = cryptoCreateTxn.getCryptoCreateAccount();
 
+		var memoValidity = validator.memoCheck(op.getMemo());
+		if (memoValidity != OK) {
+			return memoValidity;
+		}
 		if (!op.hasKey()) {
 			return KEY_REQUIRED;
 		}
 		if (!validator.hasGoodEncoding(op.getKey())) {
 			return BAD_ENCODING;
 		}
-
-		try {
-			//convert to JKey and check if after the expansion the key is empty
-			JKey converted = JKey.mapKey(op.getKey());
-			if (converted.isEmpty()) {
-				return KEY_REQUIRED;
-			}
-
-			if (!converted.isValid()) {
-				return BAD_ENCODING;
-			}
-		} catch (DecoderException e) {
+		var fcKey = asFcKeyUnchecked(op.getKey());
+		if (fcKey.isEmpty()) {
+			return KEY_REQUIRED;
+		}
+		if (!fcKey.isValid()) {
 			return BAD_ENCODING;
 		}
-
 		if (op.getInitialBalance() < 0L) {
 			return INVALID_INITIAL_BALANCE;
 		}

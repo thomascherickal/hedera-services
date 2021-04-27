@@ -4,14 +4,14 @@ package com.hedera.services.txns.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,8 +37,8 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.hedera.services.utils.MiscUtils.asFcKeyUnchecked;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
-import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -88,24 +88,19 @@ public class CryptoUpdateTransitionLogic implements TransitionLogic {
 		}
 	}
 
-	HederaAccountCustomizer asCustomizer(CryptoUpdateTransactionBody op) {
+	private HederaAccountCustomizer asCustomizer(CryptoUpdateTransactionBody op) {
 		HederaAccountCustomizer customizer = new HederaAccountCustomizer();
 
 		if (op.hasKey()) {
-			JKey key;
-			try {
-				key = mapKey(op.getKey());
-			} catch (Exception syntaxViolation) {
-				log.warn("Syntax violation in doStateTransition!", syntaxViolation);
-				throw new IllegalArgumentException(syntaxViolation);
-			}
-			customizer.key(key);
+			/* Note that {@code this.validate(TransactionBody)} will have rejected any txn with an invalid key. */
+			var fcKey = asFcKeyUnchecked(op.getKey());
+			customizer.key(fcKey);
 		}
 		if (op.hasExpirationTime()) {
 			customizer.expiry(op.getExpirationTime().getSeconds());
 		}
 		if (op.hasProxyAccountID()) {
-			customizer.proxy(EntityId.ofNullableAccountId(op.getProxyAccountID()));
+			customizer.proxy(EntityId.fromGrpcAccountId(op.getProxyAccountID()));
 		}
 		if (op.hasReceiverSigRequiredWrapper()) {
 			customizer.isReceiverSigRequired(op.getReceiverSigRequiredWrapper().getValue());
@@ -114,6 +109,9 @@ public class CryptoUpdateTransitionLogic implements TransitionLogic {
 		}
 		if (op.hasAutoRenewPeriod()) {
 			customizer.autoRenewPeriod(op.getAutoRenewPeriod().getSeconds());
+		}
+		if (op.hasMemo()) {
+			customizer.memo(op.getMemo().getValue());
 		}
 
 		return customizer;
@@ -132,10 +130,16 @@ public class CryptoUpdateTransitionLogic implements TransitionLogic {
 	private ResponseCodeEnum validate(TransactionBody cryptoUpdateTxn) {
 		CryptoUpdateTransactionBody op = cryptoUpdateTxn.getCryptoUpdateAccount();
 
+		var memoValidity = !op.hasMemo() ? OK : validator.memoCheck(op.getMemo().getValue());
+		if (memoValidity != OK) {
+			return memoValidity;
+		}
+
 		if (op.hasKey()) {
 			try {
-				JKey converted = JKey.mapKey(op.getKey());
-				if (!converted.isValid()) {
+				JKey fcKey = JKey.mapKey(op.getKey());
+				/* Note that an empty key is never valid. */
+				if (!fcKey.isValid()) {
 					return BAD_ENCODING;
 				}
 			} catch (DecoderException e) {

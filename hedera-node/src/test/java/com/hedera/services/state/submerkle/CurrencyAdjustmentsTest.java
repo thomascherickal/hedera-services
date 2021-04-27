@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,8 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.io.DataInputStream;
@@ -38,18 +35,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static com.hedera.services.state.submerkle.EntityId.ofNullableAccountId;
+import static com.hedera.services.state.submerkle.EntityId.fromGrpcAccountId;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class CurrencyAdjustmentsTest {
 	AccountID a = IdUtils.asAccount("0.0.13257");
-	EntityId aEntity = EntityId.ofNullableAccountId(a);
 	AccountID b = IdUtils.asAccount("0.0.13258");
-	EntityId bEntity = EntityId.ofNullableAccountId(b);
 	AccountID c = IdUtils.asAccount("0.0.13259");
-	EntityId cEntity = EntityId.ofNullableAccountId(c);
 
 	long aAmount = 1L, bAmount = 2L, cAmount = -3L;
 
@@ -57,25 +50,16 @@ class CurrencyAdjustmentsTest {
 	TransferList otherGrpcAdjustments = TxnUtils.withAdjustments(a, aAmount * 2, b, bAmount * 2, c, cAmount * 2);
 
 	DataInputStream din;
-	EntityId.Provider idProvider;
 
 	CurrencyAdjustments subject;
 
 	@BeforeEach
 	public void setup() {
 		din = mock(DataInputStream.class);
-		idProvider = mock(EntityId.Provider.class);
-
-		CurrencyAdjustments.legacyIdProvider = idProvider;
 
 		subject = new CurrencyAdjustments();
-		subject.accountIds = List.of(ofNullableAccountId(a), ofNullableAccountId(b), ofNullableAccountId(c));
+		subject.accountIds = List.of(fromGrpcAccountId(a), fromGrpcAccountId(b), fromGrpcAccountId(c));
 		subject.hbars = new long[] { aAmount, bAmount, cAmount };
-	}
-
-	@AfterEach
-	public void cleanup() {
-		CurrencyAdjustments.legacyIdProvider = EntityId.LEGACY_PROVIDER;
 	}
 
 	@Test
@@ -102,26 +86,6 @@ class CurrencyAdjustmentsTest {
 		// and:
 		assertNotEquals(one.hashCode(), two.hashCode());
 		assertEquals(one.hashCode(), three.hashCode());
-	}
-
-	@Test
-	public void legacyProviderWorks() throws IOException {
-		given(din.readLong())
-				.willReturn(-1L).willReturn(-2L)
-				.willReturn(-1L).willReturn(-2L).willReturn(aAmount)
-				.willReturn(-1L).willReturn(-2L).willReturn(bAmount)
-				.willReturn(-1L).willReturn(-2L).willReturn(cAmount);
-		given(din.readInt()).willReturn(3);
-		given(idProvider.deserialize(din))
-				.willReturn(aEntity)
-				.willReturn(bEntity)
-				.willReturn(cEntity);
-
-		// when:
-		var subjectRead = CurrencyAdjustments.LEGACY_PROVIDER.deserialize(din);
-
-		// then:
-		assertEquals(subject, subjectRead);
 	}
 
 	@Test

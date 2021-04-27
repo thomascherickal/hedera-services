@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,13 @@ import com.hederahashgraph.api.proto.java.TokenFreezeStatus;
 import com.hederahashgraph.api.proto.java.TokenKycStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class RawTokenRelationshipTest {
+	int decimals = 5;
 	long num = 123;
 	long balance = 234;
 	boolean frozen = true;
@@ -75,6 +73,8 @@ class RawTokenRelationshipTest {
 
 	@Test
 	public void grpcConversionRecognizesInapplicable() {
+		given(token.decimals()).willReturn(decimals);
+
 		// when:
 		var desc = subject.asGrpcFor(token);
 
@@ -83,6 +83,7 @@ class RawTokenRelationshipTest {
 		assertEquals(IdUtils.tokenWith(num), desc.getTokenId());
 		assertEquals(TokenFreezeStatus.FreezeNotApplicable, desc.getFreezeStatus());
 		assertEquals(TokenKycStatus.KycNotApplicable, desc.getKycStatus());
+		assertEquals(decimals, desc.getDecimals());
 	}
 
 	@Test

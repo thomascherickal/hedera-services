@@ -4,7 +4,7 @@ package com.hedera.services.fees.charging;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -39,7 +37,6 @@ import static org.mockito.BDDMockito.*;
 import com.hedera.services.fees.TxnFeeType;
 import static com.hedera.services.fees.TxnFeeType.*;
 
-@RunWith(JUnitPlatform.class)
 class FieldSourcedFeeScreeningTest {
 
 	final long willingness = 1_000L;

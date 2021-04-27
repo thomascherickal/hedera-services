@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.file.queries;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hederahashgraph.fee.FileFeeBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Optional;
 import static com.hedera.test.utils.IdUtils.asFile;
@@ -45,7 +43,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnitPlatform.class)
 class GetFileContentsResourceUsageTest {
 	FileID target = asFile("0.0.123");
 	StateView view;
@@ -66,13 +63,13 @@ class GetFileContentsResourceUsageTest {
 	}
 
 	@Test
-	public void throwsIaeOnMissingInfo() {
+	public void returnsDefaultSchedulesOnMissing() {
 		Query answerOnlyQuery = fileContentsQuery(target, ANSWER_ONLY);
 
 		given(view.infoForFile(any())).willReturn(Optional.empty());
 
 		// then:
-		assertThrows(IllegalArgumentException.class, () -> subject.usageGiven(answerOnlyQuery, view));
+		assertSame(FeeData.getDefaultInstance(), subject.usageGiven(answerOnlyQuery, view));
 	}
 
 	@Test

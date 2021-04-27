@@ -4,7 +4,7 @@ package com.hedera.test.factories.topics;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class TopicFactory {
 		autoRenewDuration.ifPresent(value::setAutoRenewDurationSeconds);
 		adminKey.ifPresent(k -> value.setAdminKey(uncheckedMap(k)));
 		submitKey.ifPresent(k -> value.setSubmitKey(uncheckedMap(k)));
-		autoRenewAccount.ifPresent(id -> value.setAutoRenewAccountId(EntityId.ofNullableAccountId(id)));
+		autoRenewAccount.ifPresent(id -> value.setAutoRenewAccountId(EntityId.fromGrpcAccountId(id)));
 
 		return value;
 	}

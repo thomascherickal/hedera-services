@@ -4,7 +4,7 @@ package com.hedera.services.ledger.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ public enum AccountProperty implements BeanProperty<MerkleAccount> {
 				try {
 					a.setBalance((long) v);
 				} catch (NegativeAccountBalanceException nabe) {
-					throw new IllegalArgumentException("Account balances must be nonnegative!");
+					throw new IllegalArgumentException(String.format(
+							"Argument 'v=%d' would cause account 'a=%s' to have a negative balance!", v, a));
 				}
 			};
 		}

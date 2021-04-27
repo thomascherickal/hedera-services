@@ -4,7 +4,7 @@ package com.hedera.services.sigs;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,14 @@ import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.config.MockGlobalDynamicProps;
 import com.hedera.services.context.ContextPlatformStatus;
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.StandardExemptions;
 import com.hedera.services.legacy.exception.InvalidAccountIDException;
 import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.legacy.handler.TransactionHandler;
+import com.hedera.services.legacy.unit.utils.DummyFunctionalityThrottling;
+import com.hedera.services.legacy.unit.utils.DummyHapiPermissions;
 import com.hedera.services.queries.validation.QueryFeeCheck;
 import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.order.HederaSigningOrder;
@@ -47,9 +50,7 @@ import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
 import com.hedera.test.mocks.TestContextValidator;
-import com.hedera.test.mocks.TestExchangeRates;
 import com.hedera.test.mocks.TestFeesFactory;
-import com.hedera.test.mocks.TestProperties;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
@@ -57,8 +58,6 @@ import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.crypto.engine.CryptoEngine;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -77,7 +76,6 @@ import static com.hedera.test.factories.scenarios.SystemDeleteScenarios.FULL_PAY
 import static com.hedera.test.factories.scenarios.SystemDeleteScenarios.INVALID_PAYER_SIGS_VIA_MAP_SCENARIO;
 import static com.hedera.test.factories.scenarios.SystemDeleteScenarios.MISSING_PAYER_SIGS_VIA_MAP_SCENARIO;
 import static com.hedera.test.factories.txns.SignedTxnFactory.DEFAULT_NODE;
-import static com.hedera.test.mocks.TestUsagePricesProvider.TEST_USAGE_PRICES;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -87,9 +85,7 @@ import static org.mockito.BDDMockito.anyInt;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 public class TxnHandlerVerifySigRegressionTest {
-	private SyncVerifier syncVerifier;
 	private PrecheckKeyReqs precheckKeyReqs;
 	private PrecheckVerifier precheckVerifier;
 	private HederaSigningOrder keyOrder;
@@ -117,22 +113,21 @@ public class TxnHandlerVerifySigRegressionTest {
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
 		var platformStatus = new ContextPlatformStatus();
 		platformStatus.set(PlatformStatus.ACTIVE);
-		PropertySource propertySource = mock(PropertySource.class);
 		subject = new TransactionHandler(
 				null,
 				() -> accounts,
 				DEFAULT_NODE,
 				null,
-				TEST_USAGE_PRICES,
-				TestExchangeRates.TEST_EXCHANGE,
 				TestFeesFactory.FEES_FACTORY.get(),
-				() -> new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource, null),
+				() -> new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, mock(NodeLocalProperties.class), null),
 				new BasicPrecheck(TestContextValidator.TEST_VALIDATOR, new MockGlobalDynamicProps()),
 				new QueryFeeCheck(() -> accounts),
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
+				platformStatus,
+				DummyFunctionalityThrottling.throttlingAlways(false),
+				new DummyHapiPermissions());
 
 		// expect:
 		assertFalse(subject.verifySignature(invalidSignedTxn));
@@ -146,7 +141,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(FULL_PAYER_SIGS_VIA_MAP_SCENARIO);
 
 		// expect:
-		assertTrue(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertTrue(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -157,7 +152,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(MISSING_PAYER_SIGS_VIA_MAP_SCENARIO);
 
 		// expect:
-		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertFalse(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -168,7 +163,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(INVALID_PAYER_SIGS_VIA_MAP_SCENARIO);
 
 		// expect:
-		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertFalse(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -179,7 +174,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(CRYPTO_TRANSFER_RECEIVER_SIG_SCENARIO);
 
 		// expect:
-		assertTrue(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertTrue(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -190,7 +185,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(VALID_QUERY_PAYMENT_SCENARIO);
 
 		// expect:
-		assertTrue(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertTrue(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -201,7 +196,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(INVALID_PAYER_ID_SCENARIO);
 
 		// expect:
-		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertFalse(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -213,7 +208,7 @@ public class TxnHandlerVerifySigRegressionTest {
 
 		// expect:
 		assertThrows(InvalidAccountIDException.class,
-				() -> subject.verifySignature(platformTxn.getSignedTxn()));
+				() -> subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 		verify(runningAvgs).recordAccountLookupRetries(anyInt());
 		verify(runningAvgs).recordAccountRetryWaitMs(anyDouble());
 		verify(speedometers).cycleAccountLookupRetries();
@@ -228,7 +223,7 @@ public class TxnHandlerVerifySigRegressionTest {
 
 		// expect:
 		assertThrows(KeyPrefixMismatchException.class,
-				() -> subject.verifySignature(platformTxn.getSignedTxn()));
+				() -> subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	@Test
@@ -239,7 +234,7 @@ public class TxnHandlerVerifySigRegressionTest {
 		setupFor(QUERY_PAYMENT_MISSING_SIGS_SCENARIO);
 
 		// expect:
-		assertFalse(subject.verifySignature(platformTxn.getSignedTxn()));
+		assertFalse(subject.verifySignature(platformTxn.getBackwardCompatibleSignedTxn()));
 	}
 
 	private void setupFor(TxnHandlingScenario scenario)	throws Throwable {
@@ -250,17 +245,19 @@ public class TxnHandlerVerifySigRegressionTest {
 		speedometers = mock(MiscSpeedometers.class);
 		keyOrder = new HederaSigningOrder(
 				new MockEntityNumbers(),
-				defaultLookupsFor(null, () -> accounts, () -> null, ref -> null),
+				defaultLookupsFor(null, () -> accounts, () -> null, ref -> null, ref -> null),
 				updateAccountSigns,
-				targetWaclSigns);
+				targetWaclSigns,
+				new MockGlobalDynamicProps());
 		retryingKeyOrder =
 				new HederaSigningOrder(
 						new MockEntityNumbers(),
 						defaultLookupsPlusAccountRetriesFor(
-								null, () -> accounts, () -> null, ref -> null,
+								null, () -> accounts, () -> null, ref -> null, ref -> null,
 								MN, MN, runningAvgs, speedometers),
 						updateAccountSigns,
-						targetWaclSigns);
+						targetWaclSigns,
+						new MockGlobalDynamicProps());
 		isQueryPayment = PrecheckUtils.queryPaymentTestFor(DEFAULT_NODE);
 		SyncVerifier syncVerifier = new CryptoEngine()::verifySync;
 		precheckKeyReqs = new PrecheckKeyReqs(keyOrder, retryingKeyOrder, isQueryPayment);
@@ -277,7 +274,8 @@ public class TxnHandlerVerifySigRegressionTest {
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
+				platformStatus,
+				new DummyHapiPermissions());
 	}
 }
 

@@ -4,7 +4,7 @@ package com.hedera.services.sigs.order;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,21 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
+import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.hedera.services.legacy.crypto.SignatureStatusCode;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static com.hedera.test.utils.IdUtils.*;
 
-@RunWith(JUnitPlatform.class)
 public class SigStatusOrderResultFactoryTest {
 	private SigStatusOrderResultFactory subject;
 	private boolean inHandleTxnDynamicContext = true;
@@ -191,6 +190,23 @@ public class SigStatusOrderResultFactoryTest {
 	}
 
 	@Test
+	public void reportsMissingSchedule() {
+		// setup:
+		ScheduleID missing = IdUtils.asSchedule("1.2.3");
+		SignatureStatus expectedError = new SignatureStatus(
+				SignatureStatusCode.INVALID_SCHEDULE_ID, ResponseCodeEnum.INVALID_SCHEDULE_ID,
+				inHandleTxnDynamicContext, txnId, missing);
+
+		// given:
+		subject = new SigStatusOrderResultFactory(inHandleTxnDynamicContext);
+		SigningOrderResult<SignatureStatus> summary = subject.forMissingSchedule(missing, txnId);
+		SignatureStatus error = summary.getErrorReport();
+
+		// expect:
+		assertEquals(expectedError.toLogMessage(), error.toLogMessage());
+	}
+
+	@Test
 	public void reportsMissingTopic() {
 		// setup:
 		TopicID missing = asTopic("1.2.3");
@@ -218,6 +234,47 @@ public class SigStatusOrderResultFactoryTest {
 		// given:
 		subject = new SigStatusOrderResultFactory(inHandleTxnDynamicContext);
 		SigningOrderResult<SignatureStatus> summary = subject.forMissingAutoRenewAccount(missing, txnId);
+		SignatureStatus error = summary.getErrorReport();
+
+		// expect:
+		assertEquals(expectedError.toLogMessage(), error.toLogMessage());
+	}
+
+	@Test
+	public void reportsUnresolvableSigners() {
+		// setup:
+		var errorReport = new SignatureStatus(
+				SignatureStatusCode.INVALID_SCHEDULE_ID,
+				ResponseCodeEnum.INVALID_SCHEDULE_ID,
+				true,
+				TransactionID.getDefaultInstance(),
+				ScheduleID.getDefaultInstance());
+		TransactionBody scheduled = TransactionBody.getDefaultInstance();
+		SignatureStatus expectedError = new SignatureStatus(
+				SignatureStatusCode.UNRESOLVABLE_REQUIRED_SIGNERS, ResponseCodeEnum.UNRESOLVABLE_REQUIRED_SIGNERS,
+				inHandleTxnDynamicContext, txnId, scheduled, errorReport);
+
+		// given:
+		subject = new SigStatusOrderResultFactory(inHandleTxnDynamicContext);
+		var summary = subject.forUnresolvableRequiredSigners(scheduled, txnId, errorReport);
+		SignatureStatus error = summary.getErrorReport();
+
+		// expect:
+		assertEquals(expectedError.toLogMessage(), error.toLogMessage());
+	}
+
+	@Test
+	public void reportsNestedScheduleCreate() {
+		// setup:
+		SignatureStatus expectedError = new SignatureStatus(
+				SignatureStatusCode.SCHEDULED_TRANSACTION_NOT_IN_WHITELIST,
+				ResponseCodeEnum.SCHEDULED_TRANSACTION_NOT_IN_WHITELIST,
+				inHandleTxnDynamicContext,
+				txnId);
+
+		// given:
+		subject = new SigStatusOrderResultFactory(inHandleTxnDynamicContext);
+		var summary = subject.forUnschedulableTxn(txnId);
 		SignatureStatus error = summary.getErrorReport();
 
 		// expect:

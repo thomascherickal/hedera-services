@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.utils.validation.domain;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,5 +38,10 @@ public class Node {
 
 	public void setIpv4Addr(String ipv4Addr) {
 		this.ipv4Addr = ipv4Addr;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s:50211:0.0.%d", ipv4Addr, account);
 	}
 }

@@ -4,7 +4,7 @@ package com.hedera.services.config;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,20 +61,6 @@ public class AccountNumbers {
 			systemAdmin = properties.getLongProperty("accounts.systemAdmin");
 		}
 		return systemAdmin;
-	}
-
-	public long firstManagedBySysAdmin() {
-		if (firstManagedBySysAdmin == UNKNOWN_NUMBER) {
-			firstManagedBySysAdmin = properties.getLongProperty("accounts.systemAdmin.firstManaged");
-		}
-		return firstManagedBySysAdmin;
-	}
-
-	public long lastManagedBySysAdmin() {
-		if (lastManagedBySysAdmin == UNKNOWN_NUMBER) {
-			lastManagedBySysAdmin = properties.getLongProperty("accounts.systemAdmin.lastManaged");
-		}
-		return lastManagedBySysAdmin;
 	}
 
 	public long addressBookAdmin() {

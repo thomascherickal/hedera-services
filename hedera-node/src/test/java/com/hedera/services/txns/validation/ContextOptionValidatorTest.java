@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ package com.hedera.services.txns.validation;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.context.primitives.StateView;
 import com.hedera.services.context.properties.GlobalDynamicProperties;
-import com.hedera.services.context.properties.PropertySource;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
+import com.hedera.services.files.HFileMeta;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
@@ -51,12 +50,13 @@ import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.swirlds.fcmap.FCMap;
+import org.apache.commons.codec.binary.Hex;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,14 +69,13 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.CONTRACT_DELET
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_CONTRACT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_FILE_ID;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOPIC_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_START;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_NAME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EMPTY_TOKEN_TRANSFER_BODY;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_NAME_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_SYMBOL_TOO_LONG;
@@ -88,7 +87,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 public class ContextOptionValidatorTest {
 	final private Key key = SignedTxnFactory.DEFAULT_PAYER_KT.asKey();
 	final private Instant now = Instant.now();
@@ -116,18 +114,16 @@ public class ContextOptionValidatorTest {
 	final private TokenID cTId = TokenID.newBuilder().setTokenNum(3_456L).build();
 	final private TokenID dTId = TokenID.newBuilder().setTokenNum(4_567L).build();
 
-	private MerkleTopic missingMerkleTopic;
 	private MerkleTopic deletedMerkleTopic;
 	private MerkleTopic expiredMerkleTopic;
 	private MerkleTopic merkleTopic;
 	private FCMap topics;
 	private FCMap accounts;
-	private PropertySource properties;
 	private TransactionContext txnCtx;
 	private ContextOptionValidator subject;
 	private JKey wacl;
-	private JFileInfo attr;
-	private JFileInfo deletedAttr;
+	private HFileMeta attr;
+	private HFileMeta deletedAttr;
 	private StateView view;
 	private long expiry = 2_000_000L;
 	private FileID target = asFile("0.0.123");
@@ -138,7 +134,6 @@ public class ContextOptionValidatorTest {
 	private void setup() throws Exception {
 		txnCtx = mock(TransactionContext.class);
 		given(txnCtx.consensusTime()).willReturn(now);
-		properties = mock(PropertySource.class);
 		accounts = mock(FCMap.class);
 		given(accounts.get(MerkleEntityId.fromAccountId(a))).willReturn(aV);
 		given(accounts.get(MerkleEntityId.fromAccountId(deleted))).willReturn(deletedV);
@@ -149,7 +144,6 @@ public class ContextOptionValidatorTest {
 		given(dynamicProperties.maxMemoUtf8Bytes()).willReturn(100);
 
 		topics = mock(FCMap.class);
-		missingMerkleTopic = TopicFactory.newTopic().memo("I'm not here").get();
 		deletedMerkleTopic = TopicFactory.newTopic().deleted(true).get();
 		expiredMerkleTopic = TopicFactory.newTopic().expiry(now.minusSeconds(555L).getEpochSecond()).get();
 		merkleTopic = TopicFactory.newTopic().memo("Hi, over here!").expiry(now.plusSeconds(555L).getEpochSecond()).get();
@@ -159,14 +153,14 @@ public class ContextOptionValidatorTest {
 		given(topics.get(MerkleEntityId.fromTopicId(expiredTopicId))).willReturn(expiredMerkleTopic);
 
 		wacl = TxnHandlingScenario.SIMPLE_NEW_WACL_KT.asJKey();
-		attr = new JFileInfo(false, wacl, expiry);
-		deletedAttr = new JFileInfo(true, wacl, expiry);
+		attr = new HFileMeta(false, wacl, expiry);
+		deletedAttr = new HFileMeta(true, wacl, expiry);
 		view = mock(StateView.class);
 
-		subject = new ContextOptionValidator(properties, txnCtx, dynamicProperties);
+		subject = new ContextOptionValidator(txnCtx, dynamicProperties);
 	}
 
-	private FileGetInfoResponse.FileInfo asMinimalInfo(JFileInfo meta) throws Exception {
+	private FileGetInfoResponse.FileInfo asMinimalInfo(HFileMeta meta) throws Exception {
 		return FileGetInfoResponse.FileInfo.newBuilder()
 				.setDeleted(meta.isDeleted())
 				.setKeys(JKey.mapJKey(meta.getWacl()).getKeyList())
@@ -315,13 +309,13 @@ public class ContextOptionValidatorTest {
 		// setup:
 		Duration autoRenewPeriod = Duration.newBuilder().setSeconds(55L).build();
 
-		given(properties.getLongProperty("ledger.autoRenewPeriod.minDuration")).willReturn(1_000L);
-		given(properties.getLongProperty("ledger.autoRenewPeriod.maxDuration")).willReturn(1_000_000L);
+		given(dynamicProperties.minAutoRenewDuration()).willReturn(1_000L);
+		given(dynamicProperties.maxAutoRenewDuration()).willReturn(1_000_000L);
 
 		// expect:
 		assertFalse(subject.isValidAutoRenewPeriod(autoRenewPeriod));
 		// and:
-		verify(properties).getLongProperty("ledger.autoRenewPeriod.minDuration");
+		verify(dynamicProperties).minAutoRenewDuration();
 	}
 
 	@Test
@@ -329,14 +323,14 @@ public class ContextOptionValidatorTest {
 		// setup:
 		Duration autoRenewPeriod = Duration.newBuilder().setSeconds(500_000L).build();
 
-		given(properties.getLongProperty("ledger.autoRenewPeriod.minDuration")).willReturn(1_000L);
-		given(properties.getLongProperty("ledger.autoRenewPeriod.maxDuration")).willReturn(1_000_000L);
+		given(dynamicProperties.minAutoRenewDuration()).willReturn(1_000L);
+		given(dynamicProperties.maxAutoRenewDuration()).willReturn(1_000_000L);
 
 		// expect:
 		assertTrue(subject.isValidAutoRenewPeriod(autoRenewPeriod));
 		// and:
-		verify(properties).getLongProperty("ledger.autoRenewPeriod.minDuration");
-		verify(properties).getLongProperty("ledger.autoRenewPeriod.maxDuration");
+		verify(dynamicProperties).minAutoRenewDuration();
+		verify(dynamicProperties).maxAutoRenewDuration();
 	}
 
 	@Test
@@ -344,14 +338,14 @@ public class ContextOptionValidatorTest {
 		// setup:
 		Duration autoRenewPeriod = Duration.newBuilder().setSeconds(5_555_555L).build();
 
-		given(properties.getLongProperty("ledger.autoRenewPeriod.minDuration")).willReturn(1_000L);
-		given(properties.getLongProperty("ledger.autoRenewPeriod.maxDuration")).willReturn(1_000_000L);
+		given(dynamicProperties.minAutoRenewDuration()).willReturn(1_000L);
+		given(dynamicProperties.maxAutoRenewDuration()).willReturn(1_000_000L);
 
 		// expect:
 		assertFalse(subject.isValidAutoRenewPeriod(autoRenewPeriod));
 		// and:
-		verify(properties).getLongProperty("ledger.autoRenewPeriod.minDuration");
-		verify(properties).getLongProperty("ledger.autoRenewPeriod.maxDuration");
+		verify(dynamicProperties).minAutoRenewDuration();
+		verify(dynamicProperties).maxAutoRenewDuration();
 	}
 
 	@Test
@@ -410,24 +404,6 @@ public class ContextOptionValidatorTest {
 				Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build()));
 		// and:
 		verify(txnCtx).consensusTime();
-	}
-
-	@Test
-	public void rejectsLongEntityMemo() {
-		// expect:
-		assertFalse(subject.isValidEntityMemo(new String(new char[101])));
-	}
-
-	@Test
-	public void accepts100ByteEntityMemo() {
-		// expect:
-		assertTrue(subject.isValidEntityMemo(new String(new char[100])));
-	}
-
-	@Test
-	public void acceptsNullEntityMemo() {
-		// expect:
-		assertTrue(subject.isValidEntityMemo(null));
 	}
 
 	@Test
@@ -544,29 +520,32 @@ public class ContextOptionValidatorTest {
 
 	@Test
 	public void acceptsReasonableTokenSymbol() {
-		given(dynamicProperties.maxTokenSymbolLength()).willReturn(3);
+		given(dynamicProperties.maxTokenSymbolUtf8Bytes()).willReturn(3);
 
 		// expect:
 		assertEquals(OK, subject.tokenSymbolCheck("AS"));
 	}
 
 	@Test
-	public void rejectsMissingTokenSymbol() {
+	public void rejectsMalformedTokenSymbol() {
+		given(dynamicProperties.maxTokenSymbolUtf8Bytes()).willReturn(100);
+
 		// expect:
 		assertEquals(MISSING_TOKEN_SYMBOL, subject.tokenSymbolCheck(""));
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, subject.tokenSymbolCheck("\u0000"));
 	}
 
 	@Test
 	public void rejectsTooLongTokenSymbol() {
-		given(dynamicProperties.maxTokenSymbolLength()).willReturn(3);
+		given(dynamicProperties.maxTokenSymbolUtf8Bytes()).willReturn(3);
 
 		// expect:
-		assertEquals(TOKEN_SYMBOL_TOO_LONG, subject.tokenSymbolCheck("ASDF"));
+		assertEquals(TOKEN_SYMBOL_TOO_LONG, subject.tokenSymbolCheck("A€"));
 	}
 
 	@Test
 	public void acceptsReasonableTokenName() {
-		given(dynamicProperties.maxTokenNameLength()).willReturn(100);
+		given(dynamicProperties.maxTokenNameUtf8Bytes()).willReturn(100);
 
 		// expect:
 		assertEquals(OK, subject.tokenNameCheck("ASDF"));
@@ -579,11 +558,12 @@ public class ContextOptionValidatorTest {
 	}
 
 	@Test
-	public void rejectsTooLongTokenName() {
-		given(dynamicProperties.maxTokenNameLength()).willReturn(3);
+	public void rejectsMalformedTokenName() {
+		given(dynamicProperties.maxTokenNameUtf8Bytes()).willReturn(3);
 
 		// expect:
-		assertEquals(TOKEN_NAME_TOO_LONG, subject.tokenNameCheck("ASDF"));
+		assertEquals(TOKEN_NAME_TOO_LONG, subject.tokenNameCheck("A€"));
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, subject.tokenNameCheck("\u0000"));
 	}
 
 	@Test
@@ -617,5 +597,16 @@ public class ContextOptionValidatorTest {
 
 		// expect:
 		assertEquals(TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED, subject.isAcceptableTokenTransfersLength(wrapper));
+	}
+
+	@Test
+	void memoCheckWorks() {
+		char[] aaa = new char[101];
+		Arrays.fill(aaa, 'a');
+
+		// expect:
+		assertEquals(OK, subject.memoCheck("OK"));
+		assertEquals(MEMO_TOO_LONG, subject.memoCheck(new String(aaa)));
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, subject.memoCheck("Not s\u0000 ok!"));
 	}
 }

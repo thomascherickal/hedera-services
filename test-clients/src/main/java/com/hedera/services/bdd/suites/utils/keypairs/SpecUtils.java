@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.utils.keypairs;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hedera.services.legacy.core.AccountKeyListObj;
 import com.hedera.services.legacy.core.KeyPairObj;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayOutputStream;
@@ -92,6 +93,18 @@ public class SpecUtils {
 		oos.close();
 
 		return CommonUtils.base64encode(baos.toByteArray());
+	}
+
+	public static KeyPairObj asLegacyKp(EdDSAPrivateKey privateKey) {
+		var hexPublicKey = Hex.encodeHexString(privateKey.getAbyte());
+		var hexPrivateKey = Hex.encodeHexString(privateKey.getEncoded());
+		return new KeyPairObj(hexPublicKey, hexPrivateKey);
+	}
+
+	public static KeyPairObj asLegacyKp(KeyPair keyPair) {
+		var hexPublicKey = Hex.encodeHexString(keyPair.getPublic().getEncoded());
+		var hexPrivateKey = Hex.encodeHexString(keyPair.getPrivate().getEncoded());
+		return new KeyPairObj(hexPublicKey, hexPrivateKey);
 	}
 
 	public static void main(String... args) throws Exception {

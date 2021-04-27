@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package com.hedera.services.txns.validation;
  * ‍
  */
 
-import com.hedera.services.legacy.core.jproto.JKey;
+import static com.hedera.services.txns.validation.PureValidation.checkKey;
 import com.hedera.services.sigs.utils.ImmutableKeyUtils;
 import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -143,17 +143,5 @@ public class TokenListChecks {
         }
 
         return validity;
-    }
-
-    public static ResponseCodeEnum checkKey(Key key, ResponseCodeEnum failure) {
-        try {
-            var fcKey = JKey.mapKey(key);
-            if (!fcKey.isValid()) {
-                return failure;
-            }
-            return OK;
-        } catch (Exception ignore) {
-            return failure;
-        }
     }
 }

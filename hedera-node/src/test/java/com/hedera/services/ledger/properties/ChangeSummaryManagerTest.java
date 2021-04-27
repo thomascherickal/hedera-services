@@ -4,7 +4,7 @@ package com.hedera.services.ledger.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,12 @@ package com.hedera.services.ledger.properties;
 import com.hedera.services.ledger.accounts.TestAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.EnumMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static com.hedera.services.ledger.properties.TestAccountProperty.*;
 
-@RunWith(JUnitPlatform.class)
 public class ChangeSummaryManagerTest {
 	private ChangeSummaryManager<TestAccount, TestAccountProperty> subject = new ChangeSummaryManager<>();
 	private EnumMap<TestAccountProperty, Object> changes = new EnumMap<>(TestAccountProperty.class);

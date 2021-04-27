@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.consensus;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,15 @@ import com.hedera.services.bdd.spec.HapiApiSpec;
 
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTopicInfo;
 
-import com.hedera.services.bdd.spec.utilops.UtilVerbs;
 import com.hedera.services.bdd.suites.HapiApiSuite;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.hedera.services.bdd.spec.HapiApiSpec.defaultHapiSpec;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.*;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.*;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.AUTORENEW_ACCOUNT_NOT_ALLOWED;
@@ -44,6 +41,7 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.BAD_ENCODING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_AUTORENEW_ACCOUNT;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_RENEWAL_PERIOD;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 
 public class TopicCreateSuite extends HapiApiSuite {
@@ -62,10 +60,10 @@ public class TopicCreateSuite extends HapiApiSuite {
 				submitKeyIsValidated(),
 				adminKeyIsValidated(),
 				autoRenewAccountIsValidated(),
-				memoTooLong(),
 				noAutoRenewPeriod(),
 				allFieldsSetHappyCase(),
-				feeAsExpected()
+				feeAsExpected(),
+				memoValidations()
 		);
 	}
 
@@ -136,17 +134,18 @@ public class TopicCreateSuite extends HapiApiSuite {
 				);
 	}
 
-	private HapiApiSpec memoTooLong() {
+	private HapiApiSpec memoValidations() {
 		byte[] longBytes = new byte[1000];
 		Arrays.fill(longBytes, (byte) 33);
 		String longMemo = new String(longBytes, StandardCharsets.UTF_8);
-		return defaultHapiSpec("memoTooLong")
-				.given()
-				.when()
-				.then(
+		return defaultHapiSpec("MemoValidations")
+				.given().when().then(
 						createTopic("testTopic")
 								.topicMemo(longMemo)
-								.hasKnownStatus(MEMO_TOO_LONG)
+								.hasKnownStatus(MEMO_TOO_LONG),
+						createTopic("alsoTestTopic")
+								.topicMemo(ZERO_BYTE_MEMO)
+								.hasKnownStatus(INVALID_ZERO_BYTE_IN_STRING)
 				);
 	}
 
@@ -163,7 +162,7 @@ public class TopicCreateSuite extends HapiApiSuite {
 
 
 	private HapiApiSpec signingRequirementsEnforced() {
-		long PAYER_BALANCE = 1_999_999_999_999L;
+		long PAYER_BALANCE = 1_999_999_999L;
 
 		return defaultHapiSpec("SigningRequirementsEnforced")
 				.given(
@@ -261,7 +260,7 @@ public class TopicCreateSuite extends HapiApiSuite {
 								.via("topicCreate")
 				)
 				.then(
-				        validateFee("topicCreate", 0.0226)
+				        validateChargedUsd("topicCreate", 0.0226)
 				);
 	}
 

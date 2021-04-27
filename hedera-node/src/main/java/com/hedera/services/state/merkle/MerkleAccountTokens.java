@@ -4,7 +4,7 @@ package com.hedera.services.state.merkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toList;
 public class MerkleAccountTokens extends AbstractMerkleLeaf {
 	private static final Logger log = LogManager.getLogger(MerkleAccountTokens.class);
 
-	static final int MAX_CONCEIVABLE_TOKEN_ID_PARTS = 3_000;
+	static final int MAX_CONCEIVABLE_TOKEN_ID_PARTS = Integer.MAX_VALUE;
 
 	static final long[] NO_ASSOCIATIONS = new long[0];
 	static final int NUM_ID_PARTS = 3;
@@ -63,8 +63,8 @@ public class MerkleAccountTokens extends AbstractMerkleLeaf {
 
 	public MerkleAccountTokens(long[] tokenIds) {
 		if (tokenIds.length % NUM_ID_PARTS != 0) {
-			throw new IllegalArgumentException(
-					"The token ids array length must be divisible by " + NUM_ID_PARTS + "!");
+			throw new IllegalArgumentException(String.format(
+					"Argument 'tokenIds' has length=%d not divisible by %d", tokenIds.length, NUM_ID_PARTS));
 		}
 		this.tokenIds = tokenIds;
 	}
@@ -202,35 +202,6 @@ public class MerkleAccountTokens extends AbstractMerkleLeaf {
 		someTokenIds[num(i)] = id.getTokenNum();
 	}
 
-	public int purge(Predicate<TokenID> isGone, Predicate<TokenID> isDeleted) {
-		int effectiveAssociations = 0, meaningfulAssociations = 0, n = numAssociations();
-		for (int i = 0; i < n; i++) {
-			var id = idAt(i);
-			if (isGone.test(id)) {
-				continue;
-			}
-			meaningfulAssociations++;
-			if (isDeleted.test(id)) {
-				continue;
-			}
-			effectiveAssociations++;
-		}
-
-		if (meaningfulAssociations != n) {
-			long[] newTokenIds = new long[meaningfulAssociations * NUM_ID_PARTS];
-			for (int i = 0, j = 0; i < n; i++) {
-				var id = idAt(i);
-				if (isGone.test(id)) {
-					continue;
-				}
-				System.arraycopy(tokenIds, i * NUM_ID_PARTS, newTokenIds, j * NUM_ID_PARTS, NUM_ID_PARTS);
-				j++;
-			}
-			this.tokenIds = newTokenIds;
-		}
-		return effectiveAssociations;
-	}
-
 	private TokenID idAt(int i) {
 		return TokenID.newBuilder()
 				.setShardNum(tokenIds[shard(i)])
@@ -252,10 +223,10 @@ public class MerkleAccountTokens extends AbstractMerkleLeaf {
 		return i * NUM_ID_PARTS + SHARD_OFFSET;
 	}
 
-	int logicalIndexOf(TokenID token) {
+	private int logicalIndexOf(TokenID token) {
 		int lo = 0, hi = tokenIds.length / NUM_ID_PARTS - 1;
 		while (lo <= hi) {
-			int mid = (lo + (hi - lo) / NUM_ID_PARTS);
+			int mid = lo + (hi - lo) / 2;
 			int comparison = compareImplied(mid, token);
 			if (comparison == 0) {
 				return mid;

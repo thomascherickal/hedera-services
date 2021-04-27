@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.crypto.queries;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.hedera.services.fees.calculation.crypto.queries;
  * ‍
  */
 
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.calculation.FeeCalcUtils;
 import com.hedera.services.queries.meta.GetTxnRecordAnswer;
@@ -40,8 +41,7 @@ import com.hedera.services.state.merkle.MerkleEntityId;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+import org.junit.platform.engine.support.hierarchical.Node;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +58,6 @@ import static org.mockito.BDDMockito.*;
 import static com.hedera.test.utils.IdUtils.*;
 import static com.hederahashgraph.api.proto.java.ResponseType.*;
 
-@RunWith(JUnitPlatform.class)
 class GetTxnRecordResourceUsageTest {
 	private TransactionID targetTxnId = TransactionID.newBuilder()
 			.setAccountID(asAccount("0.0.2"))
@@ -73,7 +72,7 @@ class GetTxnRecordResourceUsageTest {
 	Query satisfiableCostAnswer = txnRecordQuery(targetTxnId, COST_ANSWER);
 	Query unsatisfiable = txnRecordQuery(missingTxnId, ANSWER_ONLY);
 
-	PropertySource propertySource;
+	NodeLocalProperties nodeProps;
 	StateView view;
 	RecordCache recordCache;
 	CryptoFeeBuilder usageEstimator;
@@ -89,8 +88,8 @@ class GetTxnRecordResourceUsageTest {
 		usageEstimator = mock(CryptoFeeBuilder.class);
 		recordCache = mock(RecordCache.class);
 		accounts = mock(FCMap.class);
-		propertySource = mock(PropertySource.class);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource, null);
+		nodeProps = mock(NodeLocalProperties.class);
+		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, nodeProps, null);
 
 		answerFunctions = mock(AnswerFunctions.class);
 		given(answerFunctions.txnRecord(recordCache, view, satisfiableAnswerOnly))
@@ -216,17 +215,6 @@ class GetTxnRecordResourceUsageTest {
 		// then:
 		assertFalse(queryCtx.containsKey(GetTxnRecordAnswer.PRIORITY_RECORD_CTX_KEY));
 		assertSame(answerOnlyUsage, actual);
-	}
-
-	@Test
-	public void rethrowsIae() {
-		// given:
-		Query query = txnRecordQuery(missingTxnId, ANSWER_ONLY);
-		given(usageEstimator.getTransactionRecordQueryFeeMatrices(any(), any()))
-				.willThrow(IllegalStateException.class);
-
-		// expect:
-		assertThrows(IllegalArgumentException.class, () -> subject.usageGiven(query, view));
 	}
 
 	@Test

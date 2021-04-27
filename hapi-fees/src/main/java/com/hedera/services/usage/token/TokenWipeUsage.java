@@ -4,7 +4,7 @@ package com.hedera.services.usage.token;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ public class TokenWipeUsage extends TokenTxnUsage<TokenWipeUsage> {
 	}
 
 	public FeeData get() {
-		addAccountBpt();
+		addEntityBpt();
 		addAmountBpt();
-		addAccountBpt();
+		addEntityBpt();
 		addTokenTransfersRecordRb(1, 1);
 		return usageEstimator.get();
 	}

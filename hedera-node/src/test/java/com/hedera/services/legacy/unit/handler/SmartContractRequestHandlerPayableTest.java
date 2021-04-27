@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit.handler;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,23 +23,32 @@ package com.hedera.services.legacy.unit.handler;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.config.MockGlobalDynamicProps;
+import com.hedera.services.contracts.sources.LedgerAccountsSource;
+import com.hedera.services.exceptions.NegativeAccountBalanceException;
 import com.hedera.services.fees.HbarCentExchange;
 import com.hedera.services.ledger.HederaLedger;
 import com.hedera.services.ledger.TransactionalLedger;
 import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.ledger.ids.EntityIdSource;
-import com.hedera.services.ledger.properties.ChangeSummaryManager;
 import com.hedera.services.ledger.properties.AccountProperty;
+import com.hedera.services.ledger.properties.ChangeSummaryManager;
+import com.hedera.services.legacy.TestHelper;
 import com.hedera.services.legacy.handler.SmartContractRequestHandler;
+import com.hedera.services.legacy.unit.FCStorageWrapper;
 import com.hedera.services.legacy.util.SCEncoding;
 import com.hedera.services.records.AccountRecordsHistorian;
 import com.hedera.services.state.expiry.ExpiringCreations;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.test.mocks.SolidityLifecycleFactory;
 import com.hedera.test.mocks.StorageSourceFactory;
-import com.hedera.test.mocks.TestProperties;
 import com.hedera.test.mocks.TestUsagePricesProvider;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractCallLocalQuery;
@@ -57,26 +66,6 @@ import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
 import com.hederahashgraph.builder.RequestBuilder;
-import com.hedera.services.legacy.TestHelper;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.submerkle.SequenceNumber;
-import com.hedera.services.state.merkle.MerkleBlobMeta;
-import com.hedera.services.state.merkle.MerkleOptionalBlob;
-import com.hedera.services.exceptions.NegativeAccountBalanceException;
-import com.hedera.services.legacy.unit.FCStorageWrapper;
-import com.hedera.services.state.submerkle.ExchangeRates;
-import com.hedera.services.contracts.sources.LedgerAccountsSource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-
 import com.swirlds.fcmap.FCMap;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
@@ -89,11 +78,17 @@ import org.ethereum.db.ServicesRepositoryRoot;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -104,8 +99,6 @@ import static org.mockito.Mockito.mock;
  * @version Junit5 Tests the SmartContractRequestHandler class features for a payable contract
  */
 
-@Disabled
-@RunWith(JUnitPlatform.class)
 public class SmartContractRequestHandlerPayableTest {
 
   public static final String PAYABLE_TEST_BIN = "/testfiles/PayTest.bin";
@@ -168,8 +161,8 @@ public class SmartContractRequestHandlerPayableTest {
     contractFileId = RequestBuilder.getFileIdBuild(contractFileNumber, 0L, 0L);
 
     //Init FCMap
-    fcMap = new FCMap<>(new MerkleEntityId.Provider(), MerkleAccount.LEGACY_PROVIDER);
-    storageMap = new FCMap<>(new MerkleBlobMeta.Provider(), new MerkleOptionalBlob.Provider());
+    fcMap = new FCMap<>();
+    storageMap = new FCMap<>();
     // Create accounts
     createAccount(payerAccountId, INITIAL_BALANCE);
     createAccount(nodeAccountId, INITIAL_BALANCE);

@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.transactions.token;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ package com.hedera.services.bdd.spec.transactions.token;
  */
 
 import com.google.common.base.MoreObjects;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hedera.services.usage.token.TokenCreateUsage;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.FeeData;
@@ -46,6 +48,7 @@ import java.util.OptionalLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.hedera.services.bdd.spec.transactions.TxnFactory.bannerWith;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.suFrom;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 
@@ -54,6 +57,7 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 
 	private String token;
 
+	private boolean advertiseCreation = false;
 	private OptionalInt decimals = OptionalInt.empty();
 	private OptionalLong expiry = OptionalLong.empty();
 	private OptionalLong initialSupply = OptionalLong.empty();
@@ -63,6 +67,7 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 	private Optional<String> wipeKey = Optional.empty();
 	private Optional<String> supplyKey = Optional.empty();
 	private Optional<String> symbol = Optional.empty();
+	private Optional<String> entityMemo = Optional.empty();
 	private Optional<String> name = Optional.empty();
 	private Optional<String> treasury = Optional.empty();
 	private Optional<String> adminKey = Optional.empty();
@@ -78,6 +83,20 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 
 	public HapiTokenCreate(String token) {
 		this.token = token;
+	}
+
+	public void setTokenPrefix(String prefix) {
+		token = prefix + token;
+        }
+
+	public HapiTokenCreate entityMemo(String memo) {
+		this.entityMemo = Optional.of(memo);
+		return this;
+	}
+
+	public HapiTokenCreate advertisingCreation() {
+		advertiseCreation = true;
+		return this;
 	}
 
 	public HapiTokenCreate initialSupply(long initialSupply) {
@@ -189,6 +208,7 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 						TokenCreateTransactionBody.class, b -> {
 							symbol.ifPresent(b::setSymbol);
 							name.ifPresent(b::setName);
+							entityMemo.ifPresent(s -> b.setMemo(s));
 							initialSupply.ifPresent(b::setInitialSupply);
 							decimals.ifPresent(b::setDecimals);
 							freezeDefault.ifPresent(b::setFreezeDefault);
@@ -204,7 +224,10 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 							expiry.ifPresent(t -> b.setExpiry(Timestamp.newBuilder().setSeconds(t).build()));
 							wipeKey.ifPresent(k -> b.setWipeKey(spec.registry().getKey(k)));
 							kycKey.ifPresent(k -> b.setKycKey(spec.registry().getKey(k)));
-							treasury.ifPresent(a -> b.setTreasury(spec.registry().getAccountID(a)));
+							treasury.ifPresent(a -> {
+								var treasuryId = TxnUtils.asId(a, spec);
+								b.setTreasury(treasuryId);
+							});
 						});
 		return b -> b.setTokenCreation(opBody);
 	}
@@ -231,15 +254,38 @@ public class HapiTokenCreate extends HapiTxnOp<HapiTokenCreate> {
 			return;
 		}
 		var registry = spec.registry();
-		registry.saveSymbol(token, symbol.orElse(token));
-		registry.saveName(token, name.orElse(token));
+		symbol.ifPresent(s -> registry.saveSymbol(token, s));
+		name.ifPresent(s -> registry.saveName(token, s));
+		registry.saveMemo(token, memo.orElse(""));
 		registry.saveTokenId(token, lastReceipt.getTokenID());
+		registry.saveTreasury(token, treasury.orElse(spec.setup().defaultPayerName()));
 
-		adminKey.ifPresent(k -> registry.saveAdminKey(token, registry.getKey(k)));
-		kycKey.ifPresent(k -> registry.saveKycKey(token, registry.getKey(k)));
-		wipeKey.ifPresent(k -> registry.saveWipeKey(token, registry.getKey(k)));
-		supplyKey.ifPresent(k -> registry.saveSupplyKey(token, registry.getKey(k)));
-		freezeKey.ifPresent(k -> registry.saveFreezeKey(token, registry.getKey(k)));
+		try {
+			var submittedBody = CommonUtils.extractTransactionBody(txnSubmitted);
+			var op = submittedBody.getTokenCreation();
+			if (op.hasKycKey()) {
+				registry.saveKycKey(token, op.getKycKey());
+			}
+			if (op.hasWipeKey()) {
+				registry.saveWipeKey(token, op.getWipeKey());
+			}
+			if (op.hasAdminKey()) {
+				registry.saveAdminKey(token, op.getAdminKey());
+			}
+			if (op.hasSupplyKey()) {
+				registry.saveSupplyKey(token, op.getSupplyKey());
+			}
+			if (op.hasFreezeKey()) {
+				registry.saveFreezeKey(token, op.getFreezeKey());
+			}
+		} catch (InvalidProtocolBufferException impossible) { }
+
+		if (advertiseCreation) {
+			String banner = "\n\n" + bannerWith(
+					String.format(
+							"Created token '%s' with id '0.0.%d'.", token, lastReceipt.getTokenID().getTokenNum()));
+			log.info(banner);
+		}
 	}
 
 	@Override

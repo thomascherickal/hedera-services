@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,9 @@ package com.hedera.services.bdd.spec.utilops;
  * ‍
  */
 
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
-
-import com.hederahashgraph.api.proto.java.Transaction;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
+import com.hederahashgraph.api.proto.java.Transaction;
 
 public abstract class UtilOp extends HapiSpecOperation {
 	@Override

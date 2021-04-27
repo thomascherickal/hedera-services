@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit.handler;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,6 @@ import com.swirlds.common.Platform;
 import com.swirlds.common.PlatformStatus;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.function.Supplier;
 
@@ -54,12 +52,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(JUnitPlatform.class)
 public class TransactionHandlerTest {
-	private Platform platform;
-	private Transaction request;
-	private TransactionID txnId;
-
 	private RecordCache recordCache;
 	private PrecheckVerifier precheckVerifier;
 	private FCMap<MerkleEntityId, MerkleAccount> accounts;
@@ -77,10 +70,6 @@ public class TransactionHandlerTest {
 
 	@BeforeEach
 	public void setUp() {
-		platform = mock(Platform.class);
-		request = mock(Transaction.class);
-		txnId = mock(TransactionID.class);
-
 		recordCache = mock(RecordCache.class);
 		precheckVerifier = mock(PrecheckVerifier.class);
 		accounts = mock(FCMap.class);
@@ -103,16 +92,14 @@ public class TransactionHandlerTest {
 				() -> accounts,
 				nodeAccount,
 				txnThrottling,
-				usagePrices,
-				exchange,
 				fees,
 				stateView,
 				basicPrecheck,
 				queryFeeCheck,
-				throttling,
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
+				platformStatus,
+				null);
 	}
 }

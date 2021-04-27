@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.transactions.crypto;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.hedera.services.bdd.spec.transactions.TxnFactory.bannerWith;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
 import static com.hedera.services.bdd.spec.keys.KeyFactory.KeyType;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.netOf;
@@ -55,6 +56,7 @@ public class HapiCryptoCreate extends HapiTxnOp<HapiCryptoCreate> {
 	 * insufficient transaction fee precheck
 	 */
 	private boolean recharging = false;
+	private boolean advertiseCreation = false;
 	/** The time window (unit of second) of not doing another recharge if just recharged recently */
 	private Optional<Integer> rechargeWindow = Optional.empty();
 	private String account;
@@ -65,9 +67,11 @@ public class HapiCryptoCreate extends HapiTxnOp<HapiCryptoCreate> {
 	private Optional<AccountID> proxy = Optional.empty();
 	private Optional<Boolean> receiverSigRequired = Optional.empty();
 	private Optional<String> keyName = Optional.empty();
+	private Optional<String> entityMemo = Optional.empty();
 	private Optional<KeyType> keyType = Optional.empty();
 	private Optional<SigControl> keyShape = Optional.empty();
 	private Optional<Function<HapiApiSpec, Long>> balanceFn = Optional.empty();
+
 
 	@Override
 	public HederaFunctionality type() {
@@ -79,8 +83,18 @@ public class HapiCryptoCreate extends HapiTxnOp<HapiCryptoCreate> {
 		return name.equals(account) ? key : spec.registry().getKey(name);
 	}
 
+	public HapiCryptoCreate advertisingCreation() {
+		advertiseCreation = true;
+		return this;
+	}
+
 	public HapiCryptoCreate(String account) {
 		this.account = account;
+	}
+
+	public HapiCryptoCreate entityMemo(String memo) {
+		entityMemo = Optional.of(memo);
+		return this;
 	}
 
 	public HapiCryptoCreate sendThreshold(Long amount) {
@@ -156,6 +170,7 @@ public class HapiCryptoCreate extends HapiTxnOp<HapiCryptoCreate> {
 						CryptoCreateTransactionBody.class, b -> {
 							b.setKey(key);
 							proxy.ifPresent(p -> b.setProxyAccountID(p));
+							entityMemo.ifPresent(m -> b.setMemo(m));
 							sendThresh.ifPresent(a -> b.setSendRecordThreshold(a));
 							receiveThresh.ifPresent(a -> b.setReceiveRecordThreshold(a));
 							initialBalance.ifPresent(a -> b.setInitialBalance(a));
@@ -191,6 +206,15 @@ public class HapiCryptoCreate extends HapiTxnOp<HapiCryptoCreate> {
 		spec.registry().saveKey(account, key);
 		spec.registry().saveAccountId(account, lastReceipt.getAccountID());
 		receiverSigRequired.ifPresent(r -> spec.registry().saveSigRequirement(account, r));
+
+		if (advertiseCreation) {
+			String banner = "\n\n" + bannerWith(
+					String.format(
+							"Created account '%s' with id '0.0.%d'.",
+							account,
+							lastReceipt.getAccountID().getAccountNum()));
+			log.info(banner);
+		}
 	}
 
 	@Override

@@ -4,7 +4,7 @@ package com.hedera.services.usage.token;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package com.hedera.services.usage.token;
 
 import com.hederahashgraph.api.proto.java.Query;
 
+import static com.hederahashgraph.fee.FeeBuilder.BASIC_QUERY_RES_HEADER;
 import static org.junit.Assert.*;
 import com.hedera.services.test.IdUtils;
 import com.hedera.services.test.KeyUtils;
@@ -31,17 +32,15 @@ import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.fee.FeeBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Optional;
 
 import static com.hedera.services.usage.token.entities.TokenEntitySizes.TOKEN_ENTITY_SIZES;
 import static com.hederahashgraph.fee.FeeBuilder.BASIC_ENTITY_ID_SIZE;
 
-@RunWith(JUnitPlatform.class)
 public class TokenGetInfoUsageTest {
 	Optional<Key> aKey = Optional.of(KeyUtils.A_COMPLEX_KEY);
+	String memo = "Hope";
 	String name = "WhyWhyWhyWHY";
 	String symbol = "OKITSFINE";
 	TokenID id = IdUtils.asToken("0.0.75231");
@@ -63,10 +62,15 @@ public class TokenGetInfoUsageTest {
 				.givenCurrentSupplyKey(aKey)
 				.givenCurrentlyUsingAutoRenewAccount()
 				.givenCurrentName(name)
+				.givenCurrentMemo(memo)
 				.givenCurrentSymbol(symbol);
 		// and:
 		var expectedKeyBytes = 5 * FeeBuilder.getAccountKeyStorageSize(aKey.get());
-		var expectedBytes = expectedKeyBytes + TOKEN_ENTITY_SIZES.totalBytesInfTokenReprGiven(symbol, name) + BASIC_ENTITY_ID_SIZE;
+		var expectedBytes = BASIC_QUERY_RES_HEADER
+                                + expectedKeyBytes
+				+ TOKEN_ENTITY_SIZES.totalBytesInTokenReprGiven(symbol, name)
+				+ memo.length()
+				+ BASIC_ENTITY_ID_SIZE;
 
 		// when:
 		var usage = subject.get();

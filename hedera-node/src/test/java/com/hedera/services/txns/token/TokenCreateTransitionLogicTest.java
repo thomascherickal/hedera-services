@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ package com.hedera.services.txns.token;
 import com.google.protobuf.ByteString;
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.ledger.HederaLedger;
-import com.hedera.services.tokens.TokenCreationResult;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.CreationResult;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.txns.validation.OptionValidator;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
@@ -38,8 +38,6 @@ import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.util.List;
@@ -56,6 +54,8 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TREASURY_ACCOUNT_FOR_TOKEN;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_WIPE_KEY;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_NAME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
@@ -73,12 +73,12 @@ import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 class TokenCreateTransitionLogicTest {
 	long thisSecond = 1_234_567L;
 	private Instant now = Instant.ofEpochSecond(thisSecond);
 	private int decimals = 2;
 	private long initialSupply = 1_000_000L;
+	private String memo = "...descending into thin air, where no arms / outstretch to catch her";
 	private AccountID payer = IdUtils.asAccount("1.2.3");
 	private AccountID treasury = IdUtils.asAccount("1.2.4");
 	private AccountID renewAccount = IdUtils.asAccount("1.2.5");
@@ -133,7 +133,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx();
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.failure(INVALID_ADMIN_KEY));
+				.willReturn(CreationResult.failure(INVALID_ADMIN_KEY));
 
 		// when:
 		subject.doStateTransition();
@@ -152,7 +152,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx();
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(store.associate(any(), anyList())).willReturn(OK);
 		given(ledger.unfreeze(treasury, created)).willReturn(OK);
 		given(ledger.adjustTokenBalance(treasury, created, initialSupply))
@@ -175,7 +175,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx(false, true);
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(store.associate(any(), anyList())).willReturn(TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED);
 
 		// when:
@@ -195,7 +195,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx(false, true);
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(store.associate(any(), anyList())).willReturn(OK);
 		given(ledger.unfreeze(treasury, created)).willReturn(TOKENS_PER_ACCOUNT_LIMIT_EXCEEDED);
 
@@ -216,7 +216,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx(true, true);
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(ledger.unfreeze(treasury, created)).willReturn(OK);
 		given(ledger.grantKyc(treasury, created)).willReturn(OK);
 		given(ledger.adjustTokenBalance(treasury, created, initialSupply))
@@ -242,7 +242,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx(true, false);
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(store.associate(any(), anyList())).willReturn(OK);
 		given(ledger.grantKyc(treasury, created)).willReturn(OK);
 		given(ledger.adjustTokenBalance(treasury, created, initialSupply))
@@ -266,7 +266,7 @@ class TokenCreateTransitionLogicTest {
 		givenValidTxnCtx(false, true);
 		// and:
 		given(store.createProvisionally(tokenCreateTxn.getTokenCreation(), payer, thisSecond))
-				.willReturn(TokenCreationResult.success(created));
+				.willReturn(CreationResult.success(created));
 		given(store.associate(any(), anyList())).willReturn(OK);
 		given(ledger.unfreeze(treasury, created)).willReturn(OK);
 		given(ledger.adjustTokenBalance(treasury, created, initialSupply))
@@ -436,6 +436,15 @@ class TokenCreateTransitionLogicTest {
 	}
 
 	@Test
+	public void rejectsInvalidMemo() {
+		givenValidTxnCtx();
+		given(validator.memoCheck(any())).willReturn(INVALID_ZERO_BYTE_IN_STRING);
+
+		// expect:
+		assertEquals(INVALID_ZERO_BYTE_IN_STRING, subject.syntaxCheck().apply(tokenCreateTxn));
+	}
+
+	@Test
 	public void rejectsInvalidAutoRenewPeriod() {
 		givenValidTxnCtx();
 		given(validator.isValidAutoRenewPeriod(any())).willReturn(false);
@@ -458,6 +467,7 @@ class TokenCreateTransitionLogicTest {
 	private void givenValidTxnCtx(boolean withKyc, boolean withFreeze) {
 		var builder = TransactionBody.newBuilder()
 				.setTokenCreation(TokenCreateTransactionBody.newBuilder()
+						.setMemo(memo)
 						.setInitialSupply(initialSupply)
 						.setDecimals(decimals)
 						.setTreasury(treasury)
@@ -590,6 +600,7 @@ class TokenCreateTransitionLogicTest {
 	}
 
 	private void withAlwaysValidValidator() {
+		given(validator.memoCheck(any())).willReturn(OK);
 		given(validator.tokenNameCheck(any())).willReturn(OK);
 		given(validator.tokenSymbolCheck(any())).willReturn(OK);
 		given(validator.isValidAutoRenewPeriod(any())).willReturn(true);

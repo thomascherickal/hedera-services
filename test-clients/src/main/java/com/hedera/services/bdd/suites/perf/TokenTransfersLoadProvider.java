@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.perf;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ package com.hedera.services.bdd.suites.perf;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hedera.services.bdd.spec.infrastructure.OpProvider;
+import com.hedera.services.bdd.spec.queries.QueryVerbs;
 import com.hedera.services.bdd.spec.transactions.HapiTxnOp;
-import com.hedera.services.bdd.spec.transactions.TxnUtils;
 import com.hedera.services.bdd.spec.transactions.token.TokenMovement;
 import com.hedera.services.bdd.suites.HapiApiSuite;
+import com.hedera.services.bdd.suites.utils.sysfiles.serdes.FeesJsonToGrpcBytes;
+import com.hedera.services.bdd.suites.utils.sysfiles.serdes.SysFileSerde;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +44,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static com.hedera.services.bdd.spec.transactions.TxnUtils.NOISY_ALLOWED_STATUSES;
+import static com.hedera.services.bdd.spec.HapiPropertySource.asAccount;
+import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
+import static com.hedera.services.bdd.spec.transactions.TxnFactory.bannerWith;
 import static com.hedera.services.bdd.spec.transactions.TxnUtils.NOISY_RETRY_PRECHECKS;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -50,8 +54,22 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
+import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.freeze;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.reduceFeeFor;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.runWithProvider;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.sleepFor;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.uploadDefaultFeeSchedules;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.withOpContext;
+import static com.hedera.services.bdd.suites.perf.PerfUtilOps.stdMgmtOf;
+import static com.hedera.services.bdd.suites.perf.PerfUtilOps.tokenOpsEnablement;
+import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoTransfer;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.DUPLICATE_TRANSACTION;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_PAYER_BALANCE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PLATFORM_NOT_ACTIVE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.SUCCESS;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.UNKNOWN;
 import static java.util.Map.entry;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -78,22 +96,27 @@ public class TokenTransfersLoadProvider extends HapiApiSuite {
 	private HapiApiSpec runTokenTransfers() {
 		return HapiApiSpec.defaultHapiSpec("RunTokenTransfers")
 				.given(
-						withOpContext((spec, opLog) -> {
-							var ciProps = spec.setup().ciPropertiesMap();
-							if (ciProps.has("duration")) {
-								duration.set(ciProps.getLong("duration"));
-							}
-							if (ciProps.has("unit")) {
-								unit.set(ciProps.getTimeUnit("unit"));
-							}
-							if (ciProps.has("maxOpsPerSec")) {
-								maxOpsPerSec.set(ciProps.getInteger("maxOpsPerSec"));
-							}
-						})
-				).when().then(
-						runWithProvider(tokenTransfersFactory())
-								.lasting(duration::get, unit::get)
-								.maxOpsPerSec(maxOpsPerSec::get)
+						getAccountBalance(DEFAULT_PAYER).logged(),
+						stdMgmtOf(duration, unit, maxOpsPerSec),
+						fileUpdate(APP_PROPERTIES)
+								.payingWith(ADDRESS_BOOK_CONTROL)
+								.overridingProps(Map.of("balances.exportPeriodSecs", "300",
+										"balances.exportDir.path", "data/accountBalances/")
+								)
+				).when(	runWithProvider(tokenTransfersFactory())
+						.lasting(duration::get, unit::get)
+						.maxOpsPerSec(maxOpsPerSec::get)
+				).then(
+						getAccountBalance(DEFAULT_PAYER).logged(),
+						// The freeze and long wait after freeze means to keep the server in MAINTAENANCE state till test
+						// end to prevent it from making new export files that may cause account balances validator to
+						// be inconsistent. The freeze shouldn't cause normal perf test any issue.
+						freeze().payingWith(GENESIS)
+								.startingIn(30).seconds()
+								.hasKnownStatusFrom(SUCCESS,UNKNOWN)
+								.hasAnyPrecheck()
+								.andLasting(10).minutes(),
+						sleepFor(60_000)
 				);
 	}
 
@@ -119,34 +142,44 @@ public class TokenTransfersLoadProvider extends HapiApiSuite {
 				var initialSupply =
 						(sendingAccountsPerToken.get() + receivingAccountsPerToken.get()) * balanceInit.get();
 				List<HapiSpecOperation> initializers = new ArrayList<>();
-				initializers.add(
-						fileUpdate(API_PERMISSIONS)
-								.fee(9_999_999_999L)
-								.payingWith(GENESIS)
-								.overridingProps(Map.ofEntries(
-										entry("tokenCreate", "0-*"),
-										entry("tokenFreezeAccount", "0-*"),
-										entry("tokenUnfreezeAccount", "0-*"),
-										entry("tokenGrantKycToAccount", "0-*"),
-										entry("tokenRevokeKycFromAccount", "0-*"),
-										entry("tokenDelete", "0-*"),
-										entry("tokenMint", "0-*"),
-										entry("tokenBurn", "0-*"),
-										entry("tokenAccountWipe", "0-*"),
-										entry("tokenUpdate", "0-*"),
-										entry("tokenGetInfo", "0-*"),
-										entry("tokenAssociateToAccount", "0-*"),
-										entry("tokenDissociateFromAccount", "0-*")
-								))
-				);
-				initializers.add(
-						fileUpdate(APP_PROPERTIES)
-								.fee(9_999_999_999L)
-								.payingWith(GENESIS)
-								.overridingProps(Map.ofEntries(
-										entry("hapi.throttling.buckets.fastOpBucket.capacity", "4000")
-								))
-				);
+				initializers.add(tokenOpsEnablement());
+				/* Temporary, can be removed after the public testnet state used in
+				   restart tests includes a fee schedule with HTS resource prices. */
+				if (spec.setup().defaultNode().equals(asAccount("0.0.3"))) {
+					initializers.add(uploadDefaultFeeSchedules(GENESIS));
+					initializers.add(
+							fileUpdate(APP_PROPERTIES)
+									.fee(9_999_999_999L)
+									.payingWith(GENESIS)
+									.overridingProps(Map.ofEntries(
+											entry("hapi.throttling.buckets.fastOpBucket.capacity", "4000")
+									))
+					);
+				} else {
+					initializers.add(withOpContext((spec, opLog) -> {
+						log.info("\n\n" + bannerWith("Waiting for a fee schedule with token ops!"));
+						boolean hasKnownHtsFeeSchedules = false;
+						SysFileSerde<String> serde = new FeesJsonToGrpcBytes();
+						while (!hasKnownHtsFeeSchedules) {
+							var query = QueryVerbs.getFileContents(FEE_SCHEDULE)
+									.fee(10_000_000_000L);
+							try {
+								allRunFor(spec, query);
+								var contents = query.getResponse().getFileGetContents().getFileContents().getContents();
+								var schedules = serde.fromRawFile(contents.toByteArray());
+								hasKnownHtsFeeSchedules = schedules.contains("TokenCreate");
+							} catch (Exception e) {
+								var msg = e.toString();
+								msg = msg.substring(msg.indexOf(":") + 2);
+								log.info( "Couldn't check for HTS fee schedules---'{}'", msg);
+							}
+							TimeUnit.SECONDS.sleep(3);
+						}
+						log.info("\n\n" + bannerWith("A fee schedule with token ops now available!"));
+						spec.tryReinitializingFees();
+					}));
+				}
+				initializers.add(reduceFeeFor(CryptoTransfer, 2L, 3L, 3L));
 				for (int i = 0; i < tokensPerTxn.get(); i++) {
 					var token = "token" + i;
 					var treasury = "treasury" + i;
@@ -174,7 +207,9 @@ public class TokenTransfersLoadProvider extends HapiApiSuite {
 				}
 
 				for (HapiSpecOperation op : initializers) {
-					((HapiTxnOp)op).hasRetryPrecheckFrom(NOISY_RETRY_PRECHECKS);
+					if (op instanceof HapiTxnOp) {
+						((HapiTxnOp) op).hasRetryPrecheckFrom(NOISY_RETRY_PRECHECKS);
+					}
 				}
 
 				return initializers;
@@ -200,8 +235,9 @@ public class TokenTransfersLoadProvider extends HapiApiSuite {
 						}
 					}
 					op = cryptoTransfer(xfers)
-							.hasKnownStatusFrom(NOISY_ALLOWED_STATUSES)
+							.hasKnownStatusFrom(OK, DUPLICATE_TRANSACTION, SUCCESS, UNKNOWN, INSUFFICIENT_PAYER_BALANCE)
 							.hasRetryPrecheckFrom(NOISY_RETRY_PRECHECKS)
+							.hasPrecheckFrom(OK, PLATFORM_NOT_ACTIVE)
 							.noLogging()
 							.deferStatusResolution();
 					firstDir.set(Boolean.FALSE);
@@ -219,8 +255,9 @@ public class TokenTransfersLoadProvider extends HapiApiSuite {
 						}
 					}
 					op = cryptoTransfer(xfers)
+							.hasKnownStatusFrom(OK, DUPLICATE_TRANSACTION, SUCCESS, UNKNOWN, INSUFFICIENT_PAYER_BALANCE)
 							.hasRetryPrecheckFrom(NOISY_RETRY_PRECHECKS)
-							.hasKnownStatusFrom(NOISY_ALLOWED_STATUSES)
+							.hasPrecheckFrom(OK, PLATFORM_NOT_ACTIVE)
 							.noLogging()
 							.deferStatusResolution();
 					firstDir.set(Boolean.TRUE);

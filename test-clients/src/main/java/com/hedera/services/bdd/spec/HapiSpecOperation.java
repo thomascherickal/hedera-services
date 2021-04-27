@@ -4,14 +4,14 @@ package com.hedera.services.bdd.spec;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,32 +22,23 @@ package com.hedera.services.bdd.spec;
 
 import com.google.common.base.MoreObjects;
 import com.google.protobuf.ByteString;
+import com.hedera.services.bdd.spec.keys.ControlForKey;
+import com.hedera.services.bdd.spec.keys.SigControl;
+import com.hedera.services.bdd.spec.keys.SigMapGenerator;
 import com.hedera.services.bdd.spec.props.NodeConnectInfo;
+import com.hedera.services.bdd.spec.queries.meta.HapiGetTxnRecord;
+import com.hedera.services.bdd.spec.stats.OpObs;
 import com.hedera.services.bdd.spec.transactions.TxnUtils;
+import com.hedera.services.bdd.spec.utilops.UtilOp;
+import com.hedera.services.bdd.suites.HapiApiSuite;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
+import com.hedera.services.usage.crypto.CryptoOpsUsage;
+import com.hedera.services.usage.file.FileOpsUsage;
+import com.hedera.services.usage.schedule.ScheduleOpsUsage;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Duration;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
-
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
-import static com.hedera.services.bdd.spec.transactions.TxnUtils.extractTxnId;
-import static java.util.Collections.EMPTY_LIST;
-import static java.util.stream.Collectors.toList;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import com.hederahashgraph.api.proto.java.SignatureMap;
 import com.hederahashgraph.api.proto.java.SignedTransaction;
 import com.hederahashgraph.api.proto.java.Transaction;
@@ -59,18 +50,34 @@ import com.hederahashgraph.fee.CryptoFeeBuilder;
 import com.hederahashgraph.fee.FeeBuilder;
 import com.hederahashgraph.fee.FileFeeBuilder;
 import com.hederahashgraph.fee.SmartContractFeeBuilder;
-import com.hedera.services.bdd.spec.keys.ControlForKey;
-import com.hedera.services.bdd.spec.keys.SigControl;
-import com.hedera.services.bdd.spec.keys.SigMapGenerator;
-import com.hedera.services.bdd.spec.queries.meta.HapiGetTxnRecord;
-import com.hedera.services.bdd.spec.queries.QueryVerbs;
-import com.hedera.services.bdd.spec.stats.OpObs;
-import com.hedera.services.bdd.spec.utilops.UtilOp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.Random;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
+import static com.hedera.services.bdd.spec.transactions.TxnUtils.extractTxnId;
+import static java.util.Collections.EMPTY_LIST;
+import static java.util.stream.Collectors.toList;
+
 public abstract class HapiSpecOperation {
 	private static final Logger log = LogManager.getLogger(HapiSpecOperation.class);
+
+	protected static final FileOpsUsage fileOpsUsage = new FileOpsUsage();
+	protected static final CryptoOpsUsage cryptoOpsUsage = new CryptoOpsUsage();
+	protected static final ScheduleOpsUsage scheduleOpsUsage = new ScheduleOpsUsage();
 
 	private Random r = new Random();
 
@@ -85,19 +92,23 @@ public abstract class HapiSpecOperation {
 	protected SmartContractFeeBuilder scFees = new SmartContractFeeBuilder();
 	protected ConsensusServiceFeeBuilder hcsFees = new ConsensusServiceFeeBuilder();
 
+	protected boolean omitTxnId = false;
 	protected boolean loggingOff = false;
+	protected boolean yahcliLogger = false;
 	protected boolean suppressStats = false;
+	protected boolean omitNodeAccount = false;
 	protected boolean verboseLoggingOn = false;
 	protected boolean shouldRegisterTxn = false;
 	protected boolean useDefaultTxnAsCostAnswerPayment = false;
 	protected boolean useDefaultTxnAsAnswerOnlyPayment = false;
 	protected boolean usePresetTimestamp = false;
 	protected boolean asTxnWithOnlySigMap = false;
+	protected boolean alwaysWithLegacyProtoStructure = false;
 	protected boolean asTxnWithSignedTxnBytesAndSigMap = false;
 	protected boolean asTxnWithSignedTxnBytesAndBodyBytes = false;
 
 	protected boolean useTls = false;
-	protected HapiSpecSetup.TxnConfig txnConfig = HapiSpecSetup.TxnConfig.ALTERNATE;
+	protected HapiSpecSetup.TxnProtoStructure txnProtoStructure = HapiSpecSetup.TxnProtoStructure.ALTERNATE;
 	protected boolean useRandomNode = false;
 	protected boolean unavailableNode = false;
 	protected Optional<Integer> hardcodedNumPayerKeys = Optional.empty();
@@ -106,7 +117,6 @@ public abstract class HapiSpecOperation {
 	protected Optional<ControlForKey[]> controlOverrides = Optional.empty();
 	protected Map<Key, SigControl> overrides = Collections.EMPTY_MAP;
 
-	protected Optional<Long> gas = Optional.empty();
 	protected Optional<Long> fee = Optional.empty();
 	protected Optional<Long> submitDelay = Optional.empty();
 	protected Optional<Long> validDurationSecs = Optional.empty();
@@ -116,6 +126,7 @@ public abstract class HapiSpecOperation {
 	protected Optional<Boolean> genRecord = Optional.empty();
 	protected Optional<AccountID> node = Optional.empty();
 	protected Optional<Supplier<AccountID>> nodeSupplier = Optional.empty();
+	protected OptionalDouble usdFee = OptionalDouble.empty();
 
 	abstract protected long feeFor(HapiApiSpec spec, Transaction txn, int numPayerKeys) throws Throwable;
 
@@ -148,8 +159,10 @@ public abstract class HapiSpecOperation {
 		useTls = spec.setup().getConfigTLS();
 	}
 
-	protected void configureTxnFor(HapiApiSpec spec) {
-		txnConfig = spec.setup().txnConfig();
+	private void configureProtoStructureFor(HapiApiSpec spec) {
+		txnProtoStructure = alwaysWithLegacyProtoStructure
+				? HapiSpecSetup.TxnProtoStructure.OLD
+				: spec.setup().txnProtoStructure();
 	}
 
 	protected void fixNodeFor(HapiApiSpec spec) {
@@ -174,7 +187,7 @@ public abstract class HapiSpecOperation {
 
 	public Optional<Throwable> execFor(HapiApiSpec spec) {
 		pauseIfRequested();
-		configureTxnFor(spec);
+		configureProtoStructureFor(spec);
 		try {
 			boolean hasCompleteLifecycle = submitOp(spec);
 
@@ -195,8 +208,10 @@ public abstract class HapiSpecOperation {
 				log.info("Node {} is unavailable as expected!", HapiPropertySource.asAccountString(node.get()));
 				return Optional.empty();
 			}
-			if (!loggingOff) {
-				log.warn(spec.logPrefix() + this + " failed!", t);
+			if (verboseLoggingOn) {
+				log.warn(spec.logPrefix() + this + " failed - {}", t);
+			} else if (!loggingOff) {
+				log.warn(spec.logPrefix() + this + " failed {}!", t.getMessage());
 			}
 			return Optional.of(t);
 		}
@@ -229,27 +244,35 @@ public abstract class HapiSpecOperation {
 
 	protected Consumer<TransactionBody.Builder> bodyDef(HapiApiSpec spec) {
 		return builder -> {
-			payer.ifPresent(payerId -> {
-				var id = TxnUtils.asId(payerId, spec);
-				TransactionID txnId = builder.getTransactionID().toBuilder().setAccountID(id).build();
-				builder.setTransactionID(txnId);
-			});
-			if (usePresetTimestamp) {
-				TransactionID txnId = builder.getTransactionID().toBuilder().setTransactionValidStart(
-						spec.registry().getTimestamp(txnName)).build();
-				builder.setTransactionID(txnId);
+			if (omitTxnId) {
+				builder.clearTransactionID();
+			} else {
+				payer.ifPresent(payerId -> {
+					var id = TxnUtils.asId(payerId, spec);
+					TransactionID txnId = builder.getTransactionID().toBuilder().setAccountID(id).build();
+					builder.setTransactionID(txnId);
+				});
+				if (usePresetTimestamp) {
+					TransactionID txnId = builder.getTransactionID().toBuilder()
+							.setTransactionValidStart(spec.registry().getTimestamp(txnName)).build();
+					builder.setTransactionID(txnId);
+				}
+				customTxnId.ifPresent(name -> {
+					TransactionID id = spec.registry().getTxnId(name);
+					builder.setTransactionID(id);
+				});
 			}
-			customTxnId.ifPresent(name -> {
-				TransactionID id = spec.registry().getTxnId(name);
-				builder.setTransactionID(id);
-			});
 
-			node.ifPresent(nodeId -> builder.setNodeAccountID(nodeId));
+			if (omitNodeAccount) {
+				builder.clearNodeAccountID();
+			} else {
+				node.ifPresent(builder::setNodeAccountID);
+			}
 			validDurationSecs.ifPresent(s -> {
 				builder.setTransactionValidDuration(Duration.newBuilder().setSeconds(s).build());
 			});
-			genRecord.ifPresent(g -> builder.setGenerateRecord(g));
-			memo.ifPresent(m -> builder.setMemo(m));
+			genRecord.ifPresent(builder::setGenerateRecord);
+			memo.ifPresent(builder::setMemo);
 		};
 	}
 
@@ -268,6 +291,14 @@ public abstract class HapiSpecOperation {
 
 		Transaction txn;
 		Consumer<TransactionBody.Builder> minDef = bodyDef(spec);
+		if (usdFee.isPresent()) {
+			double centsFee = usdFee.getAsDouble() * 100.0;
+			double tinybarFee = centsFee
+					/ spec.ratesProvider().rates().getCentEquiv()
+					* spec.ratesProvider().rates().getHbarEquiv()
+					* HapiApiSuite.ONE_HBAR;
+			fee = Optional.of((long)tinybarFee);
+		}
 		Consumer<TransactionBody.Builder> netDef = fee
 				.map(amount -> minDef.andThen(b -> b.setTransactionFee(amount)))
 				.orElse(minDef).andThen(opDef);
@@ -289,12 +320,15 @@ public abstract class HapiSpecOperation {
 		return finalizedTxnFromTxnWithBodyBytesAndSigMap(txn);
 	}
 
-	private Transaction finalizedTxnFromTxnWithBodyBytesAndSigMap(Transaction txnWithBodyBytesAndSigMap
+	private Transaction finalizedTxnFromTxnWithBodyBytesAndSigMap(
+			Transaction txnWithBodyBytesAndSigMap
 	) throws Throwable {
 		if (asTxnWithOnlySigMap) {
 			return txnWithBodyBytesAndSigMap.toBuilder().clearBodyBytes().build();
 		}
-
+		if (alwaysWithLegacyProtoStructure) {
+			return txnWithBodyBytesAndSigMap;
+		}
 		ByteString bodyByteString = CommonUtils.extractTransactionBodyByteString(txnWithBodyBytesAndSigMap);
 		SignatureMap sigMap = CommonUtils.extractSignatureMap(txnWithBodyBytesAndSigMap);
 		SignedTransaction signedTransaction = SignedTransaction.newBuilder()
@@ -303,16 +337,13 @@ public abstract class HapiSpecOperation {
 				.build();
 		Transaction.Builder txnWithSignedTxnBytesBuilder =
 				Transaction.newBuilder().setSignedTransactionBytes(signedTransaction.toByteString());
-
 		if (asTxnWithSignedTxnBytesAndSigMap) {
 			return txnWithSignedTxnBytesBuilder.setSigMap(sigMap).build();
 		}
-
 		if (asTxnWithSignedTxnBytesAndBodyBytes) {
 			return txnWithSignedTxnBytesBuilder.setBodyBytes(bodyByteString).build();
 		}
-
-		if (HapiSpecSetup.TxnConfig.OLD == txnConfig) {
+		if (txnProtoStructure == HapiSpecSetup.TxnProtoStructure.OLD) {
 			return txnWithBodyBytesAndSigMap;
 		}
 
@@ -328,13 +359,12 @@ public abstract class HapiSpecOperation {
 	private void setKeyControlOverrides(HapiApiSpec spec) {
 		if (controlOverrides.isPresent()) {
 			overrides = new HashMap<>();
-			Stream
-					.of(controlOverrides.get())
+			Stream.of(controlOverrides.get())
 					.forEach(c -> overrides.put(lookupKey(spec, c.getKeyName()), c.getController()));
 		}
 	}
 
-	List<Key> signersToUseFor(HapiApiSpec spec) {
+	private List<Key> signersToUseFor(HapiApiSpec spec) {
 		List<Key> active = signers
 				.orElse(defaultSigners())
 				.stream()
@@ -390,6 +420,7 @@ public abstract class HapiSpecOperation {
 	public Optional<String> getPayer() {
 		return payer;
 	}
+
 	protected void considerRecording(HapiApiSpec spec, OpObs obs) {
 		if (!suppressStats) {
 			spec.registry().record(obs);

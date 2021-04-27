@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package com.hedera.services.txns.validation;
 
 import com.hedera.services.context.TransactionContext;
 import com.hedera.services.context.properties.GlobalDynamicProperties;
-import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hederahashgraph.api.proto.java.Duration;
@@ -33,27 +32,26 @@ import com.hederahashgraph.api.proto.java.TokenTransferList;
 import com.hederahashgraph.api.proto.java.TopicID;
 import com.hederahashgraph.api.proto.java.TransferList;
 import com.swirlds.fcmap.FCMap;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static com.hedera.services.legacy.core.jproto.JKey.mapKey;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EMPTY_TOKEN_TRANSFER_BODY;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EMPTY_TOKEN_TRANSFER_ACCOUNT_AMOUNTS;
-import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOPIC_ID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ZERO_BYTE_IN_STRING;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_NAME;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MISSING_TOKEN_SYMBOL;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_NAME_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_SYMBOL_TOO_LONG;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED;
-import static java.util.stream.IntStream.range;
 
 /**
  * Implements an {@link OptionValidator} that relies an injected instance
@@ -63,18 +61,13 @@ import static java.util.stream.IntStream.range;
  * @author Michael Tinker
  */
 public class ContextOptionValidator implements OptionValidator {
-	public static final Logger log = LogManager.getLogger(ContextOptionValidator.class);
-	private final PropertySource properties;
+	private static final Logger log = LogManager.getLogger(ContextOptionValidator.class);
 	private final TransactionContext txnCtx;
-	private final GlobalDynamicProperties dynamicProperties;
+	private final GlobalDynamicProperties properties;
 
-	public ContextOptionValidator(
-			PropertySource properties,
-			TransactionContext txnCtx,
-			GlobalDynamicProperties dynamicProperties) {
-		this.properties = properties;
+	public ContextOptionValidator(TransactionContext txnCtx, GlobalDynamicProperties properties) {
 		this.txnCtx = txnCtx;
-		this.dynamicProperties = dynamicProperties;
+		this.properties = properties;
 	}
 
 	@Override
@@ -82,14 +75,14 @@ public class ContextOptionValidator implements OptionValidator {
 		try {
 			mapKey(key);
 			return true;
-		} catch (Exception ignore) {
+		} catch (DecoderException ignore) {
 			return false;
 		}
 	}
 
 	@Override
 	public boolean isValidTxnDuration(long duration) {
-		return duration >= dynamicProperties.minTxnDuration() && duration <= dynamicProperties.maxTxnDuration();
+		return duration >= properties.minTxnDuration() && duration <= properties.maxTxnDuration();
 	}
 
 	@Override
@@ -101,10 +94,8 @@ public class ContextOptionValidator implements OptionValidator {
 	@Override
 	public boolean isValidAutoRenewPeriod(Duration autoRenewPeriod) {
 		long duration = autoRenewPeriod.getSeconds();
-		long minDuration = properties.getLongProperty("ledger.autoRenewPeriod.minDuration");
-		long maxDuration = properties.getLongProperty("ledger.autoRenewPeriod.maxDuration");
 
-		if (duration < minDuration || duration > maxDuration) {
+		if (duration < properties.minAutoRenewDuration() || duration > properties.maxAutoRenewDuration()) {
 			return false;
 		}
 		return true;
@@ -112,12 +103,12 @@ public class ContextOptionValidator implements OptionValidator {
 
 	@Override
 	public boolean isAcceptableTransfersLength(TransferList accountAmounts) {
-		return accountAmounts.getAccountAmountsCount() <= dynamicProperties.maxTransferListSize();
+		return accountAmounts.getAccountAmountsCount() <= properties.maxTransferListSize();
 	}
 
 	@Override
 	public ResponseCodeEnum isAcceptableTokenTransfersLength(List<TokenTransferList> tokenTransferLists) {
-		int maxLen = dynamicProperties.maxTokenTransferListSize();
+		int maxLen = properties.maxTokenTransferListSize();
 		int tokenTransferListsSize = tokenTransferLists.size();
 
 		if (tokenTransferListsSize > maxLen) {
@@ -142,11 +133,6 @@ public class ContextOptionValidator implements OptionValidator {
 	}
 
 	@Override
-	public boolean isValidEntityMemo(@Nullable String memo) {
-		return (null == memo) || (StringUtils.getBytesUtf8(memo).length <= dynamicProperties.maxMemoUtf8Bytes());
-	}
-
-	@Override
 	public ResponseCodeEnum queryableTopicStatus(TopicID id, FCMap<MerkleEntityId, MerkleTopic> topics) {
 		MerkleTopic merkleTopic = topics.get(MerkleEntityId.fromTopicId(id));
 
@@ -157,24 +143,51 @@ public class ContextOptionValidator implements OptionValidator {
 
 	@Override
 	public ResponseCodeEnum tokenSymbolCheck(String symbol) {
-		if (symbol.length() < 1) {
-			return MISSING_TOKEN_SYMBOL;
-		}
-		if (symbol.length() > dynamicProperties.maxTokenSymbolLength()) {
-			return TOKEN_SYMBOL_TOO_LONG;
-		}
-		return OK;
+		return tokenStringCheck(
+				symbol,
+				properties.maxTokenSymbolUtf8Bytes(),
+				MISSING_TOKEN_SYMBOL,
+				TOKEN_SYMBOL_TOO_LONG);
 	}
 
 	@Override
 	public ResponseCodeEnum tokenNameCheck(String name) {
-		if (name.length() < 1) {
-			return MISSING_TOKEN_NAME;
+		return tokenStringCheck(
+				name,
+				properties.maxTokenNameUtf8Bytes(),
+				MISSING_TOKEN_NAME,
+				TOKEN_NAME_TOO_LONG);
+	}
+
+	private ResponseCodeEnum tokenStringCheck(
+			String s,
+			int maxLen,
+			ResponseCodeEnum onMissing,
+			ResponseCodeEnum onTooLong
+	) {
+		int numUtf8Bytes = StringUtils.getBytesUtf8(s).length;
+		if (numUtf8Bytes == 0) {
+			return onMissing;
 		}
-		if (name.length() > dynamicProperties.maxTokenNameLength()) {
-			return TOKEN_NAME_TOO_LONG;
+		if (numUtf8Bytes > maxLen) {
+			return onTooLong;
+		}
+		if (s.contains("\u0000")) {
+			return INVALID_ZERO_BYTE_IN_STRING;
 		}
 		return OK;
+
+	}
+
+	@Override
+	public ResponseCodeEnum memoCheck(String cand) {
+		if (StringUtils.getBytesUtf8(cand).length > properties.maxMemoUtf8Bytes()) {
+			return MEMO_TOO_LONG;
+		} else if (cand.contains("\u0000")) {
+			return INVALID_ZERO_BYTE_IN_STRING;
+		} else {
+			return OK;
+		}
 	}
 
 	/* Not applicable until auto-renew is implemented. */

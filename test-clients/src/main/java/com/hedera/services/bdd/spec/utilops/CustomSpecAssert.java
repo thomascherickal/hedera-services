@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ package com.hedera.services.bdd.spec.utilops;
  * ‍
  */
 
-import com.google.common.base.MoreObjects;
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +35,8 @@ public class CustomSpecAssert extends UtilOp {
 		for (HapiSpecOperation op : ops) {
 			Optional<Throwable>	error = op.execFor(spec);
 			if (error.isPresent()) {
-				Assert.fail("Operation '" + op.toString() + "' :: " + error.get().getMessage());
+				log.error("Operation '" + op.toString() + "' :: " + error.get().getMessage());
+				throw new IllegalStateException(error.get());
 			}
 		}
 	}
@@ -65,6 +64,6 @@ public class CustomSpecAssert extends UtilOp {
 
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper(this).toString();
+		return "CustomSpecAssert";
 	}
 }

@@ -4,7 +4,7 @@ package com.hedera.services.state.merkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,12 @@ package com.hedera.services.state.merkle;
 
 import com.google.common.base.MoreObjects;
 import com.swirlds.common.FCMValue;
-import com.swirlds.common.FastCopyable;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import com.swirlds.common.io.SerializedObjectProvider;
 import com.swirlds.common.merkle.utility.AbstractMerkleLeaf;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 public class MerkleTokenRelStatus extends AbstractMerkleLeaf implements FCMValue {
@@ -43,23 +40,13 @@ public class MerkleTokenRelStatus extends AbstractMerkleLeaf implements FCMValue
 	private boolean frozen;
 	private boolean kycGranted;
 
-	@Deprecated
-	public static final MerkleTokenRelStatus.Provider LEGACY_PROVIDER = new MerkleTokenRelStatus.Provider();
-
-	public MerkleTokenRelStatus() { }
+	public MerkleTokenRelStatus() {
+	}
 
 	public MerkleTokenRelStatus(long balance, boolean frozen, boolean kycGranted) {
 		this.balance = balance;
 		this.frozen = frozen;
 		this.kycGranted = kycGranted;
-	}
-
-	@Deprecated
-	public static class Provider implements SerializedObjectProvider {
-		@Override
-		public FastCopyable deserialize(DataInputStream in) throws IOException {
-			throw new UnsupportedOperationException();
-		}
 	}
 
 	/* --- MerkleLeaf --- */
@@ -97,7 +84,7 @@ public class MerkleTokenRelStatus extends AbstractMerkleLeaf implements FCMValue
 			return false;
 		}
 
-		var that = (MerkleTokenRelStatus)o;
+		var that = (MerkleTokenRelStatus) o;
 		return new EqualsBuilder()
 				.append(balance, that.balance)
 				.append(frozen, that.frozen)
@@ -121,10 +108,7 @@ public class MerkleTokenRelStatus extends AbstractMerkleLeaf implements FCMValue
 
 	public void setBalance(long balance) {
 		if (balance < 0) {
-			throw new IllegalArgumentException(String.format(
-					"Cannot set %s balance to %d!",
-					this,
-					balance));
+			throw new IllegalArgumentException(String.format("Argument 'balance=%d' would negate %s!", balance, this));
 		}
 		this.balance = balance;
 	}
@@ -149,18 +133,6 @@ public class MerkleTokenRelStatus extends AbstractMerkleLeaf implements FCMValue
 	@Override
 	public MerkleTokenRelStatus copy() {
 		return new MerkleTokenRelStatus(balance, frozen, kycGranted);
-	}
-
-	@Override
-	@Deprecated
-	public void copyFrom(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	@Deprecated
-	public void copyFromExtra(SerializableDataInputStream in) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

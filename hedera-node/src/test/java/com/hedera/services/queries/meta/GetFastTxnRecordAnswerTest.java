@@ -4,7 +4,7 @@ package com.hedera.services.queries.meta;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import com.hederahashgraph.api.proto.java.ResponseType;
 import com.hederahashgraph.api.proto.java.TransactionGetFastRecordQuery;
 import com.hederahashgraph.api.proto.java.TransactionGetFastRecordResponse;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 import static com.hederahashgraph.api.proto.java.ResponseType.ANSWER_ONLY;
@@ -40,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.NOT_SUPPORTED;
 
-@RunWith(JUnitPlatform.class)
 
 class GetFastTxnRecordAnswerTest {
 	GetFastTxnRecordAnswer subject = new GetFastTxnRecordAnswer();
@@ -83,7 +80,6 @@ class GetFastTxnRecordAnswerTest {
 		assertEquals(NOT_SUPPORTED, subject.extractValidityFrom(costAnswerResponse));
 		assertEquals(NOT_SUPPORTED, subject.extractValidityFrom(answerOnlyResponse));
 	}
-
 
 	@Test
 	public void alwaysUnsupported() {

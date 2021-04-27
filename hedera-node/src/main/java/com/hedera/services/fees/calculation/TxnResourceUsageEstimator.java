@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,16 +52,4 @@ public interface TxnResourceUsageEstimator {
 	 * @throws NullPointerException or analogous if the estimator does not apply to the txn
 	 */
 	FeeData usageGiven(TransactionBody txn, SigValueObj sigUsage, StateView view) throws InvalidTxBodyException;
-
-	/**
-	 * Returns the expected lifetime of an entity, relative to the valid
-	 * start of the given transaction.
-	 *
-	 * @param txn the txn in question
-	 * @param expiry the entity's expiry
-	 * @return the expected lifetime
-	 */
-	default long relativeLifetime(TransactionBody txn, long expiry) {
-		return expiry - txn.getTransactionID().getTransactionValidStart().getSeconds();
-	}
 }

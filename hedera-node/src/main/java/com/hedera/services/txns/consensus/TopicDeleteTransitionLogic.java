@@ -4,7 +4,7 @@ package com.hedera.services.txns.consensus;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 public class TopicDeleteTransitionLogic implements TransitionLogic {
-	protected static final Logger log = LogManager.getLogger(TopicDeleteTransitionLogic.class);
+	private static final Logger log = LogManager.getLogger(TopicDeleteTransitionLogic.class);
 
 	private static final Function<TransactionBody, ResponseCodeEnum> SYNTAX_RUBBER_STAMP = ignore -> OK;
 

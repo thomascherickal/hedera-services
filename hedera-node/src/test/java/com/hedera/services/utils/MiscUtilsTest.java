@@ -4,7 +4,7 @@ package com.hedera.services.utils;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.hedera.services.grpc.controllers.ConsensusController;
 import com.hedera.services.grpc.controllers.ContractController;
 import com.hedera.services.grpc.controllers.CryptoController;
 import com.hedera.services.grpc.controllers.FileController;
+import com.hedera.services.grpc.controllers.FreezeController;
 import com.hedera.services.keys.LegacyEd25519KeyReader;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
@@ -72,8 +73,15 @@ import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.NetworkGetVersionInfoQuery;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
+import com.hederahashgraph.api.proto.java.ScheduleCreateTransactionBody;
+import com.hederahashgraph.api.proto.java.SchedulableTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleCreateTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleDeleteTransactionBody;
+import com.hederahashgraph.api.proto.java.ScheduleGetInfoQuery;
+import com.hederahashgraph.api.proto.java.ScheduleSignTransactionBody;
 import com.hederahashgraph.api.proto.java.SystemDeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.SystemUndeleteTransactionBody;
+import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TokenAssociateTransactionBody;
 import com.hederahashgraph.api.proto.java.TokenBurnTransactionBody;
 import com.hederahashgraph.api.proto.java.TokenCreateTransactionBody;
@@ -108,8 +116,6 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hedera.test.utils.IdUtils.*;
 import static com.hedera.test.utils.TxnUtils.*;
@@ -120,6 +126,7 @@ import java.io.File;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.security.KeyPair;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -141,7 +148,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnitPlatform.class)
 public class MiscUtilsTest {
 	@Test
 	public void retrievesExpectedStatNames() {
@@ -215,6 +221,20 @@ public class MiscUtilsTest {
 
 		// expect:
 		assertTrue(JKey.equalUpToDecodability(expected, MiscUtils.asFcKeyUnchecked(matchingKey)));
+	}
+
+	@Test
+	public void translatesDecoderException() {
+		// setup:
+		String tmpLoc = "src/test/resources/PretendKeystore.txt";
+
+		// when:
+		assertThrows(IllegalArgumentException.class, () -> lookupInCustomStore(new LegacyEd25519KeyReader() {
+			@Override
+			public String hexedABytesFrom(String b64EncodedKeyPairLoc, String keyPairId) {
+				return "This isn't actually hex!";
+			}
+		}, tmpLoc, "START_ACCOUNT"));
 	}
 
 	@Test
@@ -329,6 +349,472 @@ public class MiscUtilsTest {
 	}
 
 	@Test
+	public void convertsMetadata() {
+		// setup:
+		long fee = 123L;
+		String memo = "Hi there!";
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTransactionFee(fee)
+				.setMemo(memo)
+				.build();
+
+		// when:
+		var ordinaryTxn = asOrdinary(scheduledTxn);
+
+		// then:
+		assertEquals(memo, ordinaryTxn.getMemo());
+		assertEquals(fee, ordinaryTxn.getTransactionFee());
+	}
+
+	@Test
+	public void convertsContractCall() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setContractCall(ContractCallTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinaryTxn = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinaryTxn.hasContractCall());
+	}
+
+	@Test
+	public void convertsContractCreateInstance() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setContractCreateInstance(ContractCreateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasContractCreateInstance());
+	}
+
+	@Test
+	public void convertsContractUpdateInstance() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setContractUpdateInstance(ContractUpdateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasContractUpdateInstance());
+	}
+
+	@Test
+	public void convertsContractDeleteInstance() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setContractDeleteInstance(ContractDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasContractDeleteInstance());
+	}
+
+	@Test
+	public void convertsCryptoCreateAccount() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setCryptoCreateAccount(CryptoCreateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasCryptoCreateAccount());
+	}
+
+	@Test
+	public void convertsCryptoDelete() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setCryptoDelete(CryptoDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasCryptoDelete());
+	}
+
+	@Test
+	public void convertsCryptoTransfer() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setCryptoTransfer(CryptoTransferTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasCryptoTransfer());
+	}
+
+	@Test
+	public void convertsCryptoUpdateAccount() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setCryptoUpdateAccount(CryptoUpdateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasCryptoUpdateAccount());
+	}
+
+	@Test
+	public void convertsFileAppend() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setFileAppend(FileAppendTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasFileAppend());
+	}
+
+	@Test
+	public void convertsFileCreate() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setFileCreate(FileCreateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasFileCreate());
+	}
+
+	@Test
+	public void convertsFileDelete() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setFileDelete(FileDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasFileDelete());
+	}
+
+	@Test
+	public void convertsFileUpdate() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setFileUpdate(FileUpdateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasFileUpdate());
+	}
+
+	@Test
+	public void convertsSystemDelete() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setSystemDelete(SystemDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasSystemDelete());
+	}
+
+	@Test
+	public void convertsSystemUndelete() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setSystemUndelete(SystemUndeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasSystemUndelete());
+	}
+
+	@Test
+	public void convertsFreeze() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setFreeze(FreezeTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasFreeze());
+	}
+
+	@Test
+	public void convertsConsensusCreateTopic() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setConsensusCreateTopic(ConsensusCreateTopicTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasConsensusCreateTopic());
+	}
+
+	@Test
+	public void convertsConsensusUpdateTopic() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setConsensusUpdateTopic(ConsensusUpdateTopicTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasConsensusUpdateTopic());
+	}
+
+	@Test
+	public void convertsConsensusDeleteTopic() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setConsensusDeleteTopic(ConsensusDeleteTopicTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasConsensusDeleteTopic());
+	}
+
+	@Test
+	public void convertsConsensusSubmitMessage() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setConsensusSubmitMessage(ConsensusSubmitMessageTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasConsensusSubmitMessage());
+	}
+
+	@Test
+	public void convertsTokenCreation() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenCreation(TokenCreateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenCreation());
+	}
+
+	@Test
+	public void convertsTokenFreeze() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenFreeze(TokenFreezeAccountTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenFreeze());
+	}
+
+	@Test
+	public void convertsTokenUnfreeze() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenUnfreeze(TokenUnfreezeAccountTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenUnfreeze());
+	}
+
+	@Test
+	public void convertsTokenGrantKyc() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenGrantKyc(TokenGrantKycTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenGrantKyc());
+	}
+
+	@Test
+	public void convertsTokenRevokeKyc() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenRevokeKyc(TokenRevokeKycTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenRevokeKyc());
+	}
+
+	@Test
+	public void convertsTokenDeletion() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenDeletion(TokenDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenDeletion());
+	}
+
+	@Test
+	public void convertsTokenUpdate() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenUpdate(TokenUpdateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenUpdate());
+	}
+
+	@Test
+	public void convertsTokenMint() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenMint(TokenMintTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenMint());
+	}
+
+	@Test
+	public void convertsTokenBurn() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenBurn(TokenBurnTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenBurn());
+	}
+
+	@Test
+	public void convertsTokenWipe() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenWipe(TokenWipeAccountTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenWipe());
+	}
+
+	@Test
+	public void convertsTokenAssociate() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenAssociate(TokenAssociateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenAssociate());
+	}
+
+	@Test
+	public void convertsTokenDissociate() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setTokenDissociate(TokenDissociateTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasTokenDissociate());
+	}
+
+	@Test
+	public void convertsScheduleDelete() {
+		// setup:
+		var scheduledTxn = SchedulableTransactionBody.newBuilder()
+				.setScheduleDelete(ScheduleDeleteTransactionBody.getDefaultInstance())
+				.build();
+
+		// when:
+		var ordinary = asOrdinary(scheduledTxn);
+
+		// then:
+		assertTrue(ordinary.hasScheduleDelete());
+	}
+
+	@Test
 	public void getExpectedTxnStat() {
 		Map<String, BodySetter<? extends GeneratedMessageV3>> setters = new HashMap<>() {{
 			put(CryptoController.CRYPTO_CREATE_METRIC, new BodySetter<>(CryptoCreateTransactionBody.class));
@@ -345,7 +831,7 @@ public class MiscUtilsTest {
 			put(FileController.FILE_APPEND_METRIC, new BodySetter<>(FileAppendTransactionBody.class));
 			put(FileController.UPDATE_FILE_METRIC, new BodySetter<>(FileUpdateTransactionBody.class));
 			put(FileController.DELETE_FILE_METRIC, new BodySetter<>(FileDeleteTransactionBody.class));
-			put(ServicesStatsConfig.FREEZE_METRIC, new BodySetter<>(FreezeTransactionBody.class));
+			put(FreezeController.FREEZE_METRIC, new BodySetter<>(FreezeTransactionBody.class));
 			put(ServicesStatsConfig.SYSTEM_DELETE_METRIC, new BodySetter<>(SystemDeleteTransactionBody.class));
 			put(ServicesStatsConfig.SYSTEM_UNDELETE_METRIC, new BodySetter<>(SystemUndeleteTransactionBody.class));
 			put(ConsensusController.CREATE_TOPIC_METRIC, new BodySetter<>(ConsensusCreateTopicTransactionBody.class));
@@ -364,6 +850,9 @@ public class MiscUtilsTest {
 			put(TOKEN_WIPE_ACCOUNT_METRIC, new BodySetter<>(TokenWipeAccountTransactionBody.class));
 			put(TOKEN_ASSOCIATE_METRIC, new BodySetter<>(TokenAssociateTransactionBody.class));
 			put(TOKEN_DISSOCIATE_METRIC, new BodySetter<>(TokenDissociateTransactionBody.class));
+			put(SCHEDULE_CREATE_METRIC, new BodySetter<>(ScheduleCreateTransactionBody.class));
+			put(SCHEDULE_SIGN_METRIC, new BodySetter<>(ScheduleSignTransactionBody.class));
+			put(SCHEDULE_DELETE_METRIC, new BodySetter<>(ScheduleDeleteTransactionBody.class));
 		}};
 
 		// expect:
@@ -403,6 +892,7 @@ public class MiscUtilsTest {
 			put(TransactionGetReceipt, new BodySetter<>(TransactionGetReceiptQuery.class));
 			put(TransactionGetRecord, new BodySetter<>(TransactionGetRecordQuery.class));
 			put(TokenGetInfo, new BodySetter<>(TokenGetInfoQuery.class));
+			put(ScheduleGetInfo, new BodySetter<>(ScheduleGetInfoQuery.class));
 		}};
 
 		// expect:
@@ -419,6 +909,16 @@ public class MiscUtilsTest {
 				.setHeader(QueryHeader.newBuilder().setResponseType(ANSWER_ONLY));
 		var query = Query.newBuilder()
 				.setTokenGetInfo(op)
+				.build();
+		assertEquals(ANSWER_ONLY, activeHeaderFrom(query).get().getResponseType());
+	}
+
+	@Test
+	public void worksForGetScheduleInfo() {
+		var op = ScheduleGetInfoQuery.newBuilder()
+				.setHeader(QueryHeader.newBuilder().setResponseType(ANSWER_ONLY));
+		var query = Query.newBuilder()
+				.setScheduleGetInfo(op)
 				.build();
 		assertEquals(ANSWER_ONLY, activeHeaderFrom(query).get().getResponseType());
 	}
@@ -620,6 +1120,9 @@ public class MiscUtilsTest {
 			put(TokenAccountWipe, new BodySetter<>(TokenWipeAccountTransactionBody.class));
 			put(TokenAssociateToAccount, new BodySetter<>(TokenAssociateTransactionBody.class));
 			put(TokenDissociateFromAccount, new BodySetter<>(TokenDissociateTransactionBody.class));
+			put(ScheduleCreate, new BodySetter<>(ScheduleCreateTransactionBody.class));
+			put(ScheduleSign, new BodySetter<>(ScheduleSignTransactionBody.class));
+			put(ScheduleDelete, new BodySetter<>(ScheduleDeleteTransactionBody.class));
 			put(Freeze, new BodySetter<>(FreezeTransactionBody.class));
 			put(ConsensusCreateTopic, new BodySetter<>(ConsensusCreateTopicTransactionBody.class));
 			put(ConsensusUpdateTopic, new BodySetter<>(ConsensusUpdateTopicTransactionBody.class));
@@ -649,10 +1152,17 @@ public class MiscUtilsTest {
 		Transaction transaction = mock(Transaction.class);
 		PlatformTxnAccessor accessor = mock(PlatformTxnAccessor.class);
 		given(transaction.toByteArray()).willReturn(testBytes);
-		given(accessor.getSignedTxn()).willReturn(transaction);
+		given(accessor.getBackwardCompatibleSignedTxn()).willReturn(transaction);
 
 		assertArrayEquals(expectedHash, CommonUtils.noThrowSha384HashOf(testBytes));
 		assertArrayEquals(expectedHash, CommonUtils.sha384HashOf(testBytes).toByteArray());
+	}
+
+	@Test
+	public void asTimestampTest() {
+		final Instant instant = Instant.now();
+		final Timestamp timestamp = MiscUtils.asTimestamp(instant);
+		assertEquals(instant, MiscUtils.timestampToInstant(timestamp));
 	}
 
 	public static class BodySetter<T> {

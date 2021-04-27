@@ -4,7 +4,7 @@ package com.hedera.services.fees.calculation.consensus.queries;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.hedera.services.fees.calculation.consensus.queries;
  * ‍
  */
 
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.context.primitives.StateView;
@@ -36,8 +37,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hedera.test.utils.IdUtils.asTopic;
 import static com.hederahashgraph.api.proto.java.ResponseType.ANSWER_ONLY;
@@ -45,19 +44,18 @@ import static com.hederahashgraph.api.proto.java.ResponseType.COST_ANSWER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class GetMerkleTopicInfoResourceUsageTest {
 	StateView view;
 	FCMap<MerkleEntityId, MerkleTopic> topics;
 	TopicID topicId = asTopic("0.0.1234");
 	GetTopicInfoResourceUsage subject;
-	PropertySource propertySource;
+	NodeLocalProperties nodeProps;
 
 	@BeforeEach
 	private void setup() throws Throwable {
 		topics = mock(FCMap.class);
-		propertySource = mock(PropertySource.class);
-		view = new StateView(() -> topics, StateView.EMPTY_ACCOUNTS_SUPPLIER, propertySource, null);
+		nodeProps = mock(NodeLocalProperties.class);
+		view = new StateView(() -> topics, StateView.EMPTY_ACCOUNTS_SUPPLIER, nodeProps, null);
 
 		subject = new GetTopicInfoResourceUsage();
 	}
@@ -79,7 +77,7 @@ class GetMerkleTopicInfoResourceUsageTest {
 		Query query = topicInfoQuery(topicId, ANSWER_ONLY);
 
 		// expect:
-		assertThrows(IllegalArgumentException.class, () -> subject.usageGiven(query, view));
+		assertSame(FeeData.getDefaultInstance(), subject.usageGiven(query, view));
 	}
 
 	@ParameterizedTest

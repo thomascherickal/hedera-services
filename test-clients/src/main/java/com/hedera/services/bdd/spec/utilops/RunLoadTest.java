@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.utilops;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,19 @@ import static com.hedera.services.bdd.spec.utilops.CustomSpecAssert.allRunFor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_DURATION_CREATE_TOKEN_ASSOCIATION;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_DURATION_TOKEN_TRANSFER;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_SUBMIT_MESSAGE_SIZE;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_SUBMIT_MESSAGE_SIZE_VAR;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_TEST_ACCOUNTS;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_TEST_TOPICS;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_MEMO_LENGTH;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_TEST_TOKENS;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TEST_TREASURE_START_ACCOUNT;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_TEST_TOKEN_ACCOUNTS;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_TOKEN_ASSOCIATIONS;
+import static com.hedera.services.bdd.suites.perf.PerfTestLoadSettings.DEFAULT_TOTAL_SCHEDULED;
+
 public class RunLoadTest extends UtilOp {
 	private static final Logger log = LogManager.getLogger(RunLoadTest.class);
 	private static final int DEFAULT_SECS_ALLOWED_BELOW_TOLERANCE = 0;
@@ -46,15 +59,25 @@ public class RunLoadTest extends UtilOp {
 	private static final long DEFAULT_DURATION = 30;
 	private static final TimeUnit DEFAULT_DURATION_UNIT = TimeUnit.SECONDS;
 	private static final int DEFAULT_THREADS = 1;
-	public static final int DEFAULT_SUBMIT_MESSAGE_SIZE = 256;
 
 	private DoubleSupplier targetTps = () -> DEFAULT_TPS_TARGET;
+	private IntSupplier memoLength = () -> DEFAULT_MEMO_LENGTH;
 	private IntSupplier tpsTolerancePercentage = () -> DEFAULT_TPS_TOLERANCE_PERCENTAGE;
 	private IntSupplier secsAllowedBelowTolerance = () -> DEFAULT_SECS_ALLOWED_BELOW_TOLERANCE;
 	private LongSupplier testDuration = () -> DEFAULT_DURATION;
 	private Supplier<TimeUnit> ofUnit = () -> DEFAULT_DURATION_UNIT;
 	private IntSupplier threads = () -> DEFAULT_THREADS;
 	private IntSupplier hcsSubmitMessageSize = () -> DEFAULT_SUBMIT_MESSAGE_SIZE;
+	private IntSupplier hcsSubmitMessageSizeVar = () -> DEFAULT_SUBMIT_MESSAGE_SIZE_VAR;
+	private IntSupplier totalTestAccounts = () -> DEFAULT_TOTAL_TEST_ACCOUNTS;
+	private IntSupplier totalTestTopics = () -> DEFAULT_TOTAL_TEST_TOPICS;
+	private IntSupplier totalTestTokens = () -> DEFAULT_TOTAL_TEST_TOKENS;
+	private IntSupplier testTreasureStartAccount = () -> DEFAULT_TEST_TREASURE_START_ACCOUNT;
+	private IntSupplier totalTestTokenAccounts = () -> DEFAULT_TOTAL_TEST_TOKEN_ACCOUNTS;
+	private IntSupplier durationCreateTokenAssociation = () -> DEFAULT_DURATION_CREATE_TOKEN_ASSOCIATION;
+	private IntSupplier durationTokenTransfer = () -> DEFAULT_DURATION_TOKEN_TRANSFER;
+	private IntSupplier totalTokenAssociations = () -> DEFAULT_TOTAL_TOKEN_ASSOCIATIONS;
+	private IntSupplier totalScheduled = () -> DEFAULT_TOTAL_SCHEDULED;
 
 	private final Supplier<HapiSpecOperation[]> opSource;
 
@@ -62,6 +85,11 @@ public class RunLoadTest extends UtilOp {
 
 	public RunLoadTest tps(DoubleSupplier targetTps) {
 		this.targetTps = targetTps;
+		return this;
+	}
+
+	public RunLoadTest setMemoLength(IntSupplier memoLength) {
+		this.memoLength = memoLength;
 		return this;
 	}
 
@@ -80,8 +108,58 @@ public class RunLoadTest extends UtilOp {
 		return this;
 	}
 
+	public RunLoadTest setTotalTestAccounts(IntSupplier totalTestAccounts) {
+		this.totalTestAccounts = totalTestAccounts;
+		return this;
+	}
+
+	public RunLoadTest setTotalTestTopics(IntSupplier totalTestAccounts) {
+		this.totalTestTopics = totalTestTopics;
+		return this;
+	}
+
+	public RunLoadTest setTotalTestTokens(IntSupplier totalTestTokens) {
+		this.totalTestTokens = totalTestTokens;
+		return this;
+	}
+
+	public RunLoadTest setTotalTokenAssociations(IntSupplier totalTokenAssociations) {
+		this.totalTokenAssociations = totalTokenAssociations;
+		return this;
+	}
+
+	public RunLoadTest setTotalScheduled(IntSupplier totalScheduled) {
+		this.totalScheduled = totalScheduled;
+		return this;
+	}
+
+	public RunLoadTest setDurationTokenTransfer(IntSupplier durationTokenTransfer) {
+		this.durationTokenTransfer = durationTokenTransfer;
+		return this;
+	}
+
+	public RunLoadTest setDurationCreateTokenAssociation(IntSupplier durationCreateTokenAssociation) {
+		this.durationCreateTokenAssociation = durationCreateTokenAssociation;
+		return this;
+	}
+
+	public RunLoadTest setTestTreasureStartAccount (IntSupplier testTreasureStartAccount) {
+		this.testTreasureStartAccount = testTreasureStartAccount;
+		return this;
+	}
+
+	public RunLoadTest setTotalTestTokenAccounts(IntSupplier totalTestTokenAccts) {
+		this.totalTestTokenAccounts = totalTestTokenAccts;
+		return this;
+	}
+
 	public RunLoadTest setHCSSubmitMessageSize(IntSupplier submitMessageSize) {
 		this.hcsSubmitMessageSize = submitMessageSize;
+		return this;
+	}
+
+	public RunLoadTest setHCSSubmitMessageSizeVar(IntSupplier submitMessageSizeVar) {
+		this.hcsSubmitMessageSizeVar = submitMessageSizeVar;
 		return this;
 	}
 

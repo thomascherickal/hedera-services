@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.infrastructure.providers.ops.crypto;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.util.Optional;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoDelete;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.ACCOUNT_DELETED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES;
 import static java.util.Collections.EMPTY_LIST;
 
 public class RandomAccountDeletion implements OpProvider {
@@ -44,7 +45,8 @@ public class RandomAccountDeletion implements OpProvider {
 	);
 	private final ResponseCodeEnum[] permissibleOutcomes = standardOutcomesAnd(
 			ACCOUNT_DELETED,
-			INVALID_ACCOUNT_ID
+			INVALID_ACCOUNT_ID,
+			TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES
 	);
 
 	public RandomAccountDeletion(RegistrySourcedNameProvider<AccountID> accounts) {

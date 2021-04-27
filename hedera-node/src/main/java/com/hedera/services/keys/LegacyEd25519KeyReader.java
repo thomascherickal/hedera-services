@@ -4,7 +4,7 @@ package com.hedera.services.keys;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 public class LegacyEd25519KeyReader {
-	public static final Logger log = LogManager.getLogger(LegacyEd25519KeyReader.class);
+	private static final Logger log = LogManager.getLogger(LegacyEd25519KeyReader.class);
 
 	public String hexedABytesFrom(String b64EncodedKeyPairLoc, String keyPairId) {
 		try {
@@ -47,8 +47,9 @@ public class LegacyEd25519KeyReader {
 			return keyPairs.get(0).getKeyPairList().get(0).getPublicKeyAbyteStr();
 		} catch (Exception e) {
 			throw new IllegalArgumentException(
-					String.format("No key could be decrypted from '%s'!", b64EncodedKeyPairLoc),
-					e);
+					String.format(
+							"Argument 'b64EncodedKeyPairLoc=%s' not a Base64-encoded key pair!",
+							b64EncodedKeyPairLoc), e);
 		}
 	}
 

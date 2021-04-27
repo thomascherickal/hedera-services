@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.misc;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class GuidedTourRemoteSuite extends HapiApiSuite {
 				.given(
 						newKeyNamed("invalidPayerKey").shape(keyShape)
 				) .when().then(
-						cryptoUpdate(MASTER)
+						cryptoUpdate(SYSTEM_ADMIN)
 								.receiverSigRequired(true)
 								.signedBy("invalidPayerKey")
 								.hasPrecheck(INVALID_SIGNATURE)

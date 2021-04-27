@@ -4,7 +4,7 @@ package com.hedera.services.contracts.persistence;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ package com.hedera.services.contracts.persistence;
 import com.hedera.services.utils.EntityIdUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,7 +33,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class BlobStoragePersistenceTest {
 	byte[] address = EntityIdUtils.asSolidityAddress(0, 0, 13257);
 	byte[] addressStorage = "STUFF".getBytes();

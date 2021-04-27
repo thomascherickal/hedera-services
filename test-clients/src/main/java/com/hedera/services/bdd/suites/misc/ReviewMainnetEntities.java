@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.misc;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ package com.hedera.services.bdd.suites.misc;
 
 import com.hedera.services.bdd.spec.HapiApiSpec;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
+import com.hedera.services.bdd.spec.utilops.UtilVerbs;
 import com.hedera.services.bdd.suites.HapiApiSuite;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,8 +33,8 @@ import java.util.stream.IntStream;
 
 import static com.hedera.services.bdd.spec.HapiApiSpec.customHapiSpec;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getAccountBalance;
-import static com.hedera.services.bdd.spec.queries.QueryVerbs.getContractInfo;
 import static com.hedera.services.bdd.spec.queries.QueryVerbs.getFileInfo;
+import static com.hedera.services.bdd.spec.queries.QueryVerbs.getTxnRecord;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.burnToken;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
@@ -49,6 +50,7 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.wipeTokenAccount;
 import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.keyFromLiteral;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
 
 public class ReviewMainnetEntities extends HapiApiSuite {
@@ -63,11 +65,59 @@ public class ReviewMainnetEntities extends HapiApiSuite {
 		return List.of(new HapiApiSpec[] {
 //						reviewObjects(),
 //						checkTls(),
-						xfer(),
 //						doSomething(),
 //						oneOfEveryTokenTxn(),
+//						customPayerOp(),
+//						previewnetCryptoCreatePrice(),
+						stablenetCreateAccountWithExplicitKey(),
 				}
 		);
+	}
+
+	public HapiApiSpec stablenetCreateAccountWithExplicitKey() {
+		String explicit = "<SECRET>";
+		String testVectorKey = "testVectorKey";
+
+		return customHapiSpec("StablenetCreateAccountWithExplicitKey")
+				.withProperties(Map.of(
+						"nodes", "34.94.106.61",
+						"default.payer", "0.0.50",
+						"default.payer.pemKeyLoc", "stabletestnet-account50.pem",
+						"default.payer.pemKeyPassphrase", "<SECRET>"
+				))
+				.given(
+						keyFromLiteral(testVectorKey, explicit)
+				).when().then(
+						cryptoCreate("another")
+								.balance(1L)
+								.receiverSigRequired(true)
+								.key(testVectorKey)
+				);
+	}
+
+	public HapiApiSpec previewnetCryptoCreatePrice() {
+		return customHapiSpec("cryptoCreatePrice")
+				.withProperties(Map.of(
+						"nodes", "35.231.208.148",
+						"default.payer.pemKeyLoc", "previewtestnet-account2.pem",
+						"default.payer.pemKeyPassphrase", "<secret>"
+				))
+				.given(
+						cryptoCreate("civilian")
+								.balance(ONE_HUNDRED_HBARS)
+				).when(
+						cryptoCreate("another")
+								.payingWith("civilian")
+//								.signedBy("civilian")
+								.balance(0L)
+								.receiverSigRequired(true)
+								.blankMemo()
+								.entityMemo("")
+								.autoRenewSecs(THREE_MONTHS_IN_SECONDS)
+								.via("civilianCreate")
+				).then(
+						getTxnRecord("civilianCreate").logged()
+				);
 	}
 
 	private HapiApiSpec oneOfEveryTokenTxn() {
@@ -135,21 +185,28 @@ public class ReviewMainnetEntities extends HapiApiSuite {
 				);
 	}
 
-	private HapiApiSpec xfer() {
+	private HapiApiSpec customPayerOp() {
 		final String MAINNET_NODES = "35.237.200.180:0.0.3";
+		final String payer = "0.0.107630";
+		final String payerWords = "<secret>";
+
 		final long ONE_HBAR = 100_000_000L;
+
 		return customHapiSpec("xfer")
 				.withProperties(Map.of(
 						"nodes", MAINNET_NODES,
-						"default.payer", "0.0.950",
-						"startupAccounts.path", "src/main/resource/MainnetStartupAccount.txt"
-//						"startupAccounts.path", "src/main/resource/StableTestnetAccount50StartupAccount.txt"
+						"fees.fixedOffer", "" + ONE_HBAR,
+						"fees.useFixedOffer", "false",
+						"default.payer", payer,
+						"default.payer.mnemonic", payerWords
 				)).given(
+						getAccountBalance(payer).logged()
 				).when(
-//						cryptoTransfer(tinyBarsFromTo(GENESIS, FEE_SCHEDULE_CONTROL, 100 * ONE_HBAR))
+						cryptoTransfer(tinyBarsFromTo(DEFAULT_PAYER, "0.0.950", 1))
+								.signedBy(DEFAULT_PAYER)
+								.logged()
 				).then(
-						getAccountBalance("0.0.950").logged(),
-						getAccountBalance("0.0.45385").logged()
+						getAccountBalance(payer).logged()
 				);
 	}
 

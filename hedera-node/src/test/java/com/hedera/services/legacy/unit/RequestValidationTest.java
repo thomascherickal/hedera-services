@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,17 +89,15 @@ public class RequestValidationTest {
                 null,
                 nodeAcc,
                 null,
-                TEST_USAGE_PRICES,
-                TestExchangeRates.TEST_EXCHANGE,
                 TestFeesFactory.FEES_FACTORY.get(),
                 () -> StateView.EMPTY_VIEW,
                 new BasicPrecheck(TestContextValidator.TEST_VALIDATOR, new MockGlobalDynamicProps()),
                 null,
-                null,
                 new MockAccountNumbers(),
                 policies,
                 new StandardExemptions(new MockAccountNumbers(), policies),
-                platformStatus);
+                platformStatus,
+                null);
     Timestamp timestamp =
         RequestBuilder.getTimestamp(Instant.now(Clock.systemUTC()).minusSeconds(10));
 

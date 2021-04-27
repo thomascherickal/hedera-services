@@ -4,7 +4,7 @@ package com.hedera.services.context;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,62 +24,93 @@ import com.hedera.services.ServicesState;
 import com.hedera.services.config.AccountNumbers;
 import com.hedera.services.config.EntityNumbers;
 import com.hedera.services.config.FileNumbers;
-import com.hedera.services.context.properties.GlobalDynamicProperties;
-import com.hedera.services.context.properties.NodeLocalProperties;
-import com.hedera.services.context.properties.SemanticVersions;
-import com.hedera.services.fees.AwareHbarCentExchange;
-import com.hedera.services.fees.StandardExemptions;
-import com.hedera.services.grpc.controllers.TokenController;
-import com.hedera.services.keys.LegacyEd25519KeyReader;
-import com.hedera.services.ledger.accounts.BackingTokenRels;
-import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
-import com.hedera.services.queries.answering.ZeroStakeAnswerFlow;
-import com.hedera.services.queries.contract.ContractAnswers;
-import com.hedera.services.queries.token.TokenAnswers;
-import com.hedera.services.security.ops.SystemOpPolicies;
-import com.hedera.services.state.expiry.ExpiringCreations;
-import com.hedera.services.state.expiry.ExpiryManager;
-import com.hedera.services.state.exports.SignedStateBalancesExporter;
-import com.hedera.services.state.initialization.BackedSystemAccountsCreator;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.merkle.MerkleDiskFs;
-import com.hedera.services.state.merkle.MerkleEntityAssociation;
-import com.hedera.services.state.merkle.MerkleNetworkContext;
-import com.hedera.services.state.merkle.MerkleToken;
-import com.hedera.services.state.merkle.MerkleTokenRelStatus;
-import com.hedera.services.state.merkle.MerkleTopic;
+import com.hedera.services.context.domain.security.HapiOpPermissions;
 import com.hedera.services.context.domain.trackers.ConsensusStatusCounts;
 import com.hedera.services.context.domain.trackers.IssEventInfo;
 import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.GlobalDynamicProperties;
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
-import com.hedera.services.context.properties.PropertySources;
+import com.hedera.services.context.properties.SemanticVersions;
+import com.hedera.services.context.properties.StandardizedPropertySources;
 import com.hedera.services.contracts.execution.SolidityLifecycle;
 import com.hedera.services.contracts.execution.TxnAwareSoliditySigsVerifier;
 import com.hedera.services.contracts.persistence.BlobStoragePersistence;
+import com.hedera.services.contracts.sources.BlobStorageSource;
+import com.hedera.services.contracts.sources.LedgerAccountsSource;
+import com.hedera.services.fees.AwareHbarCentExchange;
+import com.hedera.services.fees.StandardExemptions;
+import com.hedera.services.fees.TxnRateFeeMultiplierSource;
 import com.hedera.services.fees.calculation.AwareFcfsUsagePrices;
 import com.hedera.services.fees.calculation.UsageBasedFeeCalculator;
 import com.hedera.services.fees.charging.ItemizableFeeCharging;
 import com.hedera.services.fees.charging.TxnFeeChargingPolicy;
+import com.hedera.services.files.HFileMeta;
+import com.hedera.services.files.SysFileCallbacks;
 import com.hedera.services.files.TieredHederaFs;
 import com.hedera.services.files.interceptors.FeeSchedulesManager;
+import com.hedera.services.files.interceptors.ThrottleDefsManager;
 import com.hedera.services.files.interceptors.TxnAwareRatesManager;
 import com.hedera.services.files.interceptors.ValidatingCallbackInterceptor;
 import com.hedera.services.files.store.FcBlobsBytesStore;
 import com.hedera.services.grpc.NettyGrpcServerManager;
 import com.hedera.services.grpc.controllers.ConsensusController;
+import com.hedera.services.grpc.controllers.ContractController;
 import com.hedera.services.grpc.controllers.CryptoController;
 import com.hedera.services.grpc.controllers.FileController;
+import com.hedera.services.grpc.controllers.FreezeController;
 import com.hedera.services.grpc.controllers.NetworkController;
+import com.hedera.services.grpc.controllers.ScheduleController;
+import com.hedera.services.grpc.controllers.TokenController;
+import com.hedera.services.keys.CharacteristicsFactory;
+import com.hedera.services.keys.InHandleActivationHelper;
+import com.hedera.services.keys.LegacyEd25519KeyReader;
 import com.hedera.services.ledger.HederaLedger;
+import com.hedera.services.ledger.accounts.BackingTokenRels;
+import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.ledger.ids.SeqNoEntityIdSource;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleBlobMeta;
-import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.legacy.handler.FreezeHandler;
+import com.hedera.services.legacy.handler.SmartContractRequestHandler;
+import com.hedera.services.legacy.handler.TransactionHandler;
+import com.hedera.services.legacy.services.state.AwareProcessLogic;
+import com.hedera.services.queries.answering.AnswerFunctions;
+import com.hedera.services.queries.answering.QueryResponseHelper;
 import com.hedera.services.queries.answering.StakedAnswerFlow;
+import com.hedera.services.queries.answering.ZeroStakeAnswerFlow;
 import com.hedera.services.queries.consensus.HcsAnswers;
+import com.hedera.services.queries.contract.ContractAnswers;
+import com.hedera.services.queries.crypto.CryptoAnswers;
+import com.hedera.services.queries.meta.MetaAnswers;
+import com.hedera.services.queries.schedule.ScheduleAnswers;
+import com.hedera.services.queries.token.TokenAnswers;
 import com.hedera.services.queries.validation.QueryFeeCheck;
+import com.hedera.services.records.RecordCache;
+import com.hedera.services.records.TxnAwareRecordsHistorian;
+import com.hedera.services.security.ops.SystemOpPolicies;
+import com.hedera.services.sigs.factories.SigFactoryCreator;
+import com.hedera.services.sigs.order.HederaSigningOrder;
+import com.hedera.services.sigs.verification.PrecheckVerifier;
+import com.hedera.services.sigs.verification.SyncVerifier;
+import com.hedera.services.state.expiry.ExpiringCreations;
+import com.hedera.services.state.expiry.ExpiryManager;
+import com.hedera.services.state.exports.SignedStateBalancesExporter;
+import com.hedera.services.state.exports.ToStringAccountsExporter;
+import com.hedera.services.state.initialization.BackedSystemAccountsCreator;
 import com.hedera.services.state.initialization.HfsSystemFilesManager;
+import com.hedera.services.state.logic.AwareNodeDiligenceScreen;
+import com.hedera.services.state.logic.NetworkCtxManager;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleDiskFs;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleNetworkContext;
+import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.merkle.MerkleSchedule;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
+import com.hedera.services.state.merkle.MerkleTopic;
+import com.hedera.services.state.migration.StdStateMigrations;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.RichInstant;
 import com.hedera.services.state.submerkle.SequenceNumber;
@@ -88,36 +119,21 @@ import com.hedera.services.stats.HapiOpCounters;
 import com.hedera.services.stats.MiscRunningAvgs;
 import com.hedera.services.stats.MiscSpeedometers;
 import com.hedera.services.stats.ServicesStatsManager;
-import com.hedera.services.throttling.BucketThrottling;
+import com.hedera.services.store.schedule.ScheduleStore;
+import com.hedera.services.store.tokens.HederaTokenStore;
+import com.hedera.services.store.tokens.TokenStore;
+import com.hedera.services.stream.RecordStreamManager;
+import com.hedera.services.stream.RecordsRunningHashLeaf;
+import com.hedera.services.throttling.HapiThrottling;
 import com.hedera.services.throttling.TransactionThrottling;
-import com.hedera.services.tokens.HederaTokenStore;
+import com.hedera.services.throttling.TxnAwareHandleThrottling;
 import com.hedera.services.txns.TransitionLogicLookup;
 import com.hedera.services.txns.submission.PlatformSubmissionManager;
 import com.hedera.services.txns.submission.TxnHandlerSubmissionFlow;
 import com.hedera.services.txns.submission.TxnResponseHelper;
 import com.hedera.services.txns.validation.ContextOptionValidator;
-import com.hedera.services.queries.answering.AnswerFunctions;
-import com.hedera.services.queries.answering.QueryResponseHelper;
-import com.hedera.services.queries.crypto.CryptoAnswers;
-import com.hedera.services.queries.meta.MetaAnswers;
-import com.hedera.services.records.TxnAwareRecordsHistorian;
-import com.hedera.services.records.RecordCache;
-import com.hedera.services.sigs.order.HederaSigningOrder;
-import com.hedera.services.sigs.verification.PrecheckVerifier;
-import com.hedera.services.sigs.verification.SyncVerifier;
-import com.hedera.services.state.migration.StdStateMigrations;
 import com.hedera.services.utils.SleepingPause;
 import com.hederahashgraph.api.proto.java.AccountID;
-import com.hedera.services.legacy.handler.FreezeHandler;
-import com.hedera.services.legacy.handler.SmartContractRequestHandler;
-import com.hedera.services.legacy.handler.TransactionHandler;
-import com.hedera.services.contracts.sources.LedgerAccountsSource;
-import com.hedera.services.contracts.sources.BlobStorageSource;
-import com.hedera.services.legacy.service.FreezeServiceImpl;
-import com.hedera.services.legacy.service.SmartContractServiceImpl;
-import com.hedera.services.legacy.services.state.AwareProcessLogic;
-import com.hedera.services.legacy.services.utils.DefaultAccountsExporter;
-import com.hedera.services.legacy.stream.RecordStream;
 import com.swirlds.common.Address;
 import com.swirlds.common.AddressBook;
 import com.swirlds.common.Console;
@@ -125,12 +141,12 @@ import com.swirlds.common.NodeId;
 import com.swirlds.common.Platform;
 import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.crypto.Cryptography;
+import com.swirlds.common.crypto.Hash;
+import com.swirlds.common.crypto.RunningHash;
 import com.swirlds.fcmap.FCMap;
 import org.ethereum.db.ServicesRepositoryRoot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.time.Instant;
@@ -138,17 +154,26 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import static com.hedera.services.stream.RecordStreamManagerTest.INITIAL_RANDOM_HASH;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.BDDMockito.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.inOrder;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.spy;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.when;
 
-@RunWith(JUnitPlatform.class)
 public class ServicesContextTest {
-	private final NodeId id = new NodeId(false, 1L);
+	private final long id = 1L;
+	private final NodeId nodeId = new NodeId(false, id);
+	private static final String recordStreamDir = "somePath/recordStream";
 
 	RichInstant consensusTimeOfLastHandledTxn = RichInstant.fromJava(Instant.now());
 	Platform platform;
@@ -158,18 +183,20 @@ public class ServicesContextTest {
 	ServicesState state;
 	Cryptography crypto;
 	PropertySource properties;
-	PropertySources propertySources;
+	StandardizedPropertySources propertySources;
 	FCMap<MerkleEntityId, MerkleTopic> topics;
 	FCMap<MerkleEntityId, MerkleToken> tokens;
 	FCMap<MerkleEntityId, MerkleAccount> accounts;
 	FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
+	FCMap<MerkleEntityId, MerkleSchedule> schedules;
 
 	@BeforeEach
 	void setup() {
 		topics = mock(FCMap.class);
 		tokens = mock(FCMap.class);
 		tokenAssociations = mock(FCMap.class);
+		schedules = mock(FCMap.class);
 		storage = mock(FCMap.class);
 		accounts = mock(FCMap.class);
 		seqNo = mock(SequenceNumber.class);
@@ -182,11 +209,12 @@ public class ServicesContextTest {
 		given(state.topics()).willReturn(topics);
 		given(state.tokens()).willReturn(tokens);
 		given(state.tokenAssociations()).willReturn(tokenAssociations);
+		given(state.scheduleTxs()).willReturn(schedules);
 		crypto = mock(Cryptography.class);
 		platform = mock(Platform.class);
 		given(platform.getCryptography()).willReturn(crypto);
 		properties = mock(PropertySource.class);
-		propertySources = mock(PropertySources.class);
+		propertySources = mock(StandardizedPropertySources.class);
 		given(propertySources.asResolvingSource()).willReturn(properties);
 	}
 
@@ -199,20 +227,23 @@ public class ServicesContextTest {
 		var newStorage = mock(FCMap.class);
 		var newTokens = mock(FCMap.class);
 		var newTokenRels = mock(FCMap.class);
+		var newSchedules = mock(FCMap.class);
 
 		given(newState.accounts()).willReturn(newAccounts);
 		given(newState.topics()).willReturn(newTopics);
 		given(newState.tokens()).willReturn(newTokens);
 		given(newState.storage()).willReturn(newStorage);
 		given(newState.tokenAssociations()).willReturn(newTokenRels);
+		given(newState.scheduleTxs()).willReturn(newSchedules);
 		// given:
-		var subject = new ServicesContext(id, platform, state, propertySources);
+		var subject = new ServicesContext(nodeId, platform, state, propertySources);
 		// and:
 		var accountsRef = subject.queryableAccounts();
 		var topicsRef = subject.queryableTopics();
 		var storageRef = subject.queryableStorage();
 		var tokensRef = subject.queryableTokens();
 		var tokenRelsRef = subject.queryableTokenAssociations();
+		var schedulesRef = subject.queryableSchedules();
 
 		// when:
 		subject.update(newState);
@@ -224,12 +255,14 @@ public class ServicesContextTest {
 		assertSame(storageRef, subject.queryableStorage());
 		assertSame(tokensRef, subject.queryableTokens());
 		assertSame(tokenRelsRef, subject.queryableTokenAssociations());
+		assertSame(schedulesRef, subject.queryableSchedules());
 		// and:
 		assertSame(newAccounts, subject.queryableAccounts().get());
 		assertSame(newTopics, subject.queryableTopics().get());
 		assertSame(newStorage, subject.queryableStorage().get());
 		assertSame(newTokens, subject.queryableTokens().get());
 		assertSame(newTokenRels, subject.queryableTokenAssociations().get());
+		assertSame(newSchedules, subject.queryableSchedules().get());
 	}
 
 	@Test
@@ -238,7 +271,7 @@ public class ServicesContextTest {
 		InOrder inOrder = inOrder(state);
 
 		// given:
-		var subject = new ServicesContext(id, platform, state, propertySources);
+		var subject = new ServicesContext(nodeId, platform, state, propertySources);
 
 		// when:
 		subject.addressBook();
@@ -270,7 +303,7 @@ public class ServicesContextTest {
 		given(state.addressBook()).willReturn(book);
 
 		// when:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 
 		// then:
 		assertEquals(ctx.address(), address);
@@ -283,7 +316,7 @@ public class ServicesContextTest {
 		Instant dataDrivenNow = Instant.now();
 		ServicesContext ctx =
 				new ServicesContext(
-						id,
+						nodeId,
 						platform,
 						state,
 						propertySources);
@@ -302,7 +335,7 @@ public class ServicesContextTest {
 		given(platform.createConsole(true)).willReturn(console);
 
 		// when:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 
 		// then:
 		assertEquals(console, ctx.console());
@@ -320,12 +353,36 @@ public class ServicesContextTest {
 		given(state.addressBook()).willReturn(book);
 
 		// given:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 
 		// expect:
 		assertEquals(ServicesNodeType.ZERO_STAKE_NODE, ctx.nodeType());
 		// and:
 		assertThat(ctx.answerFlow(), instanceOf(ZeroStakeAnswerFlow.class));
+	}
+
+	@Test
+	public void rebuildsStoreViewsIfNonNull() {
+		// setup:
+		ScheduleStore scheduleStore = mock(ScheduleStore.class);
+		TokenStore tokenStore = mock(TokenStore.class);
+
+		// given:
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
+
+		// expect:
+		assertDoesNotThrow(ctx::rebuildStoreViewsIfPresent);
+
+		// and given:
+		ctx.setTokenStore(tokenStore);
+		ctx.setScheduleStore(scheduleStore);
+
+		// when:
+		ctx.rebuildStoreViewsIfPresent();
+
+		// then:
+		verify(tokenStore).rebuildViews();
+		verify(scheduleStore).rebuildViews();
 	}
 
 	@Test
@@ -335,7 +392,7 @@ public class ServicesContextTest {
 		FCMapBackingAccounts backingAccounts = mock(FCMapBackingAccounts.class);
 
 		// given:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 
 		// expect:
 		assertDoesNotThrow(ctx::rebuildBackingStoresIfPresent);
@@ -361,17 +418,15 @@ public class ServicesContextTest {
 		given(address.getStake()).willReturn(1_234_567L);
 		given(book.getAddress(1L)).willReturn(address);
 		given(state.addressBook()).willReturn(book);
-		given(properties.getStringProperty("hedera.recordStream.logDir")).willReturn("src/main/resources");
 
 		// given:
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 		// and:
 		ctx.platformStatus().set(PlatformStatus.DISCONNECTED);
 
 		// expect:
 		assertEquals(SleepingPause.SLEEPING_PAUSE, ctx.pause());
 		assertEquals(PlatformStatus.DISCONNECTED, ctx.platformStatus().get());
-		assertEquals("record_stream_0.0.3", ctx.recordStreamThread().getName());
 		assertEquals(ctx.properties(), properties);
 		assertEquals(ctx.propertySources(), propertySources);
 		// and expect TDD:
@@ -401,11 +456,11 @@ public class ServicesContextTest {
 		assertThat(ctx.entityExpiries(), instanceOf(Map.class));
 		assertThat(ctx.syncVerifier(), instanceOf(SyncVerifier.class));
 		assertThat(ctx.txnThrottling(), instanceOf(TransactionThrottling.class));
-		assertThat(ctx.bucketThrottling(), instanceOf(BucketThrottling.class));
 		assertThat(ctx.accountSource(), instanceOf(LedgerAccountsSource.class));
 		assertThat(ctx.bytecodeDb(), instanceOf(BlobStorageSource.class));
 		assertThat(ctx.cryptoAnswers(), instanceOf(CryptoAnswers.class));
 		assertThat(ctx.tokenAnswers(), instanceOf(TokenAnswers.class));
+		assertThat(ctx.scheduleAnswers(), instanceOf(ScheduleAnswers.class));
 		assertThat(ctx.consensusGrpc(), instanceOf(ConsensusController.class));
 		assertThat(ctx.storagePersistence(), instanceOf(BlobStoragePersistence.class));
 		assertThat(ctx.filesGrpc(), instanceOf(FileController.class));
@@ -451,6 +506,7 @@ public class ServicesContextTest {
 		assertThat(ctx.tokenStore(), instanceOf(HederaTokenStore.class));
 		assertThat(ctx.globalDynamicProperties(), instanceOf(GlobalDynamicProperties.class));
 		assertThat(ctx.tokenGrpc(), instanceOf(TokenController.class));
+		assertThat(ctx.scheduleGrpc(), instanceOf(ScheduleController.class));
 		assertThat(ctx.nodeLocalProperties(), instanceOf(NodeLocalProperties.class));
 		assertThat(ctx.balancesExporter(), instanceOf(SignedStateBalancesExporter.class));
 		assertThat(ctx.exchange(), instanceOf(AwareHbarCentExchange.class));
@@ -460,28 +516,42 @@ public class ServicesContextTest {
 		assertThat(ctx.speedometers(), instanceOf(MiscSpeedometers.class));
 		assertThat(ctx.statsManager(), instanceOf(ServicesStatsManager.class));
 		assertThat(ctx.semVers(), instanceOf(SemanticVersions.class));
+		assertThat(ctx.freezeGrpc(), instanceOf(FreezeController.class));
+		assertThat(ctx.contractsGrpc(), instanceOf(ContractController.class));
+		assertThat(ctx.sigFactoryCreator(), instanceOf(SigFactoryCreator.class));
+		assertThat(ctx.activationHelper(), instanceOf(InHandleActivationHelper.class));
+		assertThat(ctx.characteristics(), instanceOf(CharacteristicsFactory.class));
+		assertThat(ctx.nodeDiligenceScreen(), instanceOf(AwareNodeDiligenceScreen.class));
+		assertThat(ctx.feeMultiplierSource(), instanceOf(TxnRateFeeMultiplierSource.class));
+		assertThat(ctx.hapiThrottling(), instanceOf(HapiThrottling.class));
+		assertThat(ctx.handleThrottling(), instanceOf(TxnAwareHandleThrottling.class));
+		assertThat(ctx.throttleDefsManager(), instanceOf(ThrottleDefsManager.class));
+		assertThat(ctx.sysFileCallbacks(), instanceOf(SysFileCallbacks.class));
+		assertThat(ctx.networkCtxManager(), instanceOf(NetworkCtxManager.class));
+		assertThat(ctx.hapiOpPermissions(), instanceOf(HapiOpPermissions.class));
+		assertThat(ctx.accountsExporter(), instanceOf(ToStringAccountsExporter.class));
 		// and:
 		assertEquals(ServicesNodeType.STAKED_NODE, ctx.nodeType());
 		// and expect legacy:
 		assertThat(ctx.txns(), instanceOf(TransactionHandler.class));
 		assertThat(ctx.contracts(), instanceOf(SmartContractRequestHandler.class));
-		assertThat(ctx.freezeGrpc(), instanceOf(FreezeServiceImpl.class));
-		assertThat(ctx.contractsGrpc(), instanceOf(SmartContractServiceImpl.class));
-		assertThat(ctx.recordStream(), instanceOf(RecordStream.class));
-		assertThat(ctx.accountsExporter(), instanceOf(DefaultAccountsExporter.class));
 		assertThat(ctx.freeze(), instanceOf(FreezeHandler.class));
 		assertThat(ctx.logic(), instanceOf(AwareProcessLogic.class));
 	}
 
 	@Test
 	public void shouldInitFees() throws Exception {
+		// setup:
+		MerkleNetworkContext networkCtx = new MerkleNetworkContext();
+
 		given(properties.getLongProperty("files.feeSchedules")).willReturn(111L);
 		given(properties.getIntProperty("cache.records.ttl")).willReturn(180);
 		var book = mock(AddressBook.class);
 		var diskFs = mock(MerkleDiskFs.class);
 		var blob = mock(MerkleOptionalBlob.class);
-		byte[] fileInfo = new JFileInfo(false, StateView.EMPTY_WACL, 1_234_567L).serialize();
+		byte[] fileInfo = new HFileMeta(false, StateView.EMPTY_WACL, 1_234_567L).serialize();
 		byte[] fileContents = new byte[0];
+		given(state.networkCtx()).willReturn(networkCtx);
 		given(state.addressBook()).willReturn(book);
 		given(state.diskFs()).willReturn(diskFs);
 		given(storage.containsKey(any())).willReturn(true);
@@ -490,9 +560,101 @@ public class ServicesContextTest {
 		given(diskFs.contains(any())).willReturn(true);
 		given(diskFs.contentsOf(any())).willReturn(fileContents);
 
-		ServicesContext ctx = new ServicesContext(id, platform, state, propertySources);
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
 		var subject = ctx.systemFilesManager();
 
+		assertSame(networkCtx, ctx.networkCtx());
 		assertDoesNotThrow(() -> subject.loadFeeSchedules());
+	}
+
+	@Test
+	public void getRecordStreamDirectoryTest() {
+		String expectedDir = "/here/we/are";
+
+		NodeLocalProperties sourceProps = mock(NodeLocalProperties.class);
+		given(sourceProps.recordLogDir()).willReturn(expectedDir);
+		final AddressBook book = mock(AddressBook.class);
+		final Address address = mock(Address.class);
+		given(state.addressBook()).willReturn(book);
+		given(book.getAddress(id)).willReturn(address);
+		given(address.getMemo()).willReturn("0.0.3");
+
+		ServicesContext ctx = new ServicesContext(nodeId, platform, state, propertySources);
+		assertEquals(expectedDir + "/record0.0.3", ctx.getRecordStreamDirectory(sourceProps));
+	}
+
+	@Test
+	public void updateRecordRunningHashTest() {
+		// given:
+		final RunningHash runningHash = mock(RunningHash.class);
+		final RecordsRunningHashLeaf runningHashLeaf = new RecordsRunningHashLeaf();
+		when(state.runningHashLeaf()).thenReturn(runningHashLeaf);
+
+		ServicesContext ctx =
+				new ServicesContext(
+						nodeId,
+						platform,
+						state,
+						propertySources);
+
+		// when:
+		ctx.updateRecordRunningHash(runningHash);
+
+		// then:
+		assertEquals(runningHash, ctx.state.runningHashLeaf().getRunningHash());
+	}
+
+	@Test
+	public void initRecordStreamManagerTest() {
+		// given:
+		final AddressBook book = mock(AddressBook.class);
+		final Address address = mock(Address.class);
+		given(state.addressBook()).willReturn(book);
+		given(book.getAddress(id)).willReturn(address);
+		given(address.getMemo()).willReturn("0.0.3");
+		given(properties.getStringProperty("hedera.recordStream.logDir")).willReturn(recordStreamDir);
+		given(properties.getIntProperty("hedera.recordStream.queueCapacity")).willReturn(123);
+		given(properties.getLongProperty("hedera.recordStream.logPeriod")).willReturn(1L);
+		given(properties.getBooleanProperty("hedera.recordStream.isEnabled")).willReturn(true);
+		final Hash initialHash = INITIAL_RANDOM_HASH;
+
+		ServicesContext ctx =
+				new ServicesContext(
+						nodeId,
+						platform,
+						state,
+						propertySources);
+
+		assertNull(ctx.recordStreamManager());
+
+		// when:
+		ctx.setRecordsInitialHash(initialHash);
+		ctx.initRecordStreamManager();
+
+		// then:
+		assertEquals(initialHash, ctx.getRecordsInitialHash());
+		assertNotNull(ctx.recordStreamManager());
+		assertEquals(initialHash, ctx.recordStreamManager().getInitialHash());
+	}
+
+	@Test
+	public void setRecordsInitialHashTest() {
+		// given:
+		final Hash initialHash = INITIAL_RANDOM_HASH;
+
+		ServicesContext ctx = spy(new ServicesContext(
+				nodeId,
+				platform,
+				state,
+				propertySources));
+		RecordStreamManager recordStreamManager = mock(RecordStreamManager.class);
+
+		when(ctx.recordStreamManager()).thenReturn(recordStreamManager);
+
+		// when:
+		ctx.setRecordsInitialHash(initialHash);
+
+		// then:
+		verify(recordStreamManager).setInitialHash(initialHash);
 	}
 }

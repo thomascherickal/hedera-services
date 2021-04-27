@@ -4,7 +4,7 @@ package com.hedera.services.sigs.metadata.lookups;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hedera.test.factories.accounts.MerkleAccountFactory.newAccount;
 import static com.hedera.test.factories.accounts.MerkleAccountFactory.newContract;
@@ -40,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnitPlatform.class)
 public class DefaultFCMapContractLookupTest {
 	private final String id = "0.0.1337";
 	private final ContractID contract = IdUtils.asContract(id);

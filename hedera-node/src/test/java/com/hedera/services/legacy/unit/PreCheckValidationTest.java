@@ -4,7 +4,7 @@ package com.hedera.services.legacy.unit;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,24 +25,37 @@ import com.google.protobuf.ByteString;
 import com.hedera.services.config.MockAccountNumbers;
 import com.hedera.services.config.MockEntityNumbers;
 import com.hedera.services.config.MockGlobalDynamicProps;
+import com.hedera.services.context.ContextPlatformStatus;
+import com.hedera.services.context.domain.process.TxnValidityAndFeeReq;
+import com.hedera.services.context.domain.security.HapiOpPermissions;
+import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.fees.StandardExemptions;
-import com.hedera.services.context.ContextPlatformStatus;
-import com.hedera.services.security.ops.SystemOpPolicies;
-import com.hedera.services.state.merkle.MerkleTopic;
-import com.hedera.services.context.primitives.StateView;
+import com.hedera.services.legacy.TestHelper;
 import com.hedera.services.legacy.handler.TransactionHandler;
+import com.hedera.services.legacy.proto.utils.CommonUtils;
 import com.hedera.services.legacy.unit.handler.FeeScheduleInterceptor;
 import com.hedera.services.legacy.unit.handler.FileServiceHandler;
+import com.hedera.services.legacy.unit.utils.DummyFunctionalityThrottling;
+import com.hedera.services.legacy.unit.utils.DummyHapiPermissions;
 import com.hedera.services.legacy.util.MockStorageWrapper;
 import com.hedera.services.queries.validation.QueryFeeCheck;
 import com.hedera.services.records.RecordCache;
+import com.hedera.services.security.ops.SystemOpPolicies;
 import com.hedera.services.sigs.verification.PrecheckVerifier;
+import com.hedera.services.state.merkle.MerkleAccount;
+import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleTopic;
+import com.hedera.services.state.submerkle.ExchangeRates;
+import com.hedera.services.state.submerkle.ExpirableTxnRecord;
+import com.hedera.services.sysfiles.domain.throttling.ThrottleDefinitions;
+import com.hedera.services.throttles.DeterministicThrottle;
+import com.hedera.services.throttling.FunctionalityThrottling;
 import com.hedera.services.txns.validation.BasicPrecheck;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.test.mocks.TestContextValidator;
 import com.hedera.test.mocks.TestFeesFactory;
-import com.hedera.test.mocks.TestProperties;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Duration;
@@ -62,23 +75,6 @@ import com.hederahashgraph.builder.RequestBuilder;
 import com.hederahashgraph.builder.TransactionSigner;
 import com.hederahashgraph.fee.FeeBuilder;
 import com.hederahashgraph.fee.SigValueObj;
-import com.hedera.services.legacy.TestHelper;
-import com.hedera.services.state.merkle.MerkleEntityId;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.context.domain.process.TxnValidityAndFeeReq;
-import com.hedera.services.state.submerkle.ExpirableTxnRecord;
-import com.hedera.services.state.submerkle.ExchangeRates;
-import com.hedera.services.legacy.proto.utils.CommonUtils;
-
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.internal.SettingsCommon;
 import com.swirlds.fcmap.FCMap;
@@ -93,9 +89,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.hedera.test.mocks.TestExchangeRates.TEST_EXCHANGE;
 import static com.hedera.test.mocks.TestUsagePricesProvider.TEST_USAGE_PRICES;
@@ -107,7 +109,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnitPlatform.class)
 @TestInstance(Lifecycle.PER_CLASS)
 class PreCheckValidationTest {
 
@@ -124,10 +125,8 @@ class PreCheckValidationTest {
 			null,
 			CacheBuilder.newBuilder().build(),
 			new HashMap<>());
-	private FCMap<MerkleEntityId, MerkleAccount> accountFCMap =
-			new FCMap<>(new MerkleEntityId.Provider(), MerkleAccount.LEGACY_PROVIDER);
-	FCMap<MerkleEntityId, MerkleTopic> topicFCMap = new FCMap<>(new MerkleEntityId.Provider(),
-			new MerkleTopic.Provider());
+	private FCMap<MerkleEntityId, MerkleAccount> accountFCMap = new FCMap<>();
+	FCMap<MerkleEntityId, MerkleTopic> topicFCMap = new FCMap<>();
 	private AccountID nodeAccount = AccountID.newBuilder().setAccountNum(3).setRealmNum(0).setShardNum(0).build();
 	private AccountID payerAccount = AccountID.newBuilder().setAccountNum(300).setRealmNum(0).setShardNum(0).build();
 	private KeyPair payerKeyGenerated = new KeyPairGenerator().generateKeyPair();
@@ -164,6 +163,11 @@ class PreCheckValidationTest {
 	private Transaction createPossibleTransaction() throws Exception {
 		KeyPair keyGenerated = new KeyPairGenerator().generateKeyPair();
 		Transaction transaction = TestHelper.createAccount(payerAccount, nodeAccount, keyGenerated, 30);
+		TransactionBody body = TransactionBody.parseFrom(transaction.getBodyBytes());
+		var opBuilder = body.getCryptoCreateAccount().toBuilder();
+		opBuilder.setProxyAccountID(AccountID.newBuilder().setAccountNum(999666));
+		body = body.toBuilder().setCryptoCreateAccount(opBuilder).build();
+		transaction = transaction.toBuilder().setBodyBytes(body.toByteString()).build();
 
 		// calculate fee required
 		long correctFee = getCalculatedTransactionFee(transaction,
@@ -184,25 +188,22 @@ class PreCheckValidationTest {
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
 		var platformStatus = new ContextPlatformStatus();
 		platformStatus.set(PlatformStatus.ACTIVE);
-		PropertySource propertySource = mock(PropertySource.class);
+		NodeLocalProperties nodeProps = mock(NodeLocalProperties.class);
 		transactionHandler = new TransactionHandler(
 				recordCache,
 				() -> accountFCMap,
 				nodeAccount,
 				precheckVerifier,
-				TEST_USAGE_PRICES,
-				TEST_EXCHANGE,
 				TestFeesFactory.FEES_FACTORY.get(),
-				() -> new StateView(() -> topicFCMap, () -> accountFCMap, propertySource, null),
+				() -> new StateView(() -> topicFCMap, () -> accountFCMap, nodeProps, null),
 				new BasicPrecheck(TestContextValidator.TEST_VALIDATOR, new MockGlobalDynamicProps()),
 				new QueryFeeCheck(() -> accountFCMap),
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
-		PropertyLoaderTest.populatePropertiesWithConfigFilesPath(
-				"./configuration/dev/application.properties",
-				"./configuration/dev/api-permission.properties");
+				platformStatus,
+				DummyFunctionalityThrottling.throttlingAlways(false),
+				new DummyHapiPermissions());
 		byte[] pubKey = ((EdDSAPublicKey) payerKeyGenerated.getPublic()).getAbyte();
 
 		onboardAccount(payerAccount, pubKey, payerAccountInitialBalance);
@@ -377,7 +378,8 @@ class PreCheckValidationTest {
 		Transaction origTransaction = createPossibleTransaction();
 		TransactionBody trBody = CommonUtils.extractTransactionBody(origTransaction);
 		long correctFee = trBody.getTransactionFee();
-		trBody = trBody.toBuilder().setTransactionFee(correctFee - 1).build();
+		/* Allow for some tiny variation from not including send/receive thresholds in new BPT calculation. */
+		trBody = trBody.toBuilder().setTransactionFee((long) (.95 * correctFee)).build();
 		origTransaction = origTransaction.toBuilder().setBodyBytes(trBody.toByteString()).build();
 
 		Transaction signedTransaction = TransactionSigner.signTransactionWithSignatureMap(origTransaction,
@@ -387,8 +389,7 @@ class PreCheckValidationTest {
 
 		TxnValidityAndFeeReq result =
 				transactionHandler.validateTransactionPreConsensus(signedTransaction, false);
-		assert (result.getValidity() == ResponseCodeEnum.INSUFFICIENT_TX_FEE);
-		assert (result.getRequiredFee() == correctFee);
+		Assertions.assertEquals(result.getValidity(), ResponseCodeEnum.INSUFFICIENT_TX_FEE);
 	}
 
 	@Test
@@ -434,23 +435,21 @@ class PreCheckValidationTest {
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
 		var platformStatus = new ContextPlatformStatus();
 		platformStatus.set(PlatformStatus.ACTIVE);
-		PropertySource propertySource = mock(PropertySource.class);
 		TransactionHandler localTransactionHandler = new TransactionHandler(
 				recordCache,
 				() -> accountFCMap,
 				nodeAccount,
 				precheckVerifier,
-				TEST_USAGE_PRICES,
-				TEST_EXCHANGE,
 				TestFeesFactory.FEES_FACTORY.get(),
-				() -> new StateView(() -> topicFCMap, () -> accountFCMap, propertySource, null),
+				() -> new StateView(() -> topicFCMap, () -> accountFCMap, mock(NodeLocalProperties.class), null),
 				new BasicPrecheck(TestContextValidator.TEST_VALIDATOR, new MockGlobalDynamicProps()),
 				new QueryFeeCheck(() -> accountFCMap),
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
-		localTransactionHandler.setThrottling(function -> true);
+				platformStatus,
+				DummyFunctionalityThrottling.throttlingAlways(true),
+				new DummyHapiPermissions());
 		TxnValidityAndFeeReq result =
 				localTransactionHandler.validateTransactionPreConsensus(signedTransaction, false);
 		assert (result.getValidity() == ResponseCodeEnum.BUSY);
@@ -483,22 +482,21 @@ class PreCheckValidationTest {
 		var policies = new SystemOpPolicies(new MockEntityNumbers());
 		var platformStatus = new ContextPlatformStatus();
 		platformStatus.set(PlatformStatus.ACTIVE);
-		PropertySource propertySource = mock(PropertySource.class);
 		TransactionHandler localTransactionHandler = new TransactionHandler(
 				localRecordCache,
 				() -> accountFCMap,
 				nodeAccount,
 				precheckVerifier,
-				TEST_USAGE_PRICES,
-				TEST_EXCHANGE,
 				TestFeesFactory.FEES_FACTORY.get(),
-				() -> new StateView(() -> topicFCMap, () -> accountFCMap, propertySource, null),
+				() -> new StateView(() -> topicFCMap, () -> accountFCMap, mock(NodeLocalProperties.class), null),
 				new BasicPrecheck(TestContextValidator.TEST_VALIDATOR, new MockGlobalDynamicProps()),
 				new QueryFeeCheck(() -> accountFCMap),
 				new MockAccountNumbers(),
 				policies,
 				new StandardExemptions(new MockAccountNumbers(), policies),
-				platformStatus);
+				platformStatus,
+				DummyFunctionalityThrottling.throttlingAlways(false),
+				new DummyHapiPermissions());
 
 		TxnValidityAndFeeReq result =
 				localTransactionHandler.validateTransactionPreConsensus(signedTransaction, false);

@@ -4,7 +4,7 @@ package com.hedera.services.txns.file;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,12 +35,10 @@ import com.hederahashgraph.api.proto.java.SystemDeleteTransactionBody;
 import com.hederahashgraph.api.proto.java.TimestampSeconds;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
+import com.hedera.services.files.HFileMeta;
 import com.hedera.services.legacy.core.jproto.JKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import java.time.Instant;
@@ -55,7 +53,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class FileSysDelTransitionLogicTest {
 	enum TargetType { VALID, MISSING, DELETED }
 	enum NewExpiryType { NONE, FUTURE, PAST }
@@ -75,7 +72,7 @@ class FileSysDelTransitionLogicTest {
 			SUCCESS);
 
 	JKey wacl;
-	JFileInfo attr, deletedAttr;
+	HFileMeta attr, deletedAttr;
 
 	TransactionID txnId;
 	TransactionBody fileSysDelTxn;
@@ -90,8 +87,8 @@ class FileSysDelTransitionLogicTest {
 	@BeforeEach
 	private void setup() throws Throwable {
 		wacl = TxnHandlingScenario.SIMPLE_NEW_WACL_KT.asJKey();
-		attr = new JFileInfo(false, wacl, oldExpiry);
-		deletedAttr = new JFileInfo(true, wacl, oldExpiry);
+		attr = new HFileMeta(false, wacl, oldExpiry);
+		deletedAttr = new HFileMeta(true, wacl, oldExpiry);
 
 		accessor = mock(PlatformTxnAccessor.class);
 		txnCtx = mock(TransactionContext.class);
@@ -133,9 +130,9 @@ class FileSysDelTransitionLogicTest {
 
 		// then:
 		assertTrue(attr.isDeleted());;
-		assertEquals(oldExpiry, attr.getExpirationTimeSeconds());
+		assertEquals(oldExpiry, attr.getExpiry());
 		inOrder.verify(hfs).setattr(tbd, attr);
-		inOrder.verify(oldExpiries).put(EntityId.ofNullableFileId(tbd), Long.valueOf(oldExpiry));
+		inOrder.verify(oldExpiries).put(EntityId.fromGrpcFileId(tbd), Long.valueOf(oldExpiry));
 		inOrder.verify(txnCtx).setStatus(SUCCESS);
 	}
 
@@ -165,9 +162,9 @@ class FileSysDelTransitionLogicTest {
 
 		// then:
 		assertTrue(attr.isDeleted());;
-		assertEquals(newExpiry, attr.getExpirationTimeSeconds());
+		assertEquals(newExpiry, attr.getExpiry());
 		inOrder.verify(hfs).setattr(tbd, attr);
-		inOrder.verify(oldExpiries).put(EntityId.ofNullableFileId(tbd), Long.valueOf(oldExpiry));
+		inOrder.verify(oldExpiries).put(EntityId.fromGrpcFileId(tbd), Long.valueOf(oldExpiry));
 		inOrder.verify(txnCtx).setStatus(SUCCESS);
 	}
 

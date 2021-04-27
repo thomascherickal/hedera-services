@@ -4,7 +4,7 @@ package com.hedera.services.throttling;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,16 @@ package com.hedera.services.throttling;
  * ‍
  */
 
+import com.hedera.services.sysfiles.domain.throttling.ThrottleDefinitions;
+import com.hedera.services.throttles.DeterministicThrottle;
 import com.hederahashgraph.api.proto.java.HederaFunctionality;
 
-import java.util.EnumSet;
+import java.util.List;
 
 public interface FunctionalityThrottling {
 	boolean shouldThrottle(HederaFunctionality function);
+
+	void rebuildFor(ThrottleDefinitions defs);
+	List<DeterministicThrottle> activeThrottlesFor(HederaFunctionality function);
+	List<DeterministicThrottle> allActiveThrottles();
 }

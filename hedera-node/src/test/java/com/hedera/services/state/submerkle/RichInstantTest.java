@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,7 +33,6 @@ import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class RichInstantTest {
 	long seconds = 1_234_567L;
 	int nanos = 890;
@@ -90,18 +87,6 @@ class RichInstantTest {
 
 		// expect:
 		assertEquals(grpc, subject.toGrpc());
-	}
-
-	@Test
-	public void legacyProviderWorks() throws IOException {
-		given(din.readLong()).willReturn(-1L).willReturn(-2L).willReturn(seconds);
-		given(din.readInt()).willReturn(nanos);
-
-		// when:
-		var readSubject = RichInstant.LEGACY_PROVIDER.deserialize(din);
-
-		// expect:
-		assertEquals(subject, readSubject);
 	}
 
 	@Test

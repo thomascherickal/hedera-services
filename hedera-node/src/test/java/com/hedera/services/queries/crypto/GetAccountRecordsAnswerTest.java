@@ -4,7 +4,7 @@ package com.hedera.services.queries.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.hedera.services.queries.crypto;
  * ‍
  */
 
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.context.primitives.StateView;
@@ -39,8 +40,6 @@ import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import static com.hederahashgraph.api.proto.java.HederaFunctionality.CryptoGetAccountRecords;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 import static com.hederahashgraph.api.proto.java.ResponseType.ANSWER_ONLY;
@@ -55,7 +54,6 @@ import static com.hedera.test.factories.scenarios.TxnHandlingScenario.COMPLEX_KE
 import static com.hedera.services.state.serdes.DomainSerdesTest.recordOne;
 import static com.hedera.services.state.serdes.DomainSerdesTest.recordTwo;
 
-@RunWith(JUnitPlatform.class)
 class GetAccountRecordsAnswerTest {
 	long fee = 1_234L;
 	StateView view;
@@ -69,7 +67,7 @@ class GetAccountRecordsAnswerTest {
 
 	GetAccountRecordsAnswer subject;
 
-	PropertySource propertySource;
+	NodeLocalProperties nodeProps;
 
 	@BeforeEach
 	private void setup() throws Throwable {
@@ -89,8 +87,8 @@ class GetAccountRecordsAnswerTest {
 		accounts = mock(FCMap.class);
 		given(accounts.get(MerkleEntityId.fromAccountId(asAccount(target)))).willReturn(payerAccount);
 
-		propertySource = mock(PropertySource.class);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, propertySource, null);
+		nodeProps = mock(NodeLocalProperties.class);
+		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, nodeProps, null);
 
 		optionValidator = mock(OptionValidator.class);
 
@@ -177,7 +175,7 @@ class GetAccountRecordsAnswerTest {
 		Query query = validQuery(COST_ANSWER, fee, target);
 
 		// expect:
-		assertEquals(paymentTxn, subject.extractPaymentFrom(query).get().getSignedTxn());
+		assertEquals(paymentTxn, subject.extractPaymentFrom(query).get().getBackwardCompatibleSignedTxn());
 	}
 
 	@Test

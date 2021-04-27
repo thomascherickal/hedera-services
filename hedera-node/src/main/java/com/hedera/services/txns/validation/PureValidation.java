@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,19 @@ package com.hedera.services.txns.validation;
  * ‍
  */
 
+import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.context.primitives.StateView;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileGetInfoResponse;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hedera.services.state.merkle.MerkleEntityId;
 import com.swirlds.fcmap.FCMap;
+import org.apache.commons.codec.DecoderException;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -89,5 +92,17 @@ public class PureValidation {
 		return Instant.ofEpochSecond(
 			Math.min(Math.max(Instant.MIN.getEpochSecond(), when.getSeconds()), Instant.MAX.getEpochSecond()),
 			Math.min(Math.max(Instant.MIN.getNano(), when.getNanos()), Instant.MAX.getNano()));
+	}
+
+	public static ResponseCodeEnum checkKey(Key key, ResponseCodeEnum failure) {
+		try {
+			var fcKey = JKey.mapKey(key);
+			if (!fcKey.isValid()) {
+				return failure;
+			}
+			return OK;
+		} catch (DecoderException ignore) {
+			return failure;
+		}
 	}
 }

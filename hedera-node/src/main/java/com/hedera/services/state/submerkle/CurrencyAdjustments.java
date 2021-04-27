@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ import com.swirlds.common.io.SerializableDataOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,34 +46,8 @@ public class CurrencyAdjustments implements SelfSerializable {
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0xd8b06bd46e12a466L;
 
 	static final long[] NO_ADJUSTMENTS = new long[0];
-	static EntityId.Provider legacyIdProvider = EntityId.LEGACY_PROVIDER;
 
 	public static final int MAX_NUM_ADJUSTMENTS = 25;
-	public static final CurrencyAdjustments.Provider LEGACY_PROVIDER = new Provider();
-
-	@Deprecated
-	public static class Provider {
-		public CurrencyAdjustments deserialize(DataInputStream in) throws IOException {
-			var pojo = new CurrencyAdjustments();
-
-			in.readLong();
-			in.readLong();
-
-			int numAdjustments = in.readInt();
-			if (numAdjustments > 0) {
-				pojo.hbars = new long[numAdjustments];
-				pojo.accountIds = new ArrayList<>(numAdjustments);
-				for (int i = 0; i < numAdjustments; i++) {
-					in.readLong();
-					in.readLong();
-					pojo.accountIds.add(legacyIdProvider.deserialize(in));
-					pojo.hbars[i] = in.readLong();
-				}
-			}
-
-			return pojo;
-		}
-	}
 
 	long[] hbars = NO_ADJUSTMENTS;
 	List<EntityId> accountIds = Collections.emptyList();
@@ -159,7 +131,7 @@ public class CurrencyAdjustments implements SelfSerializable {
 				.toArray();
 		pojo.accountIds = grpc.stream()
 				.map(AccountAmount::getAccountID)
-				.map(EntityId::ofNullableAccountId)
+				.map(EntityId::fromGrpcAccountId)
 				.collect(toList());
 		return pojo;
 	}

@@ -4,7 +4,7 @@ package com.hedera.services.context;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,11 @@ package com.hedera.services.context;
 
 import com.hedera.services.context.ContextPlatformStatus;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.swirlds.common.PlatformStatus.MAINTENANCE;
 import static com.swirlds.common.PlatformStatus.STARTING_UP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnitPlatform.class)
 class ContextPlatformStatusTest {
 	ContextPlatformStatus subject = new ContextPlatformStatus();
 

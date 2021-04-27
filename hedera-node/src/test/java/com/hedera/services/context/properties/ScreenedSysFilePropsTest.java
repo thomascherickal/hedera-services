@@ -4,7 +4,7 @@ package com.hedera.services.context.properties;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,23 @@ package com.hedera.services.context.properties;
  * ‍
  */
 
+import com.hedera.services.state.merkle.MerkleToken;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Map;
 import java.util.Set;
 
-import static com.hedera.services.throttling.ThrottlingPropsBuilder.API_THROTTLING_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-@RunWith(JUnitPlatform.class)
 class ScreenedSysFilePropsTest {
 	Logger log;
 
@@ -65,17 +60,6 @@ class ScreenedSysFilePropsTest {
 		assertEquals(42, subject.getProperty("tokens.maxPerAccount"));
 		assertTrue(subject.containsProperty("tokens.maxPerAccount"));
 		assertFalse(subject.containsProperty("nonsense"));
-	}
-
-	@Test
-	public void ignoresThrottleProps() {
-		// when:
-		subject.screenNew(withJust(API_THROTTLING_PREFIX, "42"));
-
-		// then:
-		assertTrue(subject.from121.isEmpty());
-		// and:
-		verify(log, never()).warn(String.format(ScreenedSysFileProps.MISPLACED_PROP_TPL, API_THROTTLING_PREFIX));
 	}
 
 	@Test
@@ -148,6 +132,73 @@ class ScreenedSysFilePropsTest {
 				ScreenedSysFileProps.DEPRECATED_PROP_TPL,
 				"defaultFeeCollectionAccount",
 				"ledger.fundingAccount"));
+	}
+
+	@Test
+	public void warnsOfUnparseableWhitelist() {
+		// given:
+		var unparseableValue = "CryptoCreate,CryptoTransfer,Oops";
+
+		// when:
+		subject.screenNew(withJust("scheduling.whitelist", unparseableValue));
+
+		// then:
+		assertTrue(subject.from121.isEmpty());
+		// and:
+		verify(log).warn(String.format(
+				ScreenedSysFileProps.UNPARSEABLE_PROP_TPL,
+				unparseableValue,
+				"scheduling.whitelist",
+				"IllegalArgumentException"));
+	}
+
+	@Test
+	public void warnsOfUnusableWhitelist() {
+		// given:
+		var unusableValue = "CryptoCreate,CryptoTransfer,CryptoGetAccountBalance";
+
+		// when:
+		subject.screenNew(withJust("scheduling.whitelist", unusableValue));
+
+		// then:
+		assertTrue(subject.from121.isEmpty());
+		// and:
+		verify(log).warn(String.format(
+				ScreenedSysFileProps.UNUSABLE_PROP_TPL,
+				unusableValue,
+				"scheduling.whitelist"));
+	}
+
+	@Test
+	public void warnsOfUnusableMaxTokenNameUtf8Bytes() {
+		// setup:
+		String unsupportableValue = "" + (MerkleToken.UPPER_BOUND_TOKEN_NAME_UTF8_BYTES + 1);
+		// when:
+		subject.screenNew(withJust("tokens.maxTokenNameUtf8Bytes", unsupportableValue));
+
+		// then:
+		assertTrue(subject.from121.isEmpty());
+		// and:
+		verify(log).warn(String.format(
+				ScreenedSysFileProps.UNUSABLE_PROP_TPL,
+				unsupportableValue,
+				"tokens.maxTokenNameUtf8Bytes"));
+	}
+
+	@Test
+	public void warnsOfUnusableMaxTokenSymbolUtf8Bytes() {
+		// setup:
+		String unsupportableValue = "" + (MerkleToken.UPPER_BOUND_SYMBOL_UTF8_BYTES + 1);
+		// when:
+		subject.screenNew(withJust("tokens.maxSymbolUtf8Bytes", unsupportableValue));
+
+		// then:
+		assertTrue(subject.from121.isEmpty());
+		// and:
+		verify(log).warn(String.format(
+				ScreenedSysFileProps.UNUSABLE_PROP_TPL,
+				unsupportableValue,
+				"tokens.maxSymbolUtf8Bytes"));
 	}
 
 	@Test

@@ -4,7 +4,7 @@ package com.hedera.services.ledger.accounts;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class FCMapBackingAccounts implements BackingStore<AccountID, MerkleAccou
 			existingAccounts.add(id);
 		} else if (!cache.containsKey(id) || (cache.get(id) != account)) {
 			throw new IllegalArgumentException(String.format(
-					"Existing account '%s' can only be changed using a mutable ref!",
+					"Argument 'id=%s' does not map to a mutable ref!",
 					readableId(id)));
 		}
 	}

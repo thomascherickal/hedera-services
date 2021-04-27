@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ package com.hedera.services.txns.token;
  */
 
 import com.hedera.services.context.TransactionContext;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.utils.PlatformTxnAccessor;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -30,8 +31,6 @@ import com.hederahashgraph.api.proto.java.TokenWipeAccountTransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
@@ -50,15 +49,16 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.verify;
 
-@RunWith(JUnitPlatform.class)
 class TokenWipeTransitionLogicTest {
     private AccountID account = IdUtils.asAccount("1.2.4");
     private TokenID id = IdUtils.asToken("1.2.3");
     private long wipeAmount = 100;
+    private long totalAmount = 1000L;
 
     private TokenStore tokenStore;
     private TransactionContext txnCtx;
     private PlatformTxnAccessor accessor;
+    private MerkleToken token;
 
     private TransactionBody tokenWipeTxn;
     private TokenWipeTransitionLogic subject;
@@ -67,6 +67,7 @@ class TokenWipeTransitionLogicTest {
     private void setup() {
         tokenStore = mock(TokenStore.class);
         accessor = mock(PlatformTxnAccessor.class);
+        token = mock(MerkleToken.class);
 
         txnCtx = mock(TransactionContext.class);
 
@@ -98,6 +99,7 @@ class TokenWipeTransitionLogicTest {
         // then:
         verify(tokenStore).wipe(account, id, wipeAmount, false);
         verify(txnCtx).setStatus(SUCCESS);
+        verify(txnCtx).setNewTotalSupply(totalAmount);
     }
 
     @Test
@@ -173,6 +175,8 @@ class TokenWipeTransitionLogicTest {
         given(accessor.getTxn()).willReturn(tokenWipeTxn);
         given(txnCtx.accessor()).willReturn(accessor);
         given(tokenStore.resolve(id)).willReturn(id);
+        given(tokenStore.get(id)).willReturn(token);
+        given(token.totalSupply()).willReturn(totalAmount);
     }
 
     private void givenMissingToken() {

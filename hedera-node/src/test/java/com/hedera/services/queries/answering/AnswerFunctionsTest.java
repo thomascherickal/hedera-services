@@ -4,7 +4,7 @@ package com.hedera.services.queries.answering;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.hedera.services.queries.answering;
  * ‍
  */
 
+import com.hedera.services.context.properties.NodeLocalProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.context.primitives.StateView;
@@ -36,8 +37,6 @@ import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Optional;
 
@@ -52,7 +51,6 @@ import static org.mockito.BDDMockito.*;
 import static com.hedera.test.utils.IdUtils.*;
 import static com.hedera.services.state.serdes.DomainSerdesTest.recordOne;
 
-@RunWith(JUnitPlatform.class)
 class AnswerFunctionsTest {
 	private String payer = "0.0.12345";
 	private TransactionID targetTxnId = TransactionID.newBuilder()
@@ -77,7 +75,7 @@ class AnswerFunctionsTest {
 	private RecordCache recordCache;
 	private FCMap<MerkleEntityId, MerkleAccount> accounts;
 
-	private PropertySource properties;
+	private NodeLocalProperties nodeProps;
 
 	private AnswerFunctions subject;
 
@@ -89,8 +87,8 @@ class AnswerFunctionsTest {
 
 		accounts = mock(FCMap.class);
 		given(accounts.get(MerkleEntityId.fromAccountId(asAccount(target)))).willReturn(payerAccount);
-		properties = mock(PropertySource.class);
-		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, properties, null);
+		nodeProps = mock(NodeLocalProperties.class);
+		view = new StateView(StateView.EMPTY_TOPICS_SUPPLIER, () -> accounts, nodeProps, null);
 
 		recordCache = mock(RecordCache.class);
 

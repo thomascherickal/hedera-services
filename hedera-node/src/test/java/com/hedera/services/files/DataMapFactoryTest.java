@@ -4,7 +4,7 @@ package com.hedera.services.files;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ package com.hedera.services.files;
 import com.hedera.services.fees.calculation.FeeCalcUtilsTest;
 import com.hedera.test.utils.IdUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static com.hedera.services.files.DataMapFactory.*;
 
-@RunWith(JUnitPlatform.class)
 class DataMapFactoryTest {
 	@Test
 	public void toFidConversionWorks() {

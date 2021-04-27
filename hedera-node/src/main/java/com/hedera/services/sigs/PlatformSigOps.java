@@ -4,7 +4,7 @@ package com.hedera.services.sigs;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,15 @@ package com.hedera.services.sigs;
  * ‍
  */
 
-import com.google.protobuf.ByteString;
-import com.hedera.services.keys.HederaKeyTraversal;
+import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.sigs.factories.TxnScopedPlatformSigFactory;
 import com.hedera.services.sigs.sourcing.PubKeyToSigBytes;
 import com.hedera.services.legacy.core.jproto.JKey;
 
 import java.util.List;
+
+import static com.google.protobuf.ByteString.copyFrom;
+import static com.hedera.services.keys.HederaKeyTraversal.visitSimpleKeys;
 
 /**
  * Provides static methods to work with {@link com.swirlds.common.crypto.Signature} objects.
@@ -42,7 +44,7 @@ public class PlatformSigOps {
 	 *
 	 * @param pubKeys
 	 * 		a list of Hedera keys to traverse for public keys.
-	 * @param sigBytes
+	 * @param sigBytesFn
 	 * 		a source of cryptographic signatures to associate to the public keys.
 	 * @param factory
 	 * 		a factory to convert public keys and cryptographic sigs into sigs.
@@ -50,20 +52,19 @@ public class PlatformSigOps {
 	 */
 	public static PlatformSigsCreationResult createEd25519PlatformSigsFrom(
 			List<JKey> pubKeys,
-			PubKeyToSigBytes sigBytes,
+			PubKeyToSigBytes sigBytesFn,
 			TxnScopedPlatformSigFactory factory
 	) {
 		PlatformSigsCreationResult result = new PlatformSigsCreationResult();
 		for (JKey pk : pubKeys) {
-			HederaKeyTraversal.visitSimpleKeys(pk,
-					simpleKey -> createPlatformSigFor(simpleKey, sigBytes, factory, result));
+			visitSimpleKeys(pk, ed25519Key -> createPlatformSigFor(ed25519Key, sigBytesFn, factory, result));
 		}
 		return result;
 	}
 
 	private static void createPlatformSigFor(
-			JKey pk,
-			PubKeyToSigBytes sigBytes,
+			JKey ed25519Key,
+			PubKeyToSigBytes sigBytesFn,
 			TxnScopedPlatformSigFactory factory,
 			PlatformSigsCreationResult result
 	) {
@@ -72,11 +73,16 @@ public class PlatformSigOps {
 		}
 
 		try {
-			ByteString ed25519PubKey = ByteString.copyFrom(pk.getEd25519());
-			ByteString sig = ByteString.copyFrom(sigBytes.sigBytesFor(ed25519PubKey.toByteArray()));
-
-			if (!sig.isEmpty()) {
-				result.getPlatformSigs().add(factory.create(ed25519PubKey, sig));
+			var sigBytes = sigBytesFn.sigBytesFor(ed25519Key.getEd25519());
+			if (sigBytes.length > 0) {
+				var sig = copyFrom(sigBytes);
+				var cryptoKey = copyFrom(ed25519Key.getEd25519());
+				result.getPlatformSigs().add(factory.create(cryptoKey, sig));
+			}
+		} catch (KeyPrefixMismatchException kmpe) {
+			/* Nbd if a signature map is ambiguous for a key linked to a scheduled transaction. */
+			if (!ed25519Key.isForScheduledTxn())	{
+				result.setTerminatingEx(kmpe);
 			}
 		} catch (Exception e) {
 			result.setTerminatingEx(e);

@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.token;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package com.hedera.services.bdd.suites.token;
  */
 
 import com.hedera.services.bdd.spec.HapiApiSpec;
+import com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer;
 import com.hedera.services.bdd.suites.HapiApiSuite;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,7 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoTransfer;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.fileUpdate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenAssociate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.tokenCreate;
+import static com.hedera.services.bdd.spec.transactions.crypto.HapiCryptoTransfer.tinyBarsFromTo;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.moving;
 import static com.hedera.services.bdd.spec.transactions.token.TokenMovement.movingHbar;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.balanceSnapshot;
@@ -49,7 +51,9 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.EMPTY_TOKEN_TR
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_ACCOUNT_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INSUFFICIENT_TOKEN_BALANCE;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_AMOUNTS;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_ACCOUNT_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_SIGNATURE;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TOKEN_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TOKEN_TRANSFER_LIST_SIZE_LIMIT_EXCEEDED;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN;
 
@@ -79,6 +83,7 @@ public class TokenTransactSpecs extends HapiApiSuite {
 						tokenPlusHbarTxnsAreAtomic(),
 						nonZeroTransfersRejected(),
 						prechecksWork(),
+						missingEntitiesRejected(),
 						allRequiredSigsAreChecked(),
 				}
 		);
@@ -142,6 +147,22 @@ public class TokenTransactSpecs extends HapiApiSuite {
 				);
 	}
 
+	public HapiApiSpec missingEntitiesRejected() {
+		return defaultHapiSpec("MissingTokensRejected")
+				.given(
+						tokenCreate("some").treasury(DEFAULT_PAYER)
+				).when().then(
+						cryptoTransfer(
+								moving(1L, "some")
+										.between(DEFAULT_PAYER, "0.0.0")
+						).signedBy(DEFAULT_PAYER).hasKnownStatus(INVALID_ACCOUNT_ID),
+						cryptoTransfer(
+								moving(100_000_000_000_000L, "0.0.0")
+										.between(DEFAULT_PAYER, FUNDING)
+						).signedBy(DEFAULT_PAYER).hasKnownStatus(INVALID_TOKEN_ID)
+				);
+	}
+
 	public HapiApiSpec balancesAreChecked() {
 		return defaultHapiSpec("BalancesAreChecked")
 				.given(
@@ -163,7 +184,7 @@ public class TokenTransactSpecs extends HapiApiSuite {
 								.hasKnownStatus(INSUFFICIENT_TOKEN_BALANCE),
 						cryptoTransfer(
 								moving(1, A_TOKEN).between("firstTreasury", "beneficiary"),
-								movingHbar(A_HUNDRED_HBARS).between("firstTreasury", "beneficiary")
+								movingHbar(ONE_HUNDRED_HBARS).between("firstTreasury", "beneficiary")
 						).payingWith("payer")
 								.signedBy("payer", "firstTreasury")
 								.hasKnownStatus(INSUFFICIENT_ACCOUNT_BALANCE)
@@ -205,7 +226,7 @@ public class TokenTransactSpecs extends HapiApiSuite {
 	}
 
 	public HapiApiSpec allRequiredSigsAreChecked() {
-		return defaultHapiSpec("SenderSigsAreChecked")
+		return defaultHapiSpec("AllRequiredSigsAreChecked")
 				.given(
 						cryptoCreate("payer"),
 						cryptoCreate("firstTreasury").balance(0L),

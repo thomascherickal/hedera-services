@@ -4,7 +4,7 @@ package com.hedera.test.forensics;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.ledger.accounts.FCMapBackingAccounts;
 import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.hedera.services.txns.validation.PureValidation;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.SignedTxnAccessor;
@@ -36,12 +37,9 @@ import com.hederahashgraph.api.proto.java.AccountAmount;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Transaction;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
-import com.hedera.services.state.submerkle.ExpirableTxnRecord;
 import com.swirlds.fcmap.FCMap;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -69,12 +67,9 @@ import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_16BE;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @Disabled
-@RunWith(JUnitPlatform.class)
 public class RecordStreamCmp {
 	static ObjectMapper om = new ObjectMapper();
 
@@ -578,7 +573,7 @@ public class RecordStreamCmp {
 	@Test
 	public void seeWhatHappens() throws InterruptedException {
 		final FCMap<MerkleEntityId, MerkleAccount> accounts =
-				new FCMap<>(new MerkleEntityId.Provider(), MerkleAccount.LEGACY_PROVIDER);
+				new FCMap<>();
 		final FCMapBackingAccounts backingAccounts = new FCMapBackingAccounts(() -> accounts);
 
 		final AccountID txnPayer = suspect;

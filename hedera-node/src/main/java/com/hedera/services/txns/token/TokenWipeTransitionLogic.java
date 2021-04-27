@@ -4,7 +4,7 @@ package com.hedera.services.txns.token;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package com.hedera.services.txns.token;
  */
 
 import com.hedera.services.context.TransactionContext;
-import com.hedera.services.tokens.TokenStore;
+import com.hedera.services.store.tokens.TokenStore;
 import com.hedera.services.txns.TransitionLogic;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TokenWipeAccountTransactionBody;
@@ -65,7 +65,11 @@ public class TokenWipeTransitionLogic implements TransitionLogic {
 		try {
 			var op = txnCtx.accessor().getTxn().getTokenWipe();
 			var outcome = store.wipe(op.getAccount(), store.resolve(op.getToken()), op.getAmount(),false);
+			var id = store.resolve(op.getToken());
 			txnCtx.setStatus((outcome == OK) ? SUCCESS : outcome);
+			if(outcome == OK) {
+				txnCtx.setNewTotalSupply(store.get(id).totalSupply());
+			}
 		} catch (Exception e) {
 			log.warn("Unhandled error while processing :: {}!", txnCtx.accessor().getSignedTxn4Log(), e);
 			txnCtx.setStatus(FAIL_INVALID);

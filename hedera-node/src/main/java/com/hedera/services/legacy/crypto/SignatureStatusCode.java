@@ -4,7 +4,7 @@ package com.hedera.services.legacy.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,12 @@ public enum SignatureStatusCode {
       "Failed to verify signature [ source = '%s', transactionId = '%s', accountId = '%s' ]"),
   INVALID_TOPIC_ID("Invalid Topic ID [ source = '%s', transactionId = '%s', topicId = '%s' ]"),
   INVALID_TOKEN_ID("Invalid Token ID [ source = '%s', transactionId = '%s', tokenId = '%s' ]"),
-  INVALID_AUTO_RENEW_ACCOUNT_ID("Invalid AutoRenew Account ID [ source = '%s', transactionId = '%s', accountId = '%s' ]");
+  INVALID_AUTO_RENEW_ACCOUNT_ID("Invalid AutoRenew Account ID [ source = '%s', transactionId = '%s', accountId = '%s' ]"),
+  INVALID_SCHEDULE_ID("Invalid Schedule ID [ source = '%s', transactionId = '%s', scheduleId = '%s' ]"),
+  UNRESOLVABLE_REQUIRED_SIGNERS(
+          "Cannot resolve required signers for scheduled txn [ source = '%s', scheduled = '%s', error = '%s' ]"),
+  SCHEDULED_TRANSACTION_NOT_IN_WHITELIST(
+          "Specified txn cannot be scheduled [ source = '%s', transactionId = '%s' ]");
 
   private String message;
 

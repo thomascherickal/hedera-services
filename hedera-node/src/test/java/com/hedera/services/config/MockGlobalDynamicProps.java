@@ -4,7 +4,7 @@ package com.hedera.services.config;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,19 @@ package com.hedera.services.config;
 
 import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.context.properties.PropertySource;
+import com.hedera.services.fees.calculation.CongestionMultipliers;
 import com.hederahashgraph.api.proto.java.AccountID;
+import com.hederahashgraph.api.proto.java.HederaFunctionality;
+
+import java.util.Set;
 
 public class MockGlobalDynamicProps extends GlobalDynamicProperties {
+	private final CongestionMultipliers defaultMultipliers = CongestionMultipliers.from("90,10x,95,25x,99,100x");
+	private final CongestionMultipliers differentMultipliers = CongestionMultipliers.from("90,11x,95,26x,99,101x");
+
+	int minCongestionPeriod = 2;
+	CongestionMultipliers currentMultipliers = defaultMultipliers;
+
 	public MockGlobalDynamicProps() {
 		super(null, null);
 	}
@@ -38,12 +48,12 @@ public class MockGlobalDynamicProps extends GlobalDynamicProperties {
 	}
 
 	@Override
-	public int maxTokenSymbolLength() {
-		return 32;
+	public int maxTokenSymbolUtf8Bytes() {
+		return 100;
 	}
 
 	@Override
-	public int maxTokenNameLength() {
+	public int maxTokenNameUtf8Bytes() {
 		return 100;
 	}
 
@@ -130,5 +140,55 @@ public class MockGlobalDynamicProps extends GlobalDynamicProperties {
 	@Override
 	public int maxGas() {
 		return 300_000;
+	}
+
+	@Override
+	public int feesTokenTransferUsageMultiplier() {
+		return 380;
+	}
+
+	@Override
+	public long maxAutoRenewDuration() {
+		return 8000001L;
+	}
+
+	@Override
+	public long minAutoRenewDuration() {
+		return 6999999L;
+	}
+
+	@Override
+	public int localCallEstRetBytes() {
+		return 32;
+	}
+
+	@Override
+	public int scheduledTxExpiryTimeSecs() {
+		return 1800;
+	}
+
+	@Override
+	public int messageMaxBytesAllowed() {
+		return 1024;
+	}
+
+	@Override
+	public Set<HederaFunctionality> schedulingWhitelist() {
+		return Set.of(HederaFunctionality.CryptoCreate, HederaFunctionality.CryptoTransfer);
+	}
+
+	@Override
+	public CongestionMultipliers congestionMultipliers() {
+		return currentMultipliers;
+	}
+
+	public void useDifferentMultipliers() {
+		currentMultipliers = differentMultipliers;
+		minCongestionPeriod = 0;
+	}
+
+	@Override
+	public int feesMinCongestionPeriod() {
+		return minCongestionPeriod;
 	}
 }

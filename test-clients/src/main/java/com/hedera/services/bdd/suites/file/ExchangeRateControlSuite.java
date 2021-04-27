@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.file;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public class ExchangeRateControlSuite extends HapiApiSuite {
 				.given(
 						resetRatesOp,
 						cryptoTransfer(tinyBarsFromTo(GENESIS, EXCHANGE_RATE_CONTROL, ADEQUATE_FUNDS)),
-						cryptoTransfer(tinyBarsFromTo(GENESIS, MASTER, ADEQUATE_FUNDS)),
+						cryptoTransfer(tinyBarsFromTo(GENESIS, SYSTEM_ADMIN, ADEQUATE_FUNDS)),
 						fileUpdate(EXCHANGE_RATES)
 						.contents(
 								spec -> {
@@ -171,7 +171,7 @@ public class ExchangeRateControlSuite extends HapiApiSuite {
 											spec.registry().saveBytes("newRates", newRates);
 											return newRates;
 										}
-								).payingWith(MASTER).fee(1_000_000_000)
+								).payingWith(SYSTEM_ADMIN).fee(1_000_000_000)
 				).then(
 						fileUpdate(EXCHANGE_RATES)
 								.contents(
@@ -194,7 +194,7 @@ public class ExchangeRateControlSuite extends HapiApiSuite {
 											spec.registry().saveBytes("newRates", newRates);
 											return newRates;
 										}
-								).payingWith(MASTER).fee(1_000_000_000).hasKnownStatus(SUCCESS)
+								).payingWith(SYSTEM_ADMIN).fee(1_000_000_000).hasKnownStatus(SUCCESS)
 				);
 	}
 

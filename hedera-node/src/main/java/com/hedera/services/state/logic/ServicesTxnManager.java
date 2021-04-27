@@ -4,7 +4,7 @@ package com.hedera.services.state.logic;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ package com.hedera.services.state.logic;
  */
 
 import com.hedera.services.context.ServicesContext;
-import com.hedera.services.utils.PlatformTxnAccessor;
+import com.hedera.services.ledger.HederaLedger;
+import com.hedera.services.utils.TxnAccessor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Instant;
 import java.util.function.BiConsumer;
@@ -29,24 +32,29 @@ import java.util.function.BiConsumer;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.FAIL_INVALID;
 
 public class ServicesTxnManager {
+	private static final Logger log = LogManager.getLogger(ServicesTxnManager.class);
+
 	private final Runnable scopedProcessing;
 	private final Runnable scopedRecordStreaming;
+	private final Runnable scopedTriggeredProcessing;
 	private final BiConsumer<Exception, String> warning;
 
 	public ServicesTxnManager(
 			Runnable scopedProcessing,
 			Runnable scopedRecordStreaming,
+			Runnable scopedTriggeredProcessing,
 			BiConsumer<Exception, String> warning
 	) {
 		this.warning = warning;
 		this.scopedProcessing = scopedProcessing;
 		this.scopedRecordStreaming = scopedRecordStreaming;
+		this.scopedTriggeredProcessing = scopedTriggeredProcessing;
 	}
 
 	private boolean createdStreamableRecord;
 
 	public void process(
-			PlatformTxnAccessor accessor,
+			TxnAccessor accessor,
 			Instant consensusTime,
 			long submittingMember,
 			ServicesContext ctx
@@ -56,7 +64,11 @@ public class ServicesTxnManager {
 		try {
 			ctx.ledger().begin();
 			ctx.txnCtx().resetFor(accessor, consensusTime, submittingMember);
-			scopedProcessing.run();
+			if (accessor.isTriggeredTxn()) {
+				scopedTriggeredProcessing.run();
+			} else {
+				scopedProcessing.run();
+			}
 		} catch (Exception processFailure) {
 			warning.accept(processFailure, "txn processing");
 			ctx.txnCtx().setStatus(FAIL_INVALID);
@@ -77,7 +89,7 @@ public class ServicesTxnManager {
 	}
 
 	private void attemptCommit(
-			PlatformTxnAccessor accessor,
+			TxnAccessor accessor,
 			Instant consensusTime,
 			long submittingMember,
 			ServicesContext ctx
@@ -87,12 +99,13 @@ public class ServicesTxnManager {
 			createdStreamableRecord = true;
 		} catch (Exception commitFailure) {
 			warning.accept(commitFailure, "txn commit");
+			log.error(commitFailure);
 			attemptRollback(accessor, consensusTime, submittingMember, ctx);
 		}
 	}
 
 	private void attemptRollback(
-			PlatformTxnAccessor accessor,
+			TxnAccessor accessor,
 			Instant consensusTime,
 			long submittingMember,
 			ServicesContext ctx

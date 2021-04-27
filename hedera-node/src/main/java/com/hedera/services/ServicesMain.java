@@ -4,7 +4,7 @@ package com.hedera.services;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ package com.hedera.services;
 import com.hedera.services.context.ServicesContext;
 import com.hedera.services.context.properties.Profile;
 import com.hedera.services.legacy.proto.utils.CommonUtils;
+import com.hedera.services.state.forensics.FcmDump;
 import com.hedera.services.state.forensics.IssListener;
 import com.hedera.services.utils.JvmSystemExits;
 import com.hedera.services.utils.SystemExits;
@@ -31,6 +32,9 @@ import com.swirlds.common.Platform;
 import com.swirlds.common.PlatformStatus;
 import com.swirlds.common.SwirldMain;
 import com.swirlds.common.SwirldState;
+import com.swirlds.common.notification.NotificationEngine;
+import com.swirlds.common.notification.NotificationFactory;
+import com.swirlds.common.notification.listeners.ReconnectCompleteListener;
 import com.swirlds.platform.Browser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,10 +58,11 @@ import static com.swirlds.common.PlatformStatus.MAINTENANCE;
  * @author Michael Tinker
  */
 public class ServicesMain implements SwirldMain {
+	private static final Logger log = LogManager.getLogger(ServicesMain.class);
+
 	private static final String START_INIT_MSG_PATTERN = "Using context to initialize HederaNode#%d...";
 
 	static final long SUGGESTED_POST_CREATION_PAUSE_MS = 0L;
-	public static Logger log = LogManager.getLogger(ServicesMain.class);
 
 	SystemExits systemExits = new JvmSystemExits();
 	Supplier<Charset> defaultCharset = Charset::defaultCharset;
@@ -107,9 +112,9 @@ public class ServicesMain implements SwirldMain {
 		log.info("Now current platform status = {} in HederaNode#{}.", status, ctx.id());
 		ctx.platformStatus().set(status);
 		if (status == ACTIVE) {
-			ctx.recordStream().setInFreeze(false);
+			ctx.recordStreamManager().setInFreeze(false);
 		} else if (status == MAINTENANCE) {
-			ctx.recordStream().setInFreeze(true);
+			ctx.recordStreamManager().setInFreeze(true);
 			ctx.updateFeature();
 		} else {
 			log.info("Platform {} status set to : {}", ctx.id(), status);
@@ -119,11 +124,11 @@ public class ServicesMain implements SwirldMain {
 	@Override
 	public void newSignedState(SwirldState signedState, Instant when, long round) {
 		if (ctx.platformStatus().get() == MAINTENANCE) {
-			((ServicesState)signedState).printHashes();
+			((ServicesState) signedState).logSummary();
 		}
 		if (ctx.globalDynamicProperties().shouldExportBalances() && ctx.balancesExporter().isTimeToExport(when)) {
 			try {
-				ctx.balancesExporter().toCsvFile((ServicesState) signedState, when);
+				ctx.balancesExporter().exportBalancesFrom((ServicesState) signedState, when);
 			} catch (IllegalStateException ise) {
 				log.error("HederaNode#{} has invalid total balance in signed state, exiting!", ctx.id(), ise);
 				systemExits.fail(1);
@@ -156,26 +161,24 @@ public class ServicesMain implements SwirldMain {
 		log.info("Platform is configured.");
 		registerIssListener();
 		log.info("Platform callbacks registered.");
+		registerReconnectCompleteListener(NotificationFactory.getEngine());
+		log.info("ReconnectCompleteListener registered.");
 		exportAccountsIfDesired();
 		log.info("Accounts exported.");
 		initializeStats();
 		log.info("Stats initialized.");
-		startRecordStreamThread();
-		log.info("Record stream started in directory {}.", ctx.recordStream().getRecordStreamsDirectory());
 		startNettyIfAppropriate();
 		log.info("Netty started.");
 
+		ctx.initRecordStreamManager();
 		log.info("Completed initialization of {} #{}", ctx.nodeType(), ctx.id());
-	}
-
-	private void startRecordStreamThread() {
-		ctx.recordStreamThread().start();
 	}
 
 	private void exportAccountsIfDesired() {
 		try {
-			String path = ctx.properties().getStringProperty("hedera.accountsExportPath");
-			ctx.accountsExporter().toFile(ctx.accounts(), path);
+			if (ctx.nodeLocalProperties().exportAccountsOnStartup()) {
+				ctx.accountsExporter().toFile(ctx.nodeLocalProperties().accountsExportPath(), ctx.accounts());
+			}
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not export accounts!", e);
 		}
@@ -186,11 +189,9 @@ public class ServicesMain implements SwirldMain {
 			ctx.systemFilesManager().createAddressBookIfMissing();
 			ctx.systemFilesManager().createNodeDetailsIfMissing();
 			ctx.systemFilesManager().createUpdateZipFileIfMissing();
-			if (!ctx.systemFilesManager().areFilesLoaded()) {
-				ctx.systemFilesManager().loadAllSystemFiles();
-			}
+			ctx.networkCtxManager().loadObservableSysFilesIfNeeded();
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not create system files!", e);
+			throw new IllegalStateException("Could not initialize system files!", e);
 		}
 	}
 
@@ -211,7 +212,7 @@ public class ServicesMain implements SwirldMain {
 		Profile activeProfile = ctx.nodeLocalProperties().activeProfile();
 		log.info("Active profile: {}", activeProfile);
 		if (activeProfile == DEV) {
-			if (onlyDefaultNodeListens()) {
+			if (ctx.nodeLocalProperties().devOnlyDefaultNodeListens()) {
 				if (thisNodeIsDefaultListener()) {
 					ctx.grpc().start(port, tlsPort, this::logInfoWithConsoleEcho);
 				}
@@ -228,13 +229,9 @@ public class ServicesMain implements SwirldMain {
 		}
 	}
 
-	private boolean onlyDefaultNodeListens() {
-		return ctx.properties().getBooleanProperty("dev.onlyDefaultNodeListens");
-	}
-
 	private boolean thisNodeIsDefaultListener() {
 		String myNodeAccount = ctx.addressBook().getAddress(ctx.id().getId()).getMemo();
-		String blessedNodeAccount = ctx.properties().getStringProperty("dev.defaultListeningNodeAccount");
+		String blessedNodeAccount = ctx.nodeLocalProperties().devListeningAccount();
 		return myNodeAccount.equals(blessedNodeAccount);
 	}
 
@@ -273,6 +270,20 @@ public class ServicesMain implements SwirldMain {
 	}
 
 	void registerIssListener() {
-		ctx.platform().addSignedStateListener(new IssListener(ctx.issEventInfo()));
+		ctx.platform().addSignedStateListener(new IssListener(new FcmDump(), ctx.issEventInfo()));
+	}
+
+	void registerReconnectCompleteListener(final NotificationEngine notificationEngine) {
+		notificationEngine.register(ReconnectCompleteListener.class,
+				(notification) -> {
+					log.info(String.format("Notification Received: Reconnect Finished." +
+									" consensusTimestamp: %s, roundNumber: %s, sequence: %s",
+							notification.getConsensusTimestamp(),
+							notification.getRoundNumber(),
+							notification.getSequence()));
+					ServicesState state = (ServicesState) notification.getState();
+					state.logSummary();
+					ctx.recordStreamManager().setStartWriteAtCompleteWindow(true);
+				});
 	}
 }

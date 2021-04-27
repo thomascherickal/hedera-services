@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,37 +38,6 @@ public class ExchangeRates implements SelfSerializable {
 
 	public static final int MERKLE_VERSION = 1;
 	public static final long RUNTIME_CONSTRUCTABLE_ID = 0x5dfb7b68d7473416L;
-
-	public static final ExchangeRates.Provider LEGACY_PROVIDER = new Provider();
-
-	@Deprecated
-	public static class Provider {
-		public ExchangeRates deserialize(DataInputStream in) throws IOException {
-			in.readLong();
-			in.readLong();
-
-			int currHbarEquiv, currCentEquiv, nextHbarEquiv, nextCentEquiv;
-			long currExpiry, nextExpiry;
-
-			in.readBoolean();
-			in.readLong();
-			in.readLong();
-			currHbarEquiv = in.readInt();
-			currCentEquiv = in.readInt();
-			currExpiry = in.readLong();
-
-			in.readBoolean();
-			in.readLong();
-			in.readLong();
-			nextHbarEquiv = in.readInt();
-			nextCentEquiv = in.readInt();
-			nextExpiry = in.readLong();
-
-			return new ExchangeRates(
-					currHbarEquiv, currCentEquiv, currExpiry,
-					nextHbarEquiv, nextCentEquiv, nextExpiry);
-		}
-	}
 
 	private int currHbarEquiv;
 	private int currCentEquiv;
@@ -179,6 +148,13 @@ public class ExchangeRates implements SelfSerializable {
 				.toString();
 	}
 
+	public String readableRepr() {
+		return new StringBuilder()
+				.append(currHbarEquiv).append("ℏ <-> ").append(currCentEquiv).append("¢ til ").append(currExpiry)
+				.append(" | ")
+				.append(nextHbarEquiv).append("ℏ <-> ").append(nextCentEquiv).append("¢ til ").append(nextExpiry)
+				.toString();
+	}
 
 	/* --- Bean --- */
 

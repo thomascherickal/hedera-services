@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,9 @@ public abstract class HapiApiSuite {
 	}
 
 	public static final long ONE_HBAR = 100_000_000L;
-	public static final long A_HUNDRED_HBARS = 100 * ONE_HBAR;
+	public static final long ONE_HUNDRED_HBARS = 100 * ONE_HBAR;
+	public static final long ONE_MILLION_HBARS = 1_000_000L * ONE_HBAR;
+	public static final long THREE_MONTHS_IN_SECONDS = 7776000L;
 	public static String TOKEN_TREASURY = "treasury";
 
 	private List<HapiApiSpec> finalSpecs = Collections.EMPTY_LIST;
@@ -87,12 +89,14 @@ public abstract class HapiApiSuite {
 
 	public static final Key EMPTY_KEY = Key.newBuilder().setKeyList(KeyList.newBuilder().build()).build();
 	public static final String NONSENSE_KEY = "Jabberwocky!";
+	public static final String ZERO_BYTE_MEMO = "\u0000kkkk";
 
 	public static final String NODE = HapiSpecSetup.getDefaultInstance().defaultNodeName();
 
 	public static final String HBAR_TOKEN_SENTINEL = "HBAR";
 
-	public static final String MASTER = HapiSpecSetup.getDefaultInstance().strongControlName();
+	public static final String SYSTEM_ADMIN = HapiSpecSetup.getDefaultInstance().strongControlName();
+	public static final String FREEZE_ADMIN = HapiSpecSetup.getDefaultInstance().freezeAdminName();
 	public static final String FUNDING = HapiSpecSetup.getDefaultInstance().fundingAccountName();
 	public static final String GENESIS = HapiSpecSetup.getDefaultInstance().genesisAccountName();
 	public static final String DEFAULT_PAYER = HapiSpecSetup.getDefaultInstance().defaultPayerName();
@@ -109,6 +113,8 @@ public abstract class HapiApiSuite {
 	public static final String FEE_SCHEDULE = HapiSpecSetup.getDefaultInstance().feeScheduleName();
 	public static final String APP_PROPERTIES = HapiSpecSetup.getDefaultInstance().appPropertiesFile();
 	public static final String API_PERMISSIONS = HapiSpecSetup.getDefaultInstance().apiPermissionsFile();
+	public static final String UPDATE_ZIP_FILE = HapiSpecSetup.getDefaultInstance().updateFeatureName();
+	public static final String THROTTLE_DEFS = HapiSpecSetup.getDefaultInstance().throttleDefinitionsName();
 	public static final HapiSpecSetup DEFAULT_PROPS = HapiSpecSetup.getDefaultInstance();
 	public static final long ADEQUATE_FUNDS = 10_000_000_000L;
 

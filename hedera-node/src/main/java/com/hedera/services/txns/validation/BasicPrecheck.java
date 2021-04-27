@@ -4,7 +4,7 @@ package com.hedera.services.txns.validation;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import com.hedera.services.context.properties.GlobalDynamicProperties;
 import com.hedera.services.context.properties.PropertySource;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 import com.hederahashgraph.api.proto.java.TransactionBody;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -34,7 +36,9 @@ import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_NODE_A
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_DURATION;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.INVALID_TRANSACTION_ID;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.MEMO_TOO_LONG;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.OK;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.PAYER_ACCOUNT_NOT_FOUND;
+import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.TRANSACTION_ID_FIELD_NOT_ALLOWED;
 
 public class BasicPrecheck {
 	private final OptionValidator validator;
@@ -52,6 +56,10 @@ public class BasicPrecheck {
 		if (!txn.hasTransactionID()) {
 			return INVALID_TRANSACTION_ID;
 		}
+		var txnId = txn.getTransactionID();
+		if (txnId.getScheduled()) {
+			return TRANSACTION_ID_FIELD_NOT_ALLOWED;
+		}
 		if (!validator.isPlausibleTxnFee(txn.getTransactionFee())) {
 			return INSUFFICIENT_TX_FEE;
 		}
@@ -61,8 +69,10 @@ public class BasicPrecheck {
 		if (!validator.isPlausibleAccount(txn.getNodeAccountID())) {
 			return INVALID_NODE_ACCOUNT;
 		}
-		if (!validator.isValidEntityMemo(txn.getMemo())) {
-			return MEMO_TOO_LONG;
+
+		ResponseCodeEnum memoValidity = validator.memoCheck(txn.getMemo());
+		if (memoValidity != OK) {
+			return memoValidity;
 		}
 
 		var validForSecs = txn.getTransactionValidDuration().getSeconds();

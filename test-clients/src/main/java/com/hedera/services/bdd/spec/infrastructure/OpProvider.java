@@ -4,7 +4,7 @@ package com.hedera.services.bdd.spec.infrastructure;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@ package com.hedera.services.bdd.spec.infrastructure;
 import com.hedera.services.bdd.spec.HapiSpecOperation;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.SplittableRandom;
 import java.util.stream.Stream;
 
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
@@ -34,7 +36,7 @@ public interface OpProvider {
 			OK,
 			BUSY,
 			INSUFFICIENT_TX_FEE,
-			PLATFORM_TRANSACTION_NOT_CREATED,
+			PLATFORM_TRANSACTION_NOT_CREATED
 	};
 
 	ResponseCodeEnum[] STANDARD_PERMISSIBLE_PRECHECKS = {
@@ -44,7 +46,7 @@ public interface OpProvider {
 			DUPLICATE_TRANSACTION,
 			INVALID_PAYER_SIGNATURE,
 			INSUFFICIENT_PAYER_BALANCE,
-			PLATFORM_TRANSACTION_NOT_CREATED,
+			PLATFORM_TRANSACTION_NOT_CREATED
 	};
 
 	ResponseCodeEnum[] STANDARD_PERMISSIBLE_OUTCOMES = {
@@ -52,10 +54,12 @@ public interface OpProvider {
 			LIVE_HASH_NOT_FOUND,
 			INVALID_SIGNATURE,
 			INSUFFICIENT_PAYER_BALANCE,
-			UNKNOWN,
+			UNKNOWN
 	};
 
-	List<HapiSpecOperation> suggestedInitializers();
+	default List<HapiSpecOperation> suggestedInitializers() {
+		return Collections.emptyList();
+	}
 	Optional<HapiSpecOperation> get();
 
 	default ResponseCodeEnum[] standardQueryPrechecksAnd(ResponseCodeEnum... more) {
@@ -83,5 +87,6 @@ public interface OpProvider {
 	String UNIQUE_PAYER_ACCOUNT = "uniquePayerAccount";
 	long UNIQUE_PAYER_ACCOUNT_INITIAL_BALANCE = 500_000_000_000L;
 	long TRANSACTION_FEE = 50_000_000_000L;
-
+	SplittableRandom BASE_RANDOM = new SplittableRandom();
 }
+

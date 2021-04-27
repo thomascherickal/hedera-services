@@ -4,7 +4,7 @@ package com.hedera.services.state.initialization;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,18 @@ package com.hedera.services.state.initialization;
  * ‍
  */
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.protobuf.ByteString;
 import com.hedera.services.context.properties.PropertySource;
-import com.hedera.services.state.merkle.MerkleDiskFs;
+import com.hedera.services.files.HFileMeta;
+import com.hedera.services.files.SysFileCallbacks;
 import com.hedera.services.files.TieredHederaFs;
 import com.hedera.services.files.interceptors.MockFileNumbers;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.state.merkle.MerkleDiskFs;
 import com.hedera.services.utils.EntityIdUtils;
 import com.hedera.services.utils.MiscUtils;
 import com.hedera.test.factories.scenarios.TxnHandlingScenario;
-import com.hederahashgraph.api.proto.java.ConsensusCreateTopicTransactionBody;
+import com.hedera.test.utils.SerdeUtils;
 import com.hederahashgraph.api.proto.java.CurrentAndNextFeeSchedule;
 import com.hederahashgraph.api.proto.java.ExchangeRate;
 import com.hederahashgraph.api.proto.java.ExchangeRateSet;
@@ -38,18 +39,15 @@ import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.KeyList;
 import com.hederahashgraph.api.proto.java.NodeAddress;
-import com.hederahashgraph.api.proto.java.NodeAddressBook;
+import com.hederahashgraph.api.proto.java.ServiceEndpoint;
 import com.hederahashgraph.api.proto.java.ServicesConfigurationList;
 import com.hederahashgraph.api.proto.java.Setting;
+import com.hederahashgraph.api.proto.java.ThrottleDefinitions;
 import com.hederahashgraph.api.proto.java.TimestampSeconds;
-import com.hedera.services.legacy.core.jproto.JFileInfo;
-import com.hedera.services.legacy.core.jproto.JKey;
 import com.swirlds.common.Address;
 import com.swirlds.common.AddressBook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,21 +58,29 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-import static org.mockito.BDDMockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.any;
+import static org.mockito.BDDMockito.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.never;
+import static org.mockito.BDDMockito.verify;
+import static org.mockito.BDDMockito.willCallRealMethod;
 
-@RunWith(JUnitPlatform.class)
 class HfsSystemFilesManagerTest {
-	String R4_FEE_SCHEDULE_REPR_PATH = "src/test/resources/testfiles/r4FeeSchedule.bin";
-	String bootstrapJutilPropsLoc = "src/test/resources/bootstrap.properties";
-	String bootstrapJutilPermsLoc = "src/test/resources/permission-bootstrap.properties";
+	private String R4_FEE_SCHEDULE_REPR_PATH = "src/test/resources/testfiles/r4FeeSchedule.bin";
+	private String bootstrapJutilPropsLoc = "src/test/resources/bootstrap.properties";
+	private String bootstrapJutilPermsLoc = "src/test/resources/permission-bootstrap.properties";
 
-	byte[] nonsense = "NONSENSE".getBytes();
-	ServicesConfigurationList fromState = ServicesConfigurationList.newBuilder()
+	private byte[] nonsense = "NONSENSE".getBytes();
+	private ServicesConfigurationList fromState = ServicesConfigurationList.newBuilder()
 			.addNameValue(Setting.newBuilder()
 					.setName("stateName")
 					.setValue("stateValue"))
 			.build();
-	ServicesConfigurationList fromBootstrapFile = ServicesConfigurationList.newBuilder()
+	private ServicesConfigurationList fromBootstrapFile = ServicesConfigurationList.newBuilder()
 			.addNameValue(Setting.newBuilder()
 					.setName("bootstrapNameA")
 					.setValue("bootstrapValueA"))
@@ -82,30 +88,31 @@ class HfsSystemFilesManagerTest {
 					.setName("bootstrapNameB")
 					.setValue("bootstrapValueB"))
 			.build();
-	FileID bookId = expectedFid(101);
-	FileID detailsId = expectedFid(102);
-	FileID appPropsId = expectedFid(121);
-	FileID apiPermsId = expectedFid(122);
-	FileID schedulesId = expectedFid(111);
-	FileID ratesId = expectedFid(112);
+	private FileID bookId = expectedFid(101);
+	private FileID detailsId = expectedFid(102);
+	private FileID appPropsId = expectedFid(121);
+	private FileID apiPermsId = expectedFid(122);
+	private FileID throttlesId = expectedFid(123);
+	private FileID schedulesId = expectedFid(111);
+	private FileID ratesId = expectedFid(112);
 
-	long expiry = 1_234_567_890L;
-	long nextExpiry = 2_234_567_890L;
-	int curCentEquiv = 1;
-	int curHbarEquiv = 12;
-	int nxtCentEquiv = 2;
-	int nxtHbarEquiv = 31;
-	Map<FileID, byte[]> data;
-	Map<FileID, JFileInfo> metadata;
-	JKey masterKey;
-	byte[] aIpv4, bIpv4;
-	byte[] aKeyEncoding = "not-really-A-key".getBytes();
-	byte[] bKeyEncoding = "not-really-B-key".getBytes();
-	String memoA, memoB;
+	private long expiry = 1_234_567_890L;
+	private long nextExpiry = 2_234_567_890L;
+	private int curCentEquiv = 1;
+	private int curHbarEquiv = 12;
+	private int nxtCentEquiv = 2;
+	private int nxtHbarEquiv = 31;
+	private Map<FileID, byte[]> data;
+	private Map<FileID, HFileMeta> metadata;
+	private JKey masterKey;
+	private byte[] aIpv4, bIpv4;
+	private byte[] aKeyEncoding = "not-really-A-key".getBytes();
+	private byte[] bKeyEncoding = "not-really-B-key".getBytes();
+	private String memoA, memoB;
 	Address addressA, addressB;
 	PublicKey keyA, keyB;
 	AddressBook currentBook;
-	JFileInfo expectedInfo;
+	HFileMeta expectedInfo;
 	TieredHederaFs hfs;
 	MerkleDiskFs diskFs;
 	MockFileNumbers fileNumbers;
@@ -113,24 +120,26 @@ class HfsSystemFilesManagerTest {
 	Consumer<ServicesConfigurationList> propertiesCb;
 	Consumer<ServicesConfigurationList> permissionsCb;
 	Consumer<ExchangeRateSet> ratesCb;
+	Consumer<ThrottleDefinitions> throttlesCb;
 	Consumer<CurrentAndNextFeeSchedule> schedulesCb;
+	SysFileCallbacks callbacks;
 
 	HfsSystemFilesManager subject;
 
 	@BeforeEach
 	private void setup() throws Exception {
 		masterKey = TxnHandlingScenario.COMPLEX_KEY_ACCOUNT_KT.asJKey();
-		expectedInfo = new JFileInfo(
+		expectedInfo = new HFileMeta(
 				false,
 				JKey.mapKey(Key.newBuilder()
-								.setKeyList(KeyList.newBuilder()
-										.addKeys(TxnHandlingScenario.COMPLEX_KEY_ACCOUNT_KT.asKey())).build()),
+						.setKeyList(KeyList.newBuilder()
+								.addKeys(TxnHandlingScenario.COMPLEX_KEY_ACCOUNT_KT.asKey())).build()),
 				expiry);
 
 		keyA = mock(PublicKey.class);
 		given(keyA.getEncoded()).willReturn(aKeyEncoding);
 		addressA = mock(Address.class);
-		aIpv4 = new byte[] { (byte)1, (byte)2, (byte)3, (byte)4 };
+		aIpv4 = new byte[] { (byte) 1, (byte) 2, (byte) 3, (byte) 4 };
 		memoA = "A new memo that is not the node account ID.";
 		given(addressA.getId()).willReturn(111L);
 		given(addressA.getMemo()).willReturn(memoA);
@@ -140,7 +149,7 @@ class HfsSystemFilesManagerTest {
 		keyB = mock(PublicKey.class);
 		given(keyB.getEncoded()).willReturn(bKeyEncoding);
 		addressB = mock(Address.class);
-		bIpv4 = new byte[] { (byte)2, (byte)3, (byte)4, (byte)5 };
+		bIpv4 = new byte[] { (byte) 2, (byte) 3, (byte) 4, (byte) 5 };
 		memoB = "0.0.3";
 		given(addressB.getId()).willReturn(222L);
 		given(addressB.getMemo()).willReturn(memoB);
@@ -185,22 +194,18 @@ class HfsSystemFilesManagerTest {
 				.willReturn(nextExpiry);
 		given(properties.getStringProperty("bootstrap.feeSchedulesJson.resource"))
 				.willReturn("R4FeeSchedule.json");
+		given(properties.getStringProperty("bootstrap.throttleDefsJson.resource"))
+				.willReturn("bootstrap/throttles.json");
 
 		ratesCb = mock(Consumer.class);
 		schedulesCb = mock(Consumer.class);
 		propertiesCb = mock(Consumer.class);
 		permissionsCb = mock(Consumer.class);
+		throttlesCb = mock(Consumer.class);
 
-		subject = new HfsSystemFilesManager(
-				currentBook,
-				fileNumbers,
-				properties,
-				hfs,
-				() -> masterKey,
-				ratesCb,
-				schedulesCb,
-				propertiesCb,
-				permissionsCb);
+		callbacks = mock(SysFileCallbacks.class);
+
+		subject = new HfsSystemFilesManager(currentBook, fileNumbers, properties, hfs, () -> masterKey, callbacks);
 	}
 
 	@Test
@@ -208,29 +213,45 @@ class HfsSystemFilesManagerTest {
 		// setup:
 		SystemFilesManager sub = mock(SystemFilesManager.class);
 
-		willCallRealMethod().given(sub).loadAllSystemFiles();
+		willCallRealMethod().given(sub).loadObservableSystemFiles();
 
 		// when:
-		sub.loadAllSystemFiles();
+		sub.loadObservableSystemFiles();
 
 		// then:
 		verify(sub).loadApplicationProperties();
 		verify(sub).loadApiPermissions();
 		verify(sub).loadFeeSchedules();
 		verify(sub).loadExchangeRates();
-		verify(sub).setFilesLoaded();
+		verify(sub).loadThrottleDefinitions();
+		verify(sub).setObservableFilesLoaded();
+	}
+
+	@Test
+	public void canMarkFilesNotLoaded() {
+		// setup:
+		subject.setObservableFilesLoaded();
+
+		// expect:
+		assertTrue(subject.areObservableFilesLoaded());
+
+		// when:
+		subject.setObservableFilesNotLoaded();
+
+		// then:
+		assertFalse(subject.areObservableFilesLoaded());
 	}
 
 	@Test
 	public void tracksFileLoading() {
 		// expect:
-		assertFalse(subject.areFilesLoaded());
+		assertFalse(subject.areObservableFilesLoaded());
 
 		// when:
-		subject.setFilesLoaded();
+		subject.setObservableFilesLoaded();
 
 		// then:
-		assertTrue(subject.areFilesLoaded());
+		assertTrue(subject.areObservableFilesLoaded());
 	}
 
 	@Test
@@ -251,7 +272,7 @@ class HfsSystemFilesManagerTest {
 	@Test
 	public void createsAddressBookIfMissing() {
 		// setup:
-		var expectedBook = legacyBookConstruction(currentBook);
+		com.hederahashgraph.api.proto.java.NodeAddressBook expectedBook = legacyBookConstruction(currentBook);
 
 		given(hfs.exists(bookId)).willReturn(false);
 
@@ -271,7 +292,7 @@ class HfsSystemFilesManagerTest {
 	@Test
 	public void createsNodeDetailsIfMissing() {
 		// setup:
-		var expectedDetails = legacyNodeDetailsConstruction(currentBook);
+		var expectedDetails = legacyBookConstruction(currentBook);
 
 		given(hfs.exists(detailsId)).willReturn(false);
 
@@ -305,6 +326,7 @@ class HfsSystemFilesManagerTest {
 	public void loadsPropsFromHfsIfAvailable() {
 		given(hfs.exists(appPropsId)).willReturn(true);
 		given(hfs.cat(appPropsId)).willReturn(fromState.toByteArray());
+		given(callbacks.propertiesCb()).willReturn(propertiesCb);
 
 		// when:
 		subject.loadApplicationProperties();
@@ -318,6 +340,7 @@ class HfsSystemFilesManagerTest {
 	public void loadsPermsFromHfsIfAvailable() {
 		given(hfs.exists(apiPermsId)).willReturn(true);
 		given(hfs.cat(apiPermsId)).willReturn(fromState.toByteArray());
+		given(callbacks.permissionsCb()).willReturn(permissionsCb);
 
 		// when:
 		subject.loadApiPermissions();
@@ -331,6 +354,7 @@ class HfsSystemFilesManagerTest {
 	public void loadsRatesFromHfsIfAvailable() {
 		given(hfs.exists(ratesId)).willReturn(true);
 		given(hfs.cat(ratesId)).willReturn(expectedDefaultRates().toByteArray());
+		given(callbacks.exchangeRatesCb()).willReturn(ratesCb);
 
 		// when:
 		subject.loadExchangeRates();
@@ -344,6 +368,7 @@ class HfsSystemFilesManagerTest {
 	public void createsRatesFromPropsIfMissing() {
 		given(hfs.exists(ratesId)).willReturn(false);
 		given(hfs.cat(ratesId)).willReturn(expectedDefaultRates().toByteArray());
+		given(callbacks.exchangeRatesCb()).willReturn(ratesCb);
 
 		// when:
 		subject.loadExchangeRates();
@@ -367,6 +392,7 @@ class HfsSystemFilesManagerTest {
 
 		given(hfs.exists(schedulesId)).willReturn(true);
 		given(hfs.cat(schedulesId)).willReturn(schedules);
+		given(callbacks.feeSchedulesCb()).willReturn(schedulesCb);
 
 		// when:
 		subject.loadFeeSchedules();
@@ -377,12 +403,54 @@ class HfsSystemFilesManagerTest {
 	}
 
 	@Test
+	public void loadsThrottlesFromHfsIfAvailable() throws IOException {
+		// setup:
+		var proto = SerdeUtils.protoDefs("bootstrap/throttles.json");
+		byte[] throttleBytes = proto.toByteArray();
+
+		given(callbacks.throttlesCb()).willReturn(throttlesCb);
+		given(hfs.exists(throttlesId)).willReturn(true);
+		given(hfs.cat(throttlesId)).willReturn(throttleBytes);
+
+		// when:
+		subject.loadThrottleDefinitions();
+
+		// then:
+		verify(hfs).exists(throttlesId);
+		verify(throttlesCb).accept(proto);
+	}
+
+	@Test
+	public void createsThrottlesFromResourceIfMissing() throws IOException {
+		// setup:
+		var proto = SerdeUtils.protoDefs("bootstrap/throttles.json");
+		byte[] throttleBytes = proto.toByteArray();
+
+		given(callbacks.throttlesCb()).willReturn(throttlesCb);
+		given(hfs.exists(throttlesId)).willReturn(false);
+		given(hfs.cat(throttlesId)).willReturn(throttleBytes);
+
+		// when:
+		subject.loadThrottleDefinitions();
+
+		// then:
+		verify(hfs).exists(throttlesId);
+		verify(metadata).put(
+				argThat(throttlesId::equals),
+				argThat(info -> expectedInfo.toString().equals(info.toString())));
+		verify(data).put(
+				argThat(throttlesId::equals),
+				argThat((byte[] bytes) -> Arrays.equals(throttleBytes, bytes)));
+	}
+
+	@Test
 	public void createsSchedulesFromResourcesIfMissing() throws IOException {
 		// setup:
 		byte[] schedules = Files.readAllBytes(Paths.get(R4_FEE_SCHEDULE_REPR_PATH));
 
 		given(hfs.exists(schedulesId)).willReturn(false);
 		given(hfs.cat(schedulesId)).willReturn(schedules);
+		given(callbacks.feeSchedulesCb()).willReturn(schedulesCb);
 
 		// when:
 		subject.loadFeeSchedules();
@@ -398,15 +466,41 @@ class HfsSystemFilesManagerTest {
 	}
 
 	@Test
+	public void bootstrapsPropsAsEmptyConfigListIfNoDiskProperties() throws IOException {
+		// setup:
+		var emptyConfig = ServicesConfigurationList.getDefaultInstance();
+
+		given(hfs.exists(appPropsId)).willReturn(false);
+		given(hfs.cat(appPropsId)).willReturn(emptyConfig.toByteArray());
+		given(callbacks.propertiesCb()).willReturn(propertiesCb);
+
+		// when:
+		subject.loadApplicationProperties();
+
+		// then:
+		verify(hfs).exists(appPropsId);
+		// and:
+		verify(metadata).put(
+				argThat(appPropsId::equals),
+				argThat(info -> expectedInfo.toString().equals(info.toString())));
+		verify(data).put(
+				argThat(appPropsId::equals),
+				argThat((byte[] bytes) -> Arrays.equals(emptyConfig.toByteArray(), bytes)));
+		// and:
+		verify(propertiesCb).accept(ServicesConfigurationList.getDefaultInstance());
+	}
+
+	@Test
 	public void bootstrapsPropsFromDiskOnNetworkStartup() throws IOException {
 		// setup:
 		var jutilProps = new Properties();
 		fromBootstrapFile.getNameValueList().forEach(setting ->
-						jutilProps.put(setting.getName(), setting.getValue()));
+				jutilProps.put(setting.getName(), setting.getValue()));
 		jutilProps.store(Files.newOutputStream(Paths.get(bootstrapJutilPropsLoc)), "Testing 123");
 
 		given(hfs.exists(appPropsId)).willReturn(false);
 		given(hfs.cat(appPropsId)).willReturn(fromBootstrapFile.toByteArray());
+		given(callbacks.propertiesCb()).willReturn(propertiesCb);
 
 		// when:
 		subject.loadApplicationProperties();
@@ -428,17 +522,6 @@ class HfsSystemFilesManagerTest {
 	}
 
 	@Test
-	public void throwsIseOnMissingBootstrapProps() throws IOException {
-		// setup:
-		Files.deleteIfExists(Paths.get(bootstrapJutilPropsLoc));
-
-		given(hfs.exists(appPropsId)).willReturn(false);
-
-		// expect:
-		assertThrows(IllegalStateException.class, subject::loadApplicationProperties);
-	}
-
-	@Test
 	public void throwsIseOnNonsenseStateProperties() {
 		given(hfs.exists(appPropsId)).willReturn(true);
 		given(hfs.cat(appPropsId)).willReturn(nonsense);
@@ -455,40 +538,35 @@ class HfsSystemFilesManagerTest {
 				.build();
 	}
 
-	private NodeAddressBook legacyBookConstruction(AddressBook fromBook) {
-		NodeAddressBook.Builder builder = NodeAddressBook.newBuilder();
+	private com.hederahashgraph.api.proto.java.NodeAddressBook legacyBookConstruction(AddressBook fromBook) {
+		com.hederahashgraph.api.proto.java.NodeAddressBook.Builder builder =
+				com.hederahashgraph.api.proto.java.NodeAddressBook.newBuilder();
 		for (int i = 0; i < fromBook.getSize(); i++) {
 			var address = fromBook.getAddress(i);
+			PublicKey publicKey = address.getSigPublicKey();
 			byte[] nodeIP = address.getAddressExternalIpv4();
 			String nodeIPStr = Address.ipString(nodeIP);
 			String memo = address.getMemo();
 			NodeAddress.Builder nodeAddress = NodeAddress.newBuilder()
 					.setIpAddress(ByteString.copyFromUtf8(nodeIPStr))
-					.setMemo(ByteString.copyFromUtf8(memo))
-					.setNodeId(address.getId());
-			setNodeAccountIfAvail(address, nodeAddress);
-			builder.addNodeAddress(nodeAddress);
-		}
-		return builder.build();
-	}
-
-	private NodeAddressBook legacyNodeDetailsConstruction(AddressBook fromBook) {
-		NodeAddressBook.Builder builder = NodeAddressBook.newBuilder();
-		for (int i = 0; i < fromBook.getSize(); i++) {
-			var address = fromBook.getAddress(i);
-			PublicKey publicKey = address.getSigPublicKey();
-			String memo = address.getMemo();
-			NodeAddress.Builder nodeAddress = NodeAddress.newBuilder()
+					.setPortno(address.getPortExternalIpv4())
 					.setMemo(ByteString.copyFromUtf8(memo))
 					.setRSAPubKey(MiscUtils.commonsBytesToHex(publicKey.getEncoded()))
-					.setNodeId(address.getId());
-			setNodeAccountIfAvail(address, nodeAddress);
+					.setNodeId(address.getId())
+					.setStake(address.getStake());
+
+			ServiceEndpoint.Builder serviceEndpoint = ServiceEndpoint.newBuilder()
+					.setIpAddressV4(ByteString.copyFrom(address.getAddressExternalIpv4()))
+					.setPort(address.getPortExternalIpv4());
+			nodeAddress.addServiceEndpoint(serviceEndpoint);
+
+			setNodeAccountIfAvailforAddressBook(address, nodeAddress);
 			builder.addNodeAddress(nodeAddress);
 		}
 		return builder.build();
 	}
 
-	private void setNodeAccountIfAvail(Address entry, NodeAddress.Builder builder) {
+	private void setNodeAccountIfAvailforAddressBook(Address entry, NodeAddress.Builder builder) {
 		try {
 			var id = EntityIdUtils.accountParsedFromString(entry.getMemo());
 			builder.setNodeAccountId(id);

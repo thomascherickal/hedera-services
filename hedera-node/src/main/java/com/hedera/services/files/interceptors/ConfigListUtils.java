@@ -4,7 +4,7 @@ package com.hedera.services.files.interceptors;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ConfigListUtils {
-	public static final Logger log = LogManager.getLogger(ConfigListUtils.class);
+	private static final Logger log = LogManager.getLogger(ConfigListUtils.class);
 
 	ConfigListUtils() {
 		throw new IllegalStateException();

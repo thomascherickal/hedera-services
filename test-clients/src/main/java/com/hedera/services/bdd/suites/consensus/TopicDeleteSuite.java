@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.consensus;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import static com.hedera.services.bdd.spec.transactions.TxnVerbs.createTopic;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.cryptoCreate;
 import static com.hedera.services.bdd.spec.transactions.TxnVerbs.deleteTopic;
 import static com.hedera.services.bdd.spec.utilops.UtilVerbs.newKeyNamed;
-import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateFee;
+import static com.hedera.services.bdd.spec.utilops.UtilVerbs.validateChargedUsd;
 import static com.hederahashgraph.api.proto.java.ResponseCodeEnum.*;
 
 public class TopicDeleteSuite extends HapiApiSuite {
@@ -111,7 +111,7 @@ public class TopicDeleteSuite extends HapiApiSuite {
 	}
 
 	private HapiApiSpec deleteFailedWithWrongKey() {
-		long PAYER_BALANCE = 1_999_999_999_999L;
+		long PAYER_BALANCE = 1_999_999_999L;
 		return defaultHapiSpec("deleteFailedWithWrongKey")
 				.given(
 						newKeyNamed("adminKey"),
@@ -133,18 +133,18 @@ public class TopicDeleteSuite extends HapiApiSuite {
 	private HapiApiSpec feeAsExpected() {
 		return defaultHapiSpec("feeAsExpected")
 				.given(
-						newKeyNamed("adminKey"),
+						cryptoCreate("payer"),
 						createTopic("testTopic")
-								.adminKeyName("adminKey"),
-						cryptoCreate("payer")
+								.adminKeyName("payer")
 				)
 				.when(
 						deleteTopic("testTopic")
+								.blankMemo()
 								.payingWith("payer")
 								.via("topicDelete")
 				)
 				.then(
-				        validateFee("topicDelete", 0.0081)
+				        validateChargedUsd("topicDelete", 0.005)
 				);
 	}
 

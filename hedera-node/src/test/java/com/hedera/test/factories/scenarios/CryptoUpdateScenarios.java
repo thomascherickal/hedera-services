@@ -4,7 +4,7 @@ package com.hedera.test.factories.scenarios;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,22 @@ public enum CryptoUpdateScenarios implements TxnHandlingScenario {
 					newSignedCryptoUpdate(MISC_ACCOUNT_ID)
 							.newAccountKt(NEW_ACCOUNT_KT)
 							.get()
+			));
+		}
+	},
+	CRYPTO_UPDATE_SYS_ACCOUNT_WITH_NEW_KEY_SCENARIO {
+		public PlatformTxnAccessor platformTxn() throws Throwable {
+			return new PlatformTxnAccessor(from(
+					newSignedCryptoUpdate(SYS_ACCOUNT_ID)
+							.newAccountKt(SYS_ACCOUNT_KT)
+							.get()
+			));
+		}
+	},
+	CRYPTO_UPDATE_SYS_ACCOUNT_WITH_NO_NEW_KEY_SCENARIO {
+		public PlatformTxnAccessor platformTxn() throws Throwable {
+			return new PlatformTxnAccessor(from(
+					newSignedCryptoUpdate(SYS_ACCOUNT_ID).get()
 			));
 		}
 	}

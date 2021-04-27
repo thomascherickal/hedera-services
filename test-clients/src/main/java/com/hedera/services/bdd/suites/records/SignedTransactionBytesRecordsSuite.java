@@ -4,7 +4,7 @@ package com.hedera.services.bdd.suites.records;
  * ‌
  * Hedera Services Test Clients
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class SignedTransactionBytesRecordsSuite extends HapiApiSuite {
 	private HapiApiSpec transactionsWithOnlySigMap() {
 		return defaultHapiSpec("TransactionsWithOnlySigMap")
 				.given(
-						cryptoTransfer(tinyBarsFromTo(GENESIS, MASTER, 1L))
+						cryptoTransfer(tinyBarsFromTo(GENESIS, SYSTEM_ADMIN, 1L))
 								.via("failedCryptoTransaction")
 								.asTxnWithOnlySigMap()
 								.hasPrecheck(INVALID_TRANSACTION_BODY),

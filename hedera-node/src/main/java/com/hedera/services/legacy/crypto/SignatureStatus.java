@@ -4,14 +4,14 @@ package com.hedera.services.legacy.crypto;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,8 +24,10 @@ import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
+import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransactionID;
 import java.util.ArrayList;
 
@@ -41,6 +43,9 @@ public class SignatureStatus {
   private ContractID contractId;
   private TopicID topicId;
   private TokenID tokenId;
+  private ScheduleID scheduleID;
+  private TransactionBody scheduled;
+  private SignatureStatus errorReport;
 
   public SignatureStatus(final SignatureStatusCode statusCode, final ResponseCodeEnum responseCode,
       final boolean handlingTransaction, final TransactionID transactionID,
@@ -64,6 +69,40 @@ public class SignatureStatus {
     this.handlingTransaction = handlingTransaction;
     this.transactionId = transactionID;
     this.tokenId = tokenID;
+  }
+
+  public SignatureStatus(final SignatureStatusCode statusCode, final ResponseCodeEnum responseCode,
+                         final boolean handlingTransaction, final TransactionID transactionID,
+                         final ScheduleID scheduleID) {
+    this.statusCode = statusCode;
+    this.responseCode = responseCode;
+    this.handlingTransaction = handlingTransaction;
+    this.transactionId = transactionID;
+    this.scheduleID = scheduleID;
+  }
+
+  public SignatureStatus(final SignatureStatusCode statusCode, final ResponseCodeEnum responseCode,
+          final boolean handlingTransaction, final TransactionID transactionID) {
+    this.statusCode = statusCode;
+    this.responseCode = responseCode;
+    this.handlingTransaction = handlingTransaction;
+    this.transactionId = transactionID;
+  }
+
+  public SignatureStatus(
+          SignatureStatusCode statusCode,
+          ResponseCodeEnum responseCode,
+          boolean handlingTransaction,
+          TransactionID transactionID,
+          TransactionBody scheduled,
+          SignatureStatus errorReport
+  ) {
+    this.scheduled = scheduled;
+    this.statusCode = statusCode;
+    this.responseCode = responseCode;
+    this.handlingTransaction = handlingTransaction;
+    this.transactionId = transactionID;
+    this.errorReport = errorReport;
   }
 
   public ResponseCodeEnum getResponseCode() {
@@ -117,6 +156,11 @@ public class SignatureStatus {
         formatArguments.add(format(transactionId));
         formatArguments.add(readableId(contractId));
         break;
+	  case UNRESOLVABLE_REQUIRED_SIGNERS:
+		formatArguments.add(scheduled.toString());
+		formatArguments.add(errorReport.getResponseCode().toString());
+		break;
+      case SCHEDULED_TRANSACTION_NOT_IN_WHITELIST:
       case GENERAL_PAYER_ERROR:
       case GENERAL_TRANSACTION_ERROR:
       case KEY_COUNT_MISMATCH:
@@ -137,6 +181,10 @@ public class SignatureStatus {
         formatArguments.add(format(transactionId));
         formatArguments.add(readableId(tokenId));
         break;
+      case INVALID_SCHEDULE_ID:
+        formatArguments.add(format(transactionId));
+        formatArguments.add(readableId(scheduleID));
+        break;
       case SUCCESS:
       case INVALID_PROTOCOL_BUFFER:
       case GENERAL_ERROR:
@@ -147,7 +195,7 @@ public class SignatureStatus {
     return String.format(statusCode.message(), formatArguments.toArray());
   }
 
-  private static String format(final TransactionID transactionId) {
+  static String format(final TransactionID transactionId) {
     return String.format("(%s, %d.%d)", readableId(transactionId.getAccountID()),
         transactionId.getTransactionValidStart().getSeconds(),
         transactionId.getTransactionValidStart().getNanos());

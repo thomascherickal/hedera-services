@@ -4,7 +4,7 @@ package com.hedera.services.grpc;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,12 @@ package com.hedera.services.grpc;
  * ‍
  */
 
-import com.hedera.services.legacy.netty.NettyServerManager;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.netty.NettyServerBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.io.FileNotFoundException;
@@ -39,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
-@RunWith(JUnitPlatform.class)
 class NettyGrpcServerManagerTest {
 	int port = 8080;
 	int tlsPort = port + 1;
@@ -49,7 +45,7 @@ class NettyGrpcServerManagerTest {
 	Consumer<String> println;
 	NettyServerBuilder nettyBuilder;
 	NettyServerBuilder tlsBuilder;
-	NettyServerManager nettyManager;
+	ConfigDrivenNettyFactory nettyFactory;
 	BindableService a, b, c;
 	List<BindableService> bindableServices;
 	List<ServerServiceDefinition> serviceDefinitions;
@@ -78,20 +74,20 @@ class NettyGrpcServerManagerTest {
 		given(tlsBuilder.addService(any(ServerServiceDefinition.class))).willReturn(tlsBuilder);
 		given(tlsBuilder.build()).willReturn(tlsServer);
 
-		nettyManager = mock(NettyServerManager.class);
-		given(nettyManager.buildNettyServer(port, false)).willReturn(nettyBuilder);
-		given(nettyManager.buildNettyServer(tlsPort, true)).willReturn(tlsBuilder);
+		nettyFactory = mock(ConfigDrivenNettyFactory.class);
+		given(nettyFactory.builderFor(port, false)).willReturn(nettyBuilder);
+		given(nettyFactory.builderFor(tlsPort, true)).willReturn(tlsBuilder);
 
 		println = mock(Consumer.class);
 		hookAdder = mock(Consumer.class);
 
-		subject = new NettyGrpcServerManager(hookAdder, nettyManager, bindableServices, serviceDefinitions);
+		subject = new NettyGrpcServerManager(hookAdder, bindableServices, nettyFactory, serviceDefinitions);
 	}
 
 	@Test
 	public void buildsAndAddsHookNonTlsOnNonExistingCertOrKey() throws Exception {
 		// setup:
-		given(nettyManager.buildNettyServer(tlsPort, true)).willThrow(new FileNotFoundException());
+		given(nettyFactory.builderFor(tlsPort, true)).willThrow(new FileNotFoundException());
 		ArgumentCaptor<Thread> captor = ArgumentCaptor.forClass(Thread.class);
 
 		willDoNothing().given(hookAdder).accept(captor.capture());

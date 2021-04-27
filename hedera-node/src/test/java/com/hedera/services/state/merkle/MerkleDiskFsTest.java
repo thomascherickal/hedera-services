@@ -4,7 +4,7 @@ package com.hedera.services.state.merkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,22 @@ package com.hedera.services.state.merkle;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import com.hedera.test.extensions.LogCaptor;
+import com.hedera.test.extensions.LogCaptureExtension;
+import com.hedera.test.extensions.LoggingSubject;
 import com.hedera.test.utils.IdUtils;
-import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.swirlds.common.CommonUtils;
 import com.swirlds.common.crypto.Hash;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,38 +45,43 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.hedera.services.legacy.proto.utils.CommonUtils.noThrowSha384HashOf;
-import static com.hedera.services.utils.EntityIdUtils.asLiteralString;
 import static com.hedera.test.utils.IdUtils.asFile;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@RunWith(JUnitPlatform.class)
-public class MerkleDiskFsTest {
-	MerkleDiskFs subject;
-	AccountID nodeAccount = AccountID.newBuilder().setAccountNum(3).build();
-	FileID file150 = asFile("0.0.150");
-	byte[] origContents = "Where, like a pillow on a bed /".getBytes();
-	byte[] origFileHash = null;
-	byte[] newContents = "A pregnant bank swelled up to rest /".getBytes();
-	byte[] newFileHash = null;
+@ExtendWith(LogCaptureExtension.class)
+class MerkleDiskFsTest {
+	@Inject
+	private LogCaptor logCaptor;
+	@LoggingSubject
+	private MerkleDiskFs subject;
 
-	String MOCK_DISKFS_DIR = "src/test/resources/diskFs";
+	private String fsNodeScopedDir = "0.0.4";
+	private FileID file150 = asFile("0.0.150");
+	private byte[] origContents = "Where, like a pillow on a bed /".getBytes();
+	private byte[] origFileHash = null;
+	private byte[] newContents = "A pregnant bank swelled up to rest /".getBytes();
+	private byte[] newFileHash = null;
 
-	MerkleDiskFs.ThrowingBytesGetter getter;
-	MerkleDiskFs.ThrowingBytesWriter writer;
+	private String MOCK_DISKFS_DIR = "src/test/resources/diskFs";
+
+	private MerkleDiskFs.ThrowingBytesGetter getter;
+	private MerkleDiskFs.ThrowingBytesWriter writer;
 
 	@BeforeEach
 	private void setup() throws Exception {
@@ -85,40 +90,30 @@ public class MerkleDiskFsTest {
 
 		Map<FileID, byte[]> hashes = new HashMap<>();
 		hashes.put(IdUtils.asFile("0.0.150"), origFileHash);
-		subject = new MerkleDiskFs(
-				hashes,
-				MOCK_DISKFS_DIR,
-				asLiteralString(nodeAccount));
+		subject = new MerkleDiskFs(hashes);
 
 		getter = mock(MerkleDiskFs.ThrowingBytesGetter.class);
-		MerkleDiskFs.bytesHelper = getter;
+		subject.setBytesHelper(getter);
 		writer = mock(MerkleDiskFs.ThrowingBytesWriter.class);
-		MerkleDiskFs.writeHelper = writer;
+		subject.setWriteHelper(writer);
 
 		given(getter.allBytesFrom(subject.pathToContentsOf(file150))).willReturn(origContents);
 	}
 
-	@AfterEach
-	private void cleanup() {
-		MerkleDiskFs.writeHelper = (p, c) -> FileUtils.writeByteArrayToFile(p.toFile(), c);
-		MerkleDiskFs.bytesHelper = p -> FileUtils.readFileToByteArray(p.toFile());
-	}
-
 	@Test
 	public void helpersSanityCheck() throws IOException {
-		// setup:
-		cleanup();
-
 		// given:
 		String tmpBase = MOCK_DISKFS_DIR + File.separator + "a" + File.separator + "b" + File.separator;
 		Path tmpLoc = Paths.get(tmpBase + "c.txt");
 		byte[] tmpMsg = "Testing-1-2-3".getBytes();
+		// and:
+		var subject = new MerkleDiskFs();
 
 		// when:
-		MerkleDiskFs.writeHelper.allBytesTo(tmpLoc, tmpMsg);
+		subject.getWriteHelper().allBytesTo(tmpLoc, tmpMsg);
 
 		// then:
-		assertArrayEquals(tmpMsg, MerkleDiskFs.bytesHelper.allBytesFrom(tmpLoc));
+		assertArrayEquals(tmpMsg, subject.getBytesHelper().allBytesFrom(tmpLoc));
 
 		// cleanup:
 		tmpLoc.toFile().delete();
@@ -129,15 +124,71 @@ public class MerkleDiskFsTest {
 	}
 
 	@Test
+	void migratesPre0130DiskFs() throws IOException {
+		// setup:
+		String legacyBase = MOCK_DISKFS_DIR;
+		String scopedLegacyBase = legacyBase + File.separator + fsNodeScopedDir;
+		Files.createDirectories(Paths.get(scopedLegacyBase));
+		String legacyFile150Loc = legacyBase + File.separator + fsNodeScopedDir + File.separator + "File0.0.150";
+		Files.write(Paths.get(legacyFile150Loc), "NONSENSE".getBytes());
+
+		given(getter.allBytesFrom(subject.pre0130PathToContentsOf(file150, legacyBase, fsNodeScopedDir)))
+				.willReturn(origContents);
+
+		// when:
+		subject.migrateLegacyDiskFsFromV13LocFor(legacyBase, fsNodeScopedDir);
+
+		// then:
+		verify(writer).allBytesTo(subject.pathToContentsOf(file150), origContents);
+
+		// and:
+		var f = new File(legacyFile150Loc);
+		assertFalse(f.exists());
+		var d = new File(scopedLegacyBase);
+		assertFalse(d.exists());
+	}
+
+	@Test
+	void logsErrorsAndPropagatesOnFailedMigration() throws IOException {
+		// setup:
+		String legacyBase = MOCK_DISKFS_DIR;
+		String scopedLegacyBase = legacyBase + File.separator + fsNodeScopedDir;
+
+		given(getter.allBytesFrom(subject.pre0130PathToContentsOf(file150, legacyBase, fsNodeScopedDir)))
+				.willThrow(IOException.class);
+
+		// expect:
+		assertThrows(UncheckedIOException.class,
+				() -> subject.migrateLegacyDiskFsFromV13LocFor(legacyBase, fsNodeScopedDir));
+		// and:
+		assertThat(
+				logCaptor.warnLogs(),
+				contains(Matchers.startsWith("Failed to migrate from legacy disk-based file system!")));
+	}
+
+	@Test
 	public void toStringWorks() {
 		// expect:
 		assertEquals(
-				"MerkleDiskFs{baseDir=" + MOCK_DISKFS_DIR
-						+ ", nodeScopedDir=" + asLiteralString(nodeAccount)
-						+ ", fileHashes=[0.0.150 :: " + CommonUtils.hex(origFileHash) + "]"
-						+ "}",
-				subject.toString()
-		);
+				"MerkleDiskFs{fileHashes=[0.0.150 :: " + CommonUtils.hex(origFileHash) + "]}",
+				subject.toString());
+	}
+
+	@Test
+	public void checkLogsErrorOnMismatch() throws Exception {
+		// setup:
+		subject.put(file150, origContents);
+		assertArrayEquals(origFileHash, subject.diskContentHash(file150));
+		assertArrayEquals(origContents, subject.contentsOf(file150));
+
+		// and now:
+		given(getter.allBytesFrom(subject.pathToContentsOf(file150))).willReturn(newContents);
+
+		subject.checkHashesAgainstDiskContents();
+
+		assertThat(
+				logCaptor.errorLogs(),
+				contains(Matchers.startsWith("State hash doesn't match disk hash for content of '0.0.150'")));
 	}
 
 	@Test
@@ -147,10 +198,9 @@ public class MerkleDiskFsTest {
 		assertArrayEquals(origFileHash, subject.diskContentHash(file150));
 		assertArrayEquals(origContents, subject.contentsOf(file150));
 
-		MerkleDiskFs.log = mock(Logger.class);
 		subject.checkHashesAgainstDiskContents();
 
-		verify(MerkleDiskFs.log, never()).error(any(String.class));
+		Assertions.assertTrue(logCaptor.errorLogs().isEmpty());
 		// and:
 		verify(writer).allBytesTo(subject.pathToContentsOf(file150), origContents);
 	}
@@ -167,13 +217,20 @@ public class MerkleDiskFsTest {
 	}
 
 	@Test
-	public void fileNotExist() throws IOException {
+	public void fileNotExistNoDebug() throws IOException {
 		// setup:
-		subject = new MerkleDiskFs("this/doesnt/exist", asLiteralString(nodeAccount));
+		subject = new MerkleDiskFs();
+		// and:
+		subject.setBytesHelper(getter);
 
 		given(getter.allBytesFrom(any())).willThrow(IOException.class);
 
-		Assertions.assertSame(MerkleDiskFs.MISSING_CONTENT, subject.contentsOf(file150));
+		// then:
+		assertThrows(UncheckedIOException.class, () -> subject.contentsOf(file150));
+		// and:
+		assertThat(
+				logCaptor.errorLogs(),
+				contains(Matchers.startsWith("Not able to read '0.0.150' @")));
 	}
 
 	@Test
@@ -195,7 +252,7 @@ public class MerkleDiskFsTest {
 		// setup:
 		byte[] expectedBytes = "ABCDEFGH".getBytes();
 		MerkleDiskFs.ThrowingBytesGetter getter = mock(MerkleDiskFs.ThrowingBytesGetter.class);
-		MerkleDiskFs.bytesHelper = getter;
+		subject.setBytesHelper(getter);
 
 		given(getter.allBytesFrom(subject.pathToContentsOf(file150))).willReturn(expectedBytes);
 		// and:
@@ -215,7 +272,7 @@ public class MerkleDiskFsTest {
 	public void serializePropagatesException() throws IOException {
 		// setup:
 		MerkleDiskFs.ThrowingBytesGetter getter = mock(MerkleDiskFs.ThrowingBytesGetter.class);
-		MerkleDiskFs.bytesHelper = getter;
+		subject.setBytesHelper(getter);
 		// and:
 		var out = mock(SerializableDataOutputStream.class);
 
@@ -248,7 +305,7 @@ public class MerkleDiskFsTest {
 				.willReturn(150L);
 		given(fin.readByteArray(48)).willReturn(origFileHash);
 		// and:
-		var read = new MerkleDiskFs(MOCK_DISKFS_DIR, asLiteralString(nodeAccount));
+		var read = new MerkleDiskFs();
 
 		// when:
 		read.deserializeAbbreviated(fin, expectedHash, MerkleDiskFs.MERKLE_VERSION);
@@ -273,7 +330,9 @@ public class MerkleDiskFsTest {
 				.willReturn(150L);
 		given(fin.readByteArray(MerkleDiskFs.MAX_FILE_BYTES)).willReturn(origContents);
 		// and:
-		var read = new MerkleDiskFs(MOCK_DISKFS_DIR, asLiteralString(nodeAccount));
+		var read = new MerkleDiskFs();
+		read.setBytesHelper(getter);
+		read.setWriteHelper(writer);
 
 		// when:
 		read.deserialize(fin, MerkleDiskFs.MERKLE_VERSION);

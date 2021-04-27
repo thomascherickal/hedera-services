@@ -4,7 +4,7 @@ package com.hedera.services.utils;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,11 @@ import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromSolidityAddress;
 import static com.hedera.services.utils.EntityIdUtils.asLiteralString;
 import static com.hedera.services.utils.EntityIdUtils.asSolidityAddress;
@@ -44,7 +43,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
 
-@RunWith(JUnitPlatform.class)
 class MerkleEntityIdUtilsTest {
 	@Test
 	public void correctLiteral() {
@@ -147,6 +145,15 @@ class MerkleEntityIdUtilsTest {
 		for (String literal : validLiterals) {
 			assertEquals(asAccount(literal), accountParsedFromString(literal));
 		}
+	}
+
+	@Test
+	public void prettyPrintsScheduleIds() {
+		// given:
+		ScheduleID id = ScheduleID.newBuilder().setShardNum(1).setRealmNum(2).setScheduleNum(3).build();
+
+		// expect:
+		assertEquals("1.2.3", EntityIdUtils.readableId(id));
 	}
 
 	@Test

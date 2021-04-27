@@ -4,7 +4,7 @@ package com.hedera.services.usage.contract;
  * ‌
  * Hedera Services API Fees
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,16 @@ import com.hederahashgraph.api.proto.java.FeeComponents;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Query;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import static com.hedera.services.usage.SingletonEstimatorUtils.ESTIMATOR_UTILS;
 import static com.hedera.services.usage.crypto.entities.CryptoEntitySizes.CRYPTO_ENTITY_SIZES;
 import static com.hedera.services.usage.contract.entities.ContractEntitySizes.CONTRACT_ENTITY_SIZES;
 import static com.hederahashgraph.fee.FeeBuilder.BASIC_ENTITY_ID_SIZE;
 import static com.hederahashgraph.fee.FeeBuilder.BASIC_QUERY_HEADER;
+import static com.hederahashgraph.fee.FeeBuilder.BASIC_QUERY_RES_HEADER;
 import static com.hederahashgraph.fee.FeeBuilder.getAccountKeyStorageSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnitPlatform.class)
 class ContractGetInfoUsageTest {
 	Query query = Query.newBuilder().setContractGetInfo(ContractGetInfoQuery.getDefaultInstance()).build();
 
@@ -51,7 +49,7 @@ class ContractGetInfoUsageTest {
 	public void getsExpectedUsage() {
 		// setup:
 		long expectedTb = BASIC_QUERY_HEADER + BASIC_ENTITY_ID_SIZE;
-		long expectedRb = numTokenAssocs * CRYPTO_ENTITY_SIZES.bytesInTokenAssocRepr()
+		long expectedRb = BASIC_QUERY_RES_HEADER + numTokenAssocs * CRYPTO_ENTITY_SIZES.bytesInTokenAssocRepr()
 				+ CONTRACT_ENTITY_SIZES.fixedBytesInContractRepr()
 				+ getAccountKeyStorageSize(key)
 				+ memo.length();

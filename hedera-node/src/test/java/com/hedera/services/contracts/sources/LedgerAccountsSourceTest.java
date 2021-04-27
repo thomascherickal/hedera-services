@@ -4,7 +4,7 @@ package com.hedera.services.contracts.sources;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import com.hedera.services.ledger.TransactionalLedger;
 import com.hedera.services.ledger.accounts.HederaAccountCustomizer;
 import com.hedera.services.ledger.properties.AccountProperty;
 import com.hedera.services.utils.EntityIdUtils;
+import com.hedera.test.extensions.LogCaptor;
+import com.hedera.test.extensions.LogCaptureExtension;
+import com.hedera.test.extensions.LoggingSubject;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.Key;
@@ -37,18 +40,20 @@ import org.apache.logging.log4j.Logger;
 import org.ethereum.core.AccountState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
+import javax.inject.Inject;
 import java.math.BigInteger;
 
 import static com.hedera.services.ledger.properties.AccountProperty.*;
 import static org.mockito.BDDMockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-@RunWith(JUnitPlatform.class)
+@ExtendWith(LogCaptureExtension.class)
 class LedgerAccountsSourceTest {
 	long balance = 1_234_567L;
 	long autoRenew = 1_234L;
@@ -61,7 +66,10 @@ class LedgerAccountsSourceTest {
 
 	HederaLedger ledger;
 
-	LedgerAccountsSource subject;
+	@Inject
+	private LogCaptor logCaptor;
+	@LoggingSubject
+	private LedgerAccountsSource subject;
 
 	@BeforeEach
 	void setup() {
@@ -87,13 +95,11 @@ class LedgerAccountsSourceTest {
 	public void logsExpectedForNullAccount() {
 		// setup:
 		byte[] key = EntityIdUtils.asSolidityAddress(0, 0, 2);
-		Logger log = mock(Logger.class);
-		LedgerAccountsSource.log = log;
 
 		// expect:
 		assertDoesNotThrow(() -> subject.put(key, null));
 		// and:
-		verify(log).warn("Ignoring null state put to account {}!", "0.0.2");
+		assertThat(logCaptor.warnLogs(), contains("Ignoring null state put to account 0.0.2!"));
 	}
 
 	@Test
@@ -113,7 +119,7 @@ class LedgerAccountsSourceTest {
 		MerkleAccount account = mock(MerkleAccount.class);
 		given(account.getAutoRenewSecs()).willReturn(autoRenew);
 		given(account.getExpiry()).willReturn(expiry);
-		given(account.getProxy()).willReturn(EntityId.ofNullableAccountId(IdUtils.asAccount("1.2.3")));
+		given(account.getProxy()).willReturn(EntityId.fromGrpcAccountId(IdUtils.asAccount("1.2.3")));
 		given(account.isReceiverSigRequired()).willReturn(receiverSigRequired);
 		given(account.isDeleted()).willReturn(deleted);
 		given(account.isSmartContract()).willReturn(smartContract);
@@ -205,7 +211,7 @@ class LedgerAccountsSourceTest {
 				argThat(k -> expectedKey.toString().equals(k.toString())));
 		verify(txnLedger).set(target, IS_SMART_CONTRACT, true);
 		verify(txnLedger).set(target, AUTO_RENEW_PERIOD, autoRenew);
-		verify(txnLedger).set(target, PROXY, EntityId.ofNullableAccountId(proxy));
+		verify(txnLedger).set(target, PROXY, EntityId.fromGrpcAccountId(proxy));
 		verify(txnLedger).set(target, MEMO, "");
 	}
 
@@ -246,7 +252,7 @@ class LedgerAccountsSourceTest {
 				argThat(k -> expectedKey.toString().equals(k.toString())));
 		verify(txnLedger).set(target, IS_SMART_CONTRACT, true);
 		verify(txnLedger).set(target, AUTO_RENEW_PERIOD, autoRenew);
-		verify(txnLedger).set(target, PROXY, EntityId.ofNullableAccountId(proxy));
+		verify(txnLedger).set(target, PROXY, EntityId.fromGrpcAccountId(proxy));
 		verify(txnLedger).set(target, MEMO, "");
 	}
 }

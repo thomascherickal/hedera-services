@@ -4,7 +4,7 @@ package com.hedera.services.utils;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.hederahashgraph.api.proto.java.HederaFunctionality;
 import com.hederahashgraph.api.proto.java.Key;
 import com.hederahashgraph.api.proto.java.Query;
 import com.hederahashgraph.api.proto.java.QueryHeader;
+import com.hederahashgraph.api.proto.java.SchedulableTransactionBody;
 import com.hederahashgraph.api.proto.java.Timestamp;
 import com.hederahashgraph.api.proto.java.TransactionBody;
 import com.hederahashgraph.api.proto.java.TransferList;
@@ -68,7 +69,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.hedera.services.stats.ServicesStatsConfig.FREEZE_METRIC;
+import static com.hedera.services.grpc.controllers.FreezeController.FREEZE_METRIC;
 import static com.hedera.services.stats.ServicesStatsConfig.SYSTEM_DELETE_METRIC;
 import static com.hedera.services.stats.ServicesStatsConfig.SYSTEM_UNDELETE_METRIC;
 import static com.hedera.services.utils.EntityIdUtils.accountParsedFromString;
@@ -86,6 +87,7 @@ import static com.hederahashgraph.api.proto.java.Query.QueryCase.FILEGETINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.GETBYKEY;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.GETBYSOLIDITYID;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.NETWORKGETVERSIONINFO;
+import static com.hederahashgraph.api.proto.java.Query.QueryCase.SCHEDULEGETINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.TOKENGETINFO;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.TRANSACTIONGETRECEIPT;
 import static com.hederahashgraph.api.proto.java.Query.QueryCase.TRANSACTIONGETRECORD;
@@ -113,7 +115,8 @@ public class MiscUtils {
 			TransactionGetReceipt,
 			TransactionGetRecord,
 			GetVersionInfo,
-			TokenGetInfo
+			TokenGetInfo,
+			ScheduleGetInfo
 	);
 
 	static final String TOKEN_MINT_METRIC = "mintToken";
@@ -129,6 +132,11 @@ public class MiscUtils {
 	static final String TOKEN_ASSOCIATE_METRIC = "associateTokens";
 	static final String TOKEN_DISSOCIATE_METRIC = "dissociateTokens";
 	static final String TOKEN_GET_INFO_METRIC = "getTokenInfo";
+
+	static final String SCHEDULE_CREATE_METRIC = "createSchedule";
+	static final String SCHEDULE_DELETE_METRIC = "deleteSchedule";
+	static final String SCHEDULE_SIGN_METRIC = "signSchedule";
+	static final String SCHEDULE_GET_INFO_METRIC = "getScheduleInfo";
 
 	private static final EnumMap<Query.QueryCase, HederaFunctionality> queryFunctions =
 			new EnumMap<>(Query.QueryCase.class);
@@ -150,6 +158,7 @@ public class MiscUtils {
 		queryFunctions.put(TRANSACTIONGETRECEIPT, TransactionGetReceipt);
 		queryFunctions.put(TRANSACTIONGETRECORD, TransactionGetRecord);
 		queryFunctions.put(TOKENGETINFO, TokenGetInfo);
+		queryFunctions.put(SCHEDULEGETINFO, ScheduleGetInfo);
 	}
 
 	public static final EnumMap<HederaFunctionality, String> BASE_STAT_NAMES =
@@ -186,6 +195,9 @@ public class MiscUtils {
 		BASE_STAT_NAMES.put(TokenUpdate, TOKEN_UPDATE_METRIC);
 		BASE_STAT_NAMES.put(TokenAssociateToAccount, TOKEN_ASSOCIATE_METRIC);
 		BASE_STAT_NAMES.put(TokenDissociateFromAccount, TOKEN_DISSOCIATE_METRIC);
+		BASE_STAT_NAMES.put(ScheduleCreate, SCHEDULE_CREATE_METRIC);
+		BASE_STAT_NAMES.put(ScheduleSign, SCHEDULE_SIGN_METRIC);
+		BASE_STAT_NAMES.put(ScheduleDelete, SCHEDULE_DELETE_METRIC);
 		BASE_STAT_NAMES.put(UncheckedSubmit, UNCHECKED_SUBMIT_METRIC);
 		BASE_STAT_NAMES.put(Freeze, FREEZE_METRIC);
 		BASE_STAT_NAMES.put(SystemDelete, SYSTEM_DELETE_METRIC);
@@ -207,6 +219,7 @@ public class MiscUtils {
 		BASE_STAT_NAMES.put(TransactionGetRecord, GET_RECORD_METRIC);
 		BASE_STAT_NAMES.put(GetVersionInfo, GET_VERSION_INFO_METRIC);
 		BASE_STAT_NAMES.put(TokenGetInfo, TOKEN_GET_INFO_METRIC);
+		BASE_STAT_NAMES.put(ScheduleGetInfo, SCHEDULE_GET_INFO_METRIC);
 	}
 
 	public static String baseStatNameOf(HederaFunctionality function) {
@@ -248,7 +261,8 @@ public class MiscUtils {
 		try {
 			return new JEd25519Key(commonsHexToBytes(b64Reader.hexedABytesFrom(storeLoc, kpId)));
 		} catch (DecoderException e) {
-			throw new IllegalArgumentException(e);
+			var msg = String.format("Arguments 'storeLoc=%s' and 'kpId=%s' did not denote a valid key!", storeLoc, kpId);
+			throw new IllegalArgumentException(msg, e);
 		}
 	}
 
@@ -263,8 +277,8 @@ public class MiscUtils {
 	public static JKey asFcKeyUnchecked(Key key) {
 		try {
 			return JKey.mapKey(key);
-		} catch (Exception impossible) {
-			throw new IllegalArgumentException("Key " + key + " should have been decodable!", impossible);
+		} catch (DecoderException impermissible) {
+			throw new IllegalArgumentException("Key " + key + " should have been decode-able!", impermissible);
 		}
 	}
 
@@ -275,7 +289,7 @@ public class MiscUtils {
 				return Optional.empty();
 			}
 			return Optional.of(fcKey);
-		} catch (Exception ignore) {
+		} catch (DecoderException ignore) {
 			return Optional.empty();
 		}
 	}
@@ -295,10 +309,16 @@ public class MiscUtils {
 				.build();
 	}
 
+	public static Instant timestampToInstant(Timestamp timestamp) {
+		return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+	}
+
 	public static Optional<QueryHeader> activeHeaderFrom(Query query) {
 		switch (query.getQueryCase()) {
 			case TOKENGETINFO:
 				return Optional.of(query.getTokenGetInfo().getHeader());
+			case SCHEDULEGETINFO:
+				return Optional.of(query.getScheduleGetInfo().getHeader());
 			case CONSENSUSGETTOPICINFO:
 				return Optional.of(query.getConsensusGetTopicInfo().getHeader());
 			case GETBYSOLIDITYID:
@@ -413,6 +433,12 @@ public class MiscUtils {
 			return TokenAssociateToAccount;
 		} else if (txn.hasTokenDissociate()) {
 			return TokenDissociateFromAccount;
+		} else if (txn.hasScheduleCreate()) {
+			return ScheduleCreate;
+		} else if (txn.hasScheduleSign()) {
+			return ScheduleSign;
+		} else if (txn.hasScheduleDelete()) {
+			return ScheduleDelete;
 		} else if (txn.hasUncheckedSubmit()) {
 			return UncheckedSubmit;
 		} else {
@@ -451,7 +477,75 @@ public class MiscUtils {
 				.collect(toSet());
 	}
 
-	public static Set<Long> getNodeAccountNums(AddressBook addressBook) {
-		return getNodeAccounts(addressBook).stream().map(AccountID::getAccountNum).collect(toSet());
+	public static TransactionBody asOrdinary(SchedulableTransactionBody scheduledTxn) {
+		var ordinary = TransactionBody.newBuilder();
+		ordinary.setTransactionFee(scheduledTxn.getTransactionFee())
+				.setMemo(scheduledTxn.getMemo());
+		if (scheduledTxn.hasContractCall()) {
+			ordinary.setContractCall(scheduledTxn.getContractCall());
+		} else if (scheduledTxn.hasContractCreateInstance()) {
+			ordinary.setContractCreateInstance(scheduledTxn.getContractCreateInstance());
+		} else if (scheduledTxn.hasContractUpdateInstance()) {
+			ordinary.setContractUpdateInstance(scheduledTxn.getContractUpdateInstance());
+		} else if (scheduledTxn.hasContractDeleteInstance()) {
+			ordinary.setContractDeleteInstance(scheduledTxn.getContractDeleteInstance());
+		} else if (scheduledTxn.hasCryptoCreateAccount()) {
+			ordinary.setCryptoCreateAccount(scheduledTxn.getCryptoCreateAccount());
+		} else if (scheduledTxn.hasCryptoDelete()) {
+			ordinary.setCryptoDelete(scheduledTxn.getCryptoDelete());
+		} else if (scheduledTxn.hasCryptoTransfer()) {
+			ordinary.setCryptoTransfer(scheduledTxn.getCryptoTransfer());
+		} else if (scheduledTxn.hasCryptoUpdateAccount()) {
+			ordinary.setCryptoUpdateAccount(scheduledTxn.getCryptoUpdateAccount());
+		} else if (scheduledTxn.hasFileAppend()) {
+			ordinary.setFileAppend(scheduledTxn.getFileAppend());
+		} else if (scheduledTxn.hasFileCreate()) {
+			ordinary.setFileCreate(scheduledTxn.getFileCreate());
+		} else if (scheduledTxn.hasFileDelete()) {
+			ordinary.setFileDelete(scheduledTxn.getFileDelete());
+		} else if (scheduledTxn.hasFileUpdate()) {
+			ordinary.setFileUpdate(scheduledTxn.getFileUpdate());
+		} else if (scheduledTxn.hasSystemDelete()) {
+			ordinary.setSystemDelete(scheduledTxn.getSystemDelete());
+		} else if (scheduledTxn.hasSystemUndelete()) {
+			ordinary.setSystemUndelete(scheduledTxn.getSystemUndelete());
+		} else if (scheduledTxn.hasFreeze()) {
+			ordinary.setFreeze(scheduledTxn.getFreeze());
+		} else if (scheduledTxn.hasConsensusCreateTopic()) {
+			ordinary.setConsensusCreateTopic(scheduledTxn.getConsensusCreateTopic());
+		} else if (scheduledTxn.hasConsensusUpdateTopic()) {
+			ordinary.setConsensusUpdateTopic(scheduledTxn.getConsensusUpdateTopic());
+		} else if (scheduledTxn.hasConsensusDeleteTopic()) {
+			ordinary.setConsensusDeleteTopic(scheduledTxn.getConsensusDeleteTopic());
+		} else if (scheduledTxn.hasConsensusSubmitMessage()) {
+			ordinary.setConsensusSubmitMessage(scheduledTxn.getConsensusSubmitMessage());
+		} else if (scheduledTxn.hasTokenCreation()) {
+			ordinary.setTokenCreation(scheduledTxn.getTokenCreation());
+		} else if (scheduledTxn.hasTokenFreeze()) {
+			ordinary.setTokenFreeze(scheduledTxn.getTokenFreeze());
+		} else if (scheduledTxn.hasTokenUnfreeze()) {
+			ordinary.setTokenUnfreeze(scheduledTxn.getTokenUnfreeze());
+		} else if (scheduledTxn.hasTokenGrantKyc()) {
+			ordinary.setTokenGrantKyc(scheduledTxn.getTokenGrantKyc());
+		} else if (scheduledTxn.hasTokenRevokeKyc()) {
+			ordinary.setTokenRevokeKyc(scheduledTxn.getTokenRevokeKyc());
+		} else if (scheduledTxn.hasTokenDeletion()) {
+			ordinary.setTokenDeletion(scheduledTxn.getTokenDeletion());
+		} else if (scheduledTxn.hasTokenUpdate()) {
+			ordinary.setTokenUpdate(scheduledTxn.getTokenUpdate());
+		} else if (scheduledTxn.hasTokenMint()) {
+			ordinary.setTokenMint(scheduledTxn.getTokenMint());
+		} else if (scheduledTxn.hasTokenBurn()) {
+			ordinary.setTokenBurn(scheduledTxn.getTokenBurn());
+		} else if (scheduledTxn.hasTokenWipe()) {
+			ordinary.setTokenWipe(scheduledTxn.getTokenWipe());
+		} else if (scheduledTxn.hasTokenAssociate()) {
+			ordinary.setTokenAssociate(scheduledTxn.getTokenAssociate());
+		} else if (scheduledTxn.hasTokenDissociate()) {
+			ordinary.setTokenDissociate(scheduledTxn.getTokenDissociate());
+		} else if (scheduledTxn.hasScheduleDelete()) {
+			ordinary.setScheduleDelete(scheduledTxn.getScheduleDelete());
+		}
+		return ordinary.build();
 	}
 }

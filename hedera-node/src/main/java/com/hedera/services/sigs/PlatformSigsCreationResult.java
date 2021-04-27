@@ -4,7 +4,7 @@ package com.hedera.services.sigs;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,15 @@ package com.hedera.services.sigs;
  * ‍
  */
 
-import com.hedera.services.ServicesState;
-import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
-import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hedera.services.legacy.crypto.SignatureStatus;
 import com.hedera.services.legacy.crypto.SignatureStatusCode;
 import com.hedera.services.legacy.exception.KeyPrefixMismatchException;
 import com.hedera.services.legacy.exception.KeySignatureCountMismatchException;
-import com.swirlds.common.Address;
+import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.TransactionID;
 import com.swirlds.common.crypto.Signature;
-import com.swirlds.common.Transaction;
 import com.swirlds.common.crypto.TransactionSignature;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,7 +62,7 @@ public class PlatformSigsCreationResult {
 	 * Represent this result as a {@link SignatureStatus}.
 	 *
 	 * @param inHandleDynamicContext a flag giving whether this result occurred in the dynamic context of
-	 * {@link ServicesState#handleTransaction(long, boolean, Instant, Instant, Transaction, Address)}
+	 * {@code ServicesState#handleTransaction(long, boolean, Instant, Instant, Transaction, Address)}
 	 * @param txnId the id of the related gRPC txn.
 	 * @return the desired representation.
 	 */

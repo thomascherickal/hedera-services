@@ -4,7 +4,7 @@ package com.hedera.services.context;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,24 @@ package com.hedera.services.context;
  * ‍
  */
 
-import com.hedera.services.utils.PlatformTxnAccessor;
+import com.hedera.services.legacy.core.jproto.JKey;
+import com.hedera.services.state.expiry.ExpiringEntity;
+import com.hedera.services.utils.TxnAccessor;
 import com.hederahashgraph.api.proto.java.AccountID;
 import com.hederahashgraph.api.proto.java.ContractFunctionResult;
 import com.hederahashgraph.api.proto.java.ContractID;
 import com.hederahashgraph.api.proto.java.FileID;
 import com.hederahashgraph.api.proto.java.ResponseCodeEnum;
+import com.hederahashgraph.api.proto.java.ScheduleID;
 import com.hederahashgraph.api.proto.java.TokenID;
 import com.hederahashgraph.api.proto.java.TopicID;
+import com.hederahashgraph.api.proto.java.TransactionID;
 import com.hederahashgraph.api.proto.java.TransactionRecord;
-import com.hedera.services.legacy.core.jproto.JKey;
 import com.hederahashgraph.api.proto.java.TransferList;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Defines a type that manages transaction-specific context for a node. (That is,
@@ -50,7 +55,7 @@ public interface TransactionContext {
 	 * @param accessor the consensus platform txn to manage context of.
 	 * @param consensusTime when the txn reached consensus.
 	 */
-	void resetFor(PlatformTxnAccessor accessor, Instant consensusTime, long submittingMember);
+	void resetFor(TxnAccessor accessor, Instant consensusTime, long submittingMember);
 
 	/**
 	 * Checks if the payer is known to have an active signature (that is, whether
@@ -129,12 +134,12 @@ public interface TransactionContext {
 	TransactionRecord updatedRecordGiven(TransferList listWithNewFees);
 
 	/**
-	 * Gets an accessor to the consensus {@link com.swirlds.common.Transaction}
+	 * Gets an accessor to the defined type {@link TxnAccessor}
 	 * currently being processed.
 	 *
 	 * @return accessor for the current txn.
 	 */
-	PlatformTxnAccessor accessor();
+	TxnAccessor accessor();
 
 	/**
 	 * Set a new status for the current txn's processing.
@@ -179,10 +184,24 @@ public interface TransactionContext {
 	void setCreated(TokenID id);
 
 	/**
+	 * Record that the current transaction created a scheduled transaction.
+	 *
+	 * @param id the created scheduled transaction
+	 */
+	void setCreated(ScheduleID id);
+
+	/**
+	 * Record that the current transaction references a particular scheduled transaction.
+	 *
+	 * @param txnId the id of the referenced scheduled transaction
+	 */
+	void setScheduledTxnId(TransactionID txnId);
+
+	/**
 	 * Record that the current transaction called a smart contract with
 	 * a specified result.
 	 *
-	 * @param result the result of the contract call.
+	 * @param result the result of the contract call
 	 */
 	void setCallResult(ContractFunctionResult result);
 
@@ -215,4 +234,34 @@ public interface TransactionContext {
 	 * @param sequenceNumber
 	 */
 	void setTopicRunningHash(byte[] runningHash, long sequenceNumber);
+
+	/**
+	 * Set this token's new total supply for mint/burn/wipe transaction
+	 * @param newTotalTokenSupply
+	 */
+	void setNewTotalSupply(long newTotalTokenSupply);
+
+	/**
+	 * Sets a triggered TxnAccessor for execution
+	 * @param accessor the accessor which will be triggered
+	 */
+	void trigger(TxnAccessor accessor);
+
+	/**
+	 * Returns a triggered TxnAccessor
+	 */
+	TxnAccessor triggeredTxn();
+
+	/**
+	 * Adds a collection of {@link ExpiringEntity} to be later tracked for purging when expired
+	 * @param expiringEntities the information about entities which will be tracked for future purge
+	 */
+	void addExpiringEntities(Collection<ExpiringEntity> expiringEntities);
+
+	/**
+	 * Gets all expiring entities to the defined type {@link ExpiringEntity}
+	 * currently being processed.
+	 * @return {@code List<ExpiringEntity>} for the current expiring entities.
+	 */
+	List<ExpiringEntity> expiringEntities();
 }

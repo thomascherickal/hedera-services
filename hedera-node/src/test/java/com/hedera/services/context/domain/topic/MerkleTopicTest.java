@@ -4,7 +4,7 @@ package com.hedera.services.context.domain.topic;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,15 +40,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnitPlatform.class)
 public class MerkleTopicTest {
 	@Test
 	public void defaultConstructorTestingAccessors() {
@@ -130,21 +127,11 @@ public class MerkleTopicTest {
 		assertEquals(0L, topic.getSequenceNumber());
 		assertTrue(topic.hasRunningHash());
 		assertArrayEquals(from.getRunningHash(), topic.getRunningHash());
-		assertNotSame(from.getAdminKey(), topic.getAdminKey());
-		assertNotSame(from.getSubmitKey(), topic.getSubmitKey());
+		assertSame(from.getAdminKey(), topic.getAdminKey());
+		assertSame(from.getSubmitKey(), topic.getSubmitKey());
 		assertSame(from.getAutoRenewAccountId(), topic.getAutoRenewAccountId());
 		assertSame(from.getExpirationTimestamp(), topic.getExpirationTimestamp());
 		assertNotSame(from.getRunningHash(), topic.getRunningHash());
-	}
-
-	@Test
-	public void unimplementedMethodsThrowUnsupported() {
-		// given:
-		MerkleTopic merkleTopic = new MerkleTopic();
-
-		// expect:
-		assertThrows(UnsupportedOperationException.class, () -> merkleTopic.copyFrom(null));
-		assertThrows(UnsupportedOperationException.class, () -> merkleTopic.copyFromExtra(null));
 	}
 
 	@Test

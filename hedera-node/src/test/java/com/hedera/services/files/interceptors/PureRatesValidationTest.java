@@ -4,7 +4,7 @@ package com.hedera.services.files.interceptors;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,16 @@ package com.hedera.services.files.interceptors;
 
 import com.hederahashgraph.api.proto.java.ExchangeRate;
 import com.hederahashgraph.api.proto.java.ExchangeRateSet;
-import com.hedera.services.legacy.logic.ApplicationConstants;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import static com.hedera.services.files.interceptors.PureRatesValidation.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnitPlatform.class)
 class PureRatesValidationTest {
 	private static int currentHbarEquiv = 30000, nextHbarEquiv = 30000;
 	private static int currentCentEquiv = 120000, nextCentEquiv = 120000;

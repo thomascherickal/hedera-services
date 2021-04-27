@@ -4,7 +4,7 @@ package com.hedera.services.state.submerkle;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,9 @@ import com.swirlds.common.io.SelfSerializable;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,14 +49,11 @@ public class SolidityFnResult implements SelfSerializable {
 	static final long RUNTIME_CONSTRUCTABLE_ID = 0x2055c5c03ff84eb4L;
 
 	static DomainSerdes serdes = new DomainSerdes();
-	static EntityId.Provider legacyIdProvider = EntityId.LEGACY_PROVIDER;
-	static SolidityLog.Provider legacyLogProvider = SolidityLog.LEGACY_PROVIDER;
 
 	public static final int MAX_LOGS = 1_024;
 	public static final int MAX_CREATED_IDS = 32;
 	public static final int MAX_ERROR_BYTES = 1_024;
 	public static final int MAX_RESULT_BYTES = 1_024 * 1_024;
-	public static final Provider LEGACY_PROVIDER = new Provider();
 
 	private long gasUsed;
 	private byte[] bloom = MISSING_BYTES;
@@ -67,57 +62,6 @@ public class SolidityFnResult implements SelfSerializable {
 	private EntityId contractId;
 	private List<EntityId> createdContractIds = new ArrayList<>();
 	private List<SolidityLog> logs = new ArrayList<>();
-
-	@Deprecated
-	public static class Provider {
-		private static final long VERSION_WITH_CREATED_IDS = 3L;
-
-		public SolidityFnResult deserialize(DataInputStream in) throws IOException {
-			var fnResult = new SolidityFnResult();
-
-			var version = in.readLong();
-			in.readLong();
-
-			if (in.readBoolean()) {
-				fnResult.contractId = legacyIdProvider.deserialize(in);
-			}
-
-			int numResultBytes = in.readInt();
-			if (numResultBytes > 0) {
-				fnResult.result = new byte[numResultBytes];
-				in.readFully(fnResult.result);
-			}
-
-			int numErrorBytes = in.readInt();
-			if (numErrorBytes > 0) {
-				byte[] errorBytes = new byte[numErrorBytes];
-				in.readFully(errorBytes);
-				fnResult.error = StringUtils.newStringUtf8(errorBytes);
-			}
-
-			int numBloomBytes = in.readInt();
-			if (numBloomBytes > 0) {
-				fnResult.bloom = new byte[numBloomBytes];
-				in.readFully(fnResult.bloom);
-			}
-
-			fnResult.gasUsed = in.readLong();
-
-			int numLogs = in.readInt();
-			for (int i = 0; i < numLogs; i++) {
-				fnResult.logs.add(legacyLogProvider.deserialize(in));
-			}
-
-			if (version == VERSION_WITH_CREATED_IDS) {
-				int numCreatedContracts = in.readInt();
-				for (int i = 0; i < numCreatedContracts; i++) {
-					fnResult.createdContractIds.add(legacyIdProvider.deserialize(in));
-				}
-			}
-
-			return fnResult;
-		}
-	}
 
 	public SolidityFnResult() { }
 
@@ -247,13 +191,13 @@ public class SolidityFnResult implements SelfSerializable {
 
 	public static SolidityFnResult fromGrpc(ContractFunctionResult that) {
 		return new SolidityFnResult(
-				EntityId.ofNullableContractId(that.hasContractID() ? that.getContractID() : null),
+				that.hasContractID() ? EntityId.fromGrpcContractId(that.getContractID()) : null,
 				that.getContractCallResult().isEmpty() ? MISSING_BYTES : that.getContractCallResult().toByteArray(),
 				!that.getContractCallResult().isEmpty() ? that.getErrorMessage() : null,
 				that.getBloom().isEmpty() ? MISSING_BYTES : that.getBloom().toByteArray(),
 				that.getGasUsed(),
 				that.getLogInfoList().stream().map(SolidityLog::fromGrpc).collect(toList()),
-				that.getCreatedContractIDsList().stream().map(EntityId::ofNullableContractId).collect(toList()));
+				that.getCreatedContractIDsList().stream().map(EntityId::fromGrpcContractId).collect(toList()));
 	}
 
 	public ContractFunctionResult toGrpc() {

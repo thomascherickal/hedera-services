@@ -4,7 +4,7 @@ package com.hedera.services;
  * ‌
  * Hedera Services Node
  * ​
- * Copyright (C) 2018 - 2020 Hedera Hashgraph, LLC
+ * Copyright (C) 2018 - 2021 Hedera Hashgraph, LLC
  * ​
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,29 +23,39 @@ package com.hedera.services;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.services.context.ServicesContext;
-import com.hedera.services.records.AccountRecordsHistorian;
-import com.hedera.services.records.TxnIdRecentHistory;
-import com.hedera.services.state.initialization.SystemFilesManager;
-import com.hedera.services.state.merkle.MerkleDiskFs;
-import com.hedera.services.state.merkle.MerkleEntityAssociation;
-import com.hedera.services.state.merkle.MerkleNetworkContext;
-import com.hedera.services.state.merkle.MerkleAccount;
-import com.hedera.services.state.merkle.MerkleToken;
-import com.hedera.services.state.merkle.MerkleTokenRelStatus;
-import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.context.properties.PropertySources;
 import com.hedera.services.legacy.core.jproto.JEd25519Key;
 import com.hedera.services.legacy.core.jproto.JKey;
 import com.hedera.services.legacy.crypto.SignatureStatus;
+import com.hedera.services.legacy.stream.RecordStream;
+import com.hedera.services.records.AccountRecordsHistorian;
+import com.hedera.services.records.TxnIdRecentHistory;
+import com.hedera.services.sigs.factories.SigFactoryCreator;
 import com.hedera.services.sigs.order.HederaSigningOrder;
 import com.hedera.services.sigs.order.SigningOrderResult;
+import com.hedera.services.state.expiry.ExpiryManager;
+import com.hedera.services.state.logic.NetworkCtxManager;
+import com.hedera.services.state.merkle.MerkleAccount;
 import com.hedera.services.state.merkle.MerkleBlobMeta;
+import com.hedera.services.state.merkle.MerkleDiskFs;
+import com.hedera.services.state.merkle.MerkleEntityAssociation;
 import com.hedera.services.state.merkle.MerkleEntityId;
+import com.hedera.services.state.merkle.MerkleNetworkContext;
 import com.hedera.services.state.merkle.MerkleOptionalBlob;
+import com.hedera.services.state.merkle.MerkleSchedule;
+import com.hedera.services.state.merkle.MerkleToken;
+import com.hedera.services.state.merkle.MerkleTokenRelStatus;
+import com.hedera.services.state.merkle.MerkleTopic;
 import com.hedera.services.state.submerkle.ExchangeRates;
 import com.hedera.services.state.submerkle.SequenceNumber;
+import com.hedera.services.stream.RecordStreamManager;
+import com.hedera.services.stream.RecordsRunningHashLeaf;
+import com.hedera.services.throttling.FunctionalityThrottling;
 import com.hedera.services.txns.ProcessLogic;
 import com.hedera.services.utils.SystemExits;
+import com.hedera.test.extensions.LogCaptor;
+import com.hedera.test.extensions.LogCaptureExtension;
+import com.hedera.test.extensions.LoggingSubject;
 import com.hedera.test.factories.txns.PlatformTxnFactory;
 import com.hedera.test.utils.IdUtils;
 import com.hederahashgraph.api.proto.java.AccountID;
@@ -60,46 +70,69 @@ import com.swirlds.common.NodeId;
 import com.swirlds.common.Platform;
 import com.swirlds.common.Transaction;
 import com.swirlds.common.crypto.CryptoFactory;
+import com.swirlds.common.crypto.Cryptography;
+import com.swirlds.common.crypto.DigestType;
 import com.swirlds.common.crypto.Hash;
+import com.swirlds.common.crypto.ImmutableHash;
+import com.swirlds.common.crypto.RunningHash;
 import com.swirlds.common.io.SerializableDataInputStream;
 import com.swirlds.common.io.SerializableDataOutputStream;
 import com.swirlds.common.merkle.MerkleNode;
 import com.swirlds.fcmap.FCMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 
-import java.io.IOException;
+import javax.inject.Inject;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.hedera.services.ServicesState.MERKLE_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_0100_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_0110_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_0120_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_0130_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_0140_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_070_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_080_VERSION;
+import static com.hedera.services.ServicesState.RELEASE_090_VERSION;
 import static com.hedera.services.context.SingletonContextsManager.CONTEXTS;
 import static java.util.Collections.EMPTY_LIST;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.any;
-import static org.mockito.BDDMockito.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.inOrder;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.times;
 
-@RunWith(JUnitPlatform.class)
+
+@ExtendWith(LogCaptureExtension.class)
 class ServicesStateTest {
+	Function<String, byte[]> mockHashReader;
 	Consumer<MerkleNode> mockDigest;
 	Supplier<BinaryObjectStore> mockBlobStoreSupplier;
 	BinaryObjectStore blobStore;
@@ -113,6 +146,7 @@ class ServicesStateTest {
 	PropertySources propertySources;
 	ServicesContext ctx;
 	AccountRecordsHistorian historian;
+	ExpiryManager expiryManager;
 	FCMap<MerkleEntityId, MerkleTopic> topics;
 	FCMap<MerkleEntityId, MerkleAccount> accounts;
 	FCMap<MerkleBlobMeta, MerkleOptionalBlob> storage;
@@ -120,11 +154,17 @@ class ServicesStateTest {
 	FCMap<MerkleEntityId, MerkleAccount> accountsCopy;
 	FCMap<MerkleBlobMeta, MerkleOptionalBlob> storageCopy;
 	FCMap<MerkleEntityId, MerkleToken> tokens;
+	FCMap<MerkleEntityId, MerkleSchedule> scheduledTxs;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociations;
 	FCMap<MerkleEntityAssociation, MerkleTokenRelStatus> tokenAssociationsCopy;
 	FCMap<MerkleEntityId, MerkleToken> tokensCopy;
+	FCMap<MerkleEntityId, MerkleSchedule> scheduledTxsCopy;
 	MerkleDiskFs diskFs;
 	MerkleDiskFs diskFsCopy;
+	RecordsRunningHashLeaf runningHashLeaf;
+	RecordsRunningHashLeaf runningHashLeafCopy;
+	RunningHash runningHash;
+	Hash recordsHash;
 	ExchangeRates midnightRates;
 	SequenceNumber seqNo;
 	MerkleNetworkContext networkCtx;
@@ -133,21 +173,31 @@ class ServicesStateTest {
 	SerializableDataInputStream in;
 	SerializableDataOutputStream out;
 	SystemExits systemExits;
-	SystemFilesManager systemFilesManager;
+	RecordStreamManager recordStreamManager;
 	Map<TransactionID, TxnIdRecentHistory> txnHistories;
+	NetworkCtxManager networkCtxManager;
 
-	ServicesState subject;
+	@Inject
+	private LogCaptor logCaptor;
+
+	@LoggingSubject
+	private ServicesState subject;
+
+	private static final Hash EMPTY_HASH = new ImmutableHash(new byte[DigestType.SHA_384.digestLength()]);
 
 	@BeforeEach
+	@SuppressWarnings("unchecked")
 	private void setup() {
 		CONTEXTS.clear();
-		mockDigest = (Consumer<MerkleNode>)mock(Consumer.class);
-		ServicesState.merkleDigest = mockDigest;
+		mockDigest = (Consumer<MerkleNode>) mock(Consumer.class);
 		blobStore = mock(BinaryObjectStore.class);
 		mockBlobStoreSupplier = (Supplier<BinaryObjectStore>) mock(Supplier.class);
 		given(mockBlobStoreSupplier.get()).willReturn(blobStore);
 		ServicesState.blobStoreSupplier = mockBlobStoreSupplier;
 		given(blobStore.isInitializing()).willReturn(false);
+		mockHashReader = (Function<String, byte[]>) mock(Function.class);
+		given(mockHashReader.apply(any())).willReturn(EMPTY_HASH.getValue());
+		ServicesState.hashReader = mockHashReader;
 
 		out = mock(SerializableDataOutputStream.class);
 		in = mock(SerializableDataInputStream.class);
@@ -159,15 +209,19 @@ class ServicesStateTest {
 		book = mock(AddressBook.class);
 		given(book.copy()).willReturn(bookCopy);
 		given(book.getAddress(1)).willReturn(address);
+		given(book.getSize()).willReturn(1);
 
 		logic = mock(ProcessLogic.class);
 		ctx = mock(ServicesContext.class);
+		given(ctx.sigFactoryCreator()).willReturn(new SigFactoryCreator());
 		given(ctx.id()).willReturn(self);
 		given(ctx.logic()).willReturn(logic);
 
-		systemFilesManager = mock(SystemFilesManager.class);
 		historian = mock(AccountRecordsHistorian.class);
 		txnHistories = mock(Map.class);
+		expiryManager = mock(ExpiryManager.class);
+		recordStreamManager = mock(RecordStreamManager.class);
+		networkCtxManager = mock(NetworkCtxManager.class);
 
 		topics = mock(FCMap.class);
 		tokens = mock(FCMap.class);
@@ -175,6 +229,12 @@ class ServicesStateTest {
 		tokenAssociations = mock(FCMap.class);
 		tokenAssociationsCopy = mock(FCMap.class);
 		diskFs = mock(MerkleDiskFs.class);
+		scheduledTxs = mock(FCMap.class);
+		runningHashLeaf = mock(RecordsRunningHashLeaf.class);
+		runningHash = mock(RunningHash.class);
+		recordsHash = mock(Hash.class);
+		given(runningHash.getHash()).willReturn(recordsHash);
+		given(runningHashLeaf.getRunningHash()).willReturn(runningHash);
 
 		storage = mock(FCMap.class);
 		accounts = mock(FCMap.class);
@@ -182,12 +242,17 @@ class ServicesStateTest {
 		storageCopy = mock(FCMap.class);
 		accountsCopy = mock(FCMap.class);
 		diskFsCopy = mock(MerkleDiskFs.class);
+		scheduledTxsCopy = mock(FCMap.class);
+		runningHashLeafCopy = mock(RecordsRunningHashLeaf.class);
+
 		given(topics.copy()).willReturn(topicsCopy);
 		given(storage.copy()).willReturn(storageCopy);
 		given(accounts.copy()).willReturn(accountsCopy);
 		given(tokens.copy()).willReturn(tokensCopy);
 		given(tokenAssociations.copy()).willReturn(tokenAssociationsCopy);
 		given(diskFs.copy()).willReturn(diskFsCopy);
+		given(scheduledTxs.copy()).willReturn(scheduledTxsCopy);
+		given(runningHashLeaf.copy()).willReturn(runningHashLeafCopy);
 
 		seqNo = mock(SequenceNumber.class);
 		midnightRates = mock(ExchangeRates.class);
@@ -196,26 +261,37 @@ class ServicesStateTest {
 		given(networkCtx.copy()).willReturn(networkCtxCopy);
 		given(networkCtx.midnightRates()).willReturn(midnightRates);
 		given(networkCtx.seqNo()).willReturn(seqNo);
+		given(networkCtx.getStateVersion()).willReturn(-1);
+		given(ctx.networkCtx()).willReturn(networkCtx);
 
 		propertySources = mock(PropertySources.class);
 
+		var crypto = mock(Cryptography.class);
 		platform = mock(Platform.class);
 		given(platform.getSelfId()).willReturn(self);
+		given(platform.getCryptography()).willReturn(crypto);
 
 		given(ctx.platform()).willReturn(platform);
 		given(ctx.recordsHistorian()).willReturn(historian);
 		given(ctx.txnHistories()).willReturn(txnHistories);
+		given(ctx.expiries()).willReturn(expiryManager);
 		given(ctx.propertySources()).willReturn(propertySources);
-		given(ctx.systemFilesManager()).willReturn(systemFilesManager);
+		given(ctx.networkCtxManager()).willReturn(networkCtxManager);
+		given(ctx.recordStreamManager()).willReturn(recordStreamManager);
 
 		systemExits = mock(SystemExits.class);
 
 		subject = new ServicesState();
 	}
 
+	@AfterEach
+	public void testCleanup() {
+		ServicesState.hashReader = RecordStream::readPrevFileHash;
+	}
+
 
 	@Test
-	void ensuresNonNullTokenFcmsAfterReadingFromLegacySavedState() {
+	void migratesDiskFsIfLegacySavedState() {
 		// when:
 		subject.initialize(null);
 
@@ -223,6 +299,7 @@ class ServicesStateTest {
 		assertNotNull(subject.tokens());
 		assertNotNull(subject.tokenAssociations());
 		assertNotNull(subject.diskFs());
+		assertNotNull(subject.runningHashLeaf());
 		// and:
 		assertTrue(subject.skipDiskFsHashCheck);
 	}
@@ -231,11 +308,24 @@ class ServicesStateTest {
 	public void hasExpectedMinChildCounts() {
 		// given:
 		subject = new ServicesState(ctx, self, Collections.emptyList());
+		// and:
+		int invalidVersion = ServicesState.MERKLE_VERSION + 1;
 
 		// expect:
-		assertEquals(ServicesState.ChildIndices.NUM_070_CHILDREN, subject.getMinimumChildCount(1));
-		assertEquals(ServicesState.ChildIndices.NUM_080_CHILDREN, subject.getMinimumChildCount(2));
-		assertEquals(ServicesState.ChildIndices.NUM_090_CHILDREN, subject.getMinimumChildCount(3));
+		assertEquals(ServicesState.ChildIndices.NUM_070_CHILDREN, subject.getMinimumChildCount(RELEASE_070_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_080_CHILDREN, subject.getMinimumChildCount(RELEASE_080_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_090_CHILDREN, subject.getMinimumChildCount(RELEASE_090_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_0100_CHILDREN, subject.getMinimumChildCount(RELEASE_0100_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_0110_CHILDREN, subject.getMinimumChildCount(RELEASE_0110_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_0120_CHILDREN, subject.getMinimumChildCount(RELEASE_0120_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_0130_CHILDREN, subject.getMinimumChildCount(RELEASE_0130_VERSION));
+		assertEquals(ServicesState.ChildIndices.NUM_0140_CHILDREN, subject.getMinimumChildCount(RELEASE_0140_VERSION));
+
+		Throwable throwable = assertThrows(IllegalArgumentException.class,
+				() -> subject.getMinimumChildCount(invalidVersion));
+		assertEquals(
+				String.format(ServicesState.UNSUPPORTED_VERSION_MSG_TPL, invalidVersion),
+				throwable.getMessage());
 	}
 
 	@Test
@@ -261,7 +351,7 @@ class ServicesStateTest {
 	}
 
 	@Test
-	public void initsAsExpected() {
+	public void initsWithoutMerkleAsExpected() {
 		// when:
 		subject.init(platform, book);
 
@@ -273,18 +363,27 @@ class ServicesStateTest {
 		assertNotNull(subject.storage());
 		assertNotNull(subject.accounts());
 		assertNotNull(subject.tokens());
+		assertNotNull(subject.scheduleTxs());
 		assertEquals(book, subject.addressBook());
 		assertEquals(self, actualCtx.id());
 		assertEquals(platform, actualCtx.platform());
 		assertEquals(1001L, subject.networkCtx().seqNo().current());
+		final RecordsRunningHashLeaf runningHashLeaf = subject.runningHashLeaf();
+		assertNotNull(runningHashLeaf);
+		final ImmutableHash emptyHash = new ImmutableHash(new byte[DigestType.SHA_384.digestLength()]);
+		assertEquals(emptyHash, runningHashLeaf.getRunningHash().getHash());
 		// and:
 		verify(mockDigest, never()).accept(any());
 	}
 
 	@Test
-	public void initializesContext() {
-		InOrder inOrder = inOrder(ctx, txnHistories, historian, systemFilesManager);
+	public void initializesFullContextIfBlobStoreReady() {
+		// setup:
+		var throttling = mock(FunctionalityThrottling.class);
 
+		InOrder inOrder = inOrder(ctx, txnHistories, historian, networkCtxManager, expiryManager, networkCtx);
+
+		given(ctx.handleThrottling()).willReturn(throttling);
 		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
 		// and:
 		CONTEXTS.store(ctx);
@@ -293,16 +392,21 @@ class ServicesStateTest {
 		subject.init(platform, book);
 
 		// then:
-		inOrder.verify(ctx).nodeAccount();
+		inOrder.verify(ctx).setRecordsInitialHash(EMPTY_HASH);
 		inOrder.verify(ctx).update(subject);
 		inOrder.verify(ctx).rebuildBackingStoresIfPresent();
+		inOrder.verify(ctx).rebuildStoreViewsIfPresent();
 		inOrder.verify(historian).reviewExistingRecords();
-		inOrder.verify(systemFilesManager).loadAllSystemFiles();
+		inOrder.verify(expiryManager).restartEntitiesTracking();
+		inOrder.verify(networkCtxManager).setObservableFilesNotLoaded();
+		inOrder.verify(networkCtxManager).loadObservableSysFilesIfNeeded();
+		// and:
+		assertEquals(MERKLE_VERSION, subject.networkCtx().getStateVersion());
 	}
 
 	@Test
 	public void doesntInitializeFilesIfStoreStillInitializing() {
-		InOrder inOrder = inOrder(ctx, txnHistories, historian, systemFilesManager);
+		InOrder inOrder = inOrder(ctx, txnHistories, historian, networkCtxManager);
 
 		given(blobStore.isInitializing()).willReturn(true);
 		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
@@ -313,11 +417,10 @@ class ServicesStateTest {
 		subject.init(platform, book);
 
 		// then:
-		inOrder.verify(ctx).nodeAccount();
 		inOrder.verify(ctx).update(subject);
 		inOrder.verify(ctx).rebuildBackingStoresIfPresent();
 		inOrder.verify(historian).reviewExistingRecords();
-		inOrder.verify(systemFilesManager, never()).loadAllSystemFiles();
+		inOrder.verify(networkCtxManager, never()).loadObservableSysFilesIfNeeded();
 	}
 
 	@Test
@@ -347,11 +450,9 @@ class ServicesStateTest {
 	}
 
 	@Test
-	public void skipsHashCheckIfNotAppropriate() {
+	public void invokesDiskFsAsApropos() {
 		// setup:
-		var mockLog = mock(Logger.class);
-		ServicesMain.log = mockLog;
-		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
+		given(ctx.nodeAccount()).willReturn(IdUtils.asAccount("0.0.3"));
 		CONTEXTS.store(ctx);
 		// and:
 		subject.skipDiskFsHashCheck = true;
@@ -364,23 +465,57 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
 		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 
 		// when:
+		subject.init(platform, book);
+		// and when:
+		given(networkCtx.getStateVersion()).willReturn(ServicesState.MERKLE_VERSION);
 		subject.init(platform, book);
 
 		// then:
 		verify(diskFs, never()).checkHashesAgainstDiskContents();
+		verify(diskFs, times(1)).migrateLegacyDiskFsFromV13LocFor(
+				MerkleDiskFs.DISK_FS_ROOT_DIR,
+				"0.0.3");
+	}
 
-		// cleanup:
-		ServicesMain.log = LogManager.getLogger(ServicesMain.class);
-		ServicesState.merkleDigest = CryptoFactory.getInstance()::digestTreeSync;
+	@Test
+	public void justWarnOnFailedDiskFsMigration() {
+		// setup:
+		given(ctx.nodeAccount()).willReturn(IdUtils.asAccount("0.0.3"));
+		willThrow(UncheckedIOException.class).given(diskFs).migrateLegacyDiskFsFromV13LocFor(
+				MerkleDiskFs.DISK_FS_ROOT_DIR, "0.0.3");
+		CONTEXTS.store(ctx);
+		// and:
+		subject.skipDiskFsHashCheck = true;
+		// and:
+		subject.setChild(ServicesState.ChildIndices.TOPICS, topics);
+		subject.setChild(ServicesState.ChildIndices.STORAGE, storage);
+		subject.setChild(ServicesState.ChildIndices.ACCOUNTS, accounts);
+		subject.setChild(ServicesState.ChildIndices.ADDRESS_BOOK, book);
+		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
+		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
+		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
+
+		// when:
+		subject.init(platform, book);
+		// and when:
+		given(networkCtx.getStateVersion()).willReturn(ServicesState.MERKLE_VERSION);
+		subject.init(platform, book);
+
+		// then:
+		assertThat(logCaptor.warnLogs(),
+				contains(Matchers.startsWith("Legacy diskFs directory not migrated, was it missing?")));
 	}
 
 	@Test
 	public void logsNonNullHashesFromSavedState() {
 		// setup:
-		var mockLog = mock(Logger.class);
-		ServicesMain.log = mockLog;
 		given(ctx.nodeAccount()).willReturn(AccountID.getDefaultInstance());
 		CONTEXTS.store(ctx);
 
@@ -393,39 +528,42 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
 		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 
 		// when:
 		subject.init(platform, book);
 
 		// then:
-		InOrder inOrder = inOrder(diskFs, ctx, mockDigest, accounts, storage, topics,
-				tokens, tokenAssociations, networkCtx, book, mockLog);
-		inOrder.verify(diskFs).setFsBaseDir(any());
-		inOrder.verify(ctx).nodeAccount();
-		inOrder.verify(diskFs).setFsNodeScopedDir(any());
+		InOrder inOrder = inOrder(
+				scheduledTxs, runningHashLeaf, diskFs, ctx, mockDigest,
+				accounts, storage, topics, tokens, tokenAssociations, networkCtx, book);
 		inOrder.verify(diskFs).checkHashesAgainstDiskContents();
-		inOrder.verify(mockDigest).accept(subject);
+		inOrder.verify(ctx).setRecordsInitialHash(recordsHash);
 		inOrder.verify(accounts).getHash();
 		inOrder.verify(storage).getHash();
 		inOrder.verify(topics).getHash();
 		inOrder.verify(tokens).getHash();
 		inOrder.verify(tokenAssociations).getHash();
 		inOrder.verify(diskFs).getHash();
+		inOrder.verify(scheduledTxs).getHash();
 		inOrder.verify(networkCtx).getHash();
 		inOrder.verify(book).getHash();
-		inOrder.verify(mockLog).info(argThat((String s) -> s.startsWith("[SwirldState Hashes]")));
+		inOrder.verify(runningHashLeaf).getHash();
 		inOrder.verify(ctx).update(subject);
-
-		// cleanup:
-		ServicesMain.log = LogManager.getLogger(ServicesMain.class);
-		ServicesState.merkleDigest = CryptoFactory.getInstance()::digestTreeSync;
+		// and:
+		assertThat(
+				logCaptor.infoLogs(),
+				contains(
+						equalTo("Init called on Services node 1 WITH Merkle saved state"),
+						startsWith("[SwirldState Hashes]"),
+						startsWith("Mock for MerkleNetworkContext"),
+						equalTo("--> Context initialized accordingly on Services node 1")));
 	}
 
 	@Test
 	public void hashesPrintedAsExpected() {
 		// setup:
-		var mockLog = mock(Logger.class);
-		ServicesMain.log = mockLog;
 		Hash ctxHash = new Hash("sdfysdfysdfysdfysdfysdfysdfysdfysdfysdfysdfysdfy".getBytes());
 		Hash bookHash = new Hash("sdfzsdfzsdfzsdfzsdfzsdfzsdfzsdfzsdfzsdfzsdfzsdfz".getBytes());
 		Hash topicRootHash = new Hash("sdfgsdfgsdfgsdfgsdfgsdfgsdfgsdfgsdfgsdfgsdfgsdfg".getBytes());
@@ -434,7 +572,11 @@ class ServicesStateTest {
 		Hash accountsRootHash = new Hash("asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf".getBytes());
 		Hash tokenRelsRootHash = new Hash("asdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdh".getBytes());
 		Hash specialFileSystemHash = new Hash("123456781234567812345678123456781234567812345678".getBytes());
+		Hash scheduledTxsRootHash = new Hash("qlqlqlqlqlqlllqqllqlqlqlqllqlqlqlqllqlqlqllqqlql".getBytes());
 
+		Hash runningHashLeafHash = new Hash("qasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasd".getBytes());
+		RunningHash runningHash = mock(RunningHash.class);
+		Hash hashInRunningHash = new Hash("ttqasdhasdhasdhasdhasdhasdhasdhasdhasdhasdhasdha".getBytes());
 		// and:
 		Hash overallHash = new Hash("a!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!dfa!df".getBytes());
 		// and:
@@ -446,18 +588,24 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
 		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
 
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		// and:
 		var expected = String.format("[SwirldState Hashes]\n" +
-				"  Overall           :: %s\n" +
-				"  Accounts          :: %s\n" +
-				"  Storage           :: %s\n" +
-				"  Topics            :: %s\n" +
-				"  Tokens            :: %s\n" +
-				"  TokenAssociations :: %s\n" +
-				"  DiskFs            :: %s\n" +
-				"  NetworkContext    :: %s\n" +
-				"  AddressBook       :: %s",
+						"  Overall                :: %s\n" +
+						"  Accounts               :: %s\n" +
+						"  Storage                :: %s\n" +
+						"  Topics                 :: %s\n" +
+						"  Tokens                 :: %s\n" +
+						"  TokenAssociations      :: %s\n" +
+						"  DiskFs                 :: %s\n" +
+						"  ScheduledTxs           :: %s\n" +
+						"  NetworkContext         :: %s\n" +
+						"  AddressBook            :: %s\n" +
+						"  RecordsRunningHashLeaf :: %s\n" +
+						"    ↪ Running hash       :: %s",
+
 				overallHash,
 				accountsRootHash,
 				storageRootHash,
@@ -465,8 +613,11 @@ class ServicesStateTest {
 				tokensRootHash,
 				tokenRelsRootHash,
 				specialFileSystemHash,
+				scheduledTxsRootHash,
 				ctxHash,
-				bookHash);
+				bookHash,
+				runningHashLeafHash,
+				hashInRunningHash);
 		subject.setHash(overallHash);
 
 		given(topics.getHash()).willReturn(topicRootHash);
@@ -475,17 +626,21 @@ class ServicesStateTest {
 		given(tokens.getHash()).willReturn(tokensRootHash);
 		given(tokenAssociations.getHash()).willReturn(tokenRelsRootHash);
 		given(networkCtx.getHash()).willReturn(ctxHash);
+		given(networkCtx.toString()).willReturn("Not really a network context representation!");
 		given(book.getHash()).willReturn(bookHash);
 		given(diskFs.getHash()).willReturn(specialFileSystemHash);
+		given(scheduledTxs.getHash()).willReturn(scheduledTxsRootHash);
 
+		given(runningHashLeaf.getHash()).willReturn(runningHashLeafHash);
+		given(runningHashLeaf.getRunningHash()).willReturn(runningHash);
+		given(runningHash.getHash()).willReturn(hashInRunningHash);
 		// when:
-		subject.printHashes();
+		subject.logSummary();
 
 		// then:
-		verify(mockLog).info(expected);
-
-		// cleanup:
-		ServicesMain.log = LogManager.getLogger(ServicesMain.class);
+		assertThat(
+				logCaptor.infoLogs(),
+				contains(equalTo(expected), equalTo("Not really a network context representation!")));
 	}
 
 	@Test
@@ -499,13 +654,16 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
 		subject.setChild(ServicesState.ChildIndices.DISK_FS, diskFs);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
+		subject.setChild(ServicesState.ChildIndices.RECORD_STREAM_RUNNING_HASH, runningHashLeaf);
 		subject.nodeId = self;
 		subject.ctx = ctx;
 
 		// when:
-		ServicesState copy = (ServicesState) subject.copy();
+		ServicesState copy = subject.copy();
 
 		// then:
+		assertEquals(subject.getNumberOfChildren(), copy.getNumberOfChildren());
 		assertTrue(subject.isImmutable());
 		assertEquals(self, copy.nodeId);
 		assertEquals(bookCopy, copy.addressBook());
@@ -516,6 +674,8 @@ class ServicesStateTest {
 		assertSame(tokensCopy, copy.tokens());
 		assertSame(tokenAssociationsCopy, copy.tokenAssociations());
 		assertSame(diskFsCopy, copy.diskFs());
+		assertSame(scheduledTxsCopy, copy.scheduleTxs());
+		assertSame(runningHashLeafCopy, copy.runningHashLeaf());
 	}
 
 	@Test
@@ -538,6 +698,7 @@ class ServicesStateTest {
 		subject.setChild(ServicesState.ChildIndices.ACCOUNTS, accounts);
 		subject.setChild(ServicesState.ChildIndices.TOKENS, tokens);
 		subject.setChild(ServicesState.ChildIndices.TOKEN_ASSOCIATIONS, tokenAssociations);
+		subject.setChild(ServicesState.ChildIndices.SCHEDULE_TXS, scheduledTxs);
 
 		// when:
 		subject.release();
@@ -548,65 +709,7 @@ class ServicesStateTest {
 		verify(topics).decrementReferenceCount();
 		verify(tokens).decrementReferenceCount();
 		verify(tokenAssociations).decrementReferenceCount();
-	}
-
-	@Test
-	public void copiesFromExtraCorrectly() throws IOException {
-		// setup:
-		SerializableDataInputStream in = mock(SerializableDataInputStream.class);
-		InOrder inOrder = inOrder(in, topics, storage, accounts, bookCopy);
-		ServicesState.legacyTmpBookSupplier = () -> bookCopy;
-		// and:
-		subject.setChild(ServicesState.ChildIndices.TOPICS, topics);
-		subject.setChild(ServicesState.ChildIndices.STORAGE, storage);
-		subject.setChild(ServicesState.ChildIndices.ACCOUNTS, accounts);
-
-		// when:
-		subject.copyFromExtra(in);
-
-		// then:
-		inOrder.verify(in).readLong();
-		inOrder.verify(bookCopy).copyFromExtra(in);
-		inOrder.verify(accounts).copyFromExtra(in);
-		inOrder.verify(storage).copyFromExtra(in);
-		inOrder.verify(topics).copyFromExtra(in);
-	}
-
-	@Test
-	public void copiesFromCorrectly() throws IOException {
-		// setup:
-		SerializableDataInputStream in = mock(SerializableDataInputStream.class);
-		InOrder inOrder = inOrder(in, topics, storage, accounts, bookCopy, networkCtx, seqNo, midnightRates);
-		ServicesState.legacyTmpBookSupplier = () -> bookCopy;
-		// and:
-		subject.ctx = ctx;
-		subject.nodeId = self;
-		subject.setChild(ServicesState.ChildIndices.TOPICS, topics);
-		subject.setChild(ServicesState.ChildIndices.STORAGE, storage);
-		subject.setChild(ServicesState.ChildIndices.ACCOUNTS, accounts);
-		subject.setChild(ServicesState.ChildIndices.ADDRESS_BOOK, book);
-		subject.setChild(ServicesState.ChildIndices.NETWORK_CTX, networkCtx);
-		// and:
-		var lastHandleTime = Instant.now();
-
-		given(in.readInstant()).willReturn(lastHandleTime);
-		given(in.readBoolean()).willReturn(true);
-
-		// when:
-		subject.copyFrom(in);
-
-		// then:
-		inOrder.verify(in).readLong();
-		inOrder.verify(seqNo).deserialize(in);
-		inOrder.verify(bookCopy).copyFrom(in);
-		inOrder.verify(accounts).copyFrom(in);
-		inOrder.verify(storage).copyFrom(in);
-		inOrder.verify(in).readBoolean();
-		inOrder.verify(midnightRates).deserialize(in, ExchangeRates.MERKLE_VERSION);
-		inOrder.verify(in).readBoolean();
-		inOrder.verify(in).readInstant();
-		inOrder.verify(networkCtx).setConsensusTimeOfLastHandledTxn(lastHandleTime);
-		inOrder.verify(topics).copyFrom(in);
+		verify(scheduledTxs).decrementReferenceCount();
 	}
 
 	@Test
@@ -627,8 +730,7 @@ class ServicesStateTest {
 		subject.ctx = ctx;
 
 		// when:
-		subject.handleTransaction(
-				1, false, now, now, platformTxn, null);
+		subject.handleTransaction(1, false, now, now, platformTxn);
 
 		// then:
 		verify(logic, never()).incorporateConsensusTxn(platformTxn, now, 1);
@@ -640,8 +742,7 @@ class ServicesStateTest {
 		subject.ctx = ctx;
 
 		// when:
-		subject.handleTransaction(
-				1, true, now, now, platformTxn, null);
+		subject.handleTransaction(1, true, now, now, platformTxn);
 
 		// then:
 		verify(logic).incorporateConsensusTxn(platformTxn, now, 1);
@@ -678,6 +779,7 @@ class ServicesStateTest {
 		// then:
 		assertEquals(1, platformTxn.getSignatures().size());
 		assertEquals(mockPk, ByteString.copyFrom(platformTxn.getSignatures().get(0).getExpandedPublicKeyDirect()));
+		verify(ctx).sigFactoryCreator();
 	}
 
 	@Test
@@ -718,7 +820,6 @@ class ServicesStateTest {
 	@AfterEach
 	public void cleanup() {
 		CONTEXTS.clear();
-		ServicesState.merkleDigest = CryptoFactory.getInstance()::digestTreeSync;
 		ServicesState.blobStoreSupplier = BinaryObjectStore::getInstance;
 	}
 }
